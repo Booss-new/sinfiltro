@@ -7,56 +7,112 @@
   <style>
     body {
       background-color: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      color: #0ff; /* Cian neón */
+      font-family: 'Poppins', sans-serif;
       margin: 0;
       padding: 0;
-    }
-    header {
-      background-color: #0a0f2c;
-      padding: 15px;
       text-align: center;
-      font-size: 1.5em;
-      color: #00bfff;
     }
-    main {
+
+    header {
+      background: linear-gradient(90deg, #000428, #004e92);
+      padding: 15px 0;
+      box-shadow: 0 0 20px #0ff;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    header h1 {
+      font-size: 1.8em;
+      color: #0ff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      margin: 0;
+    }
+
+    .container {
+      padding: 30px 10px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 15px;
-      padding: 20px;
+      gap: 25px;
     }
+
     .video-card {
-      background-color: #111;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-      box-shadow: 0 0 10px #00bfff44;
+      background: #00111a;
+      border: 2px solid #0ff;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #00ffff55;
+      transition: transform 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+      padding-bottom: 10px;
     }
-    .video-card img {
-      width: 100%;
-      border-radius: 10px;
+
+    .video-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px #00ffffaa;
     }
-    .video-card h3 {
-      color: #00bfff;
+
+    .video-thumbnail {
+      background: linear-gradient(135deg, #001f33, #003366);
+      height: 160px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #0ff;
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .video-title {
       margin-top: 10px;
+      font-size: 1.1em;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    footer {
+      margin-top: 50px;
+      background: #000428;
+      color: #0ff;
+      padding: 20px;
+      font-size: 0.9em;
+      box-shadow: 0 0 20px #00ffff55;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .video-card {
+      animation: fadeIn 0.8s ease-in-out;
     }
   </style>
 </head>
 <body>
-  <header>🎬 SinFiltro - Plataforma de Videos</header>
-  <main>
+  <header>
+    <h1>🎬 SinFiltro - Plataforma de Videos</h1>
+  </header>
+
+  <div class="container">
     <div class="video-card">
-      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+1" alt="Video 1">
-      <h3>Video Inspirador 1</h3>
+      <div class="video-thumbnail">🎥 Video 1</div>
+      <div class="video-title">Inspiración Diaria</div>
     </div>
+
     <div class="video-card">
-      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+2" alt="Video 2">
-      <h3>Video Inspirador 2</h3>
+      <div class="video-thumbnail">🔥 Video 2</div>
+      <div class="video-title">Motivación SinFiltro</div>
     </div>
+
     <div class="video-card">
-      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+3" alt="Video 3">
-      <h3>Video Inspirador 3</h3>
+      <div class="video-thumbnail">💡 Video 3</div>
+      <div class="video-title">Historias Reales</div>
     </div>
-  </main>
+  </div>
+
+  <footer>
+    © 2025 SinFiltro — Inspiración sin límites 💫
+  </footer>
 </body>
 </html>
