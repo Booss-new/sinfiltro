@@ -1,40 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SinFiltro</title>
-    <style>
-        body {
-            background-color: #000;
-            color: #00aaff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #001122;
-            padding: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        p {
-            margin-top: 50px;
-            font-size: 18px;
-        }
-        a {
-            color: #00aaff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SinFiltro - Plataforma de Videos</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0a0f2c;
+      padding: 15px;
+      text-align: center;
+      font-size: 1.5em;
+      color: #00bfff;
+    }
+    main {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+    .video-card {
+      background-color: #111;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px #00bfff44;
+    }
+    .video-card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .video-card h3 {
+      color: #00bfff;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <header>SinFiltro</header>
-    <p>Bienvenido a <strong>SinFiltro</strong>, la nueva plataforma sin límites.</p>
-    <p>🚀 Próximamente contenido sin filtros, sin excusas y para todos.</p>
-    <p><a href="#">Explorar más</a></p>
+  <header>🎬 SinFiltro - Plataforma de Videos</header>
+  <main>
+    <div class="video-card">
+      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+1" alt="Video 1">
+      <h3>Video Inspirador 1</h3>
+    </div>
+    <div class="video-card">
+      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+2" alt="Video 2">
+      <h3>Video Inspirador 2</h3>
+    </div>
+    <div class="video-card">
+      <img src="https://placehold.co/300x200/0a0f2c/00bfff?text=Video+3" alt="Video 3">
+      <h3>Video Inspirador 3</h3>
+    </div>
+  </main>
 </body>
 </html>
