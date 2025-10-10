@@ -1,127 +1,378 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SinFiltro</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: #000;
-      color: #00ffff;
-      overflow-x: hidden;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Plataforma (Demo completo)</title>
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.9);
-      padding: 15px 20px;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 10;
-      border-bottom: 1px solid #00ffff;
-    }
+<!-- Meta / Open Graph -->
+<meta name="description" content="SinFiltro — comparte fotos, videos y conecta. Versión demo con monetización simulada, PWA-ready y panel de control.">
+<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
+<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
+<meta property="og:image" content="https://booss-new.github.io/sinfiltro/og-image.png">
+<meta property="og:url" content="https://booss-new.github.io/sinfiltro/">
+<meta name="twitter:card" content="summary_large_image">
 
-    header h1 {
-      font-size: 1.5em;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #00ffff;
-    }
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-    nav a {
-      margin-left: 15px;
-      color: #00ffff;
-      text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s;
-    }
+<!-- Basic styles: móvil-first, limpio y elegante (YouTube + Instagram mix) -->
+<style>
+:root{
+  --bg-1:#05060a; --bg-2:#0b1220;
+  --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
+  --muted:#9fb0bf; --card:#071226; --radius:12px; --trans:220ms;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
+  radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.03), transparent 8%),
+  linear-gradient(180deg,var(--bg-1),var(--bg-2) 70%);color:#eaf7ff;-webkit-font-smoothing:antialiased;overflow:hidden}
+a{color:inherit}
+button{font:inherit}
 
-    nav a:hover {
-      color: white;
-    }
+/* App layout */
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.scroll{overflow-y:auto;padding-bottom:150px;-webkit-overflow-scrolling:touch}
 
-    .content {
-      margin-top: 90px;
-      padding: 20px;
-    }
+/* Header */
+header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+.brand{display:flex;flex-direction:column;align-items:center;gap:2px}
+.brand .title{color:var(--accent-1);font-weight:700}
+.icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
 
-    .section-title {
-      font-size: 1.3em;
-      margin: 15px 0;
-      color: #00ffff;
-      border-left: 3px solid #00ffff;
-      padding-left: 10px;
-    }
+/* Search overlay */
+.search-overlay{position:fixed;left:12px;right:12px;top:64px;z-index:65;display:none}
+.search-input{width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-    }
+/* Hero */
+.hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.hero h1{margin:0;color:var(--accent-2);font-size:18px}
+.hero p{margin-top:6px;color:var(--muted);font-size:13px}
 
-    .card {
-      background: #111;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #00ffff33;
-      transition: transform 0.3s ease;
-    }
+/* Sections */
+.section{margin-top:16px;padding:0 12px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.section-title{font-weight:700;color:var(--accent-1)}
+.see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-    .card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #00ffff88;
-    }
+/* Horizontal row */
+.h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
+.h-row::-webkit-scrollbar{display:none}
+.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans)}
+.thumb-card:hover{transform:translateY(-6px)}
+.thumb{width:170px;height:100px;object-fit:cover;display:block}
+.thumb-info{padding:8px;color:#eaf7ff;font-weight:600;font-size:13px}
 
-    .card img {
-      width: 100%;
-      display: block;
-    }
+/* Feed grid (2 columns mobile) */
+.feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
+.feed-item:hover{transform:translateY(-6px)}
+.feed-item img{width:100%;height:150px;object-fit:cover;display:block}
+.feed-body{padding:10px}
+.feed-title{font-weight:700;color:#eaf7ff;font-size:13px}
+.feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
 
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: #000;
-      border-top: 1px solid #00ffff;
-      color: #00ffff;
-    }
-  </style>
+/* Floating FAB */
+.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80}
+.fab{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:28px;cursor:pointer}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;left:10px;right:10px;bottom:8px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
+.nav-item.active{color:var(--accent-1);transform:translateY(-3px)}
+
+/* Viewer & drawer */
+.viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.96));display:flex;align-items:center;justify-content:center;z-index:120;padding:18px;gap:12px;flex-direction:column;display:none}
+.viewer.show{display:flex}
+.viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
+.drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none;flex-direction:column}
+.drawer.show{display:flex}
+.drawer .handle{width:48px;height:6px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
+.comments{overflow:auto;margin-top:8px;flex:1;padding-right:6px}
+.comment{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
+.comment strong{display:block;color:#e7fbff}
+
+/* Upload modal */
+.upload-modal{position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:110;display:none}
+.upload-modal.show{display:block}
+
+/* Dashboard modal (monetization) */
+.dashboard{position:fixed;left:12px;right:12px;top:12px;bottom:12px;border-radius:12px;padding:12px;background:linear-gradient(180deg,#001018,#001424);border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:200;display:none;overflow:auto}
+.dashboard.show{display:block}
+.kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kpi .card{flex:1;min-width:140px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+
+/* responsive */
+@media(max-width:420px){
+  .thumb{width:150px;height:88px}
+  .feed-item img{height:120px}
+  .fab{width:60px;height:60px}
+}
+</style>
 </head>
 <body>
-  <header>
-    <h1>SinFiltro</h1>
-    <nav>
-      <a href="#">Inicio</a>
-      <a href="#">Tendencias</a>
-      <a href="#">Subir</a>
-      <a href="#">Perfil</a>
-    </nav>
-  </header>
+<!-- App root -->
+<div class="app" role="application" aria-label="SinFiltro">
 
-  <div class="content">
-    <div class="section-title">Videos en Tendencia</div>
-    <div class="grid">
-      <div class="card"><img src="https://picsum.photos/200/300?random=1" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=2" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=3" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=4" alt=""></div>
+  <!-- Header -->
+  <header>
+    <div class="left">
+      <div class="icon-btn" id="menuBtn" title="Panel">☰</div>
     </div>
 
-    <div class="section-title">Imágenes Recientes</div>
-    <div class="grid">
-      <div class="card"><img src="https://picsum.photos/200/300?random=5" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=6" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=7" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/200/300?random=8" alt=""></div>
+    <div class="brand" aria-hidden="false">
+      <div class="title">SinFiltro</div>
+      <div class="subtitle">Tu espacio sin límites</div>
+    </div>
+
+    <div class="right">
+      <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
+    </div>
+  </header>
+
+  <!-- Search overlay -->
+  <div class="search-overlay" id="searchOverlay">
+    <input id="searchInput" class="search-input" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar">
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="scroll" id="scrollArea" tabindex="0">
+    <main>
+      <section class="hero" aria-label="Presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+      </section>
+
+      <!-- Trending -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">🔥 En Tendencia</div>
+          <div class="see-all" id="seeTrending">Ver todo</div>
+        </div>
+        <div class="h-row" id="trendingRow" aria-live="polite"></div>
+      </section>
+
+      <!-- Recent -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">⏮️ Vistos recientemente</div>
+          <div class="see-all" id="seeRecent">Ver todo</div>
+        </div>
+        <div class="h-row" id="recentRow"></div>
+      </section>
+
+      <!-- Feed -->
+      <section class="section">
+        <div class="section-header">
+          <div class="section-title">🎯 Recomendados</div>
+          <div class="see-all" id="seeReco">Ver todo</div>
+        </div>
+        <div class="feed" id="feedGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- FAB -->
+  <div class="fab-wrap" aria-hidden="false">
+    <button class="fab" id="fabBtn" aria-label="Crear / Subir">＋</button>
+  </div>
+
+  <!-- Upload modal -->
+  <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <strong>Subir contenido (demo)</strong>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+      <input type="file" id="fileInput" accept="image/*,video/*">
+      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
+    </div>
+    <div style="margin-top:10px;font-size:13px;color:var(--muted)">Opciones de monetización demo disponibles en el panel.</div>
+  </div>
+
+  <!-- Viewer -->
+  <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
+    <div class="content" id="viewerContent"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="openCommentsBtn" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">💬 Comentarios</button>
+      <button id="closeViewer" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
     </div>
   </div>
 
-  <footer>
-    © 2025 SinFiltro — Revoluciona tu forma de ver contenido.
-  </footer>
-</body>
-</html>
+  <!-- Comments drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="handle" aria-hidden="true"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong id="drawerTitle">Comentarios</strong>
+      <button id="closeDrawer" style="background:none;border:none;color:var(--muted)">Cerrar</button>
+    </div>
+    <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf7ff" />
+      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#001;font-weight:700">Enviar</button>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+    <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+    <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
+    <div style="width:68px"></div>
+    <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Me gusta</div></div>
+    <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
+  </nav>
+</div>
+
+<!-- Dashboard (monetization + analytics) -->
+<div class="dashboard" id="dashboard" role="dialog" aria-hidden="true">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <strong>Dashboard — Monetización & Analytics (Demo)</strong>
+    <div>
+      <button id="closeDashboard" style="margin-right:8px;padding:6px 10px;border-radius:8px;background:none;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cerrar</button>
+      <button id="exportCsv" style="padding:6px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Exportar CSV</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi">
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Impresiones anuncios</div>
+      <div id="kpiImpressions" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Clicks (acortador)</div>
+      <div id="kpiShortClicks" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Suscripciones Activas</div>
+      <div id="kpiSubs" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Ventas mercado</div>
+      <div id="kpiSales" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Ganancias Estimadas (USD)</div>
+      <div id="kpiRevenue" style="font-weight:700;font-size:18px">$0.00</div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px">
+      <h4 style="margin:0 0 8px 0">Simular eventos</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="simImp" style="padding:8px;border-radius:8px;background:#123;padding:8px 10px;color:#fff">+ Impresión</button>
+        <button id="simShort" style="padding:8px;border-radius:8px;background:#123">+ Click acortador</button>
+        <button id="simSub" style="padding:8px;border-radius:8px;background:#123">+ Suscripción</button>
+        <button id="simSale" style="padding:8px;border-radius:8px;background:#123">+ Venta</button>
+        <button id="resetStats" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Reset</button>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">En producción, estos eventos se actualizan automáticamente (Ad network callbacks, shortener webhooks, Stripe webhooks, etc.). Aquí se simulan localmente.</p>
+    </div>
+
+    <div style="flex:1;min-width:220px">
+      <h4 style="margin:0 0 8px 0">Conexiones reales (placeholders)</h4>
+      <p style="color:var(--muted);font-size:13px;margin-top:0">Para activar pagos reales pega tus keys/IDs donde se indica en el código JS:</p>
+      <ul style="color:var(--muted);font-size:13px">
+        <li>AdSense / Ad network — insertar script en &lt;head&gt; (ID en variable <code>AD_NETWORK_ID</code>).</li>
+        <li>ShrinkMe / Shortener — API key para acortar enlaces (variable <code>SHORTENER_API_KEY</code>).</li>
+        <li>Stripe / PayPal — credenciales para cobros y webhooks (placeholders en la función <code>startSubscription()</code>).</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts: app logic, monetization simulation, lazy-loading, PWA register guidance -->
+<script>
+/* -----------------------------
+   Storage keys & initial demo
+   ----------------------------- */
+const STORAGE_FEED = 'sinfiltro.feed.v4';
+const STORAGE_COMMENTS = 'sinfiltro.comments.v4';
+const STORAGE_LIKES = 'sinfiltro.likes.v4';
+const STORAGE_STATS = 'sinfiltro.stats.v4';
+
+/* Monetization config (change these to real values when ready) */
+const AD_NETWORK_ID = '';        // <- Insert AdSense / Ad Network ID here
+const SHORTENER_API_KEY = '';    // <- Insert shortener API key here (e.g. ShrinkMe)
+const STRIPE_PUBLISHABLE_KEY = ''; // <- Insert Stripe publishable key if using Stripe Checkout
+const PAYPAL_LINK = '';          // <- PayPal.me or PayPal Checkout link
+
+/* Pricing / rates used in simulation (editable) */
+const SIM = {
+  cpm_usd: 2.0,          // $ per 1000 ad impressions
+  short_click_usd: 0.02, // $ per shortener valid click
+  subscription_usd_month: 3.0,
+  marketplace_fee_percent: 10, // platform commission
+};
+
+/* Initial feed demo */
+const DEMO_FEED = [
+  {id:'p1',type:'image',src:'https://picsum.photos/640/420?random=41',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
+  {id:'p2',type:'image',src:'https://picsum.photos/640/420?random=42',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
+  {id:'p3',type:'image',src:'https://picsum.photos/640/420?random=43',title:'Luces en la ciudad',meta:'6.4K • 5 días',likes:45},
+  {id:'p4',type:'image',src:'https://picsum.photos/640/420?random=44',title:'Callejón neon',meta:'210K • 1 semana',likes:340},
+  {id:'p5',type:'image',src:'https://picsum.photos/640/420?random=45',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72},
+  {id:'p6',type:'image',src:'https://picsum.photos/640/420?random=46',title:'Nocturna',meta:'18K • 4 días',likes:180}
+];
+
+function load(key, fallback){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fallback }catch(e){ return fallback } }
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+
+/* Stats structure for monetization tracking (local demo) */
+let stats = load(STORAGE_STATS, {
+  adImpressions: 0,
+  shortClicks: 0,
+  subscriptions: 0,
+  marketplaceSales: 0,
+  donations: 0.0
+});
+
+/* Feed, comments, likes */
+let feed = load(STORAGE_FEED, DEMO_FEED.slice());
+let comments = load(STORAGE_COMMENTS, {});
+let likes = load(STORAGE_LIKES, {});
+
+/* -----------------------------
+   DOM refs
+   ----------------------------- */
+const trendingRow = document.getElementById('trendingRow');
+const recentRow = document.getElementById('recentRow');
+const feedGrid = document.getElementById('feedGrid');
+
+const viewer = document.getElementById('viewer');
+const viewerContent = document.getElementById('viewerContent');
+const drawer = document.getElementById('drawer');
+const commentsList = document.getElementById('commentsList');
+
+const uploadModal = document.getElementById('uploadModal');
+const fileInput = document.getElementById('fileInput');
+
+const dashboardEl = document.getElementById('dashboard');
+
+/* -----------------------------
+   Render functions (UI)
+   ----------------------------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function createThumb(item){
+  const el = document.createElement('div');
+  el.className = 'thumb-card';
+  el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="thumb-info">${escapeHtml(item.title)}<div style="font-size:12px;color:var(--muted);margin-top:6px">${escapeHtml(item.meta)}</div></div>`;
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
+
+function renderRows(){
+  trendingRow.innerHTML=''; recentRow.innerHTML='';
+  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
+  trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
+  const recent = [...feed].slice().reverse().slice(0,8);
+  recent.forEach(i=> recentRow.appendChild(createThumb(i)));
+  lazyObserveImages();
+}
+
+function createFeedItem(item){
+  const el = document.createElement('article');
+  el.className = 'feed-item';
+  el.innerHTML = `<img data-src="${item.sr
