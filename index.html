@@ -1,349 +1,624 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Demo móvil (All-in-one)</title>
-  <meta name="description" content="SinFiltro — comparte fotos y videos sin filtros. Demo móvil PWA: feed, explorar, subir, modo y PWA todo en un archivo.">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Plataforma (Demo completo)</title>
 
-  <!-- Open Graph / Twitter -->
-  <meta property="og:title" content="SinFiltro — Tu espacio sin límites">
-  <meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
-  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect width='100%25' height='100%25' fill='%23040a1a'/%3E%3Ctext x='50%25' y='50%25' font-family='Poppins,Arial' font-size='48' fill='%2300e1ff' font-weight='700' text-anchor='middle'%3ESinFiltro%3C/text%3E%3C/svg%3E">
-  <meta property="og:url" content="." />
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#00e1ff">
+<!-- Meta / Open Graph -->
+<meta name="description" content="SinFiltro — comparte fotos, videos y conecta. Versión demo con monetización simulada, PWA-ready y panel de control.">
+<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
+<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
+<meta property="og:image" content="https://booss-new.github.io/sinfiltro/og-image.png">
+<meta property="og:url" content="https://booss-new.github.io/sinfiltro/">
+<meta name="twitter:card" content="summary_large_image">
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-  <style>
-    /* ========== SinFiltro - All-in-one (mobile-first) ========== */
-    :root{
-      --bg-1:#04040a; --bg-2:#071222;
-      --neon-cyan:#00e1ff; --neon-blue:#00a7ff; --neon-violet:#8a6eff;
-      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-      --radius:14px; --nav-h:78px; --trans:240ms;
-    }
-    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#eaf7ff; -webkit-text-size-adjust:100%}
-    body.theme-light{ --bg-1:#f6f9ff; --bg-2:#eef4ff; --neon-cyan:#008fb3; --neon-blue:#0066aa; --neon-violet:#6b4ed6; --muted:#617183; color:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); }
+<!-- Basic styles: móvil-first, limpio y elegante (YouTube + Instagram mix) -->
+<style>
+:root{
+  --bg-1:#05060a; --bg-2:#0b1220;
+  --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
+  --muted:#9fb0bf; --card:#071226; --radius:12px; --trans:220ms;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
+  radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.03), transparent 8%),
+  linear-gradient(180deg,var(--bg-1),var(--bg-2) 70%);color:#eaf7ff;-webkit-font-smoothing:antialiased;overflow:hidden}
+a{color:inherit}
+button{font:inherit}
 
-    /* Animated background (subtle) */
-    .bg-animated{
-      position:fixed;inset:0;z-index:-6;pointer-events:none;
-      background:
-        radial-gradient(600px 240px at 10% 10%, rgba(138,110,255,0.05), transparent 8%),
-        radial-gradient(800px 320px at 90% 80%, rgba(0,225,255,0.04), transparent 8%);
-      animation: drift 20s linear infinite;
-      filter: blur(10px) saturate(1.1);
-    }
-    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+/* App layout */
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.scroll{overflow-y:auto;padding-bottom:150px;-webkit-overflow-scrolling:touch}
 
-    /* Layout */
-    .app{min-height:100vh;display:flex;flex-direction:column}
-    header{position:sticky;top:0;z-index:50;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
-    .hdr-left,.hdr-center,.hdr-right{display:flex;align-items:center;gap:10px}
-    .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-    .logo {display:flex;align-items:center;gap:10px}
-    .logo img{height:40px;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
-    .brand-text{font-weight:700;color:var(--neon-cyan);letter-spacing:0.6px}
-    .brand-sub{font-size:11px;color:var(--muted)}
+/* Header */
+header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+.brand{display:flex;flex-direction:column;align-items:center;gap:2px}
+.brand .title{color:var(--accent-1);font-weight:700}
+.icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
 
-    .search-wrap{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)}
-    .search-input{padding:8px 10px;border-radius:10px;border:0;background:transparent;color:inherit;outline:none;width:140px}
+/* Search overlay */
+.search-overlay{position:fixed;left:12px;right:12px;top:64px;z-index:65;display:none}
+.search-input{width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
 
-    .main{flex:1;overflow:auto;padding:12px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
+/* Hero */
+.hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+.hero h1{margin:0;color:var(--accent-2);font-size:18px}
+.hero p{margin-top:6px;color:var(--muted);font-size:13px}
 
-    .hero{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
-    .hero h1{margin:0;font-size:18px;color:var(--neon-violet)}
-    .hero p{margin:8px 0 0;color:var(--muted);font-size:13px}
+/* Sections */
+.section{margin-top:16px;padding:0 12px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.section-title{font-weight:700;color:var(--accent-1)}
+.see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-    .section{margin-top:10px}
-    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .section-title{font-weight:700;color:var(--neon-cyan);display:flex;align-items:center;gap:8px}
-    .see-all{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:0}
+/* Horizontal row */
+.h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
+.h-row::-webkit-scrollbar{display:none}
+.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans)}
+.thumb-card:hover{transform:translateY(-6px)}
+.thumb{width:170px;height:100px;object-fit:cover;display:block}
+.thumb-info{padding:8px;color:#eaf7ff;font-weight:600;font-size:13px}
 
-    .h-row{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
-    .h-row::-webkit-scrollbar{display:none}
-    .thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);transition:transform .22s}
-    .thumb img{width:170px;height:100px;object-fit:cover;display:block}
-    .thumb .t-info{padding:8px;color:inherit;font-weight:700}
+/* Feed grid (2 columns mobile) */
+.feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
+.feed-item:hover{transform:translateY(-6px)}
+.feed-item img{width:100%;height:150px;object-fit:cover;display:block}
+.feed-body{padding:10px}
+.feed-title{font-weight:700;color:#eaf7ff;font-size:13px}
+.feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
 
-    .feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);transition:transform .22s}
-    .card img{width:100%;height:160px;object-fit:cover;display:block}
-    .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
-    .title{font-weight:700;font-size:14px}
-    .small{color:var(--muted);font-size:12px}
+/* Floating FAB */
+.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80}
+.fab{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:28px;cursor:pointer}
 
-    /* FAB */
-    .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:56px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
-    .fab{pointer-events:auto;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-violet));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:30px;cursor:pointer}
-    .fab-sub{pointer-events:auto;width:54px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-pink, #ff5fb7),var(--neon-violet));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.4);font-weight:700;opacity:0;transform:translateY(0);transition:all .25s}
-    .fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
+/* Bottom nav */
+.bottom-nav{position:fixed;left:10px;right:10px;bottom:8px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
+.nav-item.active{color:var(--accent-1);transform:translateY(-3px)}
 
-    /* modal/viewer/drawer */
-    .modal{position:fixed;left:12px;right:12px;bottom:110px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:120;display:none}
-    .modal.show{display:block}
-    .viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:flex;align-items:center;justify-content:center;z-index:140;padding:18px;gap:12px;flex-direction:column;display:none}
-    .viewer.show{display:flex}
-    .viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
-    .drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:150;display:none;flex-direction:column}
-    .drawer.show{display:flex}
+/* Viewer & drawer */
+.viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.96));display:flex;align-items:center;justify-content:center;z-index:120;padding:18px;gap:12px;flex-direction:column;display:none}
+.viewer.show{display:flex}
+.viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
+.drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none;flex-direction:column}
+.drawer.show{display:flex}
+.drawer .handle{width:48px;height:6px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
+.comments{overflow:auto;margin-top:8px;flex:1;padding-right:6px}
+.comment{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
+.comment strong{display:block;color:#e7fbff}
 
-    /* bottom nav */
-    .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:76px;border-radius:18px;background:linear-gradient(180deg, rgba(1,5,12,0.95), rgba(6,8,18,0.9));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:70}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-    .nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
+/* Upload modal */
+.upload-modal{position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:110;display:none}
+.upload-modal.show{display:block}
 
-    /* utilities */
-    .muted{color:var(--muted)}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
-    .btn.primary{background:linear-gradient(90deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none}
+/* Dashboard modal (monetization) */
+.dashboard{position:fixed;left:12px;right:12px;top:12px;bottom:12px;border-radius:12px;padding:12px;background:linear-gradient(180deg,#001018,#001424);border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:200;display:none;overflow:auto}
+.dashboard.show{display:block}
+.kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kpi .card{flex:1;min-width:140px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
 
-    @media (max-width:420px){
-      .thumb{flex:0 0 150px}
-      .card img{height:140px}
-      .fab{width:60px;height:60px}
-    }
-  </style>
+/* responsive */
+@media(max-width:420px){
+  .thumb{width:150px;height:88px}
+  .feed-item img{height:120px}
+  .fab{width:60px;height:60px}
+}
+</style>
 </head>
 <body>
-  <div class="bg-animated" aria-hidden="true"></div>
+<!-- App root -->
+<div class="app" role="application" aria-label="SinFiltro">
 
-  <div id="app" class="app theme-dark" role="application" aria-label="SinFiltro app">
-    <!-- HEADER -->
-    <header>
-      <div class="hdr-left">
-        <button id="menuBtn" class="icon-btn" aria-label="Abrir menú">☰</button>
-      </div>
+  <!-- Header -->
+  <header>
+    <div class="left">
+      <div class="icon-btn" id="menuBtn" title="Panel">☰</div>
+    </div>
 
-      <div class="hdr-center">
-        <!-- Reemplaza este src por tu logo IA 3D (PNG/WebP) -->
-        <div class="logo">
-          <img id="logoImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='88'><rect width='100%' height='100%' rx='12' fill='%230b1220'/><text x='50%' y='55%' font-family='Poppins,Inter,Arial' font-size='28' fill='%2300e1ff' font-weight='700' text-anchor='middle'>SinFiltro</text></svg>" alt="SinFiltro logo">
-          <div style="display:flex;flex-direction:column;">
-            <div class="brand-text">SinFiltro</div>
-            <div class="brand-sub">Tu espacio sin límites</div>
-          </div>
-        </div>
-      </div>
+    <div class="brand" aria-hidden="false">
+      <div class="title">SinFiltro</div>
+      <div class="subtitle">Tu espacio sin límites</div>
+    </div>
 
-      <div class="hdr-right">
-        <div class="search-wrap" role="search">
-          <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar contenido">
-        </div>
-        <button id="themeToggle" class="icon-btn" aria-label="Cambiar tema">🌙</button>
-      </div>
-    </header>
+    <div class="right">
+      <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
+    </div>
+  </header>
 
-    <!-- MAIN -->
-    <main id="main" class="main" role="main" tabindex="0">
+  <!-- Search overlay -->
+  <div class="search-overlay" id="searchOverlay">
+    <input id="searchInput" class="search-input" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar">
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="scroll" id="scrollArea" tabindex="0">
+    <main>
       <section class="hero" aria-label="Presentación">
         <h1>Descubre lo auténtico</h1>
-        <p class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
-      <section class="section" aria-labelledby="trendingTitle">
+      <!-- Trending -->
+      <section class="section">
         <div class="section-header">
           <div class="section-title">🔥 En Tendencia</div>
-          <button class="see-all" id="seeTrending">Ver todo</button>
+          <div class="see-all" id="seeTrending">Ver todo</div>
         </div>
         <div class="h-row" id="trendingRow" aria-live="polite"></div>
       </section>
 
-      <section class="section" aria-labelledby="recentTitle">
+      <!-- Recent -->
+      <section class="section">
         <div class="section-header">
-          <div class="section-title">⏱️ Vistos recientemente</div>
-          <button class="see-all" id="seeRecent">Ver todo</button>
+          <div class="section-title">⏮️ Vistos recientemente</div>
+          <div class="see-all" id="seeRecent">Ver todo</div>
         </div>
         <div class="h-row" id="recentRow"></div>
       </section>
 
-      <section class="section" aria-labelledby="recoTitle">
+      <!-- Feed -->
+      <section class="section">
         <div class="section-header">
           <div class="section-title">🎯 Recomendados</div>
-          <button class="see-all" id="seeReco">Ver todo</button>
+          <div class="see-all" id="seeReco">Ver todo</div>
         </div>
-        <div class="feed" id="feedGrid" aria-live="polite"></div>
+        <div class="feed" id="feedGrid"></div>
       </section>
     </main>
-
-    <!-- FAB central -->
-    <div class="fab-wrap" id="fabWrap" aria-hidden="false">
-      <div id="fabRow" class="fab-row">
-        <button id="fabImg" class="fab-sub" title="Imagen" aria-label="Subir imagen">🖼️</button>
-        <button id="fabShort" class="fab-sub" title="Short" aria-label="Crear short">🎬</button>
-        <button id="fabUpload" class="fab-sub" title="Subir" aria-label="Subir">📤</button>
-      </div>
-      <button id="fabMain" class="fab" aria-label="Crear">＋</button>
-    </div>
-
-    <!-- Upload modal -->
-    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true" aria-modal="true" aria-labelledby="uploadTitle">
-      <h3 id="uploadTitle">Subir contenido (demo)</h3>
-      <p class="muted">Selecciona una imagen o video. Se guardará localmente (demo).</p>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-        <input type="file" id="fileInput" accept="image/*,video/*" aria-label="Seleccionar archivo">
-        <div style="margin-left:auto;display:flex;gap:8px">
-          <button id="doUpload" class="btn primary">Subir</button>
-          <button id="closeUpload" class="btn">Cerrar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Viewer -->
-    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-      <div class="content viewer-content" id="viewerContent"></div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button id="closeViewer" class="btn">Cerrar</button>
-      </div>
-    </div>
-
-    <!-- Drawer -->
-    <div id="drawer" class="drawer" role="dialog" aria-hidden="true">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong style="color:var(--neon-cyan)">Perfil & Ajustes</strong>
-        <button id="closeDrawer" class="icon-btn" aria-label="Cerrar">✕</button>
-      </div>
-      <div style="margin-top:10px;color:var(--muted);font-size:13px">
-        <p><strong>Usuario demo</strong></p>
-        <p>Panel de opciones y previsualización (demo).</p>
-        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:8px 0">
-        <button id="analyticsBtn" class="btn">Panel de monetización (demo)</button>
-      </div>
-    </div>
-
-    <!-- Bottom nav -->
-    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-      <div class="nav-item" data-tab="videos" id="navVideos">🎬<div style="font-size:11px">Videos</div></div>
-      <div style="width:80px"></div>
-      <div class="nav-item" data-tab="community" id="navCommunity">🧑‍🤝‍🧑<div style="font-size:11px">Comunidad</div></div>
-      <div class="nav-item" data-tab="profile" id="navProfile">⚙️<div style="font-size:11px">Perfil</div></div>
-    </nav>
   </div>
 
+  <!-- FAB -->
+  <div class="fab-wrap" aria-hidden="false">
+    <button class="fab" id="fabBtn" aria-label="Crear / Subir">＋</button>
+  </div>
+
+  <!-- Upload modal -->
+  <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <strong>Subir contenido (demo)</strong>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+      <input type="file" id="fileInput" accept="image/*,video/*">
+      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
+    </div>
+    <div style="margin-top:10px;font-size:13px;color:var(--muted)">Opciones de monetización demo disponibles en el panel.</div>
+  </div>
+
+  <!-- Viewer -->
+  <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
+    <div class="content" id="viewerContent"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button id="openCommentsBtn" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">💬 Comentarios</button>
+      <button id="closeViewer" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Comments drawer -->
+  <div class="drawer" id="drawer" aria-hidden="true">
+    <div class="handle" aria-hidden="true"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong id="drawerTitle">Comentarios</strong>
+      <button id="closeDrawer" style="background:none;border:none;color:var(--muted)">Cerrar</button>
+    </div>
+    <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf7ff" />
+      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#001;font-weight:700">Enviar</button>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+    <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+    <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
+    <div style="width:68px"></div>
+    <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Me gusta</div></div>
+    <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
+  </nav>
+</div>
+
+<!-- Dashboard (monetization + analytics) -->
+<div class="dashboard" id="dashboard" role="dialog" aria-hidden="true">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <strong>Dashboard — Monetización & Analytics (Demo)</strong>
+    <div>
+      <button id="closeDashboard" style="margin-right:8px;padding:6px 10px;border-radius:8px;background:none;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cerrar</button>
+      <button id="exportCsv" style="padding:6px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Exportar CSV</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi">
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Impresiones anuncios</div>
+      <div id="kpiImpressions" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Clicks (acortador)</div>
+      <div id="kpiShortClicks" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Suscripciones Activas</div>
+      <div id="kpiSubs" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Ventas mercado</div>
+      <div id="kpiSales" style="font-weight:700;font-size:18px">0</div>
+    </div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--muted)">Ganancias Estimadas (USD)</div>
+      <div id="kpiRevenue" style="font-weight:700;font-size:18px">$0.00</div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px">
+      <h4 style="margin:0 0 8px 0">Simular eventos</h4>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="simImp" style="padding:8px;border-radius:8px;background:#123;padding:8px 10px;color:#fff">+ Impresión</button>
+        <button id="simShort" style="padding:8px;border-radius:8px;background:#123">+ Click acortador</button>
+        <button id="simSub" style="padding:8px;border-radius:8px;background:#123">+ Suscripción</button>
+        <button id="simSale" style="padding:8px;border-radius:8px;background:#123">+ Venta</button>
+        <button id="resetStats" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Reset</button>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">En producción, estos eventos se actualizan automáticamente (Ad network callbacks, shortener webhooks, Stripe webhooks, etc.). Aquí se simulan localmente.</p>
+    </div>
+
+    <div style="flex:1;min-width:220px">
+      <h4 style="margin:0 0 8px 0">Conexiones reales (placeholders)</h4>
+      <p style="color:var(--muted);font-size:13px;margin-top:0">Para activar pagos reales pega tus keys/IDs donde se indica en el código JS:</p>
+      <ul style="color:var(--muted);font-size:13px">
+        <li>AdSense / Ad network — insertar script en &lt;head&gt; (ID en variable <code>AD_NETWORK_ID</code>).</li>
+        <li>ShrinkMe / Shortener — API key para acortar enlaces (variable <code>SHORTENER_API_KEY</code>).</li>
+        <li>Stripe / PayPal — credenciales para cobros y webhooks (placeholders en la función <code>startSubscription()</code>).</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts: app logic, monetization simulation, lazy-loading, PWA register guidance -->
 <script>
-/* ========== SinFiltro inline JS (All-in-one) ========== */
+/* -----------------------------
+   Storage keys & initial demo
+   ----------------------------- */
+const STORAGE_FEED = 'sinfiltro.feed.v4';
+const STORAGE_COMMENTS = 'sinfiltro.comments.v4';
+const STORAGE_LIKES = 'sinfiltro.likes.v4';
+const STORAGE_STATS = 'sinfiltro.stats.v4';
 
-/* Storage keys */
-const STORAGE_THEME = 'sinfiltro.theme.all';
-const STORAGE_FEED = 'sinfiltro.feed.all';
+/* Monetization config (change these to real values when ready) */
+const AD_NETWORK_ID = '';        // <- Insert AdSense / Ad Network ID here
+const SHORTENER_API_KEY = '';    // <- Insert shortener API key here (e.g. ShrinkMe)
+const STRIPE_PUBLISHABLE_KEY = ''; // <- Insert Stripe publishable key if using Stripe Checkout
+const PAYPAL_LINK = '';          // <- PayPal.me or PayPal Checkout link
 
-/* Small helpers */
-const qs = s => document.querySelector(s);
-const qsa = s => Array.from(document.querySelectorAll(s));
-const randInt = n => Math.floor(Math.random()*n);
+/* Pricing / rates used in simulation (editable) */
+const SIM = {
+  cpm_usd: 2.0,          // $ per 1000 ad impressions
+  short_click_usd: 0.02, // $ per shortener valid click
+  subscription_usd_month: 3.0,
+  marketplace_fee_percent: 10, // platform commission
+};
 
-/* Create manifest dynamically (embedded) */
-(function createManifestBlob(){
-  const manifest = {
-    name: "SinFiltro",
-    short_name: "SinFiltro",
-    start_url: ".",
-    display: "standalone",
-    background_color: "#04040a",
-    theme_color: "#00e1ff",
-    icons: [
-      {src: "icons/icon-192.png", sizes:"192x192", type:"image/png"},
-      {src: "icons/icon-512.png", sizes:"512x512", type:"image/png"}
-    ]
-  };
-  try {
-    const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = url;
-    document.head.appendChild(link);
-  } catch(e){ console.warn('Manifest blob fail', e); }
-})();
+/* Initial feed demo */
+const DEMO_FEED = [
+  {id:'p1',type:'image',src:'https://picsum.photos/640/420?random=41',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
+  {id:'p2',type:'image',src:'https://picsum.photos/640/420?random=42',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
+  {id:'p3',type:'image',src:'https://picsum.photos/640/420?random=43',title:'Luces en la ciudad',meta:'6.4K • 5 días',likes:45},
+  {id:'p4',type:'image',src:'https://picsum.photos/640/420?random=44',title:'Callejón neon',meta:'210K • 1 semana',likes:340},
+  {id:'p5',type:'image',src:'https://picsum.photos/640/420?random=45',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72},
+  {id:'p6',type:'image',src:'https://picsum.photos/640/420?random=46',title:'Nocturna',meta:'18K • 4 días',likes:180}
+];
 
-/* Create & register simple service worker from blob (embedded) */
-(function registerSWBlob(){
-  if('serviceWorker' in navigator){
-    const sw = `
-      const CACHE = 'sinfiltro-shell-v1';
-      const URLS = ['.', location.pathname, 'index.html'];
-      self.addEventListener('install', e => {
-        e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)).catch(()=>{}));
-        self.skipWaiting();
-      });
-      self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
-      self.addEventListener('fetch', e => {
-        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)).catch(()=> caches.match('index.html')));
-      });
-    `;
-    try {
-      const blob = new Blob([sw], {type:'application/javascript'});
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW reg failed', err));
-    } catch(e){ console.warn('SW blob fail', e); }
+function load(key, fallback){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fallback }catch(e){ return fallback } }
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+
+/* Stats structure for monetization tracking (local demo) */
+let stats = load(STORAGE_STATS, {
+  adImpressions: 0,
+  shortClicks: 0,
+  subscriptions: 0,
+  marketplaceSales: 0,
+  donations: 0.0
+});
+
+/* Feed, comments, likes */
+let feed = load(STORAGE_FEED, DEMO_FEED.slice());
+let comments = load(STORAGE_COMMENTS, {});
+let likes = load(STORAGE_LIKES, {});
+
+/* -----------------------------
+   DOM refs
+   ----------------------------- */
+const trendingRow = document.getElementById('trendingRow');
+const recentRow = document.getElementById('recentRow');
+const feedGrid = document.getElementById('feedGrid');
+
+const viewer = document.getElementById('viewer');
+const viewerContent = document.getElementById('viewerContent');
+const drawer = document.getElementById('drawer');
+const commentsList = document.getElementById('commentsList');
+
+const uploadModal = document.getElementById('uploadModal');
+const fileInput = document.getElementById('fileInput');
+
+const dashboardEl = document.getElementById('dashboard');
+
+/* -----------------------------
+   Render functions (UI)
+   ----------------------------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function createThumb(item){
+  const el = document.createElement('div');
+  el.className = 'thumb-card';
+  el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="thumb-info">${escapeHtml(item.title)}<div style="font-size:12px;color:var(--muted);margin-top:6px">${escapeHtml(item.meta)}</div></div>`;
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
+
+function renderRows(){
+  trendingRow.innerHTML=''; recentRow.innerHTML='';
+  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
+  trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
+  const recent = [...feed].slice().reverse().slice(0,8);
+  recent.forEach(i=> recentRow.appendChild(createThumb(i)));
+  lazyObserveImages();
+}
+
+function createFeedItem(item){
+  const el = document.createElement('article');
+  el.className = 'feed-item';
+  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
+
+function renderFeed(){ feedGrid.innerHTML=''; feed.forEach(i=> feedGrid.appendChild(createFeedItem(i))); lazyObserveImages(); }
+
+/* -----------------------------
+   Viewer & Comments
+   ----------------------------- */
+let currentOpen = null;
+function openViewer(id){
+  const item = feed.find(f=>f.id===id); if(!item) return;
+  currentOpen = id;
+  viewerContent.innerHTML = '';
+  if(item.type==='video'){
+    const v = document.createElement('video'); v.src=item.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh';
+    viewerContent.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src=item.src; img.alt=item.title; viewerContent.appendChild(img);
   }
-})();
+  // Ad impression: count when user opens viewer (simulate ad loaded)
+  recordAdImpression(1);
+  viewer.classList.add('show');
+}
+document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
+document.getElementById('openCommentsBtn').addEventListener('click', ()=> { viewer.classList.remove('show'); openComments(currentOpen, feed.find(f=>f.id===currentOpen).title); });
 
-/* Theme initialization */
-let theme = localStorage.getItem(STORAGE_THEME) || 'dark';
-applyTheme(theme);
+function openComments(id, title){
+  currentOpen = id;
+  document.getElementById('drawerTitle').textContent = `Comentarios — ${title}`;
+  commentsList.innerHTML = '';
+  const arr = comments[id] || [];
+  arr.forEach(c=>{
+    const d = document.createElement('div'); d.className='comment';
+    d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escapeHtml(c.text)}</div>`;
+    commentsList.appendChild(d);
+  });
+  drawer.classList.add('show');
+}
+document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('show'));
+document.getElementById('postComment').addEventListener('click', ()=>{
+  const txt = document.getElementById('commentInput').value.trim();
+  if(!txt || !currentOpen) return;
+  comments[currentOpen] = comments[currentOpen] || [];
+  comments[currentOpen].push({text:txt,ts:Date.now()});
+  save(STORAGE_COMMENTS, comments);
+  document.getElementById('commentInput').value='';
+  openComments(currentOpen, feed.find(f=>f.id===currentOpen).title);
+  renderFeed();
+});
 
-/* Demo feed generation or restore */
-let feed = JSON.parse(localStorage.getItem(STORAGE_FEED) || 'null');
-if(!feed){
-  feed = Array.from({length:10}).map((_,i)=>({
-    id: 'd'+i,
-    type: 'image',
-    src: `https://source.unsplash.com/640x420/?cyberpunk,neon,city&sig=${Date.now()%1000 + i}`,
-    title: ['Luces urbanas','Nocturna','Arte digital','Retrato neon','Pixel night','Modo gamer','Atardecer urbano','Clip creativo','Callejón neon','Vibras'][i%10],
-    meta: `${(randInt(900)+1)}K • ${[1,2,3,4,6,8][i%6]}d`,
-    likes: randInt(7000)
-  }));
-  localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+/* -----------------------------
+   Likes, share & shortener
+   ----------------------------- */
+function toggleLike(id){
+  likes = load(STORAGE_LIKES, likes);
+  const liked = !!likes[id];
+  if(liked) delete likes[id]; else likes[id]=true;
+  save(STORAGE_LIKES, likes);
+  // update feed likes count (local demo)
+  const idx = feed.findIndex(f=>f.id===id);
+  if(idx>=0){ feed[idx].likes = feed[idx].likes || 0; feed[idx].likes = liked ? Math.max(0, feed[idx].likes-1): feed[idx].likes+1; save(STORAGE_FEED, feed); }
+  renderFeed(); renderRows();
 }
 
-/* DOM refs */
-const trendingRow = qs('#trendingRow');
-const recentRow = qs('#recentRow');
-const feedGrid = qs('#feedGrid');
-const main = qs('#main');
-const fabMain = qs('#fabMain');
-const fabWrap = qs('#fabWrap');
-const searchInput = qs('#searchInput');
-const themeToggle = qs('#themeToggle');
-const menuBtn = qs('#menuBtn');
-const drawer = qs('#drawer');
-
-/* Render helpers */
-function esc(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function makeThumb(item){
-  const el = document.createElement('div'); el.className = 'thumb';
-  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="t-info">${esc(item.title)}</div>`;
-  el.addEventListener('click', ()=> openViewer(item));
-  return el;
-}
-function makeCard(item){
-  const el = document.createElement('article'); el.className = 'card';
-  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="meta"><div><div class="title">${esc(item.title)}</div><div class="small">${esc(item.meta)}</div></div><div style="display:flex;gap:8px;align-items:center"><button class="like" data-id="${item.id}" aria-label="Me gusta">❤ <span class="count">${item.likes}</span></button><button class="share" data-id="${item.id}" aria-label="Compartir">🔗</button></div></div>`;
-  el.querySelector('.like').addEventListener('click',(e)=>{ e.stopPropagation(); likeItem(item.id, el); });
-  el.querySelector('.share').addEventListener('click',(e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item));
-  return el;
+/* Share flow:
+   - Attempt to use navigator.share (native)
+   - Fallback: create short link simulation (counts towards shortClicks and revenue)
+   - If you integrate a real shortener API, replace shortenLink() implementation */
+async function shareItem(item){
+  const shareText = `${item.title} — Vía SinFiltro`;
+  const urlToShare = item.src; // In production, use a canonical post URL
+  if(navigator.share){
+    try{ await navigator.share({title:item.title,text:shareText,url:urlToShare});}
+    catch(e){}
+    return;
+  }
+  // fallback: shorten link (simulated)
+  const short = await shortenLinkSim(urlToShare);
+  // open the short link in new tab
+  window.open(short, '_blank');
 }
 
-/* Render feed & rows */
-function renderAll(){
-  trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
-  const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0));
-  sorted.slice(0,8).forEach(i=> trendingRow.appendChild(makeThumb(i)));
-  feed.slice(0,8).forEach(i=> recentRow.appendChild(makeThumb(i)));
-  feed.forEach(i=> feedGrid.appendChild(makeCard(i)));
-  lazyLoadImages();
+/* Simulated shortener (replace with real API call when ready).
+   Increments shortClicks when the shortened link is "opened".
+   We simulate that each open generates revenue. */
+function shortenLinkSim(url){
+  // Create a fake short URL and count a click when user opens.
+  const id = Math.random().toString(36).slice(2,8);
+  const shortUrl = `${location.origin}/s/${id}`; // demo route (not actually resolving)
+  // Simulate: register short click when user opens (we can't detect external opens reliably without backend)
+  // For demo: increase shortClicks now (as if user clicked the shortener landing)
+  stats.shortClicks += 1;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+  alert('Se ha generado un enlace acortado de demostración. (Simulación) — ' + shortUrl);
+  return Promise.resolve(shortUrl);
 }
 
-/* Lazy-load images with IntersectionObserver */
+/* -----------------------------
+   Monetization events & dashboard
+   ----------------------------- */
+function recordAdImpression(n=1){
+  stats.adImpressions += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordShortClick(n=1){
+  stats.shortClicks += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordSubscription(n=1){
+  stats.subscriptions += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordSale(n=1, amount=0){
+  stats.marketplaceSales += n;
+  stats.donations += amount; // store sale revenue under donations for demo
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+
+/* Compute estimated revenue from stats */
+function computeRevenue(){
+  const fromAds = (stats.adImpressions/1000) * SIM.cpm_usd;
+  const fromShort = stats.shortClicks * SIM.short_click_usd;
+  const fromSubs = stats.subscriptions * SIM.subscription_usd_month;
+  const fromSales = stats.marketplaceSales * 5.0 * (SIM.marketplace_fee_percent/100); // assume 5$ avg sale * fee
+  const total = fromAds + fromShort + fromSubs + fromSales + (stats.donations||0);
+  return {fromAds,fromShort,fromSubs,fromSales,total};
+}
+
+/* Update dashboard UI */
+function updateDashboardKPIs(){
+  document.getElementById('kpiImpressions').textContent = stats.adImpressions.toLocaleString();
+  document.getElementById('kpiShortClicks').textContent = stats.shortClicks.toLocaleString();
+  document.getElementById('kpiSubs').textContent = stats.subscriptions.toLocaleString();
+  document.getElementById('kpiSales').textContent = stats.marketplaceSales.toLocaleString();
+  const rev = computeRevenue();
+  document.getElementById('kpiRevenue').textContent = '$' + rev.total.toFixed(2);
+}
+
+/* Dashboard actions (simulate events) */
+document.getElementById('simImp').addEventListener('click', ()=>{ recordAdImpression(1); });
+document.getElementById('simShort').addEventListener('click', ()=>{ recordShortClick(1); });
+document.getElementById('simSub').addEventListener('click', ()=>{ recordSubscription(1); alert('Simulación: usuario suscrito (demo).'); });
+document.getElementById('simSale').addEventListener('click', ()=>{ recordSale(1, 5.0); alert('Simulación: venta procesada (demo).'); });
+document.getElementById('resetStats').addEventListener('click', ()=>{ if(confirm('Resetear estadísticas demo?')){ stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS,stats); updateDashboardKPIs(); }});
+document.getElementById('exportCsv').addEventListener('click', exportStatsCsv);
+
+/* Open / close dashboard */
+document.getElementById('menuBtn').addEventListener('click', ()=>{ dashboardEl.classList.add('show'); updateDashboardKPIs(); });
+document.getElementById('closeDashboard').addEventListener('click', ()=> dashboardEl.classList.remove('show'));
+
+/* Export CSV */
+function exportStatsCsv(){
+  const rev = computeRevenue();
+  const rows = [
+    ['Metric','Value'],
+    ['Ad Impressions', stats.adImpressions],
+    ['Short Clicks', stats.shortClicks],
+    ['Subscriptions', stats.subscriptions],
+    ['Marketplace Sales', stats.marketplaceSales],
+    ['Donations', stats.donations],
+    ['Estimated Revenue (USD)', rev.total.toFixed(2)]
+  ];
+  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'sinfiltro_stats.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+/* -----------------------------
+   Upload (demo local)
+   ----------------------------- */
+document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
+document.getElementById('uploadBtn').addEventListener('click', doUpload);
+function toggleUpload(){ uploadModal.classList.toggle('show'); fileInput.value=''; }
+function doUpload(){
+  const f = fileInput.files[0]; if(!f){ alert('Selecciona un archivo'); return; }
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const url = e.target.result;
+    const newItem = {id: crypto.randomUUID(), type: f.type.startsWith('video')?'video':'image', src: url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0};
+    feed.unshift(newItem);
+    save(STORAGE_FEED, feed);
+    renderFeed(); renderRows();
+    uploadModal.classList.remove('show');
+    alert('Contenido subido (demo local). Si quieres monetizar subidas reales, conecta backend + storage (Firebase/Supabase).');
+    // optional: record an impression (new content surfaced)
+    recordAdImpression(2);
+  };
+  reader.readAsDataURL(f);
+}
+
+/* -----------------------------
+   Search overlay
+   ----------------------------- */
+const searchBtn = document.getElementById('searchBtn');
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput = document.getElementById('searchInput');
+searchBtn.addEventListener('click', ()=> { searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block'; if(searchOverlay.style.display==='block') setTimeout(()=>searchInput.focus(),80); });
+searchInput.addEventListener('input', (e)=> filterFeed(e.target.value));
+function filterFeed(q){
+  q = (q||'').toLowerCase().trim();
+  if(!q){ renderFeed(); renderRows(); return; }
+  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q));
+  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
+  trendingRow.innerHTML=''; recentRow.innerHTML='';
+  lazyObserveImages();
+}
+
+/* -----------------------------
+   Navigation (UI only)
+   ----------------------------- */
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.getAttribute('data-tab');
+    if(tab==='home'){ document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'}); renderFeed(); renderRows(); }
+    else if(tab==='explore'){ document.getElementById('scrollArea').scrollTo({top:document.getElementById('trendingRow').offsetTop-40,behavior:'smooth'}); }
+    else if(tab==='likes'){ showLiked(); }
+    else if(tab==='profile'){ alert('Perfil demo — conectar backend'); }
+  });
+});
+function showLiked(){
+  const likedIds = Object.keys(load(STORAGE_LIKES, {}));
+  const liked = feed.filter(f=> likedIds.includes(f.id));
+  feedGrid.innerHTML=''; liked.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
+}
+
+/* -----------------------------
+   Lazy loading images (IntersectionObserver)
+   ----------------------------- */
 let imgObserver = null;
-function lazyLoadImages(){
-  const imgs = qsa('img[data-src]');
+function lazyObserveImages(){
+  const imgs = document.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
@@ -352,149 +627,70 @@ function lazyLoadImages(){
             const img = entry.target;
             img.src = img.dataset.src;
             img.removeAttribute('data-src');
-            obs.unobserve(img);
+            imgObserver.unobserve(img);
+            // when an image is loaded and visible, count as an ad impression zone (simulate)
+            recordAdImpression(1);
           }
         });
-      }, {rootMargin:'200px', threshold:0.05});
+      }, {rootMargin:'200px', threshold:0.1});
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+    // fallback: load all
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); recordAdImpression(1); });
   }
 }
 
-/* Viewer (modal) */
-function openViewer(item){
-  const viewer = qs('#viewer'); const content = qs('#viewerContent');
-  content.innerHTML = '';
-  if(item.type === 'video'){
-    const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxHeight='70vh'; content.appendChild(v);
-  } else {
-    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; content.appendChild(img);
+/* -----------------------------
+   Init render
+   ----------------------------- */
+function init(){
+  renderFeed();
+  renderRows();
+  updateDashboardKPIs();
+  // Register service worker (optional). Create sw.js in your repo for production.
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sinfiltro/sw.js').catch(e=> console.log('Service worker not registered (add /sinfiltro/sw.js to enable):',e));
   }
-  viewer.classList.add('show'); viewer.style.display = 'flex';
-}
-qs('#closeViewer').addEventListener('click', ()=> { qs('#viewer').style.display = 'none'; });
-
-/* Like & share */
-function likeItem(id, el){
-  const idx = feed.findIndex(f=> f.id === id); if(idx < 0) return;
-  feed[idx].likes = (feed[idx].likes || 0) + 1;
-  const cnt = el.querySelector('.count'); if(cnt) cnt.textContent = feed[idx].likes;
-  localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
-  const btn = el.querySelector('.like'); if(btn) btn.animate([{transform:'scale(.92)'},{transform:'scale(1.06)'},{transform:'scale(1)'}], {duration:260, easing:'ease-out'});
-}
-function shareItem(item){
-  if(navigator.share){
-    navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{});
-  } else if(navigator.clipboard){
-    navigator.clipboard.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert(item.src));
-  } else alert(item.src);
-}
-
-/* FAB */
-let fabOpen = false;
-fabMain.addEventListener('click', ()=>{
-  fabOpen = !fabOpen;
-  if(fabOpen){ fabWrap.classList.add('fab-open'); qsa('.fab-sub').forEach((b,i)=>{ b.style.transform = `translateY(-${(i+1)*52}px)`; b.style.opacity = '1'; }); }
-  else { fabWrap.classList.remove('fab-open'); qsa('.fab-sub').forEach(b=>{ b.style.transform = 'translateY(0)'; b.style.opacity = '0'; }); }
-});
-qs('#fabUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
-qs('#fabImg').addEventListener('click', ()=> toggleModal('#uploadModal'));
-qs('#fabShort').addEventListener('click', ()=> alert('Crear short (demo)'));
-
-/* Upload (demo local) */
-qs('#closeUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
-qs('#doUpload').addEventListener('click', ()=>{
-  const file = qs('#fileInput').files?.[0]; if(!file){ alert('Selecciona un archivo'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    const url = e.target.result;
-    const it = { id: 'u' + Date.now(), type: file.type.startsWith('video') ? 'video' : 'image', src: url, title: file.name || 'Nuevo', meta: 'Ahora', likes: 0 };
-    feed.unshift(it);
-    localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
-    renderAll();
-    toggleModal('#uploadModal');
-    alert('Contenido subido (demo local).');
-  };
-  reader.readAsDataURL(file);
-});
-
-/* Toggle modal */
-function toggleModal(sel){
-  const el = document.querySelector(sel); if(!el) return;
-  const showing = getComputedStyle(el).display !== 'none';
-  el.style.display = showing ? 'none' : 'block';
-}
-
-/* Search */
-searchInput.addEventListener('input', (e)=>{
-  const q = (e.target.value||'').toLowerCase().trim();
-  if(!q){ renderAll(); return; }
-  const filtered = feed.filter(it => it.title.toLowerCase().includes(q) || it.meta.toLowerCase().includes(q));
-  feedGrid.innerHTML = '';
-  filtered.forEach(i=> feedGrid.appendChild(makeCard(i)));
-  lazyLoadImages();
-});
-
-/* Theme toggle */
-themeToggle.addEventListener('click', ()=>{
-  theme = (theme === 'dark') ? 'light' : 'dark';
-  applyTheme(theme);
-  localStorage.setItem(STORAGE_THEME, theme);
-});
-function applyTheme(t){
-  const b = document.body;
-  if(t === 'light'){ b.classList.add('theme-light'); themeToggle.textContent = '☀️'; } else { b.classList.remove('theme-light'); themeToggle.textContent = '🌙'; }
-}
-
-/* Drawer/menu */
-menuBtn.addEventListener('click', ()=> { drawer.style.display = 'block'; drawer.classList.add('show'); });
-qs('#closeDrawer')?.addEventListener('click', ()=> { drawer.style.display = 'none'; drawer.classList.remove('show'); });
-
-/* Bottom nav */
-qsa('.nav-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    qsa('.nav-item').forEach(n=> n.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.getAttribute('data-tab');
-    navigateTo(tab);
-  });
-});
-function navigateTo(tab){
-  if(tab === 'home'){ main.scrollTo({top:0,behavior:'smooth'}); renderAll(); }
-  else if(tab === 'videos'){ feedGrid.innerHTML=''; feed.filter((f,i)=> i%2===0).forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages(); }
-  else if(tab === 'community'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)">Comunidad — demo</div>`; }
-  else if(tab === 'profile'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)"><strong>Perfil demo</strong><p>Publicaciones: ${feed.length}</p></div>`; }
-}
-
-/* Infinite scroll simulation */
-let loading = false;
-main.addEventListener('scroll', ()=>{
-  const nearBottom = main.scrollTop + main.clientHeight > main.scrollHeight - 420;
-  if(nearBottom && !loading){
-    loading = true;
-    setTimeout(()=> {
-      const more = Array.from({length:6}).map((_,i)=>({
-        id:'m'+Date.now()+i, type:'image',
-        src:`https://source.unsplash.com/640x420/?neon,night,city&sig=${Date.now()%100000 + i}`,
-        title:['Nuevo visual','Clip urbano','Arte neon','Retrato'][i%4], meta:`${randInt(90)+1}K • ${randInt(10)+1}d`, likes:randInt(500)
-      }));
-      feed = feed.concat(more); localStorage.setItem(STORAGE_FEED, JSON.stringify(feed)); renderAll(); loading = false;
-    }, 900);
+  // Respect reduced motion
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.querySelectorAll('*').forEach(n=> n.style.animation='none');
   }
-});
+}
+init();
 
-/* Init */
-renderAll();
-applyTheme(theme);
+/* -----------------------------
+   Helper: createFeedItem used in filter
+   ----------------------------- */
+function createFeedItem(item){
+  const el = document.createElement('article');
+  el.className = 'feed-item';
+  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
 
-/* Accessibility: ESC to close overlays */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){ qs('#viewer').style.display = 'none'; drawer.style.display = 'none'; qs('#uploadModal').style.display = 'none'; }
-});
+/* -----------------------------
+   Notes for real monetization integration
+   -----------------------------
+   1) Ads: Insert real ad provider script (AdSense) into the <head> and implement ad slots
+      where you want them. Use the provider documentation and your account ID (AD_NETWORK_ID).
+   2) Shortener: Replace shortenLinkSim() with actual API call to your shortener service.
+      Use webhooks to count real clicks server-side for accuracy.
+   3) Subscriptions/payments: Integrate Stripe Checkout or PayPal Buttons.
+      Use server-side endpoints (or Stripe Checkout Sessions) to handle payments securely.
+   4) Marketplace: Use cloud storage (Firebase Storage / Supabase Storage) and a backend to
+      process payments and transfer funds (Stripe Connect to send payouts to sellers).
+   5) Dashboard: Instead of localStorage, aggregate real metrics from providers (AdSense API,
+      shortener API, Stripe webhooks) into your server and show totals in the dashboard.
+   6) PWA: Add /sinfiltro/manifest.json and /sinfiltro/sw.js files to your repo for installability.
+*/
+
+/* End of script */
 </script>
 </body>
 </html>
 ```0
-
