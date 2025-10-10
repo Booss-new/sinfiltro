@@ -1,90 +1,123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Plataforma (Demo completo)</title>
+<title>SinFiltro — Inicio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<meta name="description" content="SinFiltro — tu espacio sin límites. Comparte fotos y videos, comenta, da like y descubre tendencias.">
 
-<!-- Meta / Open Graph -->
-<meta name="description" content="SinFiltro — comparte fotos, videos y conecta. Versión demo con monetización simulada, PWA-ready y panel de control.">
-<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
-<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
-<meta property="og:image" content="https://booss-new.github.io/sinfiltro/og-image.png">
-<meta property="og:url" content="https://booss-new.github.io/sinfiltro/">
-<meta name="twitter:card" content="summary_large_image">
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-<!-- Basic styles: móvil-first, limpio y elegante (YouTube + Instagram mix) -->
 <style>
 :root{
-  --bg-1:#05060a; --bg-2:#0b1220;
-  --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
-  --muted:#9fb0bf; --card:#071226; --radius:12px; --trans:220ms;
+  --bg-1:#04060a; --bg-2:#071028;
+  --card:#071226; --muted:#9fb0bf;
+  --accent-cyan:#00d1ff; --accent-violet:#8a6eff; --accent-pink:#ff5fb7;
+  --glass:rgba(255,255,255,0.03);
+  --radius:14px; --trans:260ms;
+  --shadow-lg: 0 18px 60px rgba(0,0,0,0.6);
+  --nav-height:76px;
 }
+/* reset */
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
-  radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.03), transparent 8%),
-  linear-gradient(180deg,var(--bg-1),var(--bg-2) 70%);color:#eaf7ff;-webkit-font-smoothing:antialiased;overflow:hidden}
-a{color:inherit}
-button{font:inherit}
+  radial-gradient(500px 200px at 10% 10%, rgba(0,200,255,0.02), transparent 6%),
+  linear-gradient(180deg,var(--bg-1),var(--bg-2) 75%);color:#eaf7ff;-webkit-font-smoothing:antialiased;overflow:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
 
-/* App layout */
+/* App container */
 .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.scroll{overflow-y:auto;padding-bottom:150px;-webkit-overflow-scrolling:touch}
 
-/* Header */
-header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+/* Header with 3D logo */
+header{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,0.02)
+}
+.header-left{display:flex;gap:10px;align-items:center}
+.icon-btn{width:46px;height:46px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
 .brand{display:flex;flex-direction:column;align-items:center;gap:2px}
-.brand .title{color:var(--accent-1);font-weight:700}
-.icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+.brand .logo{
+  font-family:'Poppins',sans-serif;font-weight:700;color:transparent;
+  -webkit-text-stroke:1px rgba(255,255,255,0.06);
+  font-size:18px;letter-spacing:0.6px;
+  background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));
+  -webkit-background-clip:text;background-clip:text;
+  transform-style:preserve-3d; perspective:800px;
+  text-shadow:0 6px 30px rgba(0,220,255,0.06);
+  animation: logoPop 900ms cubic-bezier(.2,.9,.2,1);
+  display:flex;align-items:center;gap:6px
+}
+.brand .tag{font-size:11px;color:var(--muted);margin-top:2px}
 
-/* Search overlay */
-.search-overlay{position:fixed;left:12px;right:12px;top:64px;z-index:65;display:none}
+/* logo pop */
+@keyframes logoPop{
+  0%{transform:translateY(-12px) rotateX(25deg) scale(.92);opacity:0}
+  60%{opacity:1}
+  100%{transform:translateY(0) rotateX(0) scale(1)}
+}
+
+/* search overlay */
+.search-overlay{position:fixed;left:12px;right:12px;top:68px;z-index:60;display:none}
 .search-input{width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
 
-/* Hero */
-.hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-.hero h1{margin:0;color:var(--accent-2);font-size:18px}
-.hero p{margin-top:6px;color:var(--muted);font-size:13px}
+/* Scrollable area */
+.scroll{overflow-y:auto;padding-bottom:calc(var(--nav-height) + 40px); -webkit-overflow-scrolling:touch}
 
-/* Sections */
+/* Hero card */
+.hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:var(--shadow-lg)}
+.hero h1{margin:0;color:var(--accent-violet);font-size:18px}
+.hero p{margin-top:8px;color:var(--muted);font-size:13px}
+
+/* Section titles */
 .section{margin-top:16px;padding:0 12px}
 .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.section-title{font-weight:700;color:var(--accent-1)}
+.section-title{font-weight:700;color:var(--accent-cyan);display:flex;gap:8px;align-items:center}
 .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-/* Horizontal row */
-.h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
+/* Horizontal row (YouTube style) */
+.h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;padding-top:6px}
 .h-row::-webkit-scrollbar{display:none}
-.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans)}
-.thumb-card:hover{transform:translateY(-6px)}
+.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans), box-shadow var(--trans)}
+.thumb-card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(0,0,0,0.6)}
 .thumb{width:170px;height:100px;object-fit:cover;display:block}
 .thumb-info{padding:8px;color:#eaf7ff;font-weight:600;font-size:13px}
+.meta{font-size:12px;color:var(--muted);margin-top:6px}
 
-/* Feed grid (2 columns mobile) */
+/* Feed grid (Instagram-ish, 2 columns on mobile) */
 .feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
+.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
 .feed-item:hover{transform:translateY(-6px)}
-.feed-item img{width:100%;height:150px;object-fit:cover;display:block}
+.feed-item img{width:100%;height:160px;object-fit:cover;display:block}
 .feed-body{padding:10px}
 .feed-title{font-weight:700;color:#eaf7ff;font-size:13px}
 .feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:10px;align-items:center}
 
-/* Floating FAB */
-.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80}
-.fab{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:28px;cursor:pointer}
+/* Sponsor / ad card */
+.ad-card{margin:12px;border-radius:12px;padding:12px;background:linear-gradient(90deg, rgba(138,110,255,0.06), rgba(0,209,255,0.03));border:1px dashed rgba(255,255,255,0.03);display:flex;gap:10px;align-items:center}
+.ad-img{width:72px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;font-weight:700}
 
-/* Bottom nav */
-.bottom-nav{position:fixed;left:10px;right:10px;bottom:8px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
-.nav-item.active{color:var(--accent-1);transform:translateY(-3px)}
+/* Floating action button with menu */
+.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:10px}
+.fab{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:30px}
+.fab-sub{width:52px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--accent-pink),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 8px 30px rgba(0,0,0,0.5);transform-origin:center;opacity:0;pointer-events:none;transition:all 260ms}
+.fab-open .fab-sub{opacity:1;pointer-events:auto;transform:translateY(0)}
+.fab-row{display:flex;flex-direction:column;gap:8px;align-items:center}
 
-/* Viewer & drawer */
+/* Bottom navigation (fixed) */
+.bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:var(--nav-height);border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 6px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+.nav-item.active{color:var(--accent-cyan);transform:translateY(-3px)}
+
+/* viewer */
 .viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.96));display:flex;align-items:center;justify-content:center;z-index:120;padding:18px;gap:12px;flex-direction:column;display:none}
 .viewer.show{display:flex}
 .viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
+.viewer img, .viewer video{width:100%;height:auto;display:block}
+
+/* drawer comments */
 .drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none;flex-direction:column}
 .drawer.show{display:flex}
 .drawer .handle{width:48px;height:6px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
@@ -92,59 +125,51 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 .comment{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
 .comment strong{display:block;color:#e7fbff}
 
-/* Upload modal */
-.upload-modal{position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:110;display:none}
-.upload-modal.show{display:block}
+/* profile modal (mini) */
+.profile-modal{position:fixed;left:20px;right:20px;top:80px;border-radius:12px;padding:12px;background:linear-gradient(180deg,#001018,#001424);border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:150;display:none}
+.profile-modal .header{display:flex;align-items:center;gap:12px}
+.profile-avatar{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;font-weight:700}
 
-/* Dashboard modal (monetization) */
-.dashboard{position:fixed;left:12px;right:12px;top:12px;bottom:12px;border-radius:12px;padding:12px;background:linear-gradient(180deg,#001018,#001424);border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:200;display:none;overflow:auto}
-.dashboard.show{display:block}
-.kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.kpi .card{flex:1;min-width:140px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+/* premium badge */
+.premium-badge{background:linear-gradient(90deg,#ffd27a,#ff9b3a);color:#001;padding:6px 8px;border-radius:10px;font-weight:700;font-size:12px;box-shadow:0 8px 20px rgba(255,155,0,0.08)}
 
-/* responsive */
-@media(max-width:420px){
-  .thumb{width:150px;height:88px}
-  .feed-item img{height:120px}
-  .fab{width:60px;height:60px}
+@media (max-width:420px){
+  .thumb{width:150px;height:92px}
+  .feed-item img{height:140px}
+  .fab{width:62px;height:62px}
+  .fab-sub{width:48px;height:40px}
 }
 </style>
 </head>
 <body>
-<!-- App root -->
-<div class="app" role="application" aria-label="SinFiltro">
-
-  <!-- Header -->
+<div class="app" aria-label="SinFiltro app">
   <header>
-    <div class="left">
-      <div class="icon-btn" id="menuBtn" title="Panel">☰</div>
+    <div class="header-left">
+      <div class="icon-btn" id="menuBtn" aria-label="Abrir dashboard">≡</div>
     </div>
 
-    <div class="brand" aria-hidden="false">
-      <div class="title">SinFiltro</div>
-      <div class="subtitle">Tu espacio sin límites</div>
+    <div class="brand" role="banner">
+      <div class="logo" id="logoText">Sin<F style="color:var(--accent-pink);">F</F>iltro</div>
+      <div class="tag">Tu espacio sin límites</div>
     </div>
 
-    <div class="right">
-      <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="icon-btn" id="searchBtn" aria-label="Buscar">🔎</div>
     </div>
   </header>
 
-  <!-- Search overlay -->
   <div class="search-overlay" id="searchOverlay">
     <input id="searchInput" class="search-input" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar">
   </div>
 
-  <!-- Scrollable content -->
   <div class="scroll" id="scrollArea" tabindex="0">
     <main>
       <section class="hero" aria-label="Presentación">
         <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte. Modo premium disponible.</p>
       </section>
 
-      <!-- Trending -->
-      <section class="section">
+      <section class="section" aria-labelledby="trendingTitle">
         <div class="section-header">
           <div class="section-title">🔥 En Tendencia</div>
           <div class="see-all" id="seeTrending">Ver todo</div>
@@ -152,8 +177,7 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
         <div class="h-row" id="trendingRow" aria-live="polite"></div>
       </section>
 
-      <!-- Recent -->
-      <section class="section">
+      <section class="section" aria-labelledby="recentTitle">
         <div class="section-header">
           <div class="section-title">⏮️ Vistos recientemente</div>
           <div class="see-all" id="seeRecent">Ver todo</div>
@@ -161,34 +185,56 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
         <div class="h-row" id="recentRow"></div>
       </section>
 
-      <!-- Feed -->
-      <section class="section">
+      <section class="section" aria-labelledby="recoTitle">
         <div class="section-header">
           <div class="section-title">🎯 Recomendados</div>
           <div class="see-all" id="seeReco">Ver todo</div>
         </div>
+
+        <!-- ad placeholder -->
+        <div class="ad-card" id="adSlot1" role="region" aria-label="Anuncio patrocinado">
+          <div class="ad-img">AD</div>
+          <div style="flex:1">
+            <div style="font-weight:700">Contenido patrocinado</div>
+            <div style="color:var(--muted);font-size:13px">Anúnciate aquí — contacto@tusite.com</div>
+          </div>
+        </div>
+
         <div class="feed" id="feedGrid"></div>
+
+        <!-- another ad -->
+        <div class="ad-card" id="adSlot2" role="region" aria-label="Anuncio patrocinado">
+          <div class="ad-img">AD</div>
+          <div style="flex:1">
+            <div style="font-weight:700">Promoción</div>
+            <div style="color:var(--muted);font-size:13px">Destaca tu canal en SinFiltro</div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
 
-  <!-- FAB -->
-  <div class="fab-wrap" aria-hidden="false">
-    <button class="fab" id="fabBtn" aria-label="Crear / Subir">＋</button>
+  <!-- FAB & sub actions -->
+  <div class="fab-wrap" id="fabWrap">
+    <div class="fab-row" id="fabRow" aria-hidden="false">
+      <button class="fab-sub" id="fabUpload" title="Subir">📤</button>
+      <button class="fab-sub" id="fabStory" title="Historia">🎞️</button>
+      <button class="fab-sub" id="fabLive" title="Live (demo)">🔴</button>
+    </div>
+    <button class="fab" id="fabMain" aria-label="Acción principal">＋</button>
   </div>
 
   <!-- Upload modal -->
   <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
     <strong>Subir contenido (demo)</strong>
-    <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guardará localmente (demo).</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input type="file" id="fileInput" accept="image/*,video/*">
-      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
+      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
     </div>
-    <div style="margin-top:10px;font-size:13px;color:var(--muted)">Opciones de monetización demo disponibles en el panel.</div>
   </div>
 
-  <!-- Viewer -->
+  <!-- viewer modal -->
   <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
     <div class="content" id="viewerContent"></div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -197,7 +243,7 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
     </div>
   </div>
 
-  <!-- Comments drawer -->
+  <!-- comments drawer -->
   <div class="drawer" id="drawer" aria-hidden="true">
     <div class="handle" aria-hidden="true"></div>
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -207,139 +253,72 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
     <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf7ff" />
-      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#001;font-weight:700">Enviar</button>
+      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border:none;padding:10px;border-radius:10px;color:#001;font-weight:700">Enviar</button>
     </div>
   </div>
 
-  <!-- Bottom nav -->
+  <!-- profile modal -->
+  <div class="profile-modal" id="profileModal" aria-hidden="true">
+    <div class="header">
+      <div class="profile-avatar">U</div>
+      <div>
+        <div style="font-weight:700">Usuario Demo</div>
+        <div style="color:var(--muted);font-size:13px">Creador • 12 publicaciones</div>
+      </div>
+      <div style="margin-left:auto"><span class="premium-badge" id="premiumToggle">Premium</span></div>
+    </div>
+    <div style="margin-top:12px;color:var(--muted);font-size:13px">
+      Breve bio de usuario demo. Aquí puedes ver tus estadísticas, suscripciones y opción de monetizar.
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button id="closeProfile" style="padding:8px;border-radius:8px;background:none;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cerrar</button>
+      <button id="btnGoPremium" style="padding:8px;border-radius:8px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border:none;color:#001">Hazte Premium</button>
+    </div>
+  </div>
+
+  <!-- bottom nav -->
   <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
     <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
     <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
-    <div style="width:68px"></div>
+    <div style="width:70px"></div>
     <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Me gusta</div></div>
     <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
   </nav>
 </div>
 
-<!-- Dashboard (monetization + analytics) -->
-<div class="dashboard" id="dashboard" role="dialog" aria-hidden="true">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <strong>Dashboard — Monetización & Analytics (Demo)</strong>
-    <div>
-      <button id="closeDashboard" style="margin-right:8px;padding:6px 10px;border-radius:8px;background:none;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cerrar</button>
-      <button id="exportCsv" style="padding:6px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Exportar CSV</button>
-    </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpi">
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Impresiones anuncios</div>
-      <div id="kpiImpressions" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Clicks (acortador)</div>
-      <div id="kpiShortClicks" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Suscripciones Activas</div>
-      <div id="kpiSubs" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Ventas mercado</div>
-      <div id="kpiSales" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Ganancias Estimadas (USD)</div>
-      <div id="kpiRevenue" style="font-weight:700;font-size:18px">$0.00</div>
-    </div>
-  </div>
-
-  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
-  <div style="display:flex;gap:12px;flex-wrap:wrap">
-    <div style="flex:1;min-width:220px">
-      <h4 style="margin:0 0 8px 0">Simular eventos</h4>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="simImp" style="padding:8px;border-radius:8px;background:#123;padding:8px 10px;color:#fff">+ Impresión</button>
-        <button id="simShort" style="padding:8px;border-radius:8px;background:#123">+ Click acortador</button>
-        <button id="simSub" style="padding:8px;border-radius:8px;background:#123">+ Suscripción</button>
-        <button id="simSale" style="padding:8px;border-radius:8px;background:#123">+ Venta</button>
-        <button id="resetStats" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Reset</button>
-      </div>
-      <p style="color:var(--muted);font-size:13px;margin-top:10px">En producción, estos eventos se actualizan automáticamente (Ad network callbacks, shortener webhooks, Stripe webhooks, etc.). Aquí se simulan localmente.</p>
-    </div>
-
-    <div style="flex:1;min-width:220px">
-      <h4 style="margin:0 0 8px 0">Conexiones reales (placeholders)</h4>
-      <p style="color:var(--muted);font-size:13px;margin-top:0">Para activar pagos reales pega tus keys/IDs donde se indica en el código JS:</p>
-      <ul style="color:var(--muted);font-size:13px">
-        <li>AdSense / Ad network — insertar script en &lt;head&gt; (ID en variable <code>AD_NETWORK_ID</code>).</li>
-        <li>ShrinkMe / Shortener — API key para acortar enlaces (variable <code>SHORTENER_API_KEY</code>).</li>
-        <li>Stripe / PayPal — credenciales para cobros y webhooks (placeholders en la función <code>startSubscription()</code>).</li>
-      </ul>
-    </div>
-  </div>
-
-</div>
-
-<!-- Scripts: app logic, monetization simulation, lazy-loading, PWA register guidance -->
+<!-- SCRIPT: funcionalidad (todo cliente/demo) -->
 <script>
-/* -----------------------------
-   Storage keys & initial demo
-   ----------------------------- */
-const STORAGE_FEED = 'sinfiltro.feed.v4';
-const STORAGE_COMMENTS = 'sinfiltro.comments.v4';
-const STORAGE_LIKES = 'sinfiltro.likes.v4';
-const STORAGE_STATS = 'sinfiltro.stats.v4';
+/* -------------------------
+   Datos demo y storage keys
+   ------------------------- */
+const STORAGE_FEED = 'sinfiltro.feed.v6';
+const STORAGE_COMMENTS = 'sinfiltro.comments.v6';
+const STORAGE_LIKES = 'sinfiltro.likes.v6';
+const STORAGE_STATS = 'sinfiltro.stats.v6';
 
-/* Monetization config (change these to real values when ready) */
-const AD_NETWORK_ID = '';        // <- Insert AdSense / Ad Network ID here
-const SHORTENER_API_KEY = '';    // <- Insert shortener API key here (e.g. ShrinkMe)
-const STRIPE_PUBLISHABLE_KEY = ''; // <- Insert Stripe publishable key if using Stripe Checkout
-const PAYPAL_LINK = '';          // <- PayPal.me or PayPal Checkout link
-
-/* Pricing / rates used in simulation (editable) */
-const SIM = {
-  cpm_usd: 2.0,          // $ per 1000 ad impressions
-  short_click_usd: 0.02, // $ per shortener valid click
-  subscription_usd_month: 3.0,
-  marketplace_fee_percent: 10, // platform commission
-};
-
-/* Initial feed demo */
-const DEMO_FEED = [
-  {id:'p1',type:'image',src:'https://picsum.photos/640/420?random=41',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
-  {id:'p2',type:'image',src:'https://picsum.photos/640/420?random=42',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
-  {id:'p3',type:'image',src:'https://picsum.photos/640/420?random=43',title:'Luces en la ciudad',meta:'6.4K • 5 días',likes:45},
-  {id:'p4',type:'image',src:'https://picsum.photos/640/420?random=44',title:'Callejón neon',meta:'210K • 1 semana',likes:340},
-  {id:'p5',type:'image',src:'https://picsum.photos/640/420?random=45',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72},
-  {id:'p6',type:'image',src:'https://picsum.photos/640/420?random=46',title:'Nocturna',meta:'18K • 4 días',likes:180}
+const DEMO = [
+  {id:'a1',type:'image',src:'https://picsum.photos/640/420?random=101',title:'Callejón neon',meta:'210K • 1 semana',likes:340},
+  {id:'a2',type:'image',src:'https://picsum.photos/640/420?random=102',title:'Nocturna',meta:'18K • 4 días',likes:180},
+  {id:'a3',type:'image',src:'https://picsum.photos/640/420?random=103',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
+  {id:'a4',type:'image',src:'https://picsum.photos/640/420?random=104',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72},
+  {id:'a5',type:'image',src:'https://picsum.photos/640/420?random=105',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
+  {id:'a6',type:'image',src:'https://picsum.photos/640/420?random=106',title:'Luces en la ciudad',meta:'6.4K • 5 días',likes:45}
 ];
 
 function load(key, fallback){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fallback }catch(e){ return fallback } }
-function save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
+function save(key,v){ localStorage.setItem(key, JSON.stringify(v)) }
 
-/* Stats structure for monetization tracking (local demo) */
-let stats = load(STORAGE_STATS, {
-  adImpressions: 0,
-  shortClicks: 0,
-  subscriptions: 0,
-  marketplaceSales: 0,
-  donations: 0.0
-});
-
-/* Feed, comments, likes */
-let feed = load(STORAGE_FEED, DEMO_FEED.slice());
+let feed = load(STORAGE_FEED, DEMO.slice());
 let comments = load(STORAGE_COMMENTS, {});
 let likes = load(STORAGE_LIKES, {});
+let stats = load(STORAGE_STATS, {impr:0,short:0,subs:0,sales:0});
 
-/* -----------------------------
-   DOM refs
-   ----------------------------- */
+/* -------------------------
+   Refs
+   ------------------------- */
 const trendingRow = document.getElementById('trendingRow');
 const recentRow = document.getElementById('recentRow');
 const feedGrid = document.getElementById('feedGrid');
-
 const viewer = document.getElementById('viewer');
 const viewerContent = document.getElementById('viewerContent');
 const drawer = document.getElementById('drawer');
@@ -348,46 +327,61 @@ const commentsList = document.getElementById('commentsList');
 const uploadModal = document.getElementById('uploadModal');
 const fileInput = document.getElementById('fileInput');
 
-const dashboardEl = document.getElementById('dashboard');
+const fabMain = document.getElementById('fabMain');
+const fabRow = document.getElementById('fabRow');
+const fabWrap = document.getElementById('fabWrap');
 
-/* -----------------------------
-   Render functions (UI)
-   ----------------------------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+const searchBtn = document.getElementById('searchBtn');
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput = document.getElementById('searchInput');
+
+const navItems = document.querySelectorAll('.nav-item');
+
+const profileModal = document.getElementById('profileModal');
+const premiumToggle = document.getElementById('premiumToggle');
+
+/* -------------------------
+   Render helpers
+   ------------------------- */
+function esc(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
 
 function createThumb(item){
   const el = document.createElement('div');
   el.className = 'thumb-card';
-  el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="thumb-info">${escapeHtml(item.title)}<div style="font-size:12px;color:var(--muted);margin-top:6px">${escapeHtml(item.meta)}</div></div>`;
+  el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${esc(item.title)}"><div class="thumb-info">${esc(item.title)}<div class="meta">${esc(item.meta)}</div></div>`;
   el.addEventListener('click', ()=> openViewer(item.id));
   return el;
 }
 
 function renderRows(){
   trendingRow.innerHTML=''; recentRow.innerHTML='';
-  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
+  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,6);
   trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
-  const recent = [...feed].slice().reverse().slice(0,8);
+  const recent = [...feed].slice().reverse().slice(0,6);
   recent.forEach(i=> recentRow.appendChild(createThumb(i)));
-  lazyObserveImages();
+  lazyObserve();
 }
 
-function createFeedItem(item){
-  const el = document.createElement('article');
-  el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
-  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item.id));
-  return el;
+function createFeedArticle(item){
+  const art = document.createElement('article');
+  art.className = 'feed-item';
+  art.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="feed-body"><div class="feed-title">${esc(item.title)}</div><div class="feed-meta"><div>${esc(item.meta)}</div><div class="actions"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  art.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  art.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  art.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  art.addEventListener('click', ()=> openViewer(item.id));
+  return art;
 }
 
-function renderFeed(){ feedGrid.innerHTML=''; feed.forEach(i=> feedGrid.appendChild(createFeedItem(i))); lazyObserveImages(); }
+function renderFeed(){
+  feedGrid.innerHTML='';
+  feed.forEach(i=> feedGrid.appendChild(createFeedArticle(i)));
+  lazyObserve();
+}
 
-/* -----------------------------
-   Viewer & Comments
-   ----------------------------- */
+/* -------------------------
+   Viewer & comments
+   ------------------------- */
 let currentOpen = null;
 function openViewer(id){
   const item = feed.find(f=>f.id===id); if(!item) return;
@@ -399,8 +393,7 @@ function openViewer(id){
   } else {
     const img = document.createElement('img'); img.src=item.src; img.alt=item.title; viewerContent.appendChild(img);
   }
-  // Ad impression: count when user opens viewer (simulate ad loaded)
-  recordAdImpression(1);
+  recordImpression(1);
   viewer.classList.add('show');
 }
 document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
@@ -413,7 +406,7 @@ function openComments(id, title){
   const arr = comments[id] || [];
   arr.forEach(c=>{
     const d = document.createElement('div'); d.className='comment';
-    d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escapeHtml(c.text)}</div>`;
+    d.innerHTML = `<strong>Anon</strong><div style="color:var(--muted);font-size:13px">${esc(c.text)}</div>`;
     commentsList.appendChild(d);
   });
   drawer.classList.add('show');
@@ -430,266 +423,235 @@ document.getElementById('postComment').addEventListener('click', ()=>{
   renderFeed();
 });
 
-/* -----------------------------
-   Likes, share & shortener
-   ----------------------------- */
+/* -------------------------
+   Likes / share
+   ------------------------- */
 function toggleLike(id){
   likes = load(STORAGE_LIKES, likes);
   const liked = !!likes[id];
-  if(liked) delete likes[id]; else likes[id]=true;
+  if(liked) delete likes[id]; else likes[id] = true;
   save(STORAGE_LIKES, likes);
-  // update feed likes count (local demo)
   const idx = feed.findIndex(f=>f.id===id);
-  if(idx>=0){ feed[idx].likes = feed[idx].likes || 0; feed[idx].likes = liked ? Math.max(0, feed[idx].likes-1): feed[idx].likes+1; save(STORAGE_FEED, feed); }
+  if(idx>=0){ feed[idx].likes = feed[idx].likes || 0; feed[idx].likes = liked ? Math.max(0,feed[idx].likes-1): feed[idx].likes+1; save(STORAGE_FEED, feed); }
   renderFeed(); renderRows();
 }
 
-/* Share flow:
-   - Attempt to use navigator.share (native)
-   - Fallback: create short link simulation (counts towards shortClicks and revenue)
-   - If you integrate a real shortener API, replace shortenLink() implementation */
 async function shareItem(item){
-  const shareText = `${item.title} — Vía SinFiltro`;
-  const urlToShare = item.src; // In production, use a canonical post URL
+  const url = item.src;
   if(navigator.share){
-    try{ await navigator.share({title:item.title,text:shareText,url:urlToShare});}
-    catch(e){}
-    return;
+    try{ await navigator.share({title:item.title,text:'Mira esto en SinFiltro',url}); return; } catch(e){}
   }
-  // fallback: shorten link (simulated)
-  const short = await shortenLinkSim(urlToShare);
-  // open the short link in new tab
-  window.open(short, '_blank');
+  // simulate shortener: increment stat and copy link
+  stats.short = (stats.short||0) + 1; save(STORAGE_STATS, stats);
+  updateStatsBadge();
+  try{ await navigator.clipboard.writeText(url); alert('Enlace copiado (simulación acortador)'); } catch(e){ alert('Abrir enlace: ' + url); }
 }
 
-/* Simulated shortener (replace with real API call when ready).
-   Increments shortClicks when the shortened link is "opened".
-   We simulate that each open generates revenue. */
-function shortenLinkSim(url){
-  // Create a fake short URL and count a click when user opens.
-  const id = Math.random().toString(36).slice(2,8);
-  const shortUrl = `${location.origin}/s/${id}`; // demo route (not actually resolving)
-  // Simulate: register short click when user opens (we can't detect external opens reliably without backend)
-  // For demo: increase shortClicks now (as if user clicked the shortener landing)
-  stats.shortClicks += 1;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-  alert('Se ha generado un enlace acortado de demostración. (Simulación) — ' + shortUrl);
-  return Promise.resolve(shortUrl);
-}
+/* -------------------------
+   Upload demo (local)
+   ------------------------- */
+document.getElementById('fabUpload').addEventListener('click', ()=> showUpload());
+document.getElementById('fabStory').addEventListener('click', ()=> alert('Historia demo (no implementada).'));
+document.getElementById('fabLive').addEventListener('click', ()=> alert('Live demo (no implementado).')) ;
 
-/* -----------------------------
-   Monetization events & dashboard
-   ----------------------------- */
-function recordAdImpression(n=1){
-  stats.adImpressions += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordShortClick(n=1){
-  stats.shortClicks += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordSubscription(n=1){
-  stats.subscriptions += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordSale(n=1, amount=0){
-  stats.marketplaceSales += n;
-  stats.donations += amount; // store sale revenue under donations for demo
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-
-/* Compute estimated revenue from stats */
-function computeRevenue(){
-  const fromAds = (stats.adImpressions/1000) * SIM.cpm_usd;
-  const fromShort = stats.shortClicks * SIM.short_click_usd;
-  const fromSubs = stats.subscriptions * SIM.subscription_usd_month;
-  const fromSales = stats.marketplaceSales * 5.0 * (SIM.marketplace_fee_percent/100); // assume 5$ avg sale * fee
-  const total = fromAds + fromShort + fromSubs + fromSales + (stats.donations||0);
-  return {fromAds,fromShort,fromSubs,fromSales,total};
-}
-
-/* Update dashboard UI */
-function updateDashboardKPIs(){
-  document.getElementById('kpiImpressions').textContent = stats.adImpressions.toLocaleString();
-  document.getElementById('kpiShortClicks').textContent = stats.shortClicks.toLocaleString();
-  document.getElementById('kpiSubs').textContent = stats.subscriptions.toLocaleString();
-  document.getElementById('kpiSales').textContent = stats.marketplaceSales.toLocaleString();
-  const rev = computeRevenue();
-  document.getElementById('kpiRevenue').textContent = '$' + rev.total.toFixed(2);
-}
-
-/* Dashboard actions (simulate events) */
-document.getElementById('simImp').addEventListener('click', ()=>{ recordAdImpression(1); });
-document.getElementById('simShort').addEventListener('click', ()=>{ recordShortClick(1); });
-document.getElementById('simSub').addEventListener('click', ()=>{ recordSubscription(1); alert('Simulación: usuario suscrito (demo).'); });
-document.getElementById('simSale').addEventListener('click', ()=>{ recordSale(1, 5.0); alert('Simulación: venta procesada (demo).'); });
-document.getElementById('resetStats').addEventListener('click', ()=>{ if(confirm('Resetear estadísticas demo?')){ stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS,stats); updateDashboardKPIs(); }});
-document.getElementById('exportCsv').addEventListener('click', exportStatsCsv);
-
-/* Open / close dashboard */
-document.getElementById('menuBtn').addEventListener('click', ()=>{ dashboardEl.classList.add('show'); updateDashboardKPIs(); });
-document.getElementById('closeDashboard').addEventListener('click', ()=> dashboardEl.classList.remove('show'));
-
-/* Export CSV */
-function exportStatsCsv(){
-  const rev = computeRevenue();
-  const rows = [
-    ['Metric','Value'],
-    ['Ad Impressions', stats.adImpressions],
-    ['Short Clicks', stats.shortClicks],
-    ['Subscriptions', stats.subscriptions],
-    ['Marketplace Sales', stats.marketplaceSales],
-    ['Donations', stats.donations],
-    ['Estimated Revenue (USD)', rev.total.toFixed(2)]
-  ];
-  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'sinfiltro_stats.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-/* -----------------------------
-   Upload (demo local)
-   ----------------------------- */
-document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
+function showUpload(){ uploadModal.classList.toggle('show'); }
 document.getElementById('uploadBtn').addEventListener('click', doUpload);
-function toggleUpload(){ uploadModal.classList.toggle('show'); fileInput.value=''; }
+
 function doUpload(){
-  const f = fileInput.files[0]; if(!f){ alert('Selecciona un archivo'); return; }
+  const f = fileInput.files[0]; if(!f){ alert('Selecciona archivo'); return; }
   const reader = new FileReader();
   reader.onload = (e)=>{
     const url = e.target.result;
     const newItem = {id: crypto.randomUUID(), type: f.type.startsWith('video')?'video':'image', src: url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0};
-    feed.unshift(newItem);
-    save(STORAGE_FEED, feed);
+    feed.unshift(newItem); save(STORAGE_FEED, feed);
     renderFeed(); renderRows();
     uploadModal.classList.remove('show');
-    alert('Contenido subido (demo local). Si quieres monetizar subidas reales, conecta backend + storage (Firebase/Supabase).');
-    // optional: record an impression (new content surfaced)
-    recordAdImpression(2);
+    alert('Contenido subido (demo local). Para subir real se requiere backend y storage).');
+    recordImpression(2);
   };
   reader.readAsDataURL(f);
 }
 
-/* -----------------------------
+/* -------------------------
+   Nav & fab behavior
+   ------------------------- */
+fabMain.addEventListener('click', ()=>{
+  fabWrap.classList.toggle('fab-open');
+  // animate subs
+  const subs = document.querySelectorAll('.fab-sub');
+  subs.forEach((s,i)=> {
+    if(fabWrap.classList.contains('fab-open')){
+      s.style.transform = `translateY(-${(i+1)*56}px)`;
+      s.style.opacity = '1';
+      s.style.pointerEvents = 'auto';
+    } else {
+      s.style.transform = `translateY(0)`;
+      s.style.opacity = '0';
+      s.style.pointerEvents = 'none';
+    }
+  });
+});
+
+navItems.forEach(n=>{
+  n.addEventListener('click', ()=>{
+    navItems.forEach(x=> x.classList.remove('active'));
+    n.classList.add('active');
+    const tab = n.getAttribute('data-tab');
+    if(tab === 'home'){ document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'}); renderFeed(); renderRows(); }
+    else if(tab === 'explore'){ document.getElementById('scrollArea').scrollTo({top:document.getElementById('trendingRow').offsetTop-60,behavior:'smooth'}); }
+    else if(tab === 'likes'){ showLiked(); }
+    else if(tab === 'profile'){ openProfile(); }
+  });
+});
+
+function showLiked(){
+  const likedIds = Object.keys(load(STORAGE_LIKES, {}));
+  const liked = feed.filter(f=> likedIds.includes(f.id));
+  feedGrid.innerHTML=''; liked.forEach(i=> feedGrid.appendChild(createFeedArticle(i)));
+  lazyObserve();
+}
+
+/* -------------------------
+   Profile modal
+   ------------------------- */
+function openProfile(){ profileModal.style.display = 'block'; profileModal.setAttribute('aria-hidden','false'); }
+document.getElementById('navProfile').addEventListener('click', openProfile);
+document.getElementById('closeProfile').addEventListener('click', ()=> { profileModal.style.display='none'; profileModal.setAttribute('aria-hidden','true'); });
+
+document.getElementById('btnGoPremium').addEventListener('click', ()=>{
+  // demo: toggle premium flag and show confirmation
+  if(confirm('Simular compra Premium (demo)?')){
+    stats.subs = (stats.subs||0) + 1; save(STORAGE_STATS,stats); updateStatsBadge();
+    alert('Gracias por hacerte Premium (simulación).');
+  }
+});
+
+/* -------------------------
    Search overlay
-   ----------------------------- */
-const searchBtn = document.getElementById('searchBtn');
-const searchOverlay = document.getElementById('searchOverlay');
-const searchInput = document.getElementById('searchInput');
+   ------------------------- */
 searchBtn.addEventListener('click', ()=> { searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block'; if(searchOverlay.style.display==='block') setTimeout(()=>searchInput.focus(),80); });
 searchInput.addEventListener('input', (e)=> filterFeed(e.target.value));
 function filterFeed(q){
   q = (q||'').toLowerCase().trim();
   if(!q){ renderFeed(); renderRows(); return; }
   const filtered = feed.filter(it=> it.title.toLowerCase().includes(q));
-  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
+  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(createFeedArticle(i)));
   trendingRow.innerHTML=''; recentRow.innerHTML='';
-  lazyObserveImages();
+  lazyObserve();
 }
 
-/* -----------------------------
-   Navigation (UI only)
-   ----------------------------- */
-document.querySelectorAll('.nav-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.getAttribute('data-tab');
-    if(tab==='home'){ document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'}); renderFeed(); renderRows(); }
-    else if(tab==='explore'){ document.getElementById('scrollArea').scrollTo({top:document.getElementById('trendingRow').offsetTop-40,behavior:'smooth'}); }
-    else if(tab==='likes'){ showLiked(); }
-    else if(tab==='profile'){ alert('Perfil demo — conectar backend'); }
-  });
-});
-function showLiked(){
-  const likedIds = Object.keys(load(STORAGE_LIKES, {}));
-  const liked = feed.filter(f=> likedIds.includes(f.id));
-  feedGrid.innerHTML=''; liked.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
-}
-
-/* -----------------------------
-   Lazy loading images (IntersectionObserver)
-   ----------------------------- */
-let imgObserver = null;
-function lazyObserveImages(){
+/* -------------------------
+   Lazy load images with IntersectionObserver
+   ------------------------- */
+let observer = null;
+function lazyObserve(){
   const imgs = document.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
+    if(!observer){
+      observer = new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
-            const img = entry.target;
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-            imgObserver.unobserve(img);
-            // when an image is loaded and visible, count as an ad impression zone (simulate)
-            recordAdImpression(1);
+            const img = entry.target; img.src = img.dataset.src; img.removeAttribute('data-src'); observer.unobserve(img);
+            recordImpression(1); // count impression zone
           }
         });
-      }, {rootMargin:'200px', threshold:0.1});
+      }, {rootMargin:'200px'});
     }
-    imgs.forEach(i=> imgObserver.observe(i));
+    imgs.forEach(i=> observer.observe(i));
   } else {
-    // fallback: load all
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); recordAdImpression(1); });
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); recordImpression(1); });
   }
 }
 
-/* -----------------------------
+/* -------------------------
+   Infinite scroll (simulated)
+   ------------------------- */
+let loadingMore = false;
+const scrollArea = document.getElementById('scrollArea');
+scrollArea.addEventListener('scroll', ()=>{
+  const nearBottom = scrollArea.scrollTop + scrollArea.clientHeight > scrollArea.scrollHeight - 300;
+  if(nearBottom && !loadingMore){
+    loadingMore = true;
+    // simulate network
+    setTimeout(()=> {
+      // append clones of demo to simulate more content
+      const more = DEMO.slice().map(d => ({...d, id: crypto.randomUUID()}));
+      feed = feed.concat(more);
+      save(STORAGE_FEED, feed);
+      renderFeed();
+      renderRows();
+      loadingMore = false;
+    }, 900);
+  }
+});
+
+/* -------------------------
+   Monetization simulation & stats
+   ------------------------- */
+function recordImpression(n=1){ stats.impr = (stats.impr||0) + n; save(STORAGE_STATS,stats); updateStatsBadge(); }
+function updateStatsBadge(){
+  // small visual: show impressions on logo title (aria)
+  const logo = document.getElementById('logoText');
+  // you can update a small counter or leave for dashboard
+}
+function exportCSV(){
+  const rows = [
+    ['Metric','Value'],
+    ['Impresiones', stats.impr || 0],
+    ['Short clicks', stats.short || 0],
+    ['Suscripciones', stats.subs || 0],
+    ['Ventas', stats.sales || 0]
+  ];
+  const csv = rows.map(r=> r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const u = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = u; a.download = 'sinfiltro_stats.csv'; a.click(); URL.revokeObjectURL(u);
+}
+
+/* -------------------------
    Init render
-   ----------------------------- */
+   ------------------------- */
 function init(){
   renderFeed();
   renderRows();
-  updateDashboardKPIs();
-  // Register service worker (optional). Create sw.js in your repo for production.
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sinfiltro/sw.js').catch(e=> console.log('Service worker not registered (add /sinfiltro/sw.js to enable):',e));
-  }
-  // Respect reduced motion
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    document.querySelectorAll('*').forEach(n=> n.style.animation='none');
-  }
+  // set initial state of fab-sub
+  document.querySelectorAll('.fab-sub').forEach(s=> { s.style.transform='translateY(0)'; s.style.opacity='0'; s.style.pointerEvents='none'; });
+  // small accessibility
+  document.getElementById('menuBtn').addEventListener('click', ()=> { document.getElementById('profileModal').style.display='block'; });
+  // viewer & drawer close
+  document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
+  document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('show'));
+  // lazy observe initially
+  lazyObserve();
+  // simulate ad impression on load
+  recordImpression(3);
 }
 init();
 
-/* -----------------------------
-   Helper: createFeedItem used in filter
-   ----------------------------- */
-function createFeedItem(item){
-  const el = document.createElement('article');
-  el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
-  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item.id));
-  return el;
+/* helper re-used by filters */
+function createFeedArticle(item){
+  const art = document.createElement('article');
+  art.className = 'feed-item';
+  art.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="feed-body"><div class="feed-title">${esc(item.title)}</div><div class="feed-meta"><div>${esc(item.meta)}</div><div class="actions"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  art.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  art.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  art.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  art.addEventListener('click', ()=> openViewer(item.id));
+  return art;
 }
 
-/* -----------------------------
-   Notes for real monetization integration
-   -----------------------------
-   1) Ads: Insert real ad provider script (AdSense) into the <head> and implement ad slots
-      where you want them. Use the provider documentation and your account ID (AD_NETWORK_ID).
-   2) Shortener: Replace shortenLinkSim() with actual API call to your shortener service.
-      Use webhooks to count real clicks server-side for accuracy.
-   3) Subscriptions/payments: Integrate Stripe Checkout or PayPal Buttons.
-      Use server-side endpoints (or Stripe Checkout Sessions) to handle payments securely.
-   4) Marketplace: Use cloud storage (Firebase Storage / Supabase Storage) and a backend to
-      process payments and transfer funds (Stripe Connect to send payouts to sellers).
-   5) Dashboard: Instead of localStorage, aggregate real metrics from providers (AdSense API,
-      shortener API, Stripe webhooks) into your server and show totals in the dashboard.
-   6) PWA: Add /sinfiltro/manifest.json and /sinfiltro/sw.js files to your repo for installability.
-*/
+/* -------------------------
+   Small UX improvements
+   ------------------------- */
+/* close overlays when click outside (mobile-friendly) */
+document.addEventListener('click', (e)=>{
+  const se = searchOverlay, sbtn = searchBtn;
+  if(se.style.display==='block' && !se.contains(e.target) && e.target !== sbtn) se.style.display='none';
+});
 
-/* End of script */
+/* respect reduced motion */
+if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.querySelectorAll('*').forEach(n=> n.style.animation='none');
+}
 </script>
 </body>
 </html>
