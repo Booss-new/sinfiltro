@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
@@ -12,16 +12,17 @@
 <meta property="og:image" content="https://booss-new.github.io/sinfiltro/og-image.png">
 <meta property="og:url" content="https://booss-new.github.io/sinfiltro/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#00d1ff">
 
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<!-- Basic styles: móvil-first, limpio y elegante (YouTube + Instagram mix) -->
 <style>
 :root{
   --bg-1:#05060a; --bg-2:#0b1220;
   --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
   --muted:#9fb0bf; --card:#071226; --radius:12px; --trans:220ms;
+  --badge-bg: linear-gradient(90deg,#ffb86b,#ff5fb7);
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
@@ -32,13 +33,32 @@ button{font:inherit}
 
 /* App layout */
 .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.scroll{overflow-y:auto;padding-bottom:150px;-webkit-overflow-scrolling:touch}
+.scroll{overflow-y:auto;padding-bottom:180px;-webkit-overflow-scrolling:touch}
 
 /* Header */
 header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
 .brand{display:flex;flex-direction:column;align-items:center;gap:2px}
 .brand .title{color:var(--accent-1);font-weight:700}
 .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+
+/* Logo 3D neon animation */
+.logo-3d{display:flex;align-items:center;gap:10px}
+.logo-3d .logo-box{
+  width:160px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#071020,#0b1224);box-shadow:0 10px 40px rgba(0,0,0,0.6);position:relative;overflow:visible;
+}
+.logo-3d .logo-text{
+  font-weight:800;font-size:20px;color:transparent;
+  -webkit-background-clip:text;background-clip:text;
+  background-image:linear-gradient(90deg,#00e1ff,#8a6eff,#ff5fb7);
+  transform-style:preserve-3d;
+  animation: neonShift 3.6s linear infinite;
+}
+@keyframes neonShift{
+  0%{filter:drop-shadow(0 0 0 #00e1ff)}
+  50%{filter:drop-shadow(0 6px 18px #8a6eff)}
+  100%{filter:drop-shadow(0 0 0 #00e1ff)}
+}
 
 /* Search overlay */
 .search-overlay{position:fixed;left:12px;right:12px;top:64px;z-index:65;display:none}
@@ -58,19 +78,31 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 /* Horizontal row */
 .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
 .h-row::-webkit-scrollbar{display:none}
-.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans)}
+.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans);position:relative}
 .thumb-card:hover{transform:translateY(-6px)}
 .thumb{width:170px;height:100px;object-fit:cover;display:block}
 .thumb-info{padding:8px;color:#eaf7ff;font-weight:600;font-size:13px}
 
+/* sponsor banner mini (inserted between posts) */
+.sponsor{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
+
 /* Feed grid (2 columns mobile) */
 .feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
+.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans);position:relative}
 .feed-item:hover{transform:translateY(-6px)}
 .feed-item img{width:100%;height:150px;object-fit:cover;display:block}
 .feed-body{padding:10px}
 .feed-title{font-weight:700;color:#eaf7ff;font-size:13px}
 .feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
+
+/* badges */
+.badge{
+  position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:var(--badge-bg);color:#071020;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(255,95,183,0.12)
+}
+
+/* mini store item */
+.store-item{display:flex;gap:8px;align-items:center;padding:10px;background:rgba(255,255,255,0.02);border-radius:10px}
+.store-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
 
 /* Floating FAB */
 .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80}
@@ -102,6 +134,12 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 .kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .kpi .card{flex:1;min-width:140px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
 
+/* Transitions between sections (simulated app pages) */
+.view-page{position:relative;transition:transform 360ms cubic-bezier(.2,.9,.2,1);will-change:transform}
+
+/* language selector */
+.lang-select{padding:6px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
+
 /* responsive */
 @media(max-width:420px){
   .thumb{width:150px;height:88px}
@@ -111,7 +149,6 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 </style>
 </head>
 <body>
-<!-- App root -->
 <div class="app" role="application" aria-label="SinFiltro">
 
   <!-- Header -->
@@ -121,11 +158,21 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
     </div>
 
     <div class="brand" aria-hidden="false">
+      <div class="logo-3d" aria-hidden="false">
+        <div class="logo-box" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
+          <div class="logo-text" style="font-weight:800;font-size:18px">SinFiltro</div>
+        </div>
+      </div>
       <div class="title">SinFiltro</div>
-      <div class="subtitle">Tu espacio sin límites</div>
+      <div class="subtitle" style="font-size:12px;color:var(--muted)">Tu espacio sin límites</div>
     </div>
 
-    <div class="right">
+    <div class="right" style="display:flex;gap:8px;align-items:center">
+      <select id="langSelect" class="lang-select" title="Idioma">
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+        <option value="pt">PT</option>
+      </select>
       <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
     </div>
   </header>
@@ -137,16 +184,16 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 
   <!-- Scrollable content -->
   <div class="scroll" id="scrollArea" tabindex="0">
-    <main>
+    <main class="view-page" id="pageHome">
       <section class="hero" aria-label="Presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        <h1 id="heroTitle">Descubre lo auténtico</h1>
+        <p id="heroSub">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
       <!-- Trending -->
       <section class="section">
         <div class="section-header">
-          <div class="section-title">🔥 En Tendencia</div>
+          <div class="section-title" id="trendingTitle">🔥 En Tendencia</div>
           <div class="see-all" id="seeTrending">Ver todo</div>
         </div>
         <div class="h-row" id="trendingRow" aria-live="polite"></div>
@@ -155,7 +202,7 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
       <!-- Recent -->
       <section class="section">
         <div class="section-header">
-          <div class="section-title">⏮️ Vistos recientemente</div>
+          <div class="section-title" id="recentTitle">⏮️ Vistos recientemente</div>
           <div class="see-all" id="seeRecent">Ver todo</div>
         </div>
         <div class="h-row" id="recentRow"></div>
@@ -164,10 +211,19 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
       <!-- Feed -->
       <section class="section">
         <div class="section-header">
-          <div class="section-title">🎯 Recomendados</div>
+          <div class="section-title" id="recoTitle">🎯 Recomendados</div>
           <div class="see-all" id="seeReco">Ver todo</div>
         </div>
         <div class="feed" id="feedGrid"></div>
+      </section>
+
+      <!-- mini store -->
+      <section class="section" style="margin-top:18px">
+        <div class="section-header">
+          <div class="section-title">🏪 Tienda</div>
+          <div class="see-all" id="seeStore">Ver tienda</div>
+        </div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:10px" id="storeList"></div>
       </section>
     </main>
   </div>
@@ -179,11 +235,12 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
 
   <!-- Upload modal -->
   <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <strong>Subir contenido (demo)</strong>
-    <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
+    <strong id="uploadTitle">Subir contenido (demo)</strong>
+    <div style="color:var(--muted);font-size:13px;margin-top:8px" id="uploadSubtitle">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
       <input type="file" id="fileInput" accept="image/*,video/*">
       <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
+      <button id="closeUpload" style="border:1px solid rgba(255,255,255,0.04);background:transparent;padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
     </div>
     <div style="margin-top:10px;font-size:13px;color:var(--muted)">Opciones de monetización demo disponibles en el panel.</div>
   </div>
@@ -279,34 +336,30 @@ header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-
       </ul>
     </div>
   </div>
-
 </div>
 
-<!-- Scripts: app logic, monetization simulation, lazy-loading, PWA register guidance -->
 <script>
-/* -----------------------------
-   Storage keys & initial demo
-   ----------------------------- */
-const STORAGE_FEED = 'sinfiltro.feed.v4';
-const STORAGE_COMMENTS = 'sinfiltro.comments.v4';
-const STORAGE_LIKES = 'sinfiltro.likes.v4';
-const STORAGE_STATS = 'sinfiltro.stats.v4';
+/* ===========================
+   SinFiltro — All features script
+   =========================== */
 
-/* Monetization config (change these to real values when ready) */
-const AD_NETWORK_ID = '';        // <- Insert AdSense / Ad Network ID here
-const SHORTENER_API_KEY = '';    // <- Insert shortener API key here (e.g. ShrinkMe)
-const STRIPE_PUBLISHABLE_KEY = ''; // <- Insert Stripe publishable key if using Stripe Checkout
-const PAYPAL_LINK = '';          // <- PayPal.me or PayPal Checkout link
+/* Storage & demo data */
+const STORAGE_FEED = 'sinfiltro.feed.v5';
+const STORAGE_COMMENTS = 'sinfiltro.comments.v5';
+const STORAGE_LIKES = 'sinfiltro.likes.v5';
+const STORAGE_STATS = 'sinfiltro.stats.v5';
+const STORAGE_LANG = 'sinfiltro.lang.v1';
 
-/* Pricing / rates used in simulation (editable) */
-const SIM = {
-  cpm_usd: 2.0,          // $ per 1000 ad impressions
-  short_click_usd: 0.02, // $ per shortener valid click
-  subscription_usd_month: 3.0,
-  marketplace_fee_percent: 10, // platform commission
-};
+/* Monetization config (placeholders) */
+const AD_NETWORK_ID = '';
+const SHORTENER_API_KEY = '';
+const STRIPE_PUBLISHABLE_KEY = '';
+const PAYPAL_LINK = '';
 
-/* Initial feed demo */
+/* Simulation rates */
+const SIM = { cpm_usd:2.0, short_click_usd:0.02, subscription_usd_month:3.0, marketplace_fee_percent:10 };
+
+/* Demo feed */
 const DEMO_FEED = [
   {id:'p1',type:'image',src:'https://picsum.photos/640/420?random=41',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
   {id:'p2',type:'image',src:'https://picsum.photos/640/420?random=42',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
@@ -316,381 +369,395 @@ const DEMO_FEED = [
   {id:'p6',type:'image',src:'https://picsum.photos/640/420?random=46',title:'Nocturna',meta:'18K • 4 días',likes:180}
 ];
 
-function load(key, fallback){ try{ const r=localStorage.getItem(key); return r?JSON.parse(r):fallback }catch(e){ return fallback } }
+function load(key, fallback){ try { const r = localStorage.getItem(key); return r?JSON.parse(r):fallback } catch(e){ return fallback } }
 function save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
 
-/* Stats structure for monetization tracking (local demo) */
-let stats = load(STORAGE_STATS, {
-  adImpressions: 0,
-  shortClicks: 0,
-  subscriptions: 0,
-  marketplaceSales: 0,
-  donations: 0.0
-});
-
-/* Feed, comments, likes */
+/* persistent data */
 let feed = load(STORAGE_FEED, DEMO_FEED.slice());
 let comments = load(STORAGE_COMMENTS, {});
 let likes = load(STORAGE_LIKES, {});
+let stats = load(STORAGE_STATS, { adImpressions:0, shortClicks:0, subscriptions:0, marketplaceSales:0, donations:0.0 });
+let lang = load(STORAGE_LANG, 'es');
 
-/* -----------------------------
-   DOM refs
-   ----------------------------- */
+/* DOM refs */
 const trendingRow = document.getElementById('trendingRow');
 const recentRow = document.getElementById('recentRow');
 const feedGrid = document.getElementById('feedGrid');
-
 const viewer = document.getElementById('viewer');
 const viewerContent = document.getElementById('viewerContent');
 const drawer = document.getElementById('drawer');
 const commentsList = document.getElementById('commentsList');
-
 const uploadModal = document.getElementById('uploadModal');
 const fileInput = document.getElementById('fileInput');
-
 const dashboardEl = document.getElementById('dashboard');
+const langSelect = document.getElementById('langSelect');
 
-/* -----------------------------
-   Render functions (UI)
-   ----------------------------- */
+/* helpers */
+const qs = s => document.querySelector(s);
+const qsa = s => Array.from(document.querySelectorAll(s));
+const randInt = n => Math.floor(Math.random()*n);
+
+/* translations (basic) */
+const T = {
+  es: {
+    discover: 'Descubre lo auténtico',
+    subtitle: 'Fotos y videos creados por la comunidad. Da like, comenta y comparte.',
+    uploadTitle: 'Subir contenido (demo)',
+    uploadSubtitle: 'Selecciona imagen o video. Se guarda localmente en este navegador (demo).',
+    comments: 'Comentarios',
+    tienda: 'Tienda'
+  },
+  en: {
+    discover: 'Discover the authentic',
+    subtitle: 'Photos and videos created by the community. Like, comment and share.',
+    uploadTitle: 'Upload content (demo)',
+    uploadSubtitle: 'Select image or video. Saved locally in this browser (demo).',
+    comments: 'Comments',
+    tienda: 'Shop'
+  },
+  pt: {
+    discover: 'Descubra o autêntico',
+    subtitle: 'Fotos e vídeos criados pela comunidade. Curta, comente e compartilhe.',
+    uploadTitle: 'Enviar conteúdo (demo)',
+    uploadSubtitle: 'Selecione imagem ou vídeo. Salvo localmente neste navegador (demo).',
+    comments: 'Comentários',
+    tienda: 'Loja'
+  }
+};
+
+/* PWA manifest & SW (embedded) */
+(function createManifestAndSW(){
+  try{
+    const manifest = { name:"SinFiltro", short_name:"SinFiltro", start_url:".", display:"standalone", background_color:"#04040a", theme_color:"#00e1ff", icons:[{src:"icons/icon-192.png",sizes:"192x192",type:"image/png"},{src:"icons/icon-512.png",sizes:"512x512",type:"image/png"}] };
+    const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
+    const link = document.createElement('link'); link.rel='manifest'; link.href = URL.createObjectURL(blob); document.head.appendChild(link);
+  }catch(e){ console.warn('manifest fail', e) }
+
+  if('serviceWorker' in navigator){
+    const sw = `const CACHE='sinfiltro-shell-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['.','index.html']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)).catch(()=>caches.match('index.html')))});`;
+    const blob = new Blob([sw],{type:'application/javascript'}); const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(()=>{});
+  }
+})();
+
+/* Render helpers */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function createThumb(item){
-  const el = document.createElement('div');
-  el.className = 'thumb-card';
+  const el = document.createElement('div'); el.className = 'thumb-card';
   el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="thumb-info">${escapeHtml(item.title)}<div style="font-size:12px;color:var(--muted);margin-top:6px">${escapeHtml(item.meta)}</div></div>`;
   el.addEventListener('click', ()=> openViewer(item.id));
   return el;
 }
 
-function renderRows(){
-  trendingRow.innerHTML=''; recentRow.innerHTML='';
-  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
-  trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
-  const recent = [...feed].slice().reverse().slice(0,8);
-  recent.forEach(i=> recentRow.appendChild(createThumb(i)));
-  lazyObserveImages();
-}
-
-function createFeedItem(item){
-  const el = document.createElement('article');
-  el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
-  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+function createFeedItem(item, idx){
+  const el = document.createElement('article'); el.className = 'feed-item';
+  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div class="muted">${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  // badge for high likes
+  if((item.likes||0) > 200) {
+    const b = document.createElement('div'); b.className='badge'; b.textContent='🔥 TOP';
+    el.appendChild(b);
+  }
+  // add sponsor banner every 6 items
+  if((idx+1) % 6 === 0){
+    const s = document.createElement('div'); s.className='sponsor'; s.innerHTML = `<div style="font-weight:700;color:var(--accent-1)">Patrocinado</div><div style="margin-left:auto"><a href="#" class="sponsor-link">Ver</a></div>`;
+    el.appendChild(s);
+  }
+  // like handler
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id, el); });
   el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
   el.addEventListener('click', ()=> openViewer(item.id));
   return el;
 }
 
-function renderFeed(){ feedGrid.innerHTML=''; feed.forEach(i=> feedGrid.appendChild(createFeedItem(i))); lazyObserveImages(); }
-
-/* -----------------------------
-   Viewer & Comments
-   ----------------------------- */
-let currentOpen = null;
-function openViewer(id){
-  const item = feed.find(f=>f.id===id); if(!item) return;
-  currentOpen = id;
-  viewerContent.innerHTML = '';
-  if(item.type==='video'){
-    const v = document.createElement('video'); v.src=item.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh';
-    viewerContent.appendChild(v);
-  } else {
-    const img = document.createElement('img'); img.src=item.src; img.alt=item.title; viewerContent.appendChild(img);
-  }
-  // Ad impression: count when user opens viewer (simulate ad loaded)
-  recordAdImpression(1);
-  viewer.classList.add('show');
-}
-document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
-document.getElementById('openCommentsBtn').addEventListener('click', ()=> { viewer.classList.remove('show'); openComments(currentOpen, feed.find(f=>f.id===currentOpen).title); });
-
-function openComments(id, title){
-  currentOpen = id;
-  document.getElementById('drawerTitle').textContent = `Comentarios — ${title}`;
-  commentsList.innerHTML = '';
-  const arr = comments[id] || [];
-  arr.forEach(c=>{
-    const d = document.createElement('div'); d.className='comment';
-    d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escapeHtml(c.text)}</div>`;
-    commentsList.appendChild(d);
-  });
-  drawer.classList.add('show');
-}
-document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('show'));
-document.getElementById('postComment').addEventListener('click', ()=>{
-  const txt = document.getElementById('commentInput').value.trim();
-  if(!txt || !currentOpen) return;
-  comments[currentOpen] = comments[currentOpen] || [];
-  comments[currentOpen].push({text:txt,ts:Date.now()});
-  save(STORAGE_COMMENTS, comments);
-  document.getElementById('commentInput').value='';
-  openComments(currentOpen, feed.find(f=>f.id===currentOpen).title);
-  renderFeed();
-});
-
-/* -----------------------------
-   Likes, share & shortener
-   ----------------------------- */
-function toggleLike(id){
-  likes = load(STORAGE_LIKES, likes);
-  const liked = !!likes[id];
-  if(liked) delete likes[id]; else likes[id]=true;
-  save(STORAGE_LIKES, likes);
-  // update feed likes count (local demo)
-  const idx = feed.findIndex(f=>f.id===id);
-  if(idx>=0){ feed[idx].likes = feed[idx].likes || 0; feed[idx].likes = liked ? Math.max(0, feed[idx].likes-1): feed[idx].likes+1; save(STORAGE_FEED, feed); }
-  renderFeed(); renderRows();
+/* Render sections */
+function renderAll(){
+  // rows
+  trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
+  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
+  trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
+  const recent = [...feed].slice().reverse().slice(0,8);
+  recent.forEach(i=> recentRow.appendChild(createThumb(i)));
+  // feed with sponsors and store items
+  feed.forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it, idx)));
+  // store mini
+  renderStore();
+  lazyLoadImages();
+  updateKPIs();
 }
 
-/* Share flow:
-   - Attempt to use navigator.share (native)
-   - Fallback: create short link simulation (counts towards shortClicks and revenue)
-   - If you integrate a real shortener API, replace shortenLink() implementation */
-async function shareItem(item){
-  const shareText = `${item.title} — Vía SinFiltro`;
-  const urlToShare = item.src; // In production, use a canonical post URL
-  if(navigator.share){
-    try{ await navigator.share({title:item.title,text:shareText,url:urlToShare});}
-    catch(e){}
-    return;
-  }
-  // fallback: shorten link (simulated)
-  const short = await shortenLinkSim(urlToShare);
-  // open the short link in new tab
-  window.open(short, '_blank');
-}
-
-/* Simulated shortener (replace with real API call when ready).
-   Increments shortClicks when the shortened link is "opened".
-   We simulate that each open generates revenue. */
-function shortenLinkSim(url){
-  // Create a fake short URL and count a click when user opens.
-  const id = Math.random().toString(36).slice(2,8);
-  const shortUrl = `${location.origin}/s/${id}`; // demo route (not actually resolving)
-  // Simulate: register short click when user opens (we can't detect external opens reliably without backend)
-  // For demo: increase shortClicks now (as if user clicked the shortener landing)
-  stats.shortClicks += 1;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-  alert('Se ha generado un enlace acortado de demostración. (Simulación) — ' + shortUrl);
-  return Promise.resolve(shortUrl);
-}
-
-/* -----------------------------
-   Monetization events & dashboard
-   ----------------------------- */
-function recordAdImpression(n=1){
-  stats.adImpressions += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordShortClick(n=1){
-  stats.shortClicks += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordSubscription(n=1){
-  stats.subscriptions += n;
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-function recordSale(n=1, amount=0){
-  stats.marketplaceSales += n;
-  stats.donations += amount; // store sale revenue under donations for demo
-  save(STORAGE_STATS, stats);
-  updateDashboardKPIs();
-}
-
-/* Compute estimated revenue from stats */
-function computeRevenue(){
-  const fromAds = (stats.adImpressions/1000) * SIM.cpm_usd;
-  const fromShort = stats.shortClicks * SIM.short_click_usd;
-  const fromSubs = stats.subscriptions * SIM.subscription_usd_month;
-  const fromSales = stats.marketplaceSales * 5.0 * (SIM.marketplace_fee_percent/100); // assume 5$ avg sale * fee
-  const total = fromAds + fromShort + fromSubs + fromSales + (stats.donations||0);
-  return {fromAds,fromShort,fromSubs,fromSales,total};
-}
-
-/* Update dashboard UI */
-function updateDashboardKPIs(){
-  document.getElementById('kpiImpressions').textContent = stats.adImpressions.toLocaleString();
-  document.getElementById('kpiShortClicks').textContent = stats.shortClicks.toLocaleString();
-  document.getElementById('kpiSubs').textContent = stats.subscriptions.toLocaleString();
-  document.getElementById('kpiSales').textContent = stats.marketplaceSales.toLocaleString();
-  const rev = computeRevenue();
-  document.getElementById('kpiRevenue').textContent = '$' + rev.total.toFixed(2);
-}
-
-/* Dashboard actions (simulate events) */
-document.getElementById('simImp').addEventListener('click', ()=>{ recordAdImpression(1); });
-document.getElementById('simShort').addEventListener('click', ()=>{ recordShortClick(1); });
-document.getElementById('simSub').addEventListener('click', ()=>{ recordSubscription(1); alert('Simulación: usuario suscrito (demo).'); });
-document.getElementById('simSale').addEventListener('click', ()=>{ recordSale(1, 5.0); alert('Simulación: venta procesada (demo).'); });
-document.getElementById('resetStats').addEventListener('click', ()=>{ if(confirm('Resetear estadísticas demo?')){ stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS,stats); updateDashboardKPIs(); }});
-document.getElementById('exportCsv').addEventListener('click', exportStatsCsv);
-
-/* Open / close dashboard */
-document.getElementById('menuBtn').addEventListener('click', ()=>{ dashboardEl.classList.add('show'); updateDashboardKPIs(); });
-document.getElementById('closeDashboard').addEventListener('click', ()=> dashboardEl.classList.remove('show'));
-
-/* Export CSV */
-function exportStatsCsv(){
-  const rev = computeRevenue();
-  const rows = [
-    ['Metric','Value'],
-    ['Ad Impressions', stats.adImpressions],
-    ['Short Clicks', stats.shortClicks],
-    ['Subscriptions', stats.subscriptions],
-    ['Marketplace Sales', stats.marketplaceSales],
-    ['Donations', stats.donations],
-    ['Estimated Revenue (USD)', rev.total.toFixed(2)]
-  ];
-  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'sinfiltro_stats.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-/* -----------------------------
-   Upload (demo local)
-   ----------------------------- */
-document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
-document.getElementById('uploadBtn').addEventListener('click', doUpload);
-function toggleUpload(){ uploadModal.classList.toggle('show'); fileInput.value=''; }
-function doUpload(){
-  const f = fileInput.files[0]; if(!f){ alert('Selecciona un archivo'); return; }
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    const url = e.target.result;
-    const newItem = {id: crypto.randomUUID(), type: f.type.startsWith('video')?'video':'image', src: url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0};
-    feed.unshift(newItem);
-    save(STORAGE_FEED, feed);
-    renderFeed(); renderRows();
-    uploadModal.classList.remove('show');
-    alert('Contenido subido (demo local). Si quieres monetizar subidas reales, conecta backend + storage (Firebase/Supabase).');
-    // optional: record an impression (new content surfaced)
-    recordAdImpression(2);
-  };
-  reader.readAsDataURL(f);
-}
-
-/* -----------------------------
-   Search overlay
-   ----------------------------- */
-const searchBtn = document.getElementById('searchBtn');
-const searchOverlay = document.getElementById('searchOverlay');
-const searchInput = document.getElementById('searchInput');
-searchBtn.addEventListener('click', ()=> { searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block'; if(searchOverlay.style.display==='block') setTimeout(()=>searchInput.focus(),80); });
-searchInput.addEventListener('input', (e)=> filterFeed(e.target.value));
-function filterFeed(q){
-  q = (q||'').toLowerCase().trim();
-  if(!q){ renderFeed(); renderRows(); return; }
-  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q));
-  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
-  trendingRow.innerHTML=''; recentRow.innerHTML='';
-  lazyObserveImages();
-}
-
-/* -----------------------------
-   Navigation (UI only)
-   ----------------------------- */
-document.querySelectorAll('.nav-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.getAttribute('data-tab');
-    if(tab==='home'){ document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'}); renderFeed(); renderRows(); }
-    else if(tab==='explore'){ document.getElementById('scrollArea').scrollTo({top:document.getElementById('trendingRow').offsetTop-40,behavior:'smooth'}); }
-    else if(tab==='likes'){ showLiked(); }
-    else if(tab==='profile'){ alert('Perfil demo — conectar backend'); }
-  });
-});
-function showLiked(){
-  const likedIds = Object.keys(load(STORAGE_LIKES, {}));
-  const liked = feed.filter(f=> likedIds.includes(f.id));
-  feedGrid.innerHTML=''; liked.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
-}
-
-/* -----------------------------
-   Lazy loading images (IntersectionObserver)
-   ----------------------------- */
+/* Lazy load images */
 let imgObserver = null;
-function lazyObserveImages(){
-  const imgs = document.querySelectorAll('img[data-src]');
+function lazyLoadImages(){
+  const imgs = qsa('img[data-src]');
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
-            const img = entry.target;
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-            imgObserver.unobserve(img);
-            // when an image is loaded and visible, count as an ad impression zone (simulate)
-            recordAdImpression(1);
+            const img = entry.target; img.src = img.dataset.src; img.removeAttribute('data-src'); obs.unobserve(img);
+            // simulate ad impression for monetization demo when image loads
+            stats.adImpressions += 1; save(STORAGE_STATS, stats); updateKPIs();
           }
         });
-      }, {rootMargin:'200px', threshold:0.1});
+      }, {rootMargin:'200px', threshold:0.05});
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
-    // fallback: load all
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); recordAdImpression(1); });
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-/* -----------------------------
-   Init render
-   ----------------------------- */
-function init(){
-  renderFeed();
-  renderRows();
-  updateDashboardKPIs();
-  // Register service worker (optional). Create sw.js in your repo for production.
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sinfiltro/sw.js').catch(e=> console.log('Service worker not registered (add /sinfiltro/sw.js to enable):',e));
+/* Viewer */
+function openViewer(id){
+  const it = feed.find(f=> f.id === id);
+  if(!it) return;
+  viewerContent.innerHTML = '';
+  if(it.type === 'video'){
+    const v = document.createElement('video'); v.src = it.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh'; viewerContent.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; img.style.maxWidth='100%'; viewerContent.appendChild(img);
   }
-  // Respect reduced motion
-  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    document.querySelectorAll('*').forEach(n=> n.style.animation='none');
-  }
+  viewer.classList.add('show'); viewer.style.display='flex';
 }
-init();
+qs('#closeViewer').addEventListener('click', ()=> { viewer.style.display='none'; });
 
-/* -----------------------------
-   Helper: createFeedItem used in filter
-   ----------------------------- */
-function createFeedItem(item){
-  const el = document.createElement('article');
-  el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
-  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item.id));
-  return el;
+/* Likes, comments, share */
+function toggleLike(id, el){
+  const idx = feed.findIndex(f=> f.id === id); if(idx<0) return;
+  feed[idx].likes = (feed[idx].likes || 0) + 1;
+  save(STORAGE_FEED, feed);
+  el.querySelector('.count').textContent = feed[idx].likes;
+  // reward badge animation when reaching thresholds
+  if(feed[idx].likes % 50 === 0){
+    const b = document.createElement('div'); b.className='badge'; b.textContent='⚡ PRO';
+    el.appendChild(b);
+    setTimeout(()=> b.remove(), 3000);
+  }
+  // simulate short click revenue when liking (demo)
+  stats.shortClicks += 0; save(STORAGE_STATS, stats); updateKPIs();
 }
 
-/* -----------------------------
-   Notes for real monetization integration
-   -----------------------------
-   1) Ads: Insert real ad provider script (AdSense) into the <head> and implement ad slots
-      where you want them. Use the provider documentation and your account ID (AD_NETWORK_ID).
-   2) Shortener: Replace shortenLinkSim() with actual API call to your shortener service.
-      Use webhooks to count real clicks server-side for accuracy.
-   3) Subscriptions/payments: Integrate Stripe Checkout or PayPal Buttons.
-      Use server-side endpoints (or Stripe Checkout Sessions) to handle payments securely.
-   4) Marketplace: Use cloud storage (Firebase Storage / Supabase Storage) and a backend to
-      process payments and transfer funds (Stripe Connect to send payouts to sellers).
-   5) Dashboard: Instead of localStorage, aggregate real metrics from providers (AdSense API,
-      shortener API, Stripe webhooks) into your server and show totals in the dashboard.
-   6) PWA: Add /sinfiltro/manifest.json and /sinfiltro/sw.js files to your repo for installability.
-*/
+function shareItem(item){
+  // simulate shortener click: counts only when link opened
+  stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs();
+  if(navigator.share){ navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{}); }
+  else { navigator.clipboard?.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('Abrir: '+item.src)); }
+}
 
-/* End of script */
+/* Comments */
+function openCommentsFor(id){
+  const it = feed.find(f=> f.id === id); if(!it) return;
+  document.getElementById('drawerTitle').textContent = `${it.title} — Comentarios`;
+  const list = comments[id] || [];
+  commentsList.innerHTML = '';
+  list.forEach(c=> {
+    const el = document.createElement('div'); el.className='comment'; el.innerHTML = `<strong>${escapeHtml(c.user)}</strong><div style="font-size:13px">${escapeHtml(c.text)}</div>`;
+    commentsList.appendChild(el);
+  });
+  drawer.classList.add('show'); drawer.style.display='flex';
+}
+
+qs('#openCommentsBtn').addEventListener('click', ()=>{
+  // if viewer open, find current displayed src and show comments for that post if exists
+  const img = viewerContent.querySelector('img');
+  if(!img) return;
+  const it = feed.find(f=> f.src === img.src);
+  if(it) openCommentsFor(it.id);
+});
+
+qs('#closeDrawer').addEventListener('click', ()=> { drawer.style.display='none'; drawer.classList.remove('show'); });
+
+document.getElementById('postComment').addEventListener('click', ()=>{
+  const text = document.getElementById('commentInput').value.trim();
+  if(!text) return alert('Escribe un comentario');
+  // attach to last opened drawerTitle post (basic)
+  const title = document.getElementById('drawerTitle').textContent.split(' — ')[0];
+  const it = feed.find(f=> f.title === title);
+  if(!it) return alert('No hay post seleccionado (demo)');
+  const id = it.id;
+  comments[id] = comments[id] || [];
+  comments[id].push({ user: 'UsuarioDemo', text: text, at: Date.now() });
+  save(STORAGE_COMMENTS, comments);
+  document.getElementById('commentInput').value = '';
+  openCommentsFor(id);
+});
+
+/* Upload (local demo) */
+document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
+document.getElementById('uploadBtn').addEventListener('click', ()=>{
+  const f = fileInput.files?.[0]; if(!f) return alert('Selecciona un archivo');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    const it = { id: 'u'+Date.now(), type: f.type.startsWith('video') ? 'video' : 'image', src: url, title: f.name || 'Nuevo', meta: 'Ahora', likes:0 };
+    feed.unshift(it); save(STORAGE_FEED, feed);
+    renderAll(); toggleUpload(); alert(T[lang].uploadSubtitle);
+  };
+  reader.readAsDataURL(f);
+});
+document.getElementById('closeUpload').addEventListener('click', ()=> toggleUpload());
+function toggleUpload(){ const el = uploadModal; if(el.classList.contains('show')){ el.classList.remove('show'); el.style.display='none' } else { el.classList.add('show'); el.style.display='block' } }
+
+/* Navigation */
+qsa('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    qsa('.nav-item').forEach(n=> n.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.getAttribute('data-tab');
+    navigateTo(tab);
+  });
+});
+function navigateTo(tab){
+  // keep design same; scroll to top or show placeholder
+  if(tab==='home'){ document.getElementById('pageHome').scrollIntoView({behavior:'smooth'}); renderAll(); }
+  else if(tab==='explore'){ // small explore simulation
+    feedGrid.innerHTML = ''; const filtered = feed.slice().sort((a,b)=> b.likes-a.likes); filtered.slice(0,12).forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it,idx))); lazyLoadImages();
+  } else if(tab==='likes'){ feedGrid.innerHTML = ''; const liked = feed.filter(f=> (likes[f.id]||0)>0); (liked.length?liked:feed.slice(0,6)).forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it,idx))); lazyLoadImages(); }
+  else if(tab==='profile'){ openDashboard(); }
+}
+
+/* infinite scroll simulation */
+let loading=false;
+document.getElementById('scrollArea').addEventListener('scroll', ()=>{
+  const sc = document.getElementById('scrollArea');
+  const nearBottom = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 520;
+  if(nearBottom && !loading){
+    loading = true;
+    setTimeout(()=> {
+      // add more demo posts
+      const more = Array.from({length:6}).map((_,i)=>({
+        id:'m'+Date.now()+i, type:'image',
+        src:`https://picsum.photos/640/420?random=${Date.now()%100000 + i}`,
+        title:['Nuevo visual','Clip urbano','Arte neon','Retrato'][i%4],
+        meta:`${randInt(90)+1}K • ${randInt(10)+1}d`, likes: randInt(500)
+      }));
+      feed = feed.concat(more); save(STORAGE_FEED, feed); renderAll(); loading=false;
+    }, 900);
+  }
+});
+
+/* store demo */
+function renderStore(){
+  const list = document.getElementById('storeList');
+  list.innerHTML = '';
+  const items = [
+    {id:'s1',title:'Pack filtros neon', price:'$2.99', img:'https://picsum.photos/seed/f1/120/120'},
+    {id:'s2',title:'Preset cinematic', price:'$1.99', img:'https://picsum.photos/seed/f2/120/120'}
+  ];
+  items.forEach(it=>{
+    const el = document.createElement('div'); el.className='store-item';
+    el.innerHTML = `<img src="${it.img}" alt="${escapeHtml(it.title)}"><div><div style="font-weight:700">${escapeHtml(it.title)}</div><div style="color:var(--muted);margin-top:6px">${it.price}</div></div><div style="margin-left:auto"><button style="padding:8px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001" data-id="${it.id}">Comprar</button></div>`;
+    list.appendChild(el);
+  });
+}
+
+/* dashboard & KPI simulation */
+function updateKPIs(){
+  document.getElementById('kpiImpressions').textContent = stats.adImpressions;
+  document.getElementById('kpiShortClicks').textContent = stats.shortClicks;
+  document.getElementById('kpiSubs').textContent = stats.subscriptions;
+  document.getElementById('kpiSales').textContent = stats.marketplaceSales;
+  // revenue calc demo
+  const rev = (stats.adImpressions/1000)*SIM.cpm_usd + stats.shortClicks*SIM.short_click_usd + stats.subscriptions*SIM.subscription_usd_month;
+  document.getElementById('kpiRevenue').textContent = `$${rev.toFixed(2)}`;
+}
+
+/* dashboard open */
+function openDashboard(){ dashboardEl.classList.add('show'); dashboardEl.style.display='block'; updateKPIs(); }
+qs('#closeDashboard').addEventListener('click', ()=> { dashboardEl.classList.remove('show'); dashboardEl.style.display='none'; });
+
+/* Dashboard simulate buttons */
+qs('#simImp').addEventListener('click', ()=> { stats.adImpressions += 100; save(STORAGE_STATS, stats); updateKPIs(); });
+qs('#simShort').addEventListener('click', ()=> { stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs(); });
+qs('#simSub').addEventListener('click', ()=> { stats.subscriptions += 1; save(STORAGE_STATS, stats); updateKPIs(); });
+qs('#simSale').addEventListener('click', ()=> { stats.marketplaceSales += 1; save(STORAGE_STATS, stats); updateKPIs(); });
+qs('#resetStats').addEventListener('click', ()=> { stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS, stats); updateKPIs(); });
+
+/* export CSV */
+qs('#exportCsv').addEventListener('click', ()=>{
+  const rows = [['metric','value'],['impressions',stats.adImpressions],['short_clicks',stats.shortClicks],['subscriptions',stats.subscriptions],['sales',stats.marketplaceSales],['revenue',document.getElementById('kpiRevenue').textContent]];
+  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='sinfiltro_stats.csv'; a.click();
+});
+
+/* share and shortener simulation on feed click */
+function simulateShortener(url){
+  // Placeholder: increment stat and return same url
+  stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs();
+  return url;
+}
+
+/* like persistence */
+function toggleLikeLocal(id){
+  likes[id] = (likes[id]||0) + 1; save(STORAGE_LIKES, likes);
+}
+
+/* language switch */
+langSelect.value = lang;
+langSelect.addEventListener('change', (e)=>{ lang = e.target.value; save(STORAGE_LANG, lang); applyLang(); });
+function applyLang(){
+  document.getElementById('heroTitle').textContent = T[lang].discover;
+  document.getElementById('heroSub').textContent = T[lang].subtitle;
+  document.getElementById('uploadTitle').textContent = T[lang].uploadTitle;
+  document.getElementById('uploadSubtitle').textContent = T[lang].uploadSubtitle;
+  document.getElementById('drawerTitle').textContent = T[lang].comments;
+  document.querySelector('#seeStore')?.textContent = T[lang].tienda;
+}
+
+/* search overlay */
+document.getElementById('searchBtn').addEventListener('click', ()=> { const s = document.getElementById('searchOverlay'); s.style.display = (s.style.display==='block')?'none':'block'; });
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ renderAll(); return; }
+  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q) || it.meta.toLowerCase().includes(q));
+  feedGrid.innerHTML=''; filtered.forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it, idx))); lazyLoadImages();
+});
+
+/* Interaction: clicking thumb opens viewer + ability to open comments for that id */
+function openViewerBySrc(src){
+  const it = feed.find(f=> f.src === src);
+  if(it) openViewer(it.id);
+}
+
+/* Initialize store buy (demo) */
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.matches('.store-item button')){
+    alert('Compra demo: función de pago no conectada.');
+  }
+});
+
+/* Accessibility: ESC closes overlays */
+document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ viewer.style.display='none'; drawer.style.display='none'; uploadModal.classList.remove('show'); uploadModal.style.display='none'; dashboardEl.classList.remove('show'); dashboardEl.style.display='none'; document.getElementById('searchOverlay').style.display='none'; } });
+
+/* initial render & lazy observer */
+applyLang();
+renderAll();
+
+/* initial store render */
+renderStore();
+
+/* set up sponsor insertion & recommendation engine (simple) */
+function recommendFor(tag){
+  // simple engine: return items containing substring match in title
+  const q = tag.toLowerCase();
+  return feed.filter(f=> f.title.toLowerCase().includes(q)).slice(0,6);
+}
+
+/* simulate ad impression on feed open */
+feedGrid.addEventListener('click', (e)=>{
+  const card = e.target.closest('.feed-item');
+  if(card){
+    // small chance to increase impression metric
+    stats.adImpressions += randInt(2);
+    save(STORAGE_STATS, stats);
+    updateKPIs();
+  }
+});
+
+/* utility: update UI when page visible again */
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ renderAll(); } });
+
 </script>
 </body>
 </html>
-```0
