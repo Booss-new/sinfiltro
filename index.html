@@ -3,329 +3,281 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Demo móvil</title>
-  <meta name="description" content="SinFiltro — comparte fotos y videos. Demo visual móvil con modo oscuro/claro." />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <title>SinFiltro — Demo Premium</title>
+  <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro y diseño moderno." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg-dark-1: #04040a;
-      --bg-dark-2: #071226;
-      --neon-cyan: #00d1ff;
-      --neon-purple: #8a6eff;
-      --muted: #9fb0bf;
-      --card: rgba(255,255,255,0.03);
+      --bg-1:#05060a; --bg-2:#071226;
+      --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
+      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
       --glass: rgba(255,255,255,0.04);
-      --radius: 14px;
-      --trans: 260ms;
+      --radius:14px; --trans:260ms;
+      --text:#eaf7ff;
     }
-    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-dark-1),var(--bg-dark-2));color:#eaf7ff;overflow:hidden}
-    body.theme-light{
-      --bg-dark-1: #f7fbff;
-      --bg-dark-2: #eef6ff;
-      --neon-cyan: #0066cc;
-      --neon-purple: #5e3bff;
-      --muted: #516070;
-      color:#071226;
-      background:linear-gradient(180deg,var(--bg-dark-1),var(--bg-dark-2));
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+    body.light{
+      --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
+      background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
     }
 
-    /* App layout */
+    /* Animated background glow */
+    .bg-anim{
+      position:fixed;inset:0;z-index:-10;pointer-events:none;
+      background:
+        radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+        radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
+      filter:blur(28px) saturate(1.05);
+      animation: drift 20s linear infinite;
+    }
+    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+
+    /* Layout */
     .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    .scroll{flex:1;overflow:auto;padding-bottom:120px;-webkit-overflow-scrolling:touch}
+    header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:14px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+    .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px}
 
-    /* Header */
-    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.02)}
-    .logo{display:flex;align-items:center;gap:10px}
-    .logo .title{
-      font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;
-      background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));-webkit-background-clip:text;color:transparent;
-      letter-spacing:0.6px;text-shadow:0 6px 26px rgba(0,0,0,0.5);
+    /* Logo (3D neon metallic mix) */
+    .brand{display:flex;align-items:center;gap:10px;justify-content:center;flex:1}
+    .brand .logo {
+      font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;
+      background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      text-shadow:0 6px 28px rgba(0,0,0,0.5);
+      transform-style:preserve-3d;
+      display:inline-block;
+    }
+    .brand .logo::after{
+      content:"";position:absolute;left:50%;top:10px;transform:translateX(-50%);width:120%;height:10px;border-radius:50%;filter:blur(14px);
+      background:linear-gradient(90deg, rgba(0,209,255,0.12), rgba(138,110,255,0.08));
+      opacity:.9;pointer-events:none;
     }
 
-    /* Hero */
-    .hero{margin:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);margin-inline:12px}
-    .hero h1{margin:0;font-size:18px;color:var(--neon-purple)}
-    .hero p{margin-top:6px;color:var(--muted);font-size:13px}
+    /* Theme toggle at top-right edge (small) */
+    .top-actions{display:flex;align-items:center;gap:8px}
+    .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
+    .icon-btn:active{transform:scale(.96)}
 
-    /* Sections */
-    .section{margin-top:14px;padding:0 12px}
-    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .section-title{font-weight:700;color:var(--neon-cyan)}
-    .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+    /* Scroll area */
+    .scroll{flex:1;overflow:auto;padding-bottom:120px; -webkit-overflow-scrolling:touch;display:flex;justify-content:center}
+    .content{width:100%;max-width:720px;padding:12px}
 
-    /* Horizontal row (trending/recent) */
-    .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
-    .h-row::-webkit-scrollbar{display:none}
-    .thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans), box-shadow var(--trans)}
-    .thumb-card:hover{transform:translateY(-6px);box-shadow:0 18px 50px rgba(0,0,0,0.5)}
-    .thumb-card img{width:170px;height:100px;object-fit:cover;display:block}
-    .thumb-info{padding:8px;font-weight:700;color:inherit;font-size:13px}
+    /* Hero - subtle */
+    .hero{margin-top:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);display:flex;flex-direction:column;gap:6px}
+    .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
+    .hero p{margin:0;color:var(--muted);font-size:13px}
 
-    /* Feed grid */
-    .feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-    .feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans);position:relative;cursor:pointer}
-    .feed-item:hover{transform:translateY(-6px)}
-    .feed-item img{width:100%;height:150px;object-fit:cover;display:block}
-    .feed-body{padding:10px}
-    .feed-title{font-weight:700;font-size:13px}
-    .feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
-    .badge{position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.25)}
+    /* Grid feed - premium cards */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+    .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);transition:transform var(--trans), box-shadow var(--trans);cursor:pointer}
+    .card:hover{transform:translateY(-8px);box-shadow:0 30px 80px rgba(0,0,0,0.7)}
+    .card img{width:100%;height:170px;object-fit:cover;display:block}
+    .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
+    .card .title{font-weight:700;font-size:13px}
+    .card .sub{font-size:12px;color:var(--muted)}
 
-    /* FAB center placeholder (kept visually) */
-    .fab-space{height:68px}
+    /* Floating subtle badge */
+    .mini-badge{position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35)}
 
-    /* Bottom nav */
-    .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:72px;border-radius:16px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:80}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-    .nav-item.active{color:var(--neon-cyan);transform:translateY(-4px)}
-    .mode-btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));border:none;color:#001;font-weight:700;cursor:pointer}
+    /* FAB space spacer */
+    .spacer{height:78px}
 
-    /* small helpers */
-    .muted{color:var(--muted)}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
-    .glass{background:var(--glass);border-radius:10px;padding:6px}
+    /* Bottom nav (keeps icons + theme mode small) */
+    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:60}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none;transition:transform var(--trans)}
+    .nav-item.active{color:var(--accent-cyan);transform:translateY(-6px)}
+    .nav-item .icon{font-size:20px}
+
+    /* Theme small toggle in nav */
+    .theme-toggle{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border:none;color:#001;font-weight:700;cursor:pointer}
 
     /* Animations */
-    .fade-in{animation:fadeIn .52s ease both}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .fade-up{animation:fadeUp .52s ease both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* Responsive tweaks */
+    /* Responsive */
     @media (max-width:420px){
-      .thumb-card{flex:0 0 150px}
-      .feed-item img{height:130px}
+      .card img{height:140px}
+      .grid{gap:10px}
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- Header -->
+  <div class="bg-anim" aria-hidden="true"></div>
+
+  <div class="app" role="application" aria-label="SinFiltro app">
     <header>
-      <div class="logo" role="banner" aria-label="SinFiltro">
-        <div class="title">SinFiltro</div>
+      <div class="header-inner">
+        <div style="width:44px"></div>
+        <div class="brand" role="banner" aria-label="SinFiltro">
+          <div class="logo" aria-hidden="false">SinFiltro</div>
+        </div>
+        <div class="top-actions" style="justify-self:end">
+          <button id="topThemeBtn" class="icon-btn" title="Cambiar modo" aria-label="Cambiar modo">🌗</button>
+        </div>
       </div>
     </header>
 
-    <!-- Scrollable content -->
     <div class="scroll" id="scrollArea">
-      <main>
-        <section class="hero fade-in" aria-label="Presentación">
+      <div class="content">
+        <section class="hero fade-up" aria-label="Presentación">
           <h1 id="heroTitle">Descubre lo auténtico</h1>
-          <p id="heroSub" class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+          <p id="heroSub" class="muted">Solo imágenes — apariencia premium. Desliza para explorar.</p>
         </section>
 
-        <section class="section">
-          <div class="section-header">
-            <div class="section-title">🔥 En Tendencia</div>
-            <div class="see-all" id="seeTrending">Ver todo</div>
-          </div>
-          <div class="h-row" id="trendingRow" aria-live="polite"></div>
+        <section style="margin-top:12px" aria-label="Feed">
+          <div class="grid" id="gridFeed" aria-live="polite"></div>
         </section>
 
-        <section class="section">
-          <div class="section-header">
-            <div class="section-title">⏮️ Vistos recientemente</div>
-            <div class="see-all" id="seeRecent">Ver todo</div>
-          </div>
-          <div class="h-row" id="recentRow"></div>
-        </section>
-
-        <section class="section">
-          <div class="section-header">
-            <div class="section-title">🎯 Recomendados</div>
-            <div class="see-all" id="seeReco">Ver todo</div>
-          </div>
-          <div class="feed" id="feedGrid" aria-live="polite"></div>
-        </section>
-
-        <div class="fab-space"></div>
-      </main>
+        <div class="spacer" aria-hidden="true"></div>
+      </div>
     </div>
 
-    <!-- Bottom navigation -->
     <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-      <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
-      <div class="nav-item" id="navUpload">＋<div style="font-size:11px">Subir</div></div>
-      <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Favoritos</div></div>
-      <div class="nav-item" id="modeToggleWrap">
-        <button id="modeToggle" class="mode-btn" title="Cambiar modo">🌙</button>
-      </div>
+      <div class="nav-item active" data-tab="home" id="navHome"><div class="icon">🏠</div><div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="explore" id="navExplore"><div class="icon">🔍</div><div style="font-size:11px">Explorar</div></div>
+      <div class="nav-item" id="navUpload"><div class="icon">＋</div><div style="font-size:11px">Subir</div></div>
+      <div class="nav-item" data-tab="likes" id="navLikes"><div class="icon">❤</div><div style="font-size:11px">Favoritos</div></div>
+      <div class="nav-item" id="navThemeControl"><button id="navThemeBtn" class="theme-toggle" title="Cambiar modo" aria-label="Cambiar modo">🌙</button></div>
     </nav>
   </div>
 
-  <!-- Viewer modal (simple) -->
-  <div id="viewerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:200;align-items:center;justify-content:center;padding:18px;">
-    <div style="width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;">
-      <div id="viewerContent" style="text-align:center;color:#fff;"></div>
+  <!-- Viewer modal -->
+  <div id="viewer" style="display:none;position:fixed;inset:0;z-index:120;background:linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.95));align-items:center;justify-content:center;padding:18px;">
+    <div style="width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px">
+      <div id="viewerContent" style="text-align:center;color:#fff"></div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
-        <button id="closeViewerBtn" class="btn">Cerrar</button>
+        <button id="closeViewer" class="icon-btn" style="border-radius:10px">Cerrar</button>
       </div>
     </div>
   </div>
 
 <script>
-/* SinFiltro — versión visual moderna (mobile) */
-/* Data + render + lazy load + theme toggle + interactions */
+/* SinFiltro — Premium visual (solo imágenes) */
+/* Features: lazy-load images, grid, theme toggle (top + bottom), viewer modal, infinite scroll demo */
 
 /* Helpers */
-const q = sel => document.querySelector(sel);
-const qa = sel => Array.from(document.querySelectorAll(sel));
-const randInt = n => Math.floor(Math.random()*n);
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
 
-/* Demo feed (random images) */
+/* Initial demo feed (random images) */
 let feed = Array.from({length:12}).map((_,i)=>({
-  id: 'p'+i,
-  src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*1000)+i}`,
-  title: ['Calle Neon','Atardecer','Retrato','Arte Urbano','Nocturna','Short Visual'][i%6],
-  meta: `${randInt(500)+1}K • ${randInt(30)+1}d`,
-  likes: randInt(500)
+  id: 'i'+i,
+  src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`,
+  title: ['Calle Neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  meta: `${rand(900)+1}K • ${rand(30)+1}d`,
+  likes: rand(400)
 }));
 
-/* Render functions */
-function createThumb(item){
+/* Render grid cards */
+function cardEl(item, idx){
   const el = document.createElement('div');
-  el.className = 'thumb-card fade-in';
-  el.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="thumb-info">${item.title}</div>`;
-  el.addEventListener('click', ()=> openViewer(item));
-  return el;
-}
-function createFeedItem(item, idx){
-  const el = document.createElement('article');
-  el.className = 'feed-item fade-in';
-  el.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="feed-body"><div class="feed-title">${item.title}</div><div class="feed-meta"><div class="muted">${item.meta}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes}</span></button><button class="share-btn" data-src="${item.src}">🔗</button></div></div></div>`;
-  if(item.likes>200){
-    const b = document.createElement('div'); b.className='badge'; b.textContent='🔥 TOP'; el.appendChild(b);
-  }
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item, el); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); simulateShare(item.src); });
+  el.className = 'card fade-up';
+  el.innerHTML = `
+    <img data-src="${item.src}" alt="${item.title}" loading="lazy">
+    <div class="meta">
+      <div>
+        <div class="title">${item.title}</div>
+        <div class="sub">${item.meta}</div>
+      </div>
+      ${item.likes>200 ? `<div class="mini-badge">🔥 TOP</div>` : ''}
+    </div>
+  `;
   el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
 
-function renderAll(){
-  const trendingRow = q('#trendingRow'); const recentRow = q('#recentRow'); const feedGrid = q('#feedGrid');
-  trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
-  // trending: top by likes
-  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
-  trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
-  const recent = [...feed].slice().reverse().slice(0,8);
-  recent.forEach(i=> recentRow.appendChild(createThumb(i)));
-  feed.forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it, idx)));
-  lazyLoadImages();
+function renderGrid(){
+  const grid = $('#gridFeed'); grid.innerHTML = '';
+  feed.forEach((it,idx)=> grid.appendChild(cardEl(it, idx)));
+  startLazy();
 }
 
-/* Lazy load with IntersectionObserver */
-let imgObserver = null;
-function lazyLoadImages(){
-  const imgs = qa('img[data-src]');
+/* Lazy loading images */
+let observer = null;
+function startLazy(){
+  const imgs = $$('img[data-src]');
   if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(entry=>{
-          if(entry.isIntersecting){
-            const img = entry.target; img.src = img.dataset.src; img.removeAttribute('data-src'); obs.unobserve(img);
+    if(!observer){
+      observer = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(en=>{
+          if(en.isIntersecting){
+            const img = en.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            obs.unobserve(img);
           }
         });
-      }, {rootMargin:'160px'});
+      }, {rootMargin:'200px', threshold:0.05});
     }
-    imgs.forEach(i=> imgObserver.observe(i));
+    imgs.forEach(i=> observer.observe(i));
   } else {
     imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-/* Viewer */
+/* Viewer modal */
 function openViewer(item){
-  const modal = q('#viewerModal'); const content = q('#viewerContent');
-  content.innerHTML = '';
-  if(item){
-    if(item.src.match(/\.(mp4|webm|ogg)$/)){
-      const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxWidth='100%'; content.appendChild(v);
-    } else {
-      const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.maxWidth='100%'; content.appendChild(img);
-    }
-  }
-  modal.style.display = 'flex';
+  const v = $('#viewer'); const c = $('#viewerContent');
+  c.innerHTML = '';
+  const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.maxWidth='100%';
+  c.appendChild(img);
+  v.style.display = 'flex';
 }
-q('#closeViewerBtn').addEventListener('click', ()=> { q('#viewerModal').style.display='none'; });
+$('#closeViewer').addEventListener('click', ()=> $('#viewer').style.display = 'none');
 
-/* Likes & share simulation */
-function toggleLike(item, el){
-  item.likes = (item.likes||0) + 1;
-  const cnt = el.querySelector('.count'); if(cnt) cnt.textContent = item.likes;
-  // micro animation
-  el.animate([{transform:'scale(0.96)'},{transform:'scale(1.02)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});
-}
-function simulateShare(url){
-  if(navigator.share){
-    navigator.share({title:'SinFiltro',text:'Mira esto',url}).catch(()=>{});
-  } else if(navigator.clipboard){
-    navigator.clipboard.writeText(url).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert(url));
-  } else alert(url);
-}
-
-/* Nav behavior */
-qa('.nav-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    qa('.nav-item').forEach(n=> n.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    if(!tab || tab==='home'){ q('#scrollArea').scrollTop = 0; renderAll(); }
-    else if(tab==='explore'){ // simple explore: shuffle feed
-      feed = feed.sort(()=>Math.random()-0.5); renderAll();
-    } else if(tab==='likes'){ // show top liked
-      const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
-      q('#feedGrid').innerHTML=''; sorted.forEach((it,idx)=> q('#feedGrid').appendChild(createFeedItem(it,idx))); lazyLoadImages();
-    } else if(tab==='profile'){ alert('Perfil demo (próximamente)'); }
-  });
-});
-
-/* Upload placeholder */
-q('#navUpload').addEventListener('click', ()=> alert('Subida demo: usa la versión con backend para guardar archivos.'));
-
-/* Theme toggle (bottom nav) */
-const body = document.body;
-const THEME_KEY = 'sinfiltro.theme.v1';
+/* Theme toggle (top & bottom) */
+const THEME_KEY = 'sinfiltro.theme.v2';
 function applyTheme(t){
-  if(t === 'light'){ body.classList.add('theme-light'); q('#modeToggle').textContent = '☀️'; }
-  else { body.classList.remove('theme-light'); q('#modeToggle').textContent = '🌙'; }
+  if(t === 'light'){ document.body.classList.add('light'); $('#topThemeBtn').textContent='☀️'; $('#navThemeBtn').textContent='☀️'; }
+  else { document.body.classList.remove('light'); $('#topThemeBtn').textContent='🌗'; $('#navThemeBtn').textContent='🌙'; }
 }
 let theme = localStorage.getItem(THEME_KEY) || 'dark';
 applyTheme(theme);
-q('#modeToggle').addEventListener('click', ()=>{
-  theme = (theme === 'dark') ? 'light' : 'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
+$('#topThemeBtn').addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+$('#navThemeBtn').addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+
+/* Navigation interactions */
+$$('.nav-item').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    $$('.nav-item').forEach(n=> n.classList.remove('active'));
+    el.classList.add('active');
+    const tab = el.dataset.tab;
+    if(!tab || tab === 'home'){ $('#scrollArea').scrollTop = 0; renderGrid(); }
+    else if(tab === 'explore'){ feed = feed.sort(()=>Math.random()-0.5); renderGrid(); }
+    else if(tab === 'likes'){ const top = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8); $('#gridFeed').innerHTML=''; top.forEach((it,i)=> $('#gridFeed').appendChild(cardEl(it,i))); startLazy(); }
+    else if(el.id === 'navUpload'){ alert('Función subir: demo. Requiere backend para guardar archivos.'); }
+  });
 });
 
-/* Infinite scroll: append more demo items */
-let loading = false;
-q('#scrollArea').addEventListener('scroll', ()=>{
-  const sc = q('#scrollArea');
-  const nearBottom = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 420;
-  if(nearBottom && !loading){
+/* Infinite scroll demo: append images */
+let loading=false;
+$('#scrollArea').addEventListener('scroll', ()=>{
+  const s = $('#scrollArea');
+  if(s.scrollTop + s.clientHeight > s.scrollHeight - 420 && !loading){
     loading = true;
     setTimeout(()=> {
       const more = Array.from({length:6}).map((_,i)=>({
         id: 'm'+Date.now()+i,
-        src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*10000)+i}`,
+        src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`,
         title: ['Visual','Urbano','Gamer','Arte'][i%4],
-        meta: `${randInt(900)+1}K • ${randInt(10)+1}d`,
-        likes: randInt(400)
+        meta: `${rand(900)+1}K • ${rand(20)+1}d`,
+        likes: rand(500)
       }));
       feed = feed.concat(more);
-      renderAll();
+      renderGrid();
       loading = false;
-    }, 800);
+    }, 700);
   }
 });
 
 /* Initial render */
-renderAll();
+renderGrid();
 
-/* Accessibility: ESC to close viewer */
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ q('#viewerModal').style.display = 'none'; } });
+/* Accessibility: ESC closes viewer */
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ $('#viewer').style.display='none'; } });
 </script>
 </body>
 </html>
