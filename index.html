@@ -1,405 +1,251 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Premium Mobile v3.1</title>
-  <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con drawer, categorías y modo claro/oscuro." />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg-1:#05060a; --bg-2:#071226;
-      --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-      --glass: rgba(255,255,255,0.04);
-      --radius:14px; --trans:320ms;
-      --text:#eaf7ff; --easing:cubic-bezier(.2,.9,.22,1);
-    }
-    body.light{
-      --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
-    *{box-sizing:border-box}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SinFiltro</title>
+<style>
+  :root {
+    --fondo-claro: #f5f5f7;
+    --texto-claro: #1c1c1e;
+    --fondo-oscuro: #0d0d0f;
+    --texto-oscuro: #f5f5f7;
+    --acento: #ff3366;
+    --acento-sec: #3a86ff;
+    --radio: 18px;
+  }
 
-    /* background glow */
-    .bg-layer{position:fixed;inset:0;z-index:-20;pointer-events:none;background:
-      radial-gradient(600px 320px at 12% 8%, rgba(138,110,255,0.06), transparent 8%),
-      radial-gradient(900px 420px at 88% 78%, rgba(0,209,255,0.04), transparent 10%);
-      filter:blur(28px) saturate(1.05);transition:transform 600ms var(--easing);}
+  body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: var(--fondo-claro);
+    color: var(--texto-claro);
+    transition: background 0.5s, color 0.5s;
+  }
 
-    /* layout */
-    .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:12px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.02);transition:backdrop-filter 320ms}
-    .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px}
+  body.dark {
+    background: var(--fondo-oscuro);
+    color: var(--texto-oscuro);
+  }
 
-    /* left menu button */
-    .left-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
 
-    /* logo */
-    .brand{display:flex;align-items:center;justify-content:center;flex:1;position:relative}
-    .brand .logo{font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;color:transparent;text-shadow:0 8px 28px rgba(0,0,0,0.6)}
+  .menu-btn {
+    width: 26px;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+    cursor: pointer;
+  }
+  .menu-btn::before, .menu-btn::after {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 2px;
+    background: currentColor;
+    left: 0;
+    transition: 0.3s;
+  }
+  .menu-btn::before { top: -7px; }
+  .menu-btn::after { top: 7px; }
 
-    /* top actions */
-    .top-actions{display:flex;align-items:center;gap:8px}
-    .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:transform 200ms}
-    .icon-btn:active{transform:scale(.96)}
+  .logo {
+    font-weight: 700;
+    font-size: 1.4em;
+    letter-spacing: 1px;
+  }
 
-    /* scroll/content */
-    .scroll{flex:1;overflow:auto;padding-bottom:120px;-webkit-overflow-scrolling:touch;display:flex;justify-content:center}
-    .content{width:100%;max-width:720px;padding:12px}
+  .toggle-mode {
+    cursor: pointer;
+    font-size: 1.2em;
+  }
 
-    /* categories chips */
-    .chips{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;margin-top:8px}
-    .chip{flex:0 0 auto;padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);color:var(--muted);font-weight:600;cursor:pointer;transition:transform var(--trans)}
-    .chip.active{background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;transform:translateY(-4px)}
+  section {
+    padding: 12px;
+  }
 
-    /* hero */
-    .hero{margin-top:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);display:flex;flex-direction:column;gap:6px}
-    .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
-    .hero p{margin:0;color:var(--muted);font-size:13px}
+  .section-title {
+    font-weight: 600;
+    font-size: 1.1em;
+    margin: 8px 0;
+    position: sticky;
+    top: 50px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.95), transparent);
+    padding: 4px 0;
+    animation: fadeIn 0.8s ease forwards;
+  }
 
-    /* grid */
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-    .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);transition:transform var(--trans), box-shadow var(--trans)}
-    .card:hover{transform:translateY(-8px);box-shadow:0 30px 80px rgba(0,0,0,0.7)}
-    .skeleton{width:100%;height:170px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.035), rgba(255,255,255,0.02));background-size:200% 100%;animation:skeletonAnim 1.2s linear infinite}
-    @keyframes skeletonAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
-    .card img, .card video{width:100%;height:170px;object-fit:cover;display:block;opacity:0;transition:opacity 360ms}
-    .card.loaded img, .card.loaded video{opacity:1}
-    .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
-    .title{font-weight:700;font-size:13px}
-    .sub{font-size:12px;color:var(--muted)}
-    .mini-badge{position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35)}
+  body.dark .section-title {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+  }
 
-    /* drawer (left) */
-    .drawer-wrap{position:fixed;inset:0;z-index:140;display:none}
-    .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);opacity:0;transition:opacity 260ms}
-    .drawer{position:fixed;left:0;top:0;bottom:0;width:78%;max-width:340px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,0.6);transform:translateX(-110%);transition:transform 320ms var(--easing);padding:16px;border-radius:0 12px 12px 0}
-    .drawer.show{transform:translateX(0)}
-    .drawer-overlay.show{opacity:1}
-    .drawer .profile{display:flex;gap:12px;align-items:center;padding:8px 0;margin-bottom:8px}
-    .avatar{width:56px;height:56px;border-radius:12px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;font-weight:700;color:#001}
-    .drawer .list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-    .drawer .item{padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.02);cursor:pointer;display:flex;align-items:center;gap:10px}
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
 
-    /* bottom nav */
-    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.32));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:90}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-    .nav-item.active{color:var(--accent-cyan);transform:translateY(-6px)}
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 
-    /* misc */
-    .fade-up{animation:fadeUp .56s var(--easing) both}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    @media(max-width:420px){ .card img,.card video{height:140px} .grid{gap:10px} .drawer{width:84%} }
-  </style>
+  .item {
+    position: relative;
+    border-radius: var(--radio);
+    overflow: hidden;
+    background: #ccc;
+    aspect-ratio: 1/1;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .item:hover {
+    transform: scale(1.02);
+  }
+
+  .item img, .item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .tag {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 0.75em;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  /* Modal */
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+  }
+
+  .modal.active {
+    display: flex;
+  }
+
+  .modal-content img, .modal-content video {
+    width: 90%;
+    max-height: 80vh;
+    border-radius: var(--radio);
+  }
+</style>
 </head>
 <body>
-  <div class="bg-layer" id="bgLayer" aria-hidden="true"></div>
+  <header>
+    <div class="menu-btn" id="menuBtn"></div>
+    <div class="logo">SinFiltro</div>
+    <div class="toggle-mode" id="toggleMode">🌙</div>
+  </header>
 
-  <div class="app" role="application" aria-label="SinFiltro app">
-    <header id="topBar">
-      <div class="header-inner">
-        <div class="left-btn" id="menuBtn" aria-label="Abrir menú">☰</div>
-        <div class="brand" role="banner"><div class="logo" id="siteLogo">SinFiltro</div></div>
-        <div class="top-actions"><button id="topThemeBtn" class="icon-btn" title="Cambiar modo" aria-label="Cambiar modo">🌗</button></div>
-      </div>
-    </header>
+  <main>
+    <section>
+      <div class="section-title">🔥 Tendencias</div>
+      <div class="grid" id="trendGrid"></div>
+    </section>
 
-    <div class="scroll" id="scrollArea" tabindex="0">
-      <div class="content">
-        <section class="hero fade-up">
-          <h1>Descubre lo auténtico</h1>
-          <p class="muted">Selecciona una categoría y desliza para explorar.</p>
-        </section>
+    <section>
+      <div class="section-title">💫 Recomendado</div>
+      <div class="grid" id="recoGrid"></div>
+    </section>
 
-        <!-- categories -->
-        <div class="chips" id="chips">
-          <div class="chip active" data-cat="images">📸 Imágenes</div>
-          <div class="chip" data-cat="videos">🎥 Videos</div>
-          <div class="chip" data-cat="trending">🔥 Tendencias</div>
-          <div class="chip" data-cat="recent">⏮️ Vistos</div>
-          <div class="chip" data-cat="recommended">💡 Recomendado</div>
-        </div>
+    <section>
+      <div class="section-title">🎥 Videos</div>
+      <div class="grid" id="videoGrid"></div>
+    </section>
 
-        <section aria-label="Feed">
-          <div class="grid" id="gridFeed" aria-live="polite"></div>
-        </section>
+    <section>
+      <div class="section-title">❤️ Para ti</div>
+      <div class="grid" id="foryouGrid"></div>
+    </section>
 
-        <div style="height:78px" aria-hidden="true"></div>
-      </div>
-    </div>
+    <section>
+      <div class="section-title">🌈 Aleatorios</div>
+      <div class="grid" id="randomGrid"></div>
+    </section>
+  </main>
 
-    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div class="nav-item active" data-tab="home" id="navHome"><div class="icon">🏠</div><div style="font-size:11px">Inicio</div></div>
-      <div class="nav-item" data-tab="explore" id="navExplore"><div class="icon">🔍</div><div style="font-size:11px">Explorar</div></div>
-      <div class="nav-item" id="navUpload"><div class="icon">＋</div><div style="font-size:11px">Subir</div></div>
-      <div class="nav-item" data-tab="likes" id="navLikes"><div class="icon">❤</div><div style="font-size:11px">Favoritos</div></div>
-    </nav>
-  </div>
-
-  <!-- drawer -->
-  <div class="drawer-wrap" id="drawerWrap" aria-hidden="true">
-    <div class="drawer-overlay" id="drawerOverlay"></div>
-    <aside class="drawer" id="drawer" role="dialog" aria-label="Menú lateral">
-      <div class="profile">
-        <div class="avatar">SF</div>
-        <div>
-          <div style="font-weight:700">Invitado</div>
-          <div style="font-size:13px;color:var(--muted)">Inicia sesión para más funciones</div>
-        </div>
-      </div>
-      <div class="list">
-        <div class="item" id="drawerProfile">👤 Perfil / Iniciar sesión</div>
-        <div class="item" id="drawerSettings">⚙️ Configuración</div>
-        <div class="item" id="drawerNoti">🔔 Notificaciones</div>
-        <div class="item" id="drawerPremium">⭐ Premium</div>
-        <div class="item" id="drawerSupport">🕹️ Centro de control</div>
-        <div class="item" id="drawerLogout">🚪 Cerrar</div>
-      </div>
-    </aside>
-  </div>
-
-  <!-- viewer modal -->
-  <div id="viewer" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.96);align-items:center;justify-content:center;padding:18px;">
-    <div style="width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px">
-      <div id="viewerContent" style="text-align:center;color:#fff"></div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
-        <button id="closeViewer" class="icon-btn" style="border-radius:10px">Cerrar</button>
-      </div>
-    </div>
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content" id="modalContent"></div>
   </div>
 
 <script>
-/* SinFiltro v3.1 - Drawer + categories + mixed feed (images/videos) */
-/* Helpers */
-const $ = s=>document.querySelector(s);
-const $$ = s=>Array.from(document.querySelectorAll(s));
-const rand = n=>Math.floor(Math.random()*n);
-
-/* drawer logic */
-const menuBtn = $('#menuBtn');
-const drawerWrap = $('#drawerWrap');
-const drawer = $('#drawer');
-const drawerOverlay = $('#drawerOverlay');
-
-function openDrawer(){
-  drawerWrap.style.display = 'block';
-  setTimeout(()=> { drawer.classList.add('show'); drawerOverlay.classList.add('show'); }, 10);
-  drawerWrap.setAttribute('aria-hidden','false');
-}
-function closeDrawer(){
-  drawer.classList.remove('show'); drawerOverlay.classList.remove('show');
-  setTimeout(()=> { drawerWrap.style.display = 'none'; drawerWrap.setAttribute('aria-hidden','true'); }, 320);
-}
-menuBtn.addEventListener('click', openDrawer);
-drawerOverlay.addEventListener('click', closeDrawer);
-/* close on swipe left (basic) */
-let startX = null;
-drawer.addEventListener('touchstart', e=> startX = e.touches[0].clientX);
-drawer.addEventListener('touchend', e=> { if(startX && (e.changedTouches[0].clientX - startX) > 60) closeDrawer(); startX = null; });
-
-/* drawer item demos */
-$('#drawerProfile').addEventListener('click', ()=> { alert('Perfil / Login (demo)'); closeDrawer(); });
-$('#drawerSettings').addEventListener('click', ()=> { alert('Configuración (demo)'); closeDrawer(); });
-$('#drawerNoti').addEventListener('click', ()=> { alert('Notificaciones (demo)'); closeDrawer(); });
-$('#drawerPremium').addEventListener('click', ()=> { alert('Premium (demo)'); closeDrawer(); });
-$('#drawerSupport').addEventListener('click', ()=> { alert('Centro (demo)'); closeDrawer(); });
-$('#drawerLogout').addEventListener('click', ()=> { alert('Cerrar (demo)'); closeDrawer(); });
-
-/* categories + feed handling */
-const categories = $$('#chips .chip');
-let currentCategory = 'images';
-
-const makeFeedItem = (i, type) => {
-  // type: 'image' or 'video'
-  const id = `m${Date.now()}${i}`;
-  if(type === 'video'){
-    // sample video (public) - will autoplay muted in viewer
-    return {
-      id, type:'video',
-      src: 'https://www.w3schools.com/html/mov_bbb.mp4',
-      title: ['Clip urbano','Short visual','Trailer','Loop creativo'][i%4],
-      meta: `${rand(900)+1}K • ${rand(30)+1}d`,
-      likes: rand(500)
-    };
-  } else {
-    return {
-      id, type:'image',
-      src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`,
-      title: ['Calle Neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-      meta: `${rand(900)+1}K • ${rand(30)+1}d`,
-      likes: rand(500)
-    };
-  }
-};
-
-/* initial mixed feed */
-let feed = Array.from({length:12}).map((_,i) => {
-  const t = (i%5===1) ? 'video' : 'image';
-  return makeFeedItem(i, t);
+const toggleMode = document.getElementById('toggleMode');
+toggleMode.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  toggleMode.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 });
 
-/* render card (image or video) */
-function cardEl(item){
-  const el = document.createElement('div');
-  el.className = 'card fade-up';
-  if(item.type === 'video'){
-    el.innerHTML = `
-      <div class="skeleton" aria-hidden="true"></div>
-      <video data-src="${item.src}" muted playsinline preload="metadata"></video>
-      <div class="meta"><div><div class="title">${item.title}</div><div class="sub">${item.meta}</div></div>${item.likes>300?`<div class="mini-badge">🔥 TOP</div>`:''}</div>
-    `;
-  } else {
-    el.innerHTML = `
-      <div class="skeleton" aria-hidden="true"></div>
-      <img data-src="${item.src}" alt="${item.title}" loading="lazy">
-      <div class="meta"><div><div class="title">${item.title}</div><div class="sub">${item.meta}</div></div>${item.likes>300?`<div class="mini-badge">🔥 TOP</div>`:''}</div>
-    `;
-  }
-  el.addEventListener('click', ()=> openViewer(item));
-  return el;
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modalContent');
+
+function openModal(src, isVideo=false) {
+  modal.classList.add('active');
+  modalContent.innerHTML = isVideo ? 
+    `<video src="${src}" controls autoplay></video>` : 
+    `<img src="${src}" alt="imagen">`;
 }
 
-/* render grid according to current feed */
-function renderGrid(){
-  const grid = $('#gridFeed'); grid.innerHTML = '';
-  feed.forEach(it => grid.appendChild(cardEl(it)));
-  startLazy();
+modal.addEventListener('click', () => modal.classList.remove('active'));
+
+function createItem(src, tag, isVideo=false) {
+  const div = document.createElement('div');
+  div.classList.add('item');
+  div.innerHTML = isVideo 
+    ? `<video src="${src}" muted loop></video><span class="tag">${tag}</span>` 
+    : `<img src="${src}" alt=""><span class="tag">${tag}</span>`;
+  div.addEventListener('click', () => openModal(src, isVideo));
+  return div;
 }
 
-/* lazy load images & videos */
-let observer = null;
-function startLazy(){
-  const imgs = $$('img[data-src], video[data-src]');
-  if('IntersectionObserver' in window){
-    if(!observer){
-      observer = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(en=>{
-          if(en.isIntersecting){
-            const el = en.target;
-            if(el.tagName.toLowerCase() === 'img'){
-              el.src = el.dataset.src;
-              el.onload = ()=> { const card = el.closest('.card'); if(card){ card.classList.add('loaded'); const sk = card.querySelector('.skeleton'); if(sk) sk.remove(); } };
-              el.removeAttribute('data-src');
-            } else if(el.tagName.toLowerCase() === 'video'){
-              el.src = el.dataset.src;
-              el.onloadeddata = ()=> { const card = el.closest('.card'); if(card){ card.classList.add('loaded'); const sk = card.querySelector('.skeleton'); if(sk) sk.remove(); } };
-              el.removeAttribute('data-src');
-            }
-            obs.unobserve(el);
-          }
-        });
-      }, {rootMargin:'220px', threshold:0.05});
-    }
-    imgs.forEach(i => observer.observe(i));
-  } else {
-    imgs.forEach(i => { i.src = i.dataset.src; i.removeAttribute('data-src'); });
-  }
+const sampleImgs = [
+  "https://images.unsplash.com/photo-1518791841217-8f162f1e1131",
+  "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+  "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d",
+  "https://images.unsplash.com/photo-1541963463532-d68292c34b19",
+  "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+];
+
+const sampleVids = [
+  "https://www.w3schools.com/html/mov_bbb.mp4",
+  "https://www.w3schools.com/html/movie.mp4"
+];
+
+function fillGrid(id, arr, tag, isVideo=false) {
+  const grid = document.getElementById(id);
+  arr.forEach(src => grid.appendChild(createItem(src, tag, isVideo)));
 }
 
-/* viewer: show image or play video */
-function openViewer(item){
-  const v = $('#viewer'), c = $('#viewerContent');
-  c.innerHTML = '';
-  if(item.type === 'video'){
-    const video = document.createElement('video');
-    video.src = item.src;
-    video.controls = true;
-    video.autoplay = true;
-    video.style.maxWidth = '100%';
-    c.appendChild(video);
-  } else {
-    const img = document.createElement('img');
-    img.src = item.src;
-    img.alt = item.title;
-    img.style.maxWidth = '100%';
-    c.appendChild(img);
-  }
-  v.style.display = 'flex';
-}
-$('#closeViewer').addEventListener('click', ()=> { $('#viewer').style.display = 'none'; const videos = $$('video'); videos.forEach(v=>{ try{ v.pause(); }catch(e){} }); });
-
-/* categories interaction */
-categories.forEach(chip => chip.addEventListener('click', () => {
-  categories.forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  const cat = chip.dataset.cat;
-  currentCategory = cat;
-  // regenerate feed depending on category
-  if(cat === 'images'){
-    feed = Array.from({length:12}).map((_,i)=> makeFeedItem(i,'image'));
-  } else if(cat === 'videos'){
-    feed = Array.from({length:12}).map((_,i)=> makeFeedItem(i,'video'));
-  } else if(cat === 'trending'){
-    // mix but boost likes
-    feed = Array.from({length:12}).map((_,i)=> { const it = makeFeedItem(i, (i%3===0)?'video':'image'); it.likes += 300; return it; });
-  } else if(cat === 'recent'){
-    feed = Array.from({length:12}).map((_,i)=> makeFeedItem(i,'image')).reverse();
-  } else if(cat === 'recommended'){
-    feed = Array.from({length:12}).map((_,i)=> { const it = makeFeedItem(i, (i%4===0)?'video':'image'); if(i%2===0) it.likes += 120; return it; });
-  }
-  // small transition: scroll to top of feed
-  $('#scrollArea').scrollTo({ top: 120, behavior: 'smooth' });
-  renderGrid();
-}));
-
-/* theme toggle top only */
-const THEME_KEY = 'sinfiltro.theme.v31';
-function applyTheme(t){
-  if(t === 'light'){ document.body.classList.add('light'); $('#topThemeBtn').textContent='☀️'; }
-  else { document.body.classList.remove('light'); $('#topThemeBtn').textContent='🌗'; }
-}
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-applyTheme(theme);
-$('#topThemeBtn').addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); document.documentElement.style.transition = 'background 420ms, color 420ms'; applyTheme(theme); setTimeout(()=> document.documentElement.style.transition = '', 600); });
-
-/* nav interactions (bottom) */
-$$('.nav-item').forEach(el=>{
-  el.addEventListener('click', ()=>{
-    $$('.nav-item').forEach(n=> n.classList.remove('active'));
-    el.classList.add('active');
-    const tab = el.dataset.tab;
-    if(!tab || tab === 'home'){ $('#scrollArea').scrollTop = 0; renderGrid(); }
-    else if(tab === 'explore'){ categories[1].click(); } // open videos via explore
-    else if(tab === 'likes'){ categories[4].click(); } // recommended
-    else if(el.id === 'navUpload'){ alert('Subir (demo) - requiere backend.'); }
-  });
-});
-
-/* infinite scroll - append items */
-let loading = false;
-$('#scrollArea').addEventListener('scroll', ()=>{
-  const s = $('#scrollArea');
-  if(s.scrollTop + s.clientHeight > s.scrollHeight - 420 && !loading){
-    loading = true;
-    setTimeout(()=>{
-      const more = Array.from({length:6}).map((_,i)=> makeFeedItem(i, (currentCategory==='videos' || Math.random()<0.25)?'video':'image'));
-      feed = feed.concat(more);
-      renderGrid();
-      loading = false;
-    }, 700);
-  }
-});
-
-/* parallax background by scroll */
-$('#scrollArea').addEventListener('scroll', e => {
-  const s = e.target;
-  const pct = Math.min(1, s.scrollTop / (s.scrollHeight - s.clientHeight));
-  $('#bgLayer').style.transform = `translateY(${pct * -6}%)`;
-  if(s.scrollTop > 8) $('#topBar').classList.add('scrolled'); else $('#topBar').classList.remove('scrolled');
-});
-
-/* initial render */
-renderGrid();
-
-/* accessibility & close viewer with ESC */
-document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ $('#viewer').style.display = 'none'; closeDrawer(); } });
-
-/* respect reduced motion */
-if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-  $$('[class*="fade-up"]').forEach(n => n.style.animation = 'none');
-  document.documentElement.style.transition = 'none';
-}
+// Cargar contenido
+fillGrid('trendGrid', sampleImgs, 'Trend');
+fillGrid('recoGrid', sampleImgs, 'Top');
+fillGrid('videoGrid', sampleVids, 'Video', true);
+fillGrid('foryouGrid', sampleImgs, 'You');
+fillGrid('randomGrid', sampleImgs.concat(sampleVids), 'New', false);
 </script>
 </body>
 </html>
