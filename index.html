@@ -1,176 +1,119 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Premium Feed</title>
-  <meta name="description" content="SinFiltro — versión premium con diseño moderno, videos e imágenes." />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SinFiltro — Premium</title>
   <style>
-    :root{
-      --bg1:#05060a; --bg2:#071226;
-      --accent1:#00d1ff; --accent2:#8a6eff;
-      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-      --text:#eaf7ff; --radius:14px; --trans:260ms;
-    }
-    body{margin:0;height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;}
-    body.light{--bg1:#f8fbff;--bg2:#e8f0ff;--accent1:#0066cc;--accent2:#5e3bff;--text:#0a0b10;--muted:#5c6b7a;background:linear-gradient(180deg,var(--bg1),var(--bg2));}
-
-    .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
-      radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-      radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-      filter:blur(28px) saturate(1.05);animation:drift 24s linear infinite;}
-    @keyframes drift{0%,100%{transform:translate(0,0);}50%{transform:translate(3%,-3%);}}
-
-    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.03);}
-    .menu-btn,.theme-btn{width:42px;height:42px;border-radius:10px;background:var(--card);border:none;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:transform var(--trans);}
-    .menu-btn:active,.theme-btn:active{transform:scale(.95);}
-    .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:22px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 4px 24px rgba(0,0,0,0.4);}
-
-    .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px;}
-    .section{padding:14px;}
-    .section h2{margin:0 0 10px 4px;font-size:15px;font-weight:700;color:var(--accent1);}
-    .rows{display:grid;grid-template-rows:repeat(2,auto);gap:10px;}
-    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-
-    .card{position:relative;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:transform var(--trans),box-shadow var(--trans);}
-    .card:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,0.6);}
-    .card img,.card video{width:100%;height:150px;object-fit:cover;display:block;}
-    .meta{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:12px;color:var(--muted);}
-    .stats{display:flex;gap:8px;}
-    .stats span{display:flex;align-items:center;gap:4px;}
-
-    .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;background:rgba(0,0,0,0.25);opacity:0;transition:opacity var(--trans);}
-    .card:hover .play-btn{opacity:1;}
-
-    .bottom-nav{position:fixed;bottom:10px;left:10px;right:10px;height:70px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border-radius:18px;display:flex;align-items:center;justify-content:space-around;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 80px rgba(0,0,0,0.6);}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer;}
-    .nav-item.active{color:var(--accent1);}
-    .nav-item .icon{font-size:20px;}
-
-    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-    .fade-up{animation:fadeUp .4s ease both;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+    body{background:#0b0d0f;color:#fff;overflow-x:hidden}
+    header{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:#111;position:sticky;top:0;z-index:1000}
+    header h1{font-size:1.4rem;font-weight:700;letter-spacing:1px;color:#00d1ff}
+    header button{background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer}
+    .section{padding:1rem}
+    .section h2{margin-bottom:0.5rem;font-size:1.2rem;font-weight:600;color:#00d1ff}
+    .scroll-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px}
+    .scroll-row::-webkit-scrollbar{display:none}
+    .item{position:relative;min-width:160px;height:230px;border-radius:12px;overflow:hidden;background:#222;scroll-snap-align:start}
+    .item img,.item video{width:100%;height:100%;object-fit:cover;display:block}
+    .stats{position:absolute;bottom:0;left:0;width:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:space-between;padding:0.3rem 0.5rem;font-size:0.8rem}
+    .fab-container{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:25px;z-index:1000}
+    .fab{width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#00d1ff;color:#fff;font-size:1.4rem;box-shadow:0 3px 10px rgba(0,0,0,0.3);cursor:pointer;transition:transform .2s}
+    .fab:hover{transform:scale(1.1)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .fade{animation:fadeIn .5s ease}
   </style>
 </head>
 <body>
-  <div class="bg-anim"></div>
   <header>
-    <button class="menu-btn" id="menuBtn">☰</button>
-    <div class="brand">SinFiltro</div>
-    <button class="theme-btn" id="themeBtn">🌗</button>
+    <button id="menuBtn">☰</button>
+    <h1>SinFiltro</h1>
+    <button id="themeBtn">🌙</button>
   </header>
 
-  <div class="scroll" id="scrollArea">
-    <div class="section fade-up" id="tendencias">
+  <main id="content">
+    <div class="section">
       <h2>Tendencias</h2>
-      <div class="rows">
-        <div class="row" id="trend1"></div>
-        <div class="row" id="trend2"></div>
-      </div>
+      <div class="scroll-row" id="trendRow"></div>
     </div>
-
-    <div class="section fade-up" id="recomendados">
-      <h2>Recomendados</h2>
-      <div class="rows">
-        <div class="row" id="rec1"></div>
-        <div class="row" id="rec2"></div>
-      </div>
+    <div class="section">
+      <h2>Recomendado</h2>
+      <div class="scroll-row" id="recRow"></div>
     </div>
-
-    <div class="section fade-up" id="antesvisto">
+    <div class="section">
       <h2>Antes visto</h2>
-      <div class="rows">
-        <div class="row" id="view1"></div>
-        <div class="row" id="view2"></div>
-      </div>
+      <div class="scroll-row" id="seenRow"></div>
     </div>
-
-    <div class="section fade-up" id="tusvideos">
+    <div class="section">
       <h2>Tus videos</h2>
-      <div class="rows">
-        <div class="row" id="mine1"></div>
-        <div class="row" id="mine2"></div>
-      </div>
+      <div class="scroll-row" id="yourRow"></div>
     </div>
+  </main>
 
-    <div class="section fade-up" id="feed">
-      <h2>Explora más</h2>
-      <div class="rows" id="feedRows"></div>
-    </div>
+  <div class="fab-container">
+    <div class="fab" id="searchBtn">🔍</div>
+    <div class="fab" id="uploadBtn">⤴️</div>
+    <div class="fab" id="seenBtn">🕓</div>
+    <div class="fab" id="yourBtn">🎞️</div>
   </div>
 
-  <nav class="bottom-nav">
-    <div class="nav-item active"><div class="icon">🏠</div>Inicio</div>
-    <div class="nav-item"><div class="icon">🔍</div>Buscar</div>
-    <div class="nav-item"><div class="icon">＋</div>Subir</div>
-    <div class="nav-item"><div class="icon">📺</div>Tus videos</div>
-    <div class="nav-item"><div class="icon">👁</div>Antes visto</div>
-  </nav>
+  <script>
+    const createItem=(type)=>{
+      const div=document.createElement('div');
+      div.className='item fade';
+      const views=Math.floor(Math.random()*1000);
+      const likes=Math.floor(Math.random()*300);
+      const comments=Math.floor(Math.random()*80);
+      if(type==='img'){
+        const img=document.createElement('img');
+        img.src=`https://picsum.photos/300/400?random=${Math.random()}`;
+        div.appendChild(img);
+      }else{
+        const vid=document.createElement('video');
+        vid.src=`https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4`;
+        vid.muted=true;vid.loop=true;vid.playsInline=true;
+        vid.addEventListener('mouseenter',()=>vid.play());
+        vid.addEventListener('mouseleave',()=>vid.pause());
+        div.appendChild(vid);
+      }
+      const stats=document.createElement('div');
+      stats.className='stats';
+      stats.innerHTML=`❤️ ${likes} 💬 ${comments} 👁️ ${views}`;
+      div.appendChild(stats);
+      return div;
+    };
 
-<script>
-const $ = s => document.querySelector(s);
-const rand = n => Math.floor(Math.random()*n);
-const imgs = ['https://picsum.photos/600/400?random=','https://picsum.photos/seed/'];
-const videos = ['https://samplelib.com/lib/preview/mp4/sample-5s.mp4'];
+    const fillRow=(id)=>{
+      const row=document.getElementById(id);
+      for(let i=0;i<10;i++){
+        row.appendChild(createItem(Math.random()>0.5?'img':'video'));
+      }
+      // scroll infinito lateral
+      row.addEventListener('scroll',()=>{
+        if(row.scrollLeft+row.clientWidth>=row.scrollWidth-50){
+          for(let i=0;i<5;i++){
+            row.appendChild(createItem(Math.random()>0.5?'img':'video'));
+          }
+        }
+      });
+    };
 
-function genItem(isVideo=false){
-  return {
-    type:isVideo?'video':'image',
-    src:isVideo?videos[0]:imgs[0]+rand(9000),
-    likes:rand(999), comments:rand(400), views:rand(5000)
-  };
-}
+    ['trendRow','recRow','seenRow','yourRow'].forEach(fillRow);
 
-function createCard(it){
-  const el = document.createElement('div');
-  el.className='card';
-  el.innerHTML= it.type==='video'
-    ? `<video src="${it.src}" muted playsinline></video><div class="play-btn">▶️</div>`
-    : `<img src="${it.src}" alt="SinFiltro media">`;
-  const meta = document.createElement('div');
-  meta.className='meta';
-  meta.innerHTML=`<div class="stats">
-    <span>❤️ ${it.likes}</span>
-    <span>💬 ${it.comments}</span>
-    <span>👁 ${it.views}</span>
-  </div>`;
-  el.appendChild(meta);
-  if(it.type==='video'){
-    el.querySelector('.play-btn').addEventListener('click',(e)=>{
-      e.stopPropagation();
-      const v=el.querySelector('video');
-      v.paused?v.play():v.pause();
-    });
-  }
-  return el;
-}
+    // Botones flotantes (acciones simuladas)
+    document.getElementById('searchBtn').onclick=()=>alert('Buscar: próximamente 🔍');
+    document.getElementById('uploadBtn').onclick=()=>alert('Subir contenido: próximamente ⤴️');
+    document.getElementById('seenBtn').onclick=()=>alert('Historial: mostrando vistos 🕓');
+    document.getElementById('yourBtn').onclick=()=>alert('Tus videos 🎞️');
 
-function fillRow(id){ const r=$(id); r.innerHTML=''; for(let i=0;i<2;i++){r.appendChild(createCard(Math.random()<0.5?genItem(true):genItem()));}}
-['#trend1','#trend2','#rec1','#rec2','#view1','#view2','#mine1','#mine2'].forEach(fillRow);
-
-function addFeedBatch(){
-  const feed=$('#feedRows');
-  for(let i=0;i<2;i++){
-    const row=document.createElement('div');row.className='row';
-    for(let j=0;j<2;j++){row.appendChild(createCard(Math.random()<0.4?genItem(true):genItem()));}
-    feed.appendChild(row);
-  }
-}
-addFeedBatch();
-
-$('#scrollArea').addEventListener('scroll',()=>{
-  const s=$('#scrollArea');
-  if(s.scrollTop+s.clientHeight>=s.scrollHeight-400){addFeedBatch();}
-});
-
-const THEME_KEY='sinfiltro.theme';
-function applyTheme(t){t==='light'?document.body.classList.add('light'):document.body.classList.remove('light');$('#themeBtn').textContent=t==='light'?'☀️':'🌗';}
-let theme=localStorage.getItem(THEME_KEY)||'dark';
-applyTheme(theme);
-$('#themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem(THEME_KEY,theme);applyTheme(theme);};
-
-$('#menuBtn').onclick=()=>alert('Menú de usuario y configuración (demo)');
-</script>
+    // Modo oscuro
+    const themeBtn=document.getElementById('themeBtn');
+    let dark=true;
+    themeBtn.onclick=()=>{
+      dark=!dark;
+      document.body.style.background=dark?'#0b0d0f':'#f2f2f2';
+      document.body.style.color=dark?'#fff':'#111';
+    };
+  </script>
 </body>
 </html>
