@@ -1,506 +1,233 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Plataforma (Demo completo)</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinFiltro — Demo móvil</title>
+  <meta name="description" content="SinFiltro — comparte fotos y videos. Demo visual móvil con modo oscuro/claro." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- Meta / Open Graph -->
-<meta name="description" content="SinFiltro — comparte fotos, videos y conecta. Versión demo con monetización simulada, PWA-ready y panel de control.">
-<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
-<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
-<meta property="og:image" content="https://booss-new.github.io/sinfiltro/og-image.png">
-<meta property="og:url" content="https://booss-new.github.io/sinfiltro/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#00d1ff">
+  <style>
+    :root{
+      --bg-dark-1: #04040a;
+      --bg-dark-2: #071226;
+      --neon-cyan: #00d1ff;
+      --neon-purple: #8a6eff;
+      --muted: #9fb0bf;
+      --card: rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.04);
+      --radius: 14px;
+      --trans: 260ms;
+    }
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-dark-1),var(--bg-dark-2));color:#eaf7ff;overflow:hidden}
+    body.theme-light{
+      --bg-dark-1: #f7fbff;
+      --bg-dark-2: #eef6ff;
+      --neon-cyan: #0066cc;
+      --neon-purple: #5e3bff;
+      --muted: #516070;
+      color:#071226;
+      background:linear-gradient(180deg,var(--bg-dark-1),var(--bg-dark-2));
+    }
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    /* App layout */
+    .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    .scroll{flex:1;overflow:auto;padding-bottom:120px;-webkit-overflow-scrolling:touch}
 
-<style>
-:root{
-  --bg-1:#05060a; --bg-2:#0b1220;
-  --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
-  --muted:#9fb0bf; --card:#071226; --radius:12px; --trans:220ms;
-  --badge-bg: linear-gradient(90deg,#ffb86b,#ff5fb7);
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
-  radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.03), transparent 8%),
-  linear-gradient(180deg,var(--bg-1),var(--bg-2) 70%);color:#eaf7ff;-webkit-font-smoothing:antialiased;overflow:hidden}
-a{color:inherit}
-button{font:inherit}
+    /* Header */
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.02)}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo .title{
+      font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;
+      background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));-webkit-background-clip:text;color:transparent;
+      letter-spacing:0.6px;text-shadow:0 6px 26px rgba(0,0,0,0.5);
+    }
 
-/* App layout */
-.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.scroll{overflow-y:auto;padding-bottom:180px;-webkit-overflow-scrolling:touch}
+    /* Hero */
+    .hero{margin:12px;padding:14px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);margin-inline:12px}
+    .hero h1{margin:0;font-size:18px;color:var(--neon-purple)}
+    .hero p{margin-top:6px;color:var(--muted);font-size:13px}
 
-/* Header */
-header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-.brand{display:flex;flex-direction:column;align-items:center;gap:2px}
-.brand .title{color:var(--accent-1);font-weight:700}
-.icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+    /* Sections */
+    .section{margin-top:14px;padding:0 12px}
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .section-title{font-weight:700;color:var(--neon-cyan)}
+    .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-/* Logo 3D neon animation */
-.logo-3d{display:flex;align-items:center;gap:10px}
-.logo-3d .logo-box{
-  width:160px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(180deg,#071020,#0b1224);box-shadow:0 10px 40px rgba(0,0,0,0.6);position:relative;overflow:visible;
-}
-.logo-3d .logo-text{
-  font-weight:800;font-size:20px;color:transparent;
-  -webkit-background-clip:text;background-clip:text;
-  background-image:linear-gradient(90deg,#00e1ff,#8a6eff,#ff5fb7);
-  transform-style:preserve-3d;
-  animation: neonShift 3.6s linear infinite;
-}
-@keyframes neonShift{
-  0%{filter:drop-shadow(0 0 0 #00e1ff)}
-  50%{filter:drop-shadow(0 6px 18px #8a6eff)}
-  100%{filter:drop-shadow(0 0 0 #00e1ff)}
-}
+    /* Horizontal row (trending/recent) */
+    .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
+    .h-row::-webkit-scrollbar{display:none}
+    .thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans), box-shadow var(--trans)}
+    .thumb-card:hover{transform:translateY(-6px);box-shadow:0 18px 50px rgba(0,0,0,0.5)}
+    .thumb-card img{width:170px;height:100px;object-fit:cover;display:block}
+    .thumb-info{padding:8px;font-weight:700;color:inherit;font-size:13px}
 
-/* Search overlay */
-.search-overlay{position:fixed;left:12px;right:12px;top:64px;z-index:65;display:none}
-.search-input{width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
+    /* Feed grid */
+    .feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans);position:relative;cursor:pointer}
+    .feed-item:hover{transform:translateY(-6px)}
+    .feed-item img{width:100%;height:150px;object-fit:cover;display:block}
+    .feed-body{padding:10px}
+    .feed-title{font-weight:700;font-size:13px}
+    .feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
+    .badge{position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.25)}
 
-/* Hero */
-.hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-.hero h1{margin:0;color:var(--accent-2);font-size:18px}
-.hero p{margin-top:6px;color:var(--muted);font-size:13px}
+    /* FAB center placeholder (kept visually) */
+    .fab-space{height:68px}
 
-/* Sections */
-.section{margin-top:16px;padding:0 12px}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.section-title{font-weight:700;color:var(--accent-1)}
-.see-all{font-size:13px;color:var(--muted);cursor:pointer}
+    /* Bottom nav */
+    .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:72px;border-radius:16px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:80}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+    .nav-item.active{color:var(--neon-cyan);transform:translateY(-4px)}
+    .mode-btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-purple));border:none;color:#001;font-weight:700;cursor:pointer}
 
-/* Horizontal row */
-.h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
-.h-row::-webkit-scrollbar{display:none}
-.thumb-card{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);transition:transform var(--trans);position:relative}
-.thumb-card:hover{transform:translateY(-6px)}
-.thumb{width:170px;height:100px;object-fit:cover;display:block}
-.thumb-info{padding:8px;color:#eaf7ff;font-weight:600;font-size:13px}
+    /* small helpers */
+    .muted{color:var(--muted)}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
+    .glass{background:var(--glass);border-radius:10px;padding:6px}
 
-/* sponsor banner mini (inserted between posts) */
-.sponsor{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
+    /* Animations */
+    .fade-in{animation:fadeIn .52s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* Feed grid (2 columns mobile) */
-.feed{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans);position:relative}
-.feed-item:hover{transform:translateY(-6px)}
-.feed-item img{width:100%;height:150px;object-fit:cover;display:block}
-.feed-body{padding:10px}
-.feed-title{font-weight:700;color:#eaf7ff;font-size:13px}
-.feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
-
-/* badges */
-.badge{
-  position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:var(--badge-bg);color:#071020;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(255,95,183,0.12)
-}
-
-/* mini store item */
-.store-item{display:flex;gap:8px;align-items:center;padding:10px;background:rgba(255,255,255,0.02);border-radius:10px}
-.store-item img{width:64px;height:64px;object-fit:cover;border-radius:8px}
-
-/* Floating FAB */
-.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:80}
-.fab{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:28px;cursor:pointer}
-
-/* Bottom nav */
-.bottom-nav{position:fixed;left:10px;right:10px;bottom:8px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
-.nav-item.active{color:var(--accent-1);transform:translateY(-3px)}
-
-/* Viewer & drawer */
-.viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.96));display:flex;align-items:center;justify-content:center;z-index:120;padding:18px;gap:12px;flex-direction:column;display:none}
-.viewer.show{display:flex}
-.viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
-.drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none;flex-direction:column}
-.drawer.show{display:flex}
-.drawer .handle{width:48px;height:6px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
-.comments{overflow:auto;margin-top:8px;flex:1;padding-right:6px}
-.comment{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
-.comment strong{display:block;color:#e7fbff}
-
-/* Upload modal */
-.upload-modal{position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:110;display:none}
-.upload-modal.show{display:block}
-
-/* Dashboard modal (monetization) */
-.dashboard{position:fixed;left:12px;right:12px;top:12px;bottom:12px;border-radius:12px;padding:12px;background:linear-gradient(180deg,#001018,#001424);border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:200;display:none;overflow:auto}
-.dashboard.show{display:block}
-.kpi{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.kpi .card{flex:1;min-width:140px;padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
-
-/* Transitions between sections (simulated app pages) */
-.view-page{position:relative;transition:transform 360ms cubic-bezier(.2,.9,.2,1);will-change:transform}
-
-/* language selector */
-.lang-select{padding:6px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
-
-/* responsive */
-@media(max-width:420px){
-  .thumb{width:150px;height:88px}
-  .feed-item img{height:120px}
-  .fab{width:60px;height:60px}
-}
-</style>
+    /* Responsive tweaks */
+    @media (max-width:420px){
+      .thumb-card{flex:0 0 150px}
+      .feed-item img{height:130px}
+    }
+  </style>
 </head>
 <body>
-<div class="app" role="application" aria-label="SinFiltro">
-
-  <!-- Header -->
-  <header>
-    <div class="left">
-      <div class="icon-btn" id="menuBtn" title="Panel">☰</div>
-    </div>
-
-    <div class="brand" aria-hidden="false">
-      <div class="logo-3d" aria-hidden="false">
-        <div class="logo-box" style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px">
-          <div class="logo-text" style="font-weight:800;font-size:18px">SinFiltro</div>
-        </div>
+  <div class="app">
+    <!-- Header -->
+    <header>
+      <div class="logo" role="banner" aria-label="SinFiltro">
+        <div class="title">SinFiltro</div>
       </div>
-      <div class="title">SinFiltro</div>
-      <div class="subtitle" style="font-size:12px;color:var(--muted)">Tu espacio sin límites</div>
+    </header>
+
+    <!-- Scrollable content -->
+    <div class="scroll" id="scrollArea">
+      <main>
+        <section class="hero fade-in" aria-label="Presentación">
+          <h1 id="heroTitle">Descubre lo auténtico</h1>
+          <p id="heroSub" class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">🔥 En Tendencia</div>
+            <div class="see-all" id="seeTrending">Ver todo</div>
+          </div>
+          <div class="h-row" id="trendingRow" aria-live="polite"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">⏮️ Vistos recientemente</div>
+            <div class="see-all" id="seeRecent">Ver todo</div>
+          </div>
+          <div class="h-row" id="recentRow"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div class="section-title">🎯 Recomendados</div>
+            <div class="see-all" id="seeReco">Ver todo</div>
+          </div>
+          <div class="feed" id="feedGrid" aria-live="polite"></div>
+        </section>
+
+        <div class="fab-space"></div>
+      </main>
     </div>
 
-    <div class="right" style="display:flex;gap:8px;align-items:center">
-      <select id="langSelect" class="lang-select" title="Idioma">
-        <option value="es">ES</option>
-        <option value="en">EN</option>
-        <option value="pt">PT</option>
-      </select>
-      <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
-    </div>
-  </header>
-
-  <!-- Search overlay -->
-  <div class="search-overlay" id="searchOverlay">
-    <input id="searchInput" class="search-input" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar">
-  </div>
-
-  <!-- Scrollable content -->
-  <div class="scroll" id="scrollArea" tabindex="0">
-    <main class="view-page" id="pageHome">
-      <section class="hero" aria-label="Presentación">
-        <h1 id="heroTitle">Descubre lo auténtico</h1>
-        <p id="heroSub">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-      </section>
-
-      <!-- Trending -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-title" id="trendingTitle">🔥 En Tendencia</div>
-          <div class="see-all" id="seeTrending">Ver todo</div>
-        </div>
-        <div class="h-row" id="trendingRow" aria-live="polite"></div>
-      </section>
-
-      <!-- Recent -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-title" id="recentTitle">⏮️ Vistos recientemente</div>
-          <div class="see-all" id="seeRecent">Ver todo</div>
-        </div>
-        <div class="h-row" id="recentRow"></div>
-      </section>
-
-      <!-- Feed -->
-      <section class="section">
-        <div class="section-header">
-          <div class="section-title" id="recoTitle">🎯 Recomendados</div>
-          <div class="see-all" id="seeReco">Ver todo</div>
-        </div>
-        <div class="feed" id="feedGrid"></div>
-      </section>
-
-      <!-- mini store -->
-      <section class="section" style="margin-top:18px">
-        <div class="section-header">
-          <div class="section-title">🏪 Tienda</div>
-          <div class="see-all" id="seeStore">Ver tienda</div>
-        </div>
-        <div style="padding:12px;display:flex;flex-direction:column;gap:10px" id="storeList"></div>
-      </section>
-    </main>
-  </div>
-
-  <!-- FAB -->
-  <div class="fab-wrap" aria-hidden="false">
-    <button class="fab" id="fabBtn" aria-label="Crear / Subir">＋</button>
-  </div>
-
-  <!-- Upload modal -->
-  <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <strong id="uploadTitle">Subir contenido (demo)</strong>
-    <div style="color:var(--muted);font-size:13px;margin-top:8px" id="uploadSubtitle">Selecciona imagen o video. Se guarda localmente en este navegador (demo).</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-      <input type="file" id="fileInput" accept="image/*,video/*">
-      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
-      <button id="closeUpload" style="border:1px solid rgba(255,255,255,0.04);background:transparent;padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
-    </div>
-    <div style="margin-top:10px;font-size:13px;color:var(--muted)">Opciones de monetización demo disponibles en el panel.</div>
-  </div>
-
-  <!-- Viewer -->
-  <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
-    <div class="content" id="viewerContent"></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button id="openCommentsBtn" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">💬 Comentarios</button>
-      <button id="closeViewer" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
-    </div>
-  </div>
-
-  <!-- Comments drawer -->
-  <div class="drawer" id="drawer" aria-hidden="true">
-    <div class="handle" aria-hidden="true"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong id="drawerTitle">Comentarios</strong>
-      <button id="closeDrawer" style="background:none;border:none;color:var(--muted)">Cerrar</button>
-    </div>
-    <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf7ff" />
-      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#001;font-weight:700">Enviar</button>
-    </div>
-  </div>
-
-  <!-- Bottom nav -->
-  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-    <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-    <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
-    <div style="width:68px"></div>
-    <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Me gusta</div></div>
-    <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
-  </nav>
-</div>
-
-<!-- Dashboard (monetization + analytics) -->
-<div class="dashboard" id="dashboard" role="dialog" aria-hidden="true">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <strong>Dashboard — Monetización & Analytics (Demo)</strong>
-    <div>
-      <button id="closeDashboard" style="margin-right:8px;padding:6px 10px;border-radius:8px;background:none;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cerrar</button>
-      <button id="exportCsv" style="padding:6px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Exportar CSV</button>
-    </div>
-  </div>
-
-  <!-- KPIs -->
-  <div class="kpi">
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Impresiones anuncios</div>
-      <div id="kpiImpressions" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Clicks (acortador)</div>
-      <div id="kpiShortClicks" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Suscripciones Activas</div>
-      <div id="kpiSubs" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Ventas mercado</div>
-      <div id="kpiSales" style="font-weight:700;font-size:18px">0</div>
-    </div>
-    <div class="card">
-      <div style="font-size:12px;color:var(--muted)">Ganancias Estimadas (USD)</div>
-      <div id="kpiRevenue" style="font-weight:700;font-size:18px">$0.00</div>
-    </div>
-  </div>
-
-  <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
-  <div style="display:flex;gap:12px;flex-wrap:wrap">
-    <div style="flex:1;min-width:220px">
-      <h4 style="margin:0 0 8px 0">Simular eventos</h4>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="simImp" style="padding:8px;border-radius:8px;background:#123;padding:8px 10px;color:#fff">+ Impresión</button>
-        <button id="simShort" style="padding:8px;border-radius:8px;background:#123">+ Click acortador</button>
-        <button id="simSub" style="padding:8px;border-radius:8px;background:#123">+ Suscripción</button>
-        <button id="simSale" style="padding:8px;border-radius:8px;background:#123">+ Venta</button>
-        <button id="resetStats" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Reset</button>
+    <!-- Bottom navigation -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
+      <div class="nav-item" id="navUpload">＋<div style="font-size:11px">Subir</div></div>
+      <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Favoritos</div></div>
+      <div class="nav-item" id="modeToggleWrap">
+        <button id="modeToggle" class="mode-btn" title="Cambiar modo">🌙</button>
       </div>
-      <p style="color:var(--muted);font-size:13px;margin-top:10px">En producción, estos eventos se actualizan automáticamente (Ad network callbacks, shortener webhooks, Stripe webhooks, etc.). Aquí se simulan localmente.</p>
-    </div>
+    </nav>
+  </div>
 
-    <div style="flex:1;min-width:220px">
-      <h4 style="margin:0 0 8px 0">Conexiones reales (placeholders)</h4>
-      <p style="color:var(--muted);font-size:13px;margin-top:0">Para activar pagos reales pega tus keys/IDs donde se indica en el código JS:</p>
-      <ul style="color:var(--muted);font-size:13px">
-        <li>AdSense / Ad network — insertar script en &lt;head&gt; (ID en variable <code>AD_NETWORK_ID</code>).</li>
-        <li>ShrinkMe / Shortener — API key para acortar enlaces (variable <code>SHORTENER_API_KEY</code>).</li>
-        <li>Stripe / PayPal — credenciales para cobros y webhooks (placeholders en la función <code>startSubscription()</code>).</li>
-      </ul>
+  <!-- Viewer modal (simple) -->
+  <div id="viewerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:200;align-items:center;justify-content:center;padding:18px;">
+    <div style="width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;">
+      <div id="viewerContent" style="text-align:center;color:#fff;"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button id="closeViewerBtn" class="btn">Cerrar</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-/* ===========================
-   SinFiltro — All features script
-   =========================== */
+/* SinFiltro — versión visual moderna (mobile) */
+/* Data + render + lazy load + theme toggle + interactions */
 
-/* Storage & demo data */
-const STORAGE_FEED = 'sinfiltro.feed.v5';
-const STORAGE_COMMENTS = 'sinfiltro.comments.v5';
-const STORAGE_LIKES = 'sinfiltro.likes.v5';
-const STORAGE_STATS = 'sinfiltro.stats.v5';
-const STORAGE_LANG = 'sinfiltro.lang.v1';
-
-/* Monetization config (placeholders) */
-const AD_NETWORK_ID = '';
-const SHORTENER_API_KEY = '';
-const STRIPE_PUBLISHABLE_KEY = '';
-const PAYPAL_LINK = '';
-
-/* Simulation rates */
-const SIM = { cpm_usd:2.0, short_click_usd:0.02, subscription_usd_month:3.0, marketplace_fee_percent:10 };
-
-/* Demo feed */
-const DEMO_FEED = [
-  {id:'p1',type:'image',src:'https://picsum.photos/640/420?random=41',title:'Atardecer urbano',meta:'12K • 2 días',likes:124},
-  {id:'p2',type:'image',src:'https://picsum.photos/640/420?random=42',title:'Retrato creativo',meta:'8.2K • 1 día',likes:98},
-  {id:'p3',type:'image',src:'https://picsum.photos/640/420?random=43',title:'Luces en la ciudad',meta:'6.4K • 5 días',likes:45},
-  {id:'p4',type:'image',src:'https://picsum.photos/640/420?random=44',title:'Callejón neon',meta:'210K • 1 semana',likes:340},
-  {id:'p5',type:'image',src:'https://picsum.photos/640/420?random=45',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72},
-  {id:'p6',type:'image',src:'https://picsum.photos/640/420?random=46',title:'Nocturna',meta:'18K • 4 días',likes:180}
-];
-
-function load(key, fallback){ try { const r = localStorage.getItem(key); return r?JSON.parse(r):fallback } catch(e){ return fallback } }
-function save(key, val){ localStorage.setItem(key, JSON.stringify(val)) }
-
-/* persistent data */
-let feed = load(STORAGE_FEED, DEMO_FEED.slice());
-let comments = load(STORAGE_COMMENTS, {});
-let likes = load(STORAGE_LIKES, {});
-let stats = load(STORAGE_STATS, { adImpressions:0, shortClicks:0, subscriptions:0, marketplaceSales:0, donations:0.0 });
-let lang = load(STORAGE_LANG, 'es');
-
-/* DOM refs */
-const trendingRow = document.getElementById('trendingRow');
-const recentRow = document.getElementById('recentRow');
-const feedGrid = document.getElementById('feedGrid');
-const viewer = document.getElementById('viewer');
-const viewerContent = document.getElementById('viewerContent');
-const drawer = document.getElementById('drawer');
-const commentsList = document.getElementById('commentsList');
-const uploadModal = document.getElementById('uploadModal');
-const fileInput = document.getElementById('fileInput');
-const dashboardEl = document.getElementById('dashboard');
-const langSelect = document.getElementById('langSelect');
-
-/* helpers */
-const qs = s => document.querySelector(s);
-const qsa = s => Array.from(document.querySelectorAll(s));
+/* Helpers */
+const q = sel => document.querySelector(sel);
+const qa = sel => Array.from(document.querySelectorAll(sel));
 const randInt = n => Math.floor(Math.random()*n);
 
-/* translations (basic) */
-const T = {
-  es: {
-    discover: 'Descubre lo auténtico',
-    subtitle: 'Fotos y videos creados por la comunidad. Da like, comenta y comparte.',
-    uploadTitle: 'Subir contenido (demo)',
-    uploadSubtitle: 'Selecciona imagen o video. Se guarda localmente en este navegador (demo).',
-    comments: 'Comentarios',
-    tienda: 'Tienda'
-  },
-  en: {
-    discover: 'Discover the authentic',
-    subtitle: 'Photos and videos created by the community. Like, comment and share.',
-    uploadTitle: 'Upload content (demo)',
-    uploadSubtitle: 'Select image or video. Saved locally in this browser (demo).',
-    comments: 'Comments',
-    tienda: 'Shop'
-  },
-  pt: {
-    discover: 'Descubra o autêntico',
-    subtitle: 'Fotos e vídeos criados pela comunidade. Curta, comente e compartilhe.',
-    uploadTitle: 'Enviar conteúdo (demo)',
-    uploadSubtitle: 'Selecione imagem ou vídeo. Salvo localmente neste navegador (demo).',
-    comments: 'Comentários',
-    tienda: 'Loja'
-  }
-};
+/* Demo feed (random images) */
+let feed = Array.from({length:12}).map((_,i)=>({
+  id: 'p'+i,
+  src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*1000)+i}`,
+  title: ['Calle Neon','Atardecer','Retrato','Arte Urbano','Nocturna','Short Visual'][i%6],
+  meta: `${randInt(500)+1}K • ${randInt(30)+1}d`,
+  likes: randInt(500)
+}));
 
-/* PWA manifest & SW (embedded) */
-(function createManifestAndSW(){
-  try{
-    const manifest = { name:"SinFiltro", short_name:"SinFiltro", start_url:".", display:"standalone", background_color:"#04040a", theme_color:"#00e1ff", icons:[{src:"icons/icon-192.png",sizes:"192x192",type:"image/png"},{src:"icons/icon-512.png",sizes:"512x512",type:"image/png"}] };
-    const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
-    const link = document.createElement('link'); link.rel='manifest'; link.href = URL.createObjectURL(blob); document.head.appendChild(link);
-  }catch(e){ console.warn('manifest fail', e) }
-
-  if('serviceWorker' in navigator){
-    const sw = `const CACHE='sinfiltro-shell-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['.','index.html']).catch(()=>{})));self.skipWaiting();});self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)).catch(()=>caches.match('index.html')))});`;
-    const blob = new Blob([sw],{type:'application/javascript'}); const url = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(url).catch(()=>{});
-  }
-})();
-
-/* Render helpers */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
+/* Render functions */
 function createThumb(item){
-  const el = document.createElement('div'); el.className = 'thumb-card';
-  el.innerHTML = `<img class="thumb" data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="thumb-info">${escapeHtml(item.title)}<div style="font-size:12px;color:var(--muted);margin-top:6px">${escapeHtml(item.meta)}</div></div>`;
-  el.addEventListener('click', ()=> openViewer(item.id));
+  const el = document.createElement('div');
+  el.className = 'thumb-card fade-in';
+  el.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="thumb-info">${item.title}</div>`;
+  el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
-
 function createFeedItem(item, idx){
-  const el = document.createElement('article'); el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div class="muted">${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  // badge for high likes
-  if((item.likes||0) > 200) {
-    const b = document.createElement('div'); b.className='badge'; b.textContent='🔥 TOP';
-    el.appendChild(b);
+  const el = document.createElement('article');
+  el.className = 'feed-item fade-in';
+  el.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="feed-body"><div class="feed-title">${item.title}</div><div class="feed-meta"><div class="muted">${item.meta}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes}</span></button><button class="share-btn" data-src="${item.src}">🔗</button></div></div></div>`;
+  if(item.likes>200){
+    const b = document.createElement('div'); b.className='badge'; b.textContent='🔥 TOP'; el.appendChild(b);
   }
-  // add sponsor banner every 6 items
-  if((idx+1) % 6 === 0){
-    const s = document.createElement('div'); s.className='sponsor'; s.innerHTML = `<div style="font-weight:700;color:var(--accent-1)">Patrocinado</div><div style="margin-left:auto"><a href="#" class="sponsor-link">Ver</a></div>`;
-    el.appendChild(s);
-  }
-  // like handler
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id, el); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item.id));
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item, el); });
+  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); simulateShare(item.src); });
+  el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
 
-/* Render sections */
 function renderAll(){
-  // rows
+  const trendingRow = q('#trendingRow'); const recentRow = q('#recentRow'); const feedGrid = q('#feedGrid');
   trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
+  // trending: top by likes
   const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
   trend.forEach(i=> trendingRow.appendChild(createThumb(i)));
   const recent = [...feed].slice().reverse().slice(0,8);
   recent.forEach(i=> recentRow.appendChild(createThumb(i)));
-  // feed with sponsors and store items
   feed.forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it, idx)));
-  // store mini
-  renderStore();
   lazyLoadImages();
-  updateKPIs();
 }
 
-/* Lazy load images */
+/* Lazy load with IntersectionObserver */
 let imgObserver = null;
 function lazyLoadImages(){
-  const imgs = qsa('img[data-src]');
+  const imgs = qa('img[data-src]');
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
             const img = entry.target; img.src = img.dataset.src; img.removeAttribute('data-src'); obs.unobserve(img);
-            // simulate ad impression for monetization demo when image loads
-            stats.adImpressions += 1; save(STORAGE_STATS, stats); updateKPIs();
           }
         });
-      }, {rootMargin:'200px', threshold:0.05});
+      }, {rootMargin:'160px'});
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
@@ -509,255 +236,97 @@ function lazyLoadImages(){
 }
 
 /* Viewer */
-function openViewer(id){
-  const it = feed.find(f=> f.id === id);
-  if(!it) return;
-  viewerContent.innerHTML = '';
-  if(it.type === 'video'){
-    const v = document.createElement('video'); v.src = it.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh'; viewerContent.appendChild(v);
-  } else {
-    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; img.style.maxWidth='100%'; viewerContent.appendChild(img);
+function openViewer(item){
+  const modal = q('#viewerModal'); const content = q('#viewerContent');
+  content.innerHTML = '';
+  if(item){
+    if(item.src.match(/\.(mp4|webm|ogg)$/)){
+      const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxWidth='100%'; content.appendChild(v);
+    } else {
+      const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.maxWidth='100%'; content.appendChild(img);
+    }
   }
-  viewer.classList.add('show'); viewer.style.display='flex';
+  modal.style.display = 'flex';
 }
-qs('#closeViewer').addEventListener('click', ()=> { viewer.style.display='none'; });
+q('#closeViewerBtn').addEventListener('click', ()=> { q('#viewerModal').style.display='none'; });
 
-/* Likes, comments, share */
-function toggleLike(id, el){
-  const idx = feed.findIndex(f=> f.id === id); if(idx<0) return;
-  feed[idx].likes = (feed[idx].likes || 0) + 1;
-  save(STORAGE_FEED, feed);
-  el.querySelector('.count').textContent = feed[idx].likes;
-  // reward badge animation when reaching thresholds
-  if(feed[idx].likes % 50 === 0){
-    const b = document.createElement('div'); b.className='badge'; b.textContent='⚡ PRO';
-    el.appendChild(b);
-    setTimeout(()=> b.remove(), 3000);
-  }
-  // simulate short click revenue when liking (demo)
-  stats.shortClicks += 0; save(STORAGE_STATS, stats); updateKPIs();
+/* Likes & share simulation */
+function toggleLike(item, el){
+  item.likes = (item.likes||0) + 1;
+  const cnt = el.querySelector('.count'); if(cnt) cnt.textContent = item.likes;
+  // micro animation
+  el.animate([{transform:'scale(0.96)'},{transform:'scale(1.02)'},{transform:'scale(1)'}],{duration:260,easing:'ease-out'});
 }
-
-function shareItem(item){
-  // simulate shortener click: counts only when link opened
-  stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs();
-  if(navigator.share){ navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{}); }
-  else { navigator.clipboard?.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('Abrir: '+item.src)); }
+function simulateShare(url){
+  if(navigator.share){
+    navigator.share({title:'SinFiltro',text:'Mira esto',url}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert(url));
+  } else alert(url);
 }
 
-/* Comments */
-function openCommentsFor(id){
-  const it = feed.find(f=> f.id === id); if(!it) return;
-  document.getElementById('drawerTitle').textContent = `${it.title} — Comentarios`;
-  const list = comments[id] || [];
-  commentsList.innerHTML = '';
-  list.forEach(c=> {
-    const el = document.createElement('div'); el.className='comment'; el.innerHTML = `<strong>${escapeHtml(c.user)}</strong><div style="font-size:13px">${escapeHtml(c.text)}</div>`;
-    commentsList.appendChild(el);
-  });
-  drawer.classList.add('show'); drawer.style.display='flex';
-}
-
-qs('#openCommentsBtn').addEventListener('click', ()=>{
-  // if viewer open, find current displayed src and show comments for that post if exists
-  const img = viewerContent.querySelector('img');
-  if(!img) return;
-  const it = feed.find(f=> f.src === img.src);
-  if(it) openCommentsFor(it.id);
-});
-
-qs('#closeDrawer').addEventListener('click', ()=> { drawer.style.display='none'; drawer.classList.remove('show'); });
-
-document.getElementById('postComment').addEventListener('click', ()=>{
-  const text = document.getElementById('commentInput').value.trim();
-  if(!text) return alert('Escribe un comentario');
-  // attach to last opened drawerTitle post (basic)
-  const title = document.getElementById('drawerTitle').textContent.split(' — ')[0];
-  const it = feed.find(f=> f.title === title);
-  if(!it) return alert('No hay post seleccionado (demo)');
-  const id = it.id;
-  comments[id] = comments[id] || [];
-  comments[id].push({ user: 'UsuarioDemo', text: text, at: Date.now() });
-  save(STORAGE_COMMENTS, comments);
-  document.getElementById('commentInput').value = '';
-  openCommentsFor(id);
-});
-
-/* Upload (local demo) */
-document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
-document.getElementById('uploadBtn').addEventListener('click', ()=>{
-  const f = fileInput.files?.[0]; if(!f) return alert('Selecciona un archivo');
-  const reader = new FileReader();
-  reader.onload = e => {
-    const url = e.target.result;
-    const it = { id: 'u'+Date.now(), type: f.type.startsWith('video') ? 'video' : 'image', src: url, title: f.name || 'Nuevo', meta: 'Ahora', likes:0 };
-    feed.unshift(it); save(STORAGE_FEED, feed);
-    renderAll(); toggleUpload(); alert(T[lang].uploadSubtitle);
-  };
-  reader.readAsDataURL(f);
-});
-document.getElementById('closeUpload').addEventListener('click', ()=> toggleUpload());
-function toggleUpload(){ const el = uploadModal; if(el.classList.contains('show')){ el.classList.remove('show'); el.style.display='none' } else { el.classList.add('show'); el.style.display='block' } }
-
-/* Navigation */
-qsa('.nav-item').forEach(btn=>{
+/* Nav behavior */
+qa('.nav-item').forEach(btn=>{
   btn.addEventListener('click', ()=>{
-    qsa('.nav-item').forEach(n=> n.classList.remove('active'));
+    qa('.nav-item').forEach(n=> n.classList.remove('active'));
     btn.classList.add('active');
-    const tab = btn.getAttribute('data-tab');
-    navigateTo(tab);
+    const tab = btn.dataset.tab;
+    if(!tab || tab==='home'){ q('#scrollArea').scrollTop = 0; renderAll(); }
+    else if(tab==='explore'){ // simple explore: shuffle feed
+      feed = feed.sort(()=>Math.random()-0.5); renderAll();
+    } else if(tab==='likes'){ // show top liked
+      const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8);
+      q('#feedGrid').innerHTML=''; sorted.forEach((it,idx)=> q('#feedGrid').appendChild(createFeedItem(it,idx))); lazyLoadImages();
+    } else if(tab==='profile'){ alert('Perfil demo (próximamente)'); }
   });
 });
-function navigateTo(tab){
-  // keep design same; scroll to top or show placeholder
-  if(tab==='home'){ document.getElementById('pageHome').scrollIntoView({behavior:'smooth'}); renderAll(); }
-  else if(tab==='explore'){ // small explore simulation
-    feedGrid.innerHTML = ''; const filtered = feed.slice().sort((a,b)=> b.likes-a.likes); filtered.slice(0,12).forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it,idx))); lazyLoadImages();
-  } else if(tab==='likes'){ feedGrid.innerHTML = ''; const liked = feed.filter(f=> (likes[f.id]||0)>0); (liked.length?liked:feed.slice(0,6)).forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it,idx))); lazyLoadImages(); }
-  else if(tab==='profile'){ openDashboard(); }
-}
 
-/* infinite scroll simulation */
-let loading=false;
-document.getElementById('scrollArea').addEventListener('scroll', ()=>{
-  const sc = document.getElementById('scrollArea');
-  const nearBottom = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 520;
+/* Upload placeholder */
+q('#navUpload').addEventListener('click', ()=> alert('Subida demo: usa la versión con backend para guardar archivos.'));
+
+/* Theme toggle (bottom nav) */
+const body = document.body;
+const THEME_KEY = 'sinfiltro.theme.v1';
+function applyTheme(t){
+  if(t === 'light'){ body.classList.add('theme-light'); q('#modeToggle').textContent = '☀️'; }
+  else { body.classList.remove('theme-light'); q('#modeToggle').textContent = '🌙'; }
+}
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+applyTheme(theme);
+q('#modeToggle').addEventListener('click', ()=>{
+  theme = (theme === 'dark') ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
+
+/* Infinite scroll: append more demo items */
+let loading = false;
+q('#scrollArea').addEventListener('scroll', ()=>{
+  const sc = q('#scrollArea');
+  const nearBottom = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 420;
   if(nearBottom && !loading){
     loading = true;
     setTimeout(()=> {
-      // add more demo posts
       const more = Array.from({length:6}).map((_,i)=>({
-        id:'m'+Date.now()+i, type:'image',
-        src:`https://picsum.photos/640/420?random=${Date.now()%100000 + i}`,
-        title:['Nuevo visual','Clip urbano','Arte neon','Retrato'][i%4],
-        meta:`${randInt(90)+1}K • ${randInt(10)+1}d`, likes: randInt(500)
+        id: 'm'+Date.now()+i,
+        src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*10000)+i}`,
+        title: ['Visual','Urbano','Gamer','Arte'][i%4],
+        meta: `${randInt(900)+1}K • ${randInt(10)+1}d`,
+        likes: randInt(400)
       }));
-      feed = feed.concat(more); save(STORAGE_FEED, feed); renderAll(); loading=false;
-    }, 900);
+      feed = feed.concat(more);
+      renderAll();
+      loading = false;
+    }, 800);
   }
 });
 
-/* store demo */
-function renderStore(){
-  const list = document.getElementById('storeList');
-  list.innerHTML = '';
-  const items = [
-    {id:'s1',title:'Pack filtros neon', price:'$2.99', img:'https://picsum.photos/seed/f1/120/120'},
-    {id:'s2',title:'Preset cinematic', price:'$1.99', img:'https://picsum.photos/seed/f2/120/120'}
-  ];
-  items.forEach(it=>{
-    const el = document.createElement('div'); el.className='store-item';
-    el.innerHTML = `<img src="${it.img}" alt="${escapeHtml(it.title)}"><div><div style="font-weight:700">${escapeHtml(it.title)}</div><div style="color:var(--muted);margin-top:6px">${it.price}</div></div><div style="margin-left:auto"><button style="padding:8px;border-radius:8px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001" data-id="${it.id}">Comprar</button></div>`;
-    list.appendChild(el);
-  });
-}
-
-/* dashboard & KPI simulation */
-function updateKPIs(){
-  document.getElementById('kpiImpressions').textContent = stats.adImpressions;
-  document.getElementById('kpiShortClicks').textContent = stats.shortClicks;
-  document.getElementById('kpiSubs').textContent = stats.subscriptions;
-  document.getElementById('kpiSales').textContent = stats.marketplaceSales;
-  // revenue calc demo
-  const rev = (stats.adImpressions/1000)*SIM.cpm_usd + stats.shortClicks*SIM.short_click_usd + stats.subscriptions*SIM.subscription_usd_month;
-  document.getElementById('kpiRevenue').textContent = `$${rev.toFixed(2)}`;
-}
-
-/* dashboard open */
-function openDashboard(){ dashboardEl.classList.add('show'); dashboardEl.style.display='block'; updateKPIs(); }
-qs('#closeDashboard').addEventListener('click', ()=> { dashboardEl.classList.remove('show'); dashboardEl.style.display='none'; });
-
-/* Dashboard simulate buttons */
-qs('#simImp').addEventListener('click', ()=> { stats.adImpressions += 100; save(STORAGE_STATS, stats); updateKPIs(); });
-qs('#simShort').addEventListener('click', ()=> { stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs(); });
-qs('#simSub').addEventListener('click', ()=> { stats.subscriptions += 1; save(STORAGE_STATS, stats); updateKPIs(); });
-qs('#simSale').addEventListener('click', ()=> { stats.marketplaceSales += 1; save(STORAGE_STATS, stats); updateKPIs(); });
-qs('#resetStats').addEventListener('click', ()=> { stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS, stats); updateKPIs(); });
-
-/* export CSV */
-qs('#exportCsv').addEventListener('click', ()=>{
-  const rows = [['metric','value'],['impressions',stats.adImpressions],['short_clicks',stats.shortClicks],['subscriptions',stats.subscriptions],['sales',stats.marketplaceSales],['revenue',document.getElementById('kpiRevenue').textContent]];
-  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='sinfiltro_stats.csv'; a.click();
-});
-
-/* share and shortener simulation on feed click */
-function simulateShortener(url){
-  // Placeholder: increment stat and return same url
-  stats.shortClicks += 1; save(STORAGE_STATS, stats); updateKPIs();
-  return url;
-}
-
-/* like persistence */
-function toggleLikeLocal(id){
-  likes[id] = (likes[id]||0) + 1; save(STORAGE_LIKES, likes);
-}
-
-/* language switch */
-langSelect.value = lang;
-langSelect.addEventListener('change', (e)=>{ lang = e.target.value; save(STORAGE_LANG, lang); applyLang(); });
-function applyLang(){
-  document.getElementById('heroTitle').textContent = T[lang].discover;
-  document.getElementById('heroSub').textContent = T[lang].subtitle;
-  document.getElementById('uploadTitle').textContent = T[lang].uploadTitle;
-  document.getElementById('uploadSubtitle').textContent = T[lang].uploadSubtitle;
-  document.getElementById('drawerTitle').textContent = T[lang].comments;
-  document.querySelector('#seeStore')?.textContent = T[lang].tienda;
-}
-
-/* search overlay */
-document.getElementById('searchBtn').addEventListener('click', ()=> { const s = document.getElementById('searchOverlay'); s.style.display = (s.style.display==='block')?'none':'block'; });
-document.getElementById('searchInput').addEventListener('input', (e)=>{
-  const q = e.target.value.trim().toLowerCase();
-  if(!q){ renderAll(); return; }
-  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q) || it.meta.toLowerCase().includes(q));
-  feedGrid.innerHTML=''; filtered.forEach((it,idx)=> feedGrid.appendChild(createFeedItem(it, idx))); lazyLoadImages();
-});
-
-/* Interaction: clicking thumb opens viewer + ability to open comments for that id */
-function openViewerBySrc(src){
-  const it = feed.find(f=> f.src === src);
-  if(it) openViewer(it.id);
-}
-
-/* Initialize store buy (demo) */
-document.addEventListener('click', (e)=>{
-  if(e.target && e.target.matches('.store-item button')){
-    alert('Compra demo: función de pago no conectada.');
-  }
-});
-
-/* Accessibility: ESC closes overlays */
-document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ viewer.style.display='none'; drawer.style.display='none'; uploadModal.classList.remove('show'); uploadModal.style.display='none'; dashboardEl.classList.remove('show'); dashboardEl.style.display='none'; document.getElementById('searchOverlay').style.display='none'; } });
-
-/* initial render & lazy observer */
-applyLang();
+/* Initial render */
 renderAll();
 
-/* initial store render */
-renderStore();
-
-/* set up sponsor insertion & recommendation engine (simple) */
-function recommendFor(tag){
-  // simple engine: return items containing substring match in title
-  const q = tag.toLowerCase();
-  return feed.filter(f=> f.title.toLowerCase().includes(q)).slice(0,6);
-}
-
-/* simulate ad impression on feed open */
-feedGrid.addEventListener('click', (e)=>{
-  const card = e.target.closest('.feed-item');
-  if(card){
-    // small chance to increase impression metric
-    stats.adImpressions += randInt(2);
-    save(STORAGE_STATS, stats);
-    updateKPIs();
-  }
-});
-
-/* utility: update UI when page visible again */
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden){ renderAll(); } });
-
+/* Accessibility: ESC to close viewer */
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ q('#viewerModal').style.display = 'none'; } });
 </script>
 </body>
 </html>
+```0
