@@ -1,147 +1,147 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Demo móvil</title>
-<meta name="description" content="SinFiltro — comparte fotos y videos sin filtros. Descubre tendencias, comenta y conecta.">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinFiltro — Demo móvil (All-in-one)</title>
+  <meta name="description" content="SinFiltro — comparte fotos y videos sin filtros. Demo móvil PWA: feed, explorar, subir, modo y PWA todo en un archivo.">
 
-<!-- Open Graph / Twitter -->
-<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
-<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
-<meta property="og:image" content="og-image.png">
-<meta property="og:url" content=".">
-<meta name="twitter:card" content="summary_large_image">
+  <!-- Open Graph / Twitter -->
+  <meta property="og:title" content="SinFiltro — Tu espacio sin límites">
+  <meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
+  <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect width='100%25' height='100%25' fill='%23040a1a'/%3E%3Ctext x='50%25' y='50%25' font-family='Poppins,Arial' font-size='48' fill='%2300e1ff' font-weight='700' text-anchor='middle'%3ESinFiltro%3C/text%3E%3C/svg%3E">
+  <meta property="og:url" content="." />
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#00e1ff">
 
-<meta name="theme-color" content="#00e1ff">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ========== SinFiltro - All-in-one (mobile-first) ========== */
+    :root{
+      --bg-1:#04040a; --bg-2:#071222;
+      --neon-cyan:#00e1ff; --neon-blue:#00a7ff; --neon-violet:#8a6eff;
+      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+      --radius:14px; --nav-h:78px; --trans:240ms;
+    }
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#eaf7ff; -webkit-text-size-adjust:100%}
+    body.theme-light{ --bg-1:#f6f9ff; --bg-2:#eef4ff; --neon-cyan:#008fb3; --neon-blue:#0066aa; --neon-violet:#6b4ed6; --muted:#617183; color:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); }
 
-<style>
-/* -------------------------
-   Styles - SinFiltro (mobile-first)
-   ------------------------- */
-:root{
-  --bg-1:#04040a; --bg-2:#071222;
-  --neon-cyan:#00e1ff; --neon-blue:#00a7ff; --neon-violet:#8a6eff;
-  --muted:#9fb0bf; --card:rgba(255,255,255,0.03); --glass:rgba(255,255,255,0.04);
-  --radius:14px; --nav-h:78px; --trans:240ms;
-}
-html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#eaf7ff}
+    /* Animated background (subtle) */
+    .bg-animated{
+      position:fixed;inset:0;z-index:-6;pointer-events:none;
+      background:
+        radial-gradient(600px 240px at 10% 10%, rgba(138,110,255,0.05), transparent 8%),
+        radial-gradient(800px 320px at 90% 80%, rgba(0,225,255,0.04), transparent 8%);
+      animation: drift 20s linear infinite;
+      filter: blur(10px) saturate(1.1);
+    }
+    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
 
-/* theme light override (applied via body.classList) */
-body.theme-light{
-  --bg-1:#f6f9ff; --bg-2:#eef4ff; --neon-cyan:#008fb3; --neon-blue:#0066aa; --neon-violet:#6b4ed6; --muted:#617183; color:#071226;
-  background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-}
+    /* Layout */
+    .app{min-height:100vh;display:flex;flex-direction:column}
+    header{position:sticky;top:0;z-index:50;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+    .hdr-left,.hdr-center,.hdr-right{display:flex;align-items:center;gap:10px}
+    .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+    .logo {display:flex;align-items:center;gap:10px}
+    .logo img{height:40px;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+    .brand-text{font-weight:700;color:var(--neon-cyan);letter-spacing:0.6px}
+    .brand-sub{font-size:11px;color:var(--muted)}
 
-/* animated background */
-.bg-animated{
-  position:fixed;inset:0;z-index:-5;pointer-events:none;
-  background:
-    radial-gradient(600px 240px at 10% 10%, rgba(138,110,255,0.05), transparent 8%),
-    radial-gradient(800px 320px at 90% 80%, rgba(0,225,255,0.04), transparent 8%);
-  animation: drift 20s linear infinite;
-}
-@keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+    .search-wrap{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)}
+    .search-input{padding:8px 10px;border-radius:10px;border:0;background:transparent;color:inherit;outline:none;width:140px}
 
-/* layout */
-.app{min-height:100vh;display:flex;flex-direction:column}
-.header{position:sticky;top:0;z-index:40;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-.icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-.logo-img{height:44px;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+    .main{flex:1;overflow:auto;padding:12px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
 
-/* search */
-.search-wrap{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)}
-.search-input{padding:8px;border-radius:10px;border:0;background:transparent;color:inherit;outline:none;width:160px}
+    .hero{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
+    .hero h1{margin:0;font-size:18px;color:var(--neon-violet)}
+    .hero p{margin:8px 0 0;color:var(--muted);font-size:13px}
 
-/* main */
-.main{flex:1;overflow:auto;padding:14px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
-.hero{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
-.hero h1{margin:0;color:var(--neon-violet);font-size:18px}
-.hero p{margin:8px 0 0;color:var(--muted);font-size:13px}
+    .section{margin-top:10px}
+    .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .section-title{font-weight:700;color:var(--neon-cyan);display:flex;align-items:center;gap:8px}
+    .see-all{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:0}
 
-/* sections */
-.section{margin-top:10px}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.section-title{font-weight:700;color:var(--neon-cyan)}
-.see-all{background:transparent;border:0;color:var(--muted);cursor:pointer}
+    .h-row{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
+    .h-row::-webkit-scrollbar{display:none}
+    .thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);transition:transform .22s}
+    .thumb img{width:170px;height:100px;object-fit:cover;display:block}
+    .thumb .t-info{padding:8px;color:inherit;font-weight:700}
 
-/* horizontal row */
-.h-row{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
-.h-row::-webkit-scrollbar{display:none}
-.thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform var(--trans)}
-.thumb img{width:170px;height:100px;object-fit:cover;display:block}
-.t-info{padding:8px;color:inherit;font-weight:700}
+    .feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);transition:transform .22s}
+    .card img{width:100%;height:160px;object-fit:cover;display:block}
+    .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
+    .title{font-weight:700;font-size:14px}
+    .small{color:var(--muted);font-size:12px}
 
-/* feed grid */
-.feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform var(--trans)}
-.card img{width:100%;height:160px;object-fit:cover;display:block}
-.card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
-.title{font-weight:700;font-size:14px}
-.small{color:var(--muted);font-size:12px}
+    /* FAB */
+    .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:56px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
+    .fab{pointer-events:auto;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-violet));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:30px;cursor:pointer}
+    .fab-sub{pointer-events:auto;width:54px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-pink, #ff5fb7),var(--neon-violet));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.4);font-weight:700;opacity:0;transform:translateY(0);transition:all .25s}
+    .fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
 
-/* FAB */
-.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:60px;z-index:90;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
-.fab{pointer-events:auto;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:34px;cursor:pointer}
-.fab-row{display:flex;flex-direction:column;gap:8px;align-items:center}
-.fab-sub{pointer-events:auto;width:56px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-violet),var(--neon-blue));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.35);font-weight:700;opacity:0;transform:translateY(0);transition:all 220ms}
-.fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
+    /* modal/viewer/drawer */
+    .modal{position:fixed;left:12px;right:12px;bottom:110px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:120;display:none}
+    .modal.show{display:block}
+    .viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:flex;align-items:center;justify-content:center;z-index:140;padding:18px;gap:12px;flex-direction:column;display:none}
+    .viewer.show{display:flex}
+    .viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
+    .drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:150;display:none;flex-direction:column}
+    .drawer.show{display:flex}
 
-/* modal, viewer, drawer */
-.modal{position:fixed;left:12px;right:12px;bottom:110px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:95;display:none}
-.modal.show{display:block}
-.viewer{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:none;align-items:center;justify-content:center;z-index:120;padding:18px}
-.viewer.show{display:flex}
-.viewer-content{width:100%;max-width:980px;border-radius:12px;overflow:hidden;background:#000}
-.drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none}
-.drawer.show{display:block}
+    /* bottom nav */
+    .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:76px;border-radius:18px;background:linear-gradient(180deg, rgba(1,5,12,0.95), rgba(6,8,18,0.9));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:70}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+    .nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
 
-/* bottom nav */
-.bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:78px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:80}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-.nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
+    /* utilities */
+    .muted{color:var(--muted)}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none}
 
-/* buttons */
-.btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
-.btn.primary{background:linear-gradient(90deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none}
-
-/* responsive tweaks */
-@media (max-width:420px){
-  .thumb{flex:0 0 150px}
-  .card img{height:140px}
-  .fab{width:64px;height:64px}
-}
-</style>
+    @media (max-width:420px){
+      .thumb{flex:0 0 150px}
+      .card img{height:140px}
+      .fab{width:60px;height:60px}
+    }
+  </style>
 </head>
 <body>
   <div class="bg-animated" aria-hidden="true"></div>
 
   <div id="app" class="app theme-dark" role="application" aria-label="SinFiltro app">
-    <header class="header" role="banner">
-      <div style="display:flex;align-items:center;gap:8px">
+    <!-- HEADER -->
+    <header>
+      <div class="hdr-left">
         <button id="menuBtn" class="icon-btn" aria-label="Abrir menú">☰</button>
       </div>
 
-      <div style="display:flex;align-items:center;gap:10px">
-        <!-- Reemplaza el src por tu logo IA 3D (recomendado 320x88 / 640x176) -->
-        <img id="logoImg" class="logo-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='88'><rect width='100%' height='100%' rx='12' fill='%230b1220'/><text x='50%' y='55%' font-family='Poppins,Inter,Arial' font-size='28' fill='%2300e1ff' font-weight='700' text-anchor='middle'>SinFiltro</text></svg>" alt="SinFiltro logo (reemplazar)">
+      <div class="hdr-center">
+        <!-- Reemplaza este src por tu logo IA 3D (PNG/WebP) -->
+        <div class="logo">
+          <img id="logoImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='88'><rect width='100%' height='100%' rx='12' fill='%230b1220'/><text x='50%' y='55%' font-family='Poppins,Inter,Arial' font-size='28' fill='%2300e1ff' font-weight='700' text-anchor='middle'>SinFiltro</text></svg>" alt="SinFiltro logo">
+          <div style="display:flex;flex-direction:column;">
+            <div class="brand-text">SinFiltro</div>
+            <div class="brand-sub">Tu espacio sin límites</div>
+          </div>
+        </div>
       </div>
 
-      <div style="display:flex;align-items:center;gap:8px">
+      <div class="hdr-right">
         <div class="search-wrap" role="search">
-          <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar">
+          <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar contenido">
         </div>
         <button id="themeToggle" class="icon-btn" aria-label="Cambiar tema">🌙</button>
       </div>
     </header>
 
-    <main id="main" class="main" role="main">
+    <!-- MAIN -->
+    <main id="main" class="main" role="main" tabindex="0">
       <section class="hero" aria-label="Presentación">
         <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        <p class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
       <section class="section" aria-labelledby="trendingTitle">
@@ -169,7 +169,7 @@ body.theme-light{
       </section>
     </main>
 
-    <!-- FAB -->
+    <!-- FAB central -->
     <div class="fab-wrap" id="fabWrap" aria-hidden="false">
       <div id="fabRow" class="fab-row">
         <button id="fabImg" class="fab-sub" title="Imagen" aria-label="Subir imagen">🖼️</button>
@@ -179,32 +179,32 @@ body.theme-light{
       <button id="fabMain" class="fab" aria-label="Crear">＋</button>
     </div>
 
-    <!-- upload modal (demo local) -->
-    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true" aria-modal="true">
+    <!-- Upload modal -->
+    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true" aria-modal="true" aria-labelledby="uploadTitle">
       <h3 id="uploadTitle">Subir contenido (demo)</h3>
-      <p class="muted" style="color:var(--muted)">Selecciona una imagen o video. Se guardará localmente en tu navegador (demo).</p>
+      <p class="muted">Selecciona una imagen o video. Se guardará localmente (demo).</p>
       <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
         <input type="file" id="fileInput" accept="image/*,video/*" aria-label="Seleccionar archivo">
-        <div style="display:flex;gap:8px;margin-left:auto">
+        <div style="margin-left:auto;display:flex;gap:8px">
           <button id="doUpload" class="btn primary">Subir</button>
           <button id="closeUpload" class="btn">Cerrar</button>
         </div>
       </div>
     </div>
 
-    <!-- viewer -->
+    <!-- Viewer -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-      <div id="viewerContent" class="viewer-content" role="document"></div>
+      <div class="content viewer-content" id="viewerContent"></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <button id="closeViewer" class="btn">Cerrar</button>
       </div>
     </div>
 
-    <!-- drawer (profile/settings) -->
+    <!-- Drawer -->
     <div id="drawer" class="drawer" role="dialog" aria-hidden="true">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <strong style="color:var(--neon-cyan)">Perfil & Ajustes</strong>
-        <button id="closeDrawer" class="icon-btn">✕</button>
+        <button id="closeDrawer" class="icon-btn" aria-label="Cerrar">✕</button>
       </div>
       <div style="margin-top:10px;color:var(--muted);font-size:13px">
         <p><strong>Usuario demo</strong></p>
@@ -214,31 +214,29 @@ body.theme-light{
       </div>
     </div>
 
-    <!-- bottom nav -->
+    <!-- Bottom nav -->
     <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div class="nav-item active" data-tab="home" id="navHome" role="button" aria-pressed="true">🏠<span style="font-size:11px">Inicio</span></div>
-      <div class="nav-item" data-tab="videos" id="navVideos" role="button">🎬<span style="font-size:11px">Videos</span></div>
-      <div style="width:88px"></div>
-      <div class="nav-item" data-tab="likes" id="navLikes" role="button">❤️<span style="font-size:11px">Favoritos</span></div>
-      <div class="nav-item" data-tab="profile" id="navProfile" role="button">👤<span style="font-size:11px">Perfil</span></div>
+      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="videos" id="navVideos">🎬<div style="font-size:11px">Videos</div></div>
+      <div style="width:80px"></div>
+      <div class="nav-item" data-tab="community" id="navCommunity">🧑‍🤝‍🧑<div style="font-size:11px">Comunidad</div></div>
+      <div class="nav-item" data-tab="profile" id="navProfile">⚙️<div style="font-size:11px">Perfil</div></div>
     </nav>
   </div>
 
 <script>
-/* -------------------------
-   script inline - SinFiltro (single file)
-   ------------------------- */
+/* ========== SinFiltro inline JS (All-in-one) ========== */
 
 /* Storage keys */
-const STORAGE_THEME = 'sinfiltro.theme.v3';
-const STORAGE_FEED = 'sinfiltro.feed.v3';
+const STORAGE_THEME = 'sinfiltro.theme.all';
+const STORAGE_FEED = 'sinfiltro.feed.all';
 
-/* Helpers */
+/* Small helpers */
 const qs = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
 const randInt = n => Math.floor(Math.random()*n);
 
-/* Create manifest dynamically (so no external manifest file required) */
+/* Create manifest dynamically (embedded) */
 (function createManifestBlob(){
   const manifest = {
     name: "SinFiltro",
@@ -259,15 +257,13 @@ const randInt = n => Math.floor(Math.random()*n);
     link.rel = 'manifest';
     link.href = url;
     document.head.appendChild(link);
-  } catch(e){
-    console.warn('Manifest blob failed', e);
-  }
+  } catch(e){ console.warn('Manifest blob fail', e); }
 })();
 
-/* Create & register simple service worker from a blob (single-file PWA) */
+/* Create & register simple service worker from blob (embedded) */
 (function registerSWBlob(){
   if('serviceWorker' in navigator){
-    const swCode = `
+    const sw = `
       const CACHE = 'sinfiltro-shell-v1';
       const URLS = ['.', location.pathname, 'index.html'];
       self.addEventListener('install', e => {
@@ -280,29 +276,27 @@ const randInt = n => Math.floor(Math.random()*n);
       });
     `;
     try {
-      const blob = new Blob([swCode], {type:'application/javascript'});
+      const blob = new Blob([sw], {type:'application/javascript'});
       const swUrl = URL.createObjectURL(blob);
       navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW reg failed', err));
-    } catch(e){
-      console.warn('SW blob failed', e);
-    }
+    } catch(e){ console.warn('SW blob fail', e); }
   }
 })();
 
-/* Theme init */
+/* Theme initialization */
 let theme = localStorage.getItem(STORAGE_THEME) || 'dark';
 applyTheme(theme);
 
-/* Demo feed: restore or create */
+/* Demo feed generation or restore */
 let feed = JSON.parse(localStorage.getItem(STORAGE_FEED) || 'null');
 if(!feed){
   feed = Array.from({length:10}).map((_,i)=>({
     id: 'd'+i,
     type: 'image',
-    src: `https://source.unsplash.com/640x420/?neon,city,cyberpunk&sig=${Date.now()%1000 + i}`,
-    title: ['Callejón neon','Nocturna','Short creativo','Luces urbanas','Arte digital','Pixel night','Modo gamer','Retrato neon','Atardecer urbano','Vibras'][i%10],
+    src: `https://source.unsplash.com/640x420/?cyberpunk,neon,city&sig=${Date.now()%1000 + i}`,
+    title: ['Luces urbanas','Nocturna','Arte digital','Retrato neon','Pixel night','Modo gamer','Atardecer urbano','Clip creativo','Callejón neon','Vibras'][i%10],
     meta: `${(randInt(900)+1)}K • ${[1,2,3,4,6,8][i%6]}d`,
-    likes: randInt(8000)
+    likes: randInt(7000)
   }));
   localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
 }
@@ -314,37 +308,31 @@ const feedGrid = qs('#feedGrid');
 const main = qs('#main');
 const fabMain = qs('#fabMain');
 const fabWrap = qs('#fabWrap');
-const fabRow = qs('#fabRow');
 const searchInput = qs('#searchInput');
 const themeToggle = qs('#themeToggle');
 const menuBtn = qs('#menuBtn');
 const drawer = qs('#drawer');
-const closeDrawer = qs('#closeDrawer');
 
-/* render helpers */
-function esc(s){return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+/* Render helpers */
+function esc(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function makeThumb(item){
-  const el = document.createElement('div');
-  el.className = 'thumb';
+  const el = document.createElement('div'); el.className = 'thumb';
   el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="t-info">${esc(item.title)}</div>`;
   el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
 function makeCard(item){
-  const el = document.createElement('article');
-  el.className = 'card';
+  const el = document.createElement('article'); el.className = 'card';
   el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="meta"><div><div class="title">${esc(item.title)}</div><div class="small">${esc(item.meta)}</div></div><div style="display:flex;gap:8px;align-items:center"><button class="like" data-id="${item.id}" aria-label="Me gusta">❤ <span class="count">${item.likes}</span></button><button class="share" data-id="${item.id}" aria-label="Compartir">🔗</button></div></div>`;
-  el.querySelector('.like').addEventListener('click', (e)=>{ e.stopPropagation(); likeItem(item.id, el); });
-  el.querySelector('.share').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.querySelector('.like').addEventListener('click',(e)=>{ e.stopPropagation(); likeItem(item.id, el); });
+  el.querySelector('.share').addEventListener('click',(e)=>{ e.stopPropagation(); shareItem(item); });
   el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
 
-/* render feed */
+/* Render feed & rows */
 function renderAll(){
-  trendingRow.innerHTML = '';
-  recentRow.innerHTML = '';
-  feedGrid.innerHTML = '';
+  trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
   const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0));
   sorted.slice(0,8).forEach(i=> trendingRow.appendChild(makeThumb(i)));
   feed.slice(0,8).forEach(i=> recentRow.appendChild(makeThumb(i)));
@@ -352,7 +340,7 @@ function renderAll(){
   lazyLoadImages();
 }
 
-/* lazy load images */
+/* Lazy-load images with IntersectionObserver */
 let imgObserver = null;
 function lazyLoadImages(){
   const imgs = qsa('img[data-src]');
@@ -375,13 +363,12 @@ function lazyLoadImages(){
   }
 }
 
-/* viewer logic */
+/* Viewer (modal) */
 function openViewer(item){
-  const viewer = qs('#viewer');
-  const content = qs('#viewerContent');
+  const viewer = qs('#viewer'); const content = qs('#viewerContent');
   content.innerHTML = '';
   if(item.type === 'video'){
-    const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxHeight = '70vh'; content.appendChild(v);
+    const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxHeight='70vh'; content.appendChild(v);
   } else {
     const img = document.createElement('img'); img.src = item.src; img.alt = item.title; content.appendChild(img);
   }
@@ -389,22 +376,20 @@ function openViewer(item){
 }
 qs('#closeViewer').addEventListener('click', ()=> { qs('#viewer').style.display = 'none'; });
 
-/* like & share */
+/* Like & share */
 function likeItem(id, el){
   const idx = feed.findIndex(f=> f.id === id); if(idx < 0) return;
-  feed[idx].likes = (feed[idx].likes||0) + 1;
+  feed[idx].likes = (feed[idx].likes || 0) + 1;
   const cnt = el.querySelector('.count'); if(cnt) cnt.textContent = feed[idx].likes;
   localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
-  // micro-animation
-  const btn = el.querySelector('.like');
-  if(btn) btn.animate([{transform:'scale(.9)'},{transform:'scale(1.06)'},{transform:'scale(1)'}], {duration:260, easing:'ease-out'});
+  const btn = el.querySelector('.like'); if(btn) btn.animate([{transform:'scale(.92)'},{transform:'scale(1.06)'},{transform:'scale(1)'}], {duration:260, easing:'ease-out'});
 }
 function shareItem(item){
   if(navigator.share){
     navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{});
   } else if(navigator.clipboard){
-    navigator.clipboard.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('No se pudo copiar'));
-  } else alert('Compartir: ' + item.src);
+    navigator.clipboard.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert(item.src));
+  } else alert(item.src);
 }
 
 /* FAB */
@@ -418,16 +403,15 @@ qs('#fabUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
 qs('#fabImg').addEventListener('click', ()=> toggleModal('#uploadModal'));
 qs('#fabShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* upload (demo local) */
+/* Upload (demo local) */
 qs('#closeUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
 qs('#doUpload').addEventListener('click', ()=>{
-  const file = qs('#fileInput').files?.[0];
-  if(!file){ alert('Selecciona un archivo'); return; }
+  const file = qs('#fileInput').files?.[0]; if(!file){ alert('Selecciona un archivo'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     const url = e.target.result;
-    const item = { id: 'u' + Date.now(), type: file.type.startsWith('video') ? 'video' : 'image', src: url, title: file.name || 'Nuevo', meta: 'Ahora', likes: 0 };
-    feed.unshift(item);
+    const it = { id: 'u' + Date.now(), type: file.type.startsWith('video') ? 'video' : 'image', src: url, title: file.name || 'Nuevo', meta: 'Ahora', likes: 0 };
+    feed.unshift(it);
     localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
     renderAll();
     toggleModal('#uploadModal');
@@ -436,15 +420,14 @@ qs('#doUpload').addEventListener('click', ()=>{
   reader.readAsDataURL(file);
 });
 
-/* toggle modal helper */
+/* Toggle modal */
 function toggleModal(sel){
-  const el = document.querySelector(sel);
-  if(!el) return;
-  const visible = getComputedStyle(el).display !== 'none';
-  el.style.display = visible ? 'none' : 'block';
+  const el = document.querySelector(sel); if(!el) return;
+  const showing = getComputedStyle(el).display !== 'none';
+  el.style.display = showing ? 'none' : 'block';
 }
 
-/* search */
+/* Search */
 searchInput.addEventListener('input', (e)=>{
   const q = (e.target.value||'').toLowerCase().trim();
   if(!q){ renderAll(); return; }
@@ -454,23 +437,22 @@ searchInput.addEventListener('input', (e)=>{
   lazyLoadImages();
 });
 
-/* theme toggle */
+/* Theme toggle */
 themeToggle.addEventListener('click', ()=>{
   theme = (theme === 'dark') ? 'light' : 'dark';
   applyTheme(theme);
   localStorage.setItem(STORAGE_THEME, theme);
 });
 function applyTheme(t){
-  const body = document.body;
-  if(t === 'light'){ body.classList.add('theme-light'); document.getElementById('themeToggle').textContent = '☀️'; }
-  else { body.classList.remove('theme-light'); document.getElementById('themeToggle').textContent = '🌙'; }
+  const b = document.body;
+  if(t === 'light'){ b.classList.add('theme-light'); themeToggle.textContent = '☀️'; } else { b.classList.remove('theme-light'); themeToggle.textContent = '🌙'; }
 }
 
-/* drawer */
+/* Drawer/menu */
 menuBtn.addEventListener('click', ()=> { drawer.style.display = 'block'; drawer.classList.add('show'); });
 qs('#closeDrawer')?.addEventListener('click', ()=> { drawer.style.display = 'none'; drawer.classList.remove('show'); });
 
-/* bottom nav */
+/* Bottom nav */
 qsa('.nav-item').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     qsa('.nav-item').forEach(n=> n.classList.remove('active'));
@@ -481,12 +463,12 @@ qsa('.nav-item').forEach(btn=>{
 });
 function navigateTo(tab){
   if(tab === 'home'){ main.scrollTo({top:0,behavior:'smooth'}); renderAll(); }
-  else if(tab === 'videos'){ feedGrid.innerHTML = ''; feed.filter((f,i)=> i%2===0).forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages(); }
-  else if(tab === 'likes'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)">Favoritos — demo</div>`; }
+  else if(tab === 'videos'){ feedGrid.innerHTML=''; feed.filter((f,i)=> i%2===0).forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages(); }
+  else if(tab === 'community'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)">Comunidad — demo</div>`; }
   else if(tab === 'profile'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)"><strong>Perfil demo</strong><p>Publicaciones: ${feed.length}</p></div>`; }
 }
 
-/* infinite scroll simulation */
+/* Infinite scroll simulation */
 let loading = false;
 main.addEventListener('scroll', ()=>{
   const nearBottom = main.scrollTop + main.clientHeight > main.scrollHeight - 420;
@@ -503,16 +485,16 @@ main.addEventListener('scroll', ()=>{
   }
 });
 
-/* PWA registration done earlier with blob - good to go */
-
-/* init */
+/* Init */
 renderAll();
 applyTheme(theme);
 
-/* accessibility: ESC to close overlays */
-document.addEventListener('keydown', (e)=> {
+/* Accessibility: ESC to close overlays */
+document.addEventListener('keydown', (e)=>{
   if(e.key === 'Escape'){ qs('#viewer').style.display = 'none'; drawer.style.display = 'none'; qs('#uploadModal').style.display = 'none'; }
 });
 </script>
 </body>
 </html>
+```0
+
