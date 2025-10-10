@@ -1,305 +1,284 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SinFiltro – Glass Edition</title>
-<style>
-  :root {
-    --bg: #0f0f0f;
-    --text: #fff;
-    --accent: #00ffc6;
-    --glass: rgba(255,255,255,0.08);
-    --blur: blur(20px);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SinFiltro — Premium</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0b0c10, #000);
+      font-family: "Poppins", sans-serif;
+      color: #fff;
+      overflow-x: hidden;
+    }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Poppins", sans-serif;
-    margin: 0;
-    overflow-x: hidden;
-  }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
 
-  header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    backdrop-filter: var(--blur);
-    background: var(--glass);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    z-index: 1000;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
+    header .logo {
+      font-size: 1.4em;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #00d1ff;
+      text-shadow: 0 0 10px #00d1ff;
+    }
 
-  header h1 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-  }
+    header .menu-icon {
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: 0.3s;
+    }
 
-  header .menu-icon {
-    font-size: 1.8rem;
-    cursor: pointer;
-  }
+    header .menu-icon:hover {
+      color: #00d1ff;
+    }
 
-  main {
-    padding-top: 70px;
-  }
+    header .mode-btn {
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+    }
 
-  section {
-    padding: 20px 0;
-  }
+    header .mode-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
 
-  h2 {
-    margin: 0 15px 10px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #ddd;
-  }
+    h2.section-title {
+      font-size: 1.2em;
+      margin: 20px 15px 10px;
+      color: #eee;
+    }
 
-  .scroll-grid {
-    display: grid;
-    grid-auto-flow: column;
-    grid-template-rows: repeat(2, 1fr);
-    grid-gap: 12px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding: 0 15px 5px;
-  }
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 10px;
+    }
 
-  .item {
-    position: relative;
-    width: 160px;
-    height: 100px;
-    border-radius: 16px;
-    overflow: hidden;
-    scroll-snap-align: start;
-    background: linear-gradient(135deg, #1e1e1e, #292929);
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
-  }
+    .row {
+      display: flex;
+      gap: 10px;
+      padding: 0 15px;
+    }
 
-  .item img,
-  .item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+    .item {
+      position: relative;
+      width: 180px;
+      height: 100px;
+      border-radius: 15px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transition: transform 0.3s;
+    }
 
-  .play-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(8px);
-    border-radius: 50%;
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-  }
+    .item:hover {
+      transform: scale(1.05);
+    }
 
-  .play-btn:hover {
-    background: rgba(255,255,255,0.35);
-    transform: translate(-50%, -50%) scale(1.1);
-  }
+    .item img,
+    .item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-  .play-btn::before {
-    content: "▶";
-    font-size: 1.1rem;
-    color: var(--accent);
-    margin-left: 3px;
-  }
+    .play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 209, 255, 0.8);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2em;
+      box-shadow: 0 0 15px #00d1ff;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
 
-  .info-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 4px 8px;
-    font-size: 0.7rem;
-    display: flex;
-    justify-content: space-between;
-    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-  }
+    .item:hover .play-btn {
+      opacity: 1;
+    }
 
-  .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 65px;
-    backdrop-filter: var(--blur);
-    background: var(--glass);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    z-index: 1000;
-  }
+    .stats {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      font-size: 0.8em;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      padding: 3px 6px;
+    }
 
-  .bottom-bar button {
-    background: none;
-    border: none;
-    color: var(--text);
-    font-size: 1.4rem;
-    cursor: pointer;
-  }
+    .fab-container {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 30;
+    }
 
-  /* Modal */
-  .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-  }
+    .fab {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #00d1ff;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4em;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
 
-  .modal.active {
-    display: flex;
-  }
+    .fab:hover {
+      background: rgba(0, 209, 255, 0.2);
+      transform: scale(1.1);
+    }
 
-  .modal video {
-    width: 90%;
-    max-height: 70vh;
-    border-radius: 14px;
-  }
+    .preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
 
-  /* Scroll infinito */
-  #feed {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
-    padding: 10px 15px 90px;
-  }
+    .preview-modal.active {
+      display: flex;
+    }
 
-  #feed .item {
-    height: 120px;
-  }
-</style>
+    .preview-content {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    }
+
+    .preview-content img,
+    .preview-content video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="menu-icon">☰</div>
-  <h1>SinFiltro</h1>
-  <div style="width:24px;"></div>
-</header>
+  <header>
+    <div class="menu-icon">☰</div>
+    <div class="logo">SinFiltro</div>
+    <button class="mode-btn">🌙</button>
+  </header>
 
-<main>
-  <section>
-    <h2>Tendencias</h2>
-    <div class="scroll-grid" id="tendencias"></div>
-  </section>
+  <h2 class="section-title">Tendencias</h2>
+  <div class="section" id="tendencias"></div>
 
-  <section>
-    <h2>Recomendados</h2>
-    <div class="scroll-grid" id="recomendados"></div>
-  </section>
+  <h2 class="section-title">Recomendados</h2>
+  <div class="section" id="recomendados"></div>
 
-  <section>
-    <h2>Antes visto</h2>
-    <div class="scroll-grid" id="antesvisto"></div>
-  </section>
+  <h2 class="section-title">Antes visto</h2>
+  <div class="section" id="vistos"></div>
 
-  <section>
-    <h2>Tus videos</h2>
-    <div class="scroll-grid" id="tusvideos"></div>
-  </section>
+  <h2 class="section-title">Explora más</h2>
+  <div class="section" id="explora"></div>
 
-  <div id="feed"></div>
-</main>
+  <div class="fab-container">
+    <div class="fab">🔍</div>
+    <div class="fab">⏫</div>
+    <div class="fab">📹</div>
+    <div class="fab">❤️</div>
+  </div>
 
-<div class="bottom-bar">
-  <button>🔍</button>
-  <button>⏫</button>
-  <button>📁</button>
-  <button>👤</button>
-</div>
+  <div class="preview-modal" id="previewModal">
+    <div class="preview-content" id="previewContent"></div>
+  </div>
 
-<div class="modal" id="videoModal">
-  <video controls></video>
-</div>
-
-<script>
-  const sections = ["tendencias", "recomendados", "antesvisto", "tusvideos"];
-  const videoModal = document.getElementById("videoModal");
-  const videoEl = videoModal.querySelector("video");
-
-  function createItem(isVideo = false) {
-    const div = document.createElement("div");
-    div.className = "item";
-    const media = document.createElement(isVideo ? "video" : "img");
-    media.src = isVideo
-      ? `https://sample-videos.com/video123/mp4/240/big_buck_bunny_240p_1mb.mp4`
-      : `https://picsum.photos/300?random=${Math.floor(Math.random() * 1000)}`;
-    if (!isVideo) media.alt = "foto";
-    div.appendChild(media);
-
-    if (isVideo) {
-      const play = document.createElement("div");
-      play.className = "play-btn";
-      play.addEventListener("click", (e) => {
-        e.stopPropagation();
-        openModal(media.src);
-      });
-      div.appendChild(play);
-    }
-
-    const info = document.createElement("div");
-    info.className = "info-bar";
-    info.innerHTML = `<span>❤️ ${Math.floor(Math.random()*900)}</span> <span>💬 ${Math.floor(Math.random()*200)}</span> <span>👁 ${Math.floor(Math.random()*2_000)}</span>`;
-    div.appendChild(info);
-
-    return div;
-  }
-
-  function fillSections() {
-    sections.forEach((id) => {
-      const container = document.getElementById(id);
-      for (let i = 0; i < 12; i++) {
-        container.appendChild(createItem(Math.random() > 0.5));
+  <script>
+    const sections = ['tendencias', 'recomendados', 'vistos', 'explora'];
+    sections.forEach(sec => {
+      const section = document.getElementById(sec);
+      for (let r = 0; r < 2; r++) {
+        const row = document.createElement('div');
+        row.className = 'row';
+        for (let i = 0; i < 10; i++) {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const isVideo = Math.random() > 0.6;
+          if (isVideo) {
+            item.innerHTML = `
+              <video src="https://www.w3schools.com/html/mov_bbb.mp4" muted></video>
+              <div class="play-btn">▶</div>
+              <div class="stats">❤ ${Math.floor(Math.random()*500)} 💬 ${Math.floor(Math.random()*100)}</div>
+            `;
+          } else {
+            item.innerHTML = `
+              <img src="https://picsum.photos/400/200?random=${Math.random()}" />
+              <div class="stats">❤ ${Math.floor(Math.random()*500)} 💬 ${Math.floor(Math.random()*100)}</div>
+            `;
+          }
+          row.appendChild(item);
+        }
+        section.appendChild(row);
       }
     });
-  }
 
-  function loadMore() {
-    const feed = document.getElementById("feed");
-    for (let i = 0; i < 10; i++) {
-      feed.appendChild(createItem(Math.random() > 0.5));
-    }
-  }
+    // Preview modal
+    document.querySelectorAll('.item').forEach(item=>{
+      item.addEventListener('click', ()=>{
+        const modal = document.getElementById('previewModal');
+        const content = document.getElementById('previewContent');
+        const img = item.querySelector('img');
+        const vid = item.querySelector('video');
+        if (img) content.innerHTML = `<img src="${img.src}" />`;
+        if (vid) content.innerHTML = `<video src="${vid.src}" controls autoplay></video>`;
+        modal.classList.add('active');
+      });
+    });
 
-  function openModal(src) {
-    videoModal.classList.add("active");
-    videoEl.src = src;
-    videoEl.play();
-  }
-
-  videoModal.addEventListener("click", () => {
-    videoModal.classList.remove("active");
-    videoEl.pause();
-  });
-
-  fillSections();
-  loadMore();
-
-  window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-      loadMore();
-    }
-  });
-</script>
+    document.getElementById('previewModal').addEventListener('click', e=>{
+      if(e.target.id === 'previewModal') e.target.classList.remove('active');
+    });
+  </script>
 
 </body>
 </html>
