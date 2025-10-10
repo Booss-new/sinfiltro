@@ -3,29 +3,34 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil) - Pro</title>
-<meta name="description" content="SinFiltro — Demo móvil premium. Interfaz moderna, scroll infinito, visor, panel lateral y optimizaciones para móviles." />
+<title>SinFiltro — Premium (Móvil) — Fix scroll</title>
+<meta name="description" content="SinFiltro — Demo móvil premium. Interfaz moderna, scroll infinito, visor, panel lateral y optimizaciones móviles." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-  /* ---------- Variables ---------- */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
+    --accent-1:#00d1ff; --accent-2:#8a6eff;
     --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.56);
     --radius:12px; --fast:140ms; --mid:260ms; --text:#eaf7ff;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+
+  html,body{
+    height:100%;margin:0;
+    font-family:Inter,system-ui,Arial;
+    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    color:var(--text);-webkit-font-smoothing:antialiased;
+  }
   body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#616d7a;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  /* ---------- Background illusion ---------- */
+  /* background */
   .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
   .bg-layer{position:absolute;inset:-20% -10%;background:
     radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
     filter:blur(26px) saturate(1.05);transition:transform 9s linear}
 
-  /* ---------- Layout ---------- */
+  /* layout */
   .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
   .left-row{display:flex;align-items:center;gap:10px}
@@ -34,26 +39,36 @@
   .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tag{font-size:11px;color:var(--muted)}
 
-  /* ---------- Scroller container ---------- */
-  .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
-  .container{max-width:720px;margin:0 auto;padding:12px}
+  /* IMPORTANT: allow the flex child to be scrollable on mobile */
+  .scroll{
+    flex:1;
+    min-height:0; /* <<--- CRITICAL FIX */
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    touch-action: pan-y; /* allow vertical pan */
+  }
 
-  /* ---------- Hero ---------- */
+  .container{max-width:720px;margin:0 auto;padding:12px;min-height:0}
+
   .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
   .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-  /* ---------- Section header ---------- */
   .section{margin-top:14px}
   .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* ---------- Two-row horizontal scrollers ---------- */
+  /* two-row horizontal scrollers */
   .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
-  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch}
+  .h-row{
+    display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;
+    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    touch-action: pan-x; /* allow horizontal pan inside this row */
+    overscroll-behavior-x: contain; /* don't pass horizontal overscroll to parent */
+  }
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform;transform-origin:center}
+  .card-small{min-width:190px;flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
   .card-small.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
@@ -63,7 +78,7 @@
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* ---------- Vertical grid (explore) ---------- */
+  /* explore grid */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
@@ -71,36 +86,36 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* ---------- FAB & radial ---------- */
+  /* fab & radial */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--fast)}
   .radial.show{opacity:1;pointer-events:auto}
   .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
 
-  /* ---------- Bottom nav ---------- */
+  /* bottom nav */
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
   .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  /* ---------- Panel & overlay ---------- */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
+  /* panel & overlay (use classes .show => pointer-events active) */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;opacity:0;pointer-events:none;transition:opacity .18s}
+  .overlay.show{opacity:1;pointer-events:auto}
   .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
   .panel.open{transform:translateX(0);opacity:1}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* ---------- Viewer immersive ---------- */
+  /* viewer */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img{width:100%;height:auto;display:block}
   .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
-  /* ---------- Animations ---------- */
+  /* animations */
   .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   .pulse{animation:pulse 1.2s infinite}
   @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 
-  /* ---------- Responsive tweaks ---------- */
   @media(max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
@@ -128,23 +143,22 @@
       </div>
     </header>
 
-    <!-- Panel lateral y overlay -->
-    <div id="overlay" class="overlay" tabindex="-1"></div>
+    <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
+
     <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Panel de usuario">
       <div style="display:flex;align-items:center;gap:8px">
         <strong>Cuenta</strong>
         <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
       </div>
-      <p class="tag" style="margin:8px 0 12px 0">Ajustes, evaluar monetización y tu contenido (demo).</p>
+      <p class="tag" style="margin:8px 0 12px 0">Ajustes, monetización y tu contenido (demo).</p>
       <nav style="display:flex;flex-direction:column;gap:8px">
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start" id="panelProfile">👤 Mi perfil</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start" id="panelSettings">⚙️ Ajustes</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start" id="panelMon">💸 Monetización</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start" id="panelLogout">🚪 Cerrar sesión</button>
+        <button id="panelProfile" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
+        <button id="panelSettings" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+        <button id="panelMon" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
+        <button id="panelLogout" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
       </nav>
     </aside>
 
-    <!-- MAIN SCROLL -->
     <main id="scrollArea" class="scroll" tabindex="0">
       <div class="container">
         <section class="hero fade-up" aria-label="presentación">
@@ -152,7 +166,6 @@
           <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
 
-        <!-- Tendencias (2 filas h-row) -->
         <section class="section" aria-label="tendencias">
           <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrend">Ver todo</div></div>
           <div class="h-stack">
@@ -161,7 +174,6 @@
           </div>
         </section>
 
-        <!-- Recomendados -->
         <section class="section" aria-label="recomendados">
           <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
           <div class="h-stack">
@@ -170,7 +182,6 @@
           </div>
         </section>
 
-        <!-- Antes visto -->
         <section class="section" aria-label="antes visto">
           <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
           <div class="h-stack">
@@ -179,7 +190,6 @@
           </div>
         </section>
 
-        <!-- Grid explorar (vertical infinite) -->
         <section class="section" aria-label="explorar">
           <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="seeExplore">Filtrar</div></div>
           <div id="gridFeed" class="grid" aria-live="polite"></div>
@@ -189,7 +199,6 @@
       </div>
     </main>
 
-    <!-- FAB + radial actions -->
     <div id="radial" class="radial" aria-hidden="true">
       <button id="optUpload" title="Subir foto/video">📤</button>
       <button id="optPost" title="Crear publicación">✏️</button>
@@ -197,7 +206,6 @@
     </div>
     <button id="fab" class="fab" aria-label="Crear">＋</button>
 
-    <!-- Bottom nav -->
     <nav class="bottom-nav" role="navigation" aria-label="navegación">
       <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
       <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
@@ -206,7 +214,6 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
-    <!-- Viewer modal -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
       <div class="card">
         <div id="viewerInner"></div>
@@ -222,17 +229,14 @@
   </div>
 
 <script>
-/* ---------- SinFiltro Pro: JS (todo en este archivo) ---------- */
-
 /* ---------- Helpers ---------- */
 const $ = s=>document.querySelector(s), $$ = s=>Array.from(document.querySelectorAll(s));
 const rand = n=>Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-/* ---------- Demo data pool (images + videos) ---------- */
+/* ---------- Data pool ---------- */
 const pool = Array.from({length:120}).map((_,i)=>({
-  id:'p'+i,
-  src: mkImg(i),
+  id:'p'+i, src: mkImg(i),
   kind: (i % 5 === 0) ? 'video' : 'image',
   title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna'][i%5],
   likes: Math.floor(Math.random()*8000),
@@ -240,10 +244,7 @@ const pool = Array.from({length:120}).map((_,i)=>({
   views: (Math.floor(Math.random()*900)+100)+'K'
 }));
 
-let trends = pool.slice(0,12);
-let reco = pool.slice(12,24);
-let recent = pool.slice(24,36);
-let grid = pool.slice(36,56);
+let trends = pool.slice(0,12), reco = pool.slice(12,24), recent = pool.slice(24,36), grid = pool.slice(36,56);
 
 /* ---------- DOM refs ---------- */
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
@@ -258,15 +259,9 @@ const themeBtn = $('#themeBtn');
 const scrollArea = $('#scrollArea');
 const bgLayer = $('#bgLayer');
 
-/* ---------- Parallax small effect on scroll (lightweight) ---------- */
-scrollArea.addEventListener('scroll', ()=>{
-  const s = scrollArea.scrollTop;
-  const t = Math.min(60, s/25);
-  bgLayer.style.transform = `translateY(${t}px)`;
-});
-
-/* ---------- Lazy load images with IntersectionObserver ---------- */
 let io = null;
+
+/* ---------- Lazy loading (IntersectionObserver) ---------- */
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
@@ -289,13 +284,11 @@ function lazyObserve(root=document){
   }
 }
 
-/* ---------- Create cards ---------- */
+/* ---------- Card creators ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
-  const d = document.createElement('div');
-  d.className = 'card-small skel fade-up';
-  d.tabIndex = 0;
+  const d = document.createElement('div'); d.className='card-small skel fade-up'; d.tabIndex=0;
   d.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
     ${ item.likes > 2000 ? '<div class="mini-badge">TOP</div>' : '' }
@@ -308,46 +301,46 @@ function makeSmallCard(item){
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=>{ if(e.key==='Enter') openViewerByItem(item); });
+  d.addEventListener('keypress', e=>{ if(e.key === 'Enter') openViewerByItem(item); });
   return d;
 }
 
 function makeGridCard(item){
-  const a = document.createElement('article');
-  a.className = 'card skel fade-up';
+  const a = document.createElement('article'); a.className='card skel fade-up';
   a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
-/* ---------- Render two-row scroller ---------- */
+/* ---------- Render two-row scrollers with infinite append ---------- */
 function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=>{
-    const target = (i%2===0)?row1:row2;
+  items.forEach((it,i)=> {
+    const target = (i%2===0) ? row1 : row2;
     target.appendChild(makeSmallCard(it));
   });
-  // make sure each row has at least 6 items for good UX
+
   [row1,row2].forEach(r=>{
     while(r.children.length < 6) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    // add infinite-append behavior: when scroll near end, append more
-    let throttled=false;
+    let ticking=false;
     r.addEventListener('scroll', ()=>{
-      if(throttled) return;
-      if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
-        throttled=true;
-        setTimeout(()=>{
+      if(ticking) return;
+      // passive listener not required here but we don't call preventDefault; keep light
+      ticking = true;
+      requestAnimationFrame(()=>{
+        if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
           for(let i=0;i<4;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
           lazyObserve(r);
-          throttled=false;
-        }, 520);
-      }
-    });
+        }
+        ticking = false;
+      });
+    }, {passive:true});
   });
+
   lazyObserve();
 }
 
-/* ---------- Render grid with infinite vertical append ---------- */
+/* ---------- Grid render + infinite vertical append ---------- */
 let loadingGrid=false;
 function renderGridInitial(){
   gridFeed.innerHTML='';
@@ -355,23 +348,20 @@ function renderGridInitial(){
   lazyObserve(gridFeed);
 }
 scrollArea.addEventListener('scroll', ()=>{
-  // detect when bottom area (grid) is near viewport bottom -> append
   const gridRect = gridFeed.getBoundingClientRect();
   if(gridRect.top < window.innerHeight && !loadingGrid){
-    // append items
     loadingGrid = true;
     setTimeout(()=>{
       for(let i=0;i<6;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
       lazyObserve(gridFeed);
       loadingGrid = false;
-    }, 700);
+    }, 650);
   }
-});
+}, {passive:true});
 
-/* ---------- Viewer logic (open by item) ---------- */
+/* ---------- Viewer ---------- */
 let activeList = [], currentIndex = 0;
 function openViewerByItem(item){
-  // try to find which list contains item
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){
@@ -385,82 +375,82 @@ function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
   if(it.kind === 'video'){
-    const wrapper = document.createElement('div'); wrapper.style.position='relative';
-    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth = '100%';
+    const wrap = document.createElement('div'); wrap.style.position='relative';
+    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
     const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
     overlayPlay.addEventListener('click', ()=> simulatePlay(it));
-    wrapper.appendChild(poster); wrapper.appendChild(overlayPlay);
-    viewerInner.appendChild(wrapper);
+    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
+    viewerInner.appendChild(wrap);
   } else {
     const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
   }
   viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
 }
-function closeViewerFunc(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
+function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
 function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
 
-/* ---------- Panel open/close (touch outside to close) ---------- */
-function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
-function closePanel(){ overlay.style.display='none'; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+/* ---------- Panel open/close (use overlay.show and panel.open classes) ---------- */
+function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
+function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', openPanel);
 closePanelBtn.addEventListener('click', closePanel);
 overlay.addEventListener('click', closePanel);
 
-/* ---------- FAB behavior ---------- */
+/* ---------- FAB ---------- */
 fab.addEventListener('click', ()=> radial.classList.toggle('show'));
 $('#optUpload').addEventListener('click', ()=> alert('Subir demo (requiere backend)'));
 $('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
 $('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* ---------- Theme toggle ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
+/* ---------- Theme ---------- */
+const THEME_KEY = 'sinfiltro.theme.v4';
 let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
-function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent = '☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent = '🌗'; } }
+function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
 applyTheme(theme);
 themeBtn.addEventListener('click', ()=> { theme = (theme==='dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* ---------- Bottom nav interactions ---------- */
-$$('.nav-item').forEach(n=>{
-  n.addEventListener('click', ()=>{
-    $$('.nav-item').forEach(x=>x.classList.remove('active'));
-    n.classList.add('active');
-    const t = n.dataset.tab;
-    if(t === 'home'){ scrollArea.scrollTo({top:0,behavior:'smooth'}); }
-    if(t === 'search'){ alert('Buscar — demo'); }
-    if(t === 'recent'){ document.getElementById('recentRow1')?.scrollIntoView({behavior:'smooth'}); }
-    if(t === 'me'){ alert('Tus videos — demo'); }
-  });
-});
+/* ---------- Bottom nav ---------- */
+$$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
+  $$('.nav-item').forEach(x=>x.classList.remove('active')); n.classList.add('active');
+  const t = n.dataset.tab;
+  if(t === 'home') scrollArea.scrollTo({top:0,behavior:'smooth'});
+  if(t === 'search') alert('Buscar — demo');
+  if(t === 'recent') $('#recentRow1')?.scrollIntoView({behavior:'smooth'});
+  if(t === 'me') alert('Tus videos — demo');
+}));
 
-/* ---------- Accessibility & gestures ---------- */
-// ESC closes viewer/panel
-document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
-// close viewer on outside tap
-viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+/* ---------- small parallax ---------- */
+scrollArea.addEventListener('scroll', ()=> {
+  const s = scrollArea.scrollTop;
+  const t = Math.min(60, s/25);
+  bgLayer.style.transform = `translateY(${t}px)`;
+}, {passive:true});
 
-/* ---------- Initial render ---------- */
+/* ---------- initial render ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  // ensure all rows have extra items for smooth UX
-  $$('.h-row').forEach(r=>{
-    while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-  });
+  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
   lazyObserve();
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- Small perf tips execution ---------- */
-// throttle heavy events already handled by setTimeout in logic above
+/* ---------- viewer controls ---------- */
+closeViewer.addEventListener('click', closeViewerFunc);
+prevBtn.addEventListener('click', prevItem);
+nextBtn.addEventListener('click', nextItem);
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
 
-/* ---------- Register a tiny service worker (from blob) for caching demo assets ----------
-   This creates a simple service worker on-the-fly so you can test offline caching on GitHub Pages.
-   If registration fails it silently falls back.
--------------------------------------------------------------- */
+/* ---------- accessibility ---------- */
+document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
+// close viewer on outside tap
+viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+
+/* ---------- tiny service worker (same as before, optional) ---------- */
 if('serviceWorker' in navigator){
   const swCode = `
     const CACHE = 'sinfiltro-v1';
@@ -475,10 +465,8 @@ if('serviceWorker' in navigator){
     const blob = new Blob([swCode], {type:'application/javascript'});
     const swUrl = URL.createObjectURL(blob);
     navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
-  }catch(e){ /* ignore if blob not allowed */ }
+  }catch(e){}
 }
-
-/* ---------- Done ---------- */
 </script>
 </body>
 </html>
