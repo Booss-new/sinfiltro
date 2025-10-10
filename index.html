@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SinFiltro</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@400;600&display=swap');
@@ -18,18 +18,16 @@
       background: radial-gradient(circle at top, #000814, #001933, #000010);
       color: #fff;
       min-height: 100vh;
-      overflow: hidden;
+      overflow-y: scroll;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      position: relative;
       text-align: center;
+      scroll-behavior: smooth;
     }
 
-    /* Fondo animado con luces flotantes */
     .bg {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
@@ -38,8 +36,8 @@
                   radial-gradient(circle at 70% 70%, #ff00ff22, transparent 50%),
                   radial-gradient(circle at 50% 90%, #0077ff22, transparent 50%);
       animation: moveLights 10s infinite alternate;
-      z-index: 0;
       filter: blur(40px);
+      z-index: 0;
     }
 
     @keyframes moveLights {
@@ -47,12 +45,11 @@
       100% { transform: scale(1.3) translate(-15px, 15px); }
     }
 
-    /* Título */
     h1 {
       font-family: 'Orbitron', sans-serif;
-      font-size: 2.8rem;
+      font-size: 2.6rem;
       text-transform: uppercase;
-      margin-top: 90px;
+      margin-top: 80px;
       color: #00ffff;
       text-shadow: 0 0 10px #00ffff, 0 0 30px #0077ff, 0 0 60px #00ccff;
       animation: glow 3s ease-in-out infinite alternate;
@@ -72,56 +69,71 @@
       opacity: 0.9;
     }
 
-    /* Sección central con efecto 3D */
-    .container {
+    /* Sección del contenido */
+    .content {
       position: relative;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(0, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 30px 20px;
-      margin: 30px;
-      width: 85%;
-      box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
       z-index: 1;
-      animation: floaty 6s ease-in-out infinite alternate;
+      margin-top: 25px;
+      width: 95%;
+      max-width: 500px;
     }
 
-    @keyframes floaty {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(-10px); }
-    }
-
-    .btn {
-      display: inline-block;
-      margin-top: 15px;
-      background: linear-gradient(135deg, #00eaff, #0077ff);
-      color: #fff;
-      padding: 12px 35px;
-      border-radius: 30px;
+    .section-title {
+      text-align: left;
       font-weight: 600;
-      text-decoration: none;
-      box-shadow: 0 0 15px #00eaffaa;
+      font-size: 1.1rem;
+      color: #00ffff;
+      margin: 20px 10px 10px;
+      text-shadow: 0 0 8px #00ffff77;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 0 10px;
+    }
+
+    .video {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
       transition: 0.3s;
     }
 
-    .btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px #00ffff;
+    .video:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 25px rgba(0, 255, 255, 0.3);
     }
 
-    /* Menú inferior */
+    .video img {
+      width: 100%;
+      display: block;
+    }
+
+    .video p {
+      font-size: 0.8rem;
+      padding: 5px 8px;
+      color: #aaf;
+      text-align: left;
+    }
+
+    /* Menú fijo */
     .nav {
       position: fixed;
-      bottom: 15px;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
       width: 90%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.6);
       display: flex;
       justify-content: space-around;
       padding: 10px 0;
       border-radius: 25px;
       box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-      z-index: 2;
+      z-index: 10;
       backdrop-filter: blur(6px);
     }
 
@@ -139,9 +151,9 @@
     }
 
     @media (max-width: 600px) {
-      h1 { font-size: 2.3rem; margin-top: 70px; }
+      h1 { font-size: 2.3rem; }
       p { font-size: 0.9rem; }
-      .container { width: 90%; padding: 20px; }
+      .video-grid { gap: 10px; }
     }
   </style>
 </head>
@@ -150,9 +162,38 @@
   <h1>SinFiltro</h1>
   <p>Donde lo real brilla sin límites ⚡</p>
 
-  <div class="container">
-    <p>Explora contenido increíble, descubre nuevas tendencias y conecta con el mundo sin filtros. 🌐</p>
-    <a href="#" class="btn">Explorar ahora</a>
+  <div class="content">
+    <div class="section-title">🔥 En tendencia</div>
+    <div class="video-grid">
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=1" alt="video1" />
+        <p>Video épico #1</p>
+      </div>
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=2" alt="video2" />
+        <p>Top mundial #2</p>
+      </div>
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=3" alt="video3" />
+        <p>🔥 Nuevo reto viral</p>
+      </div>
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=4" alt="video4" />
+        <p>⚡ Momentos únicos</p>
+      </div>
+    </div>
+
+    <div class="section-title">🎬 Vistos recientemente</div>
+    <div class="video-grid">
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=5" alt="video5" />
+        <p>Clásico #1</p>
+      </div>
+      <div class="video">
+        <img src="https://picsum.photos/300/200?random=6" alt="video6" />
+        <p>🎧 Sesión remix</p>
+      </div>
+    </div>
   </div>
 
   <div class="nav">
