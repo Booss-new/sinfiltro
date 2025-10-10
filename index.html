@@ -3,115 +3,128 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Demo Premium</title>
-  <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro y diseño moderno." />
+  <title>SinFiltro — Premium Mobile (v2)</title>
+  <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro, animaciones y carga optimizada." />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
   <style>
     :root{
       --bg-1:#05060a; --bg-2:#071226;
       --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
       --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
       --glass: rgba(255,255,255,0.04);
-      --radius:14px; --trans:260ms;
+      --radius:14px; --trans:320ms;
       --text:#eaf7ff;
+      --easing:cubic-bezier(.2,.9,.22,1);
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+
+    /* Light theme variables */
     body.light{
-      --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
-      background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      --bg-1:#f5f9ff; --bg-2:#eef6ff;
+      --accent-cyan:#0066cc; --accent-violet:#5e3bff;
+      --muted:#516070; --card:#ffffff; --text:#071226;
     }
 
-    /* Animated background glow */
-    .bg-anim{
-      position:fixed;inset:0;z-index:-10;pointer-events:none;
-      background:
-        radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-        radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-      filter:blur(28px) saturate(1.05);
-      animation: drift 20s linear infinite;
-    }
-    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
-
-    /* Layout */
+    /* Base */
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+    *{box-sizing:border-box}
     .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:14px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-    .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px}
 
-    /* Logo (3D neon metallic mix) */
-    .brand{display:flex;align-items:center;gap:10px;justify-content:center;flex:1}
-    .brand .logo {
-      font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;
+    /* Parallax animated background (subtle) */
+    .bg-layer{
+      position:fixed;inset:0;z-index:-20;pointer-events:none;
+      background:
+        radial-gradient(600px 320px at 12% 8%, rgba(138,110,255,0.06), transparent 8%),
+        radial-gradient(900px 420px at 88% 78%, rgba(0,209,255,0.04), transparent 10%);
+      filter:blur(28px) saturate(1.05);
+      transform-origin:center;
+      transition:transform 600ms var(--easing);
+    }
+
+    /* Header - dynamic blur on scroll */
+    header{
+      position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:12px 14px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+      backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.02);
+      transition:backdrop-filter 320ms var(--easing), padding 320ms var(--easing);
+    }
+    header.scrolled{backdrop-filter:blur(12px);padding:8px 14px}
+    .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px}
+
+    /* Logo (3D neon metallic) */
+    .brand{display:flex;align-items:center;justify-content:center;flex:1;position:relative}
+    .brand .logo{
+      font-family:'Poppins',sans-serif;font-weight:800;font-size:20px;letter-spacing:0.6px;
       background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));
       -webkit-background-clip:text;background-clip:text;color:transparent;
-      text-shadow:0 6px 28px rgba(0,0,0,0.5);
-      transform-style:preserve-3d;
-      display:inline-block;
+      text-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 18px rgba(0,209,255,0.06);
+      transform:translateZ(0);
+      transition:transform 600ms var(--easing), text-shadow 600ms var(--easing);
     }
-    .brand .logo::after{
-      content:"";position:absolute;left:50%;top:10px;transform:translateX(-50%);width:120%;height:10px;border-radius:50%;filter:blur(14px);
-      background:linear-gradient(90deg, rgba(0,209,255,0.12), rgba(138,110,255,0.08));
-      opacity:.9;pointer-events:none;
-    }
+    /* light pulse on visible */
+    .brand .logo.pulse{animation:logoPulse 2500ms ease-in-out infinite}
+    @keyframes logoPulse{0%{text-shadow:0 8px 30px rgba(0,0,0,0.6)}40%{text-shadow:0 18px 48px rgba(0,209,255,0.16)}100%{text-shadow:0 8px 30px rgba(0,0,0,0.6)}}
 
-    /* Theme toggle at top-right edge (small) */
+    /* Top icon */
     .top-actions{display:flex;align-items:center;gap:8px}
-    .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
+    .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:transform 200ms var(--easing), box-shadow 200ms var(--easing)}
     .icon-btn:active{transform:scale(.96)}
+    .icon-btn.glow{box-shadow:0 10px 30px rgba(0,209,255,0.08), 0 2px 8px rgba(0,0,0,0.4)}
 
     /* Scroll area */
-    .scroll{flex:1;overflow:auto;padding-bottom:120px; -webkit-overflow-scrolling:touch;display:flex;justify-content:center}
+    .scroll{flex:1;overflow:auto;padding-bottom:120px;-webkit-overflow-scrolling:touch;display:flex;justify-content:center}
     .content{width:100%;max-width:720px;padding:12px}
 
-    /* Hero - subtle */
-    .hero{margin-top:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);display:flex;flex-direction:column;gap:6px}
+    /* Hero */
+    .hero{margin-top:6px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);display:flex;flex-direction:column;gap:8px;transition:transform 320ms var(--easing)}
     .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
     .hero p{margin:0;color:var(--muted);font-size:13px}
 
-    /* Grid feed - premium cards */
+    /* Grid + skeleton */
     .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-    .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);transition:transform var(--trans), box-shadow var(--trans);cursor:pointer}
+    .card{position:relative;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);transition:transform var(--trans) var(--easing), box-shadow var(--trans) var(--easing), opacity 260ms}
     .card:hover{transform:translateY(-8px);box-shadow:0 30px 80px rgba(0,0,0,0.7)}
-    .card img{width:100%;height:170px;object-fit:cover;display:block}
+    .card img{width:100%;height:170px;object-fit:cover;display:block;opacity:0;transition:opacity 360ms var(--easing)}
+    .card.loaded img{opacity:1}
     .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
     .card .title{font-weight:700;font-size:13px}
     .card .sub{font-size:12px;color:var(--muted)}
 
-    /* Floating subtle badge */
+    /* skeleton */
+    .skeleton{
+      width:100%;height:170px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+      background-size:200% 100%;animation:skeletonAnim 1.2s linear infinite;
+    }
+    @keyframes skeletonAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
     .mini-badge{position:absolute;right:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35)}
 
-    /* FAB space spacer */
+    /* Spacer for nav */
     .spacer{height:78px}
 
-    /* Bottom nav (keeps icons + theme mode small) */
-    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:60}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none;transition:transform var(--trans)}
+    /* Bottom nav */
+    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.32));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:60}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none;transition:transform 220ms var(--easing)}
     .nav-item.active{color:var(--accent-cyan);transform:translateY(-6px)}
     .nav-item .icon{font-size:20px}
 
-    /* Theme small toggle in nav */
-    .theme-toggle{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border:none;color:#001;font-weight:700;cursor:pointer}
-
-    /* Animations */
-    .fade-up{animation:fadeUp .52s ease both}
+    /* subtle entrance */
+    .fade-up{animation:fadeUp .56s var(--easing) both}
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* Responsive */
-    @media (max-width:420px){
-      .card img{height:140px}
-      .grid{gap:10px}
-    }
+    /* responsive tweaks */
+    @media (max-width:420px){ .card img{height:140px} .grid{gap:10px} .brand .logo{font-size:18px} }
+
   </style>
 </head>
 <body>
-  <div class="bg-anim" aria-hidden="true"></div>
+  <div class="bg-layer" id="bgLayer" aria-hidden="true"></div>
 
-  <div class="app" role="application" aria-label="SinFiltro app">
-    <header>
+  <div class="app" role="application" aria-label="SinFiltro">
+    <header id="topBar">
       <div class="header-inner">
         <div style="width:44px"></div>
         <div class="brand" role="banner" aria-label="SinFiltro">
-          <div class="logo" aria-hidden="false">SinFiltro</div>
+          <div class="logo" id="siteLogo" aria-hidden="false">SinFiltro</div>
         </div>
         <div class="top-actions" style="justify-self:end">
           <button id="topThemeBtn" class="icon-btn" title="Cambiar modo" aria-label="Cambiar modo">🌗</button>
@@ -119,14 +132,14 @@
       </div>
     </header>
 
-    <div class="scroll" id="scrollArea">
+    <div class="scroll" id="scrollArea" tabindex="0">
       <div class="content">
-        <section class="hero fade-up" aria-label="Presentación">
+        <section class="hero fade-up" id="hero">
           <h1 id="heroTitle">Descubre lo auténtico</h1>
           <p id="heroSub" class="muted">Solo imágenes — apariencia premium. Desliza para explorar.</p>
         </section>
 
-        <section style="margin-top:12px" aria-label="Feed">
+        <section aria-label="Feed">
           <div class="grid" id="gridFeed" aria-live="polite"></div>
         </section>
 
@@ -139,12 +152,11 @@
       <div class="nav-item" data-tab="explore" id="navExplore"><div class="icon">🔍</div><div style="font-size:11px">Explorar</div></div>
       <div class="nav-item" id="navUpload"><div class="icon">＋</div><div style="font-size:11px">Subir</div></div>
       <div class="nav-item" data-tab="likes" id="navLikes"><div class="icon">❤</div><div style="font-size:11px">Favoritos</div></div>
-      <div class="nav-item" id="navThemeControl"><button id="navThemeBtn" class="theme-toggle" title="Cambiar modo" aria-label="Cambiar modo">🌙</button></div>
     </nav>
   </div>
 
   <!-- Viewer modal -->
-  <div id="viewer" style="display:none;position:fixed;inset:0;z-index:120;background:linear-gradient(180deg, rgba(0,0,0,0.95), rgba(0,0,0,0.95));align-items:center;justify-content:center;padding:18px;">
+  <div id="viewer" style="display:none;position:fixed;inset:0;z-index:140;background:linear-gradient(180deg, rgba(0,0,0,0.96), rgba(0,0,0,0.96));align-items:center;justify-content:center;padding:18px;">
     <div style="width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px">
       <div id="viewerContent" style="text-align:center;color:#fff"></div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
@@ -154,15 +166,21 @@
   </div>
 
 <script>
-/* SinFiltro — Premium visual (solo imágenes) */
-/* Features: lazy-load images, grid, theme toggle (top + bottom), viewer modal, infinite scroll demo */
+/* Premium SinFiltro — enhancements:
+   - parallax bg movement
+   - top bar blur on scroll
+   - skeleton loaders
+   - image lazy load with smooth reveal
+   - theme transition animated
+   - microinteractions
+*/
 
-/* Helpers */
+/* helpers */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 
-/* Initial demo feed (random images) */
+/* demo feed */
 let feed = Array.from({length:12}).map((_,i)=>({
   id: 'i'+i,
   src: `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`,
@@ -171,75 +189,124 @@ let feed = Array.from({length:12}).map((_,i)=>({
   likes: rand(400)
 }));
 
-/* Render grid cards */
-function cardEl(item, idx){
+/* build card with skeleton placeholder */
+function cardEl(item){
   const el = document.createElement('div');
   el.className = 'card fade-up';
   el.innerHTML = `
-    <img data-src="${item.src}" alt="${item.title}" loading="lazy">
+    <div class="skeleton" aria-hidden="true"></div>
+    <img data-src="${item.src}" alt="${item.title}" loading="lazy" />
     <div class="meta">
       <div>
         <div class="title">${item.title}</div>
         <div class="sub">${item.meta}</div>
       </div>
-      ${item.likes>200 ? `<div class="mini-badge">🔥 TOP</div>` : ''}
+      ${item.likes>200?`<div class="mini-badge">🔥 TOP</div>` : ''}
     </div>
   `;
+  // click to open viewer
   el.addEventListener('click', ()=> openViewer(item));
   return el;
 }
 
+/* render grid and start lazy */
 function renderGrid(){
   const grid = $('#gridFeed'); grid.innerHTML = '';
-  feed.forEach((it,idx)=> grid.appendChild(cardEl(it, idx)));
+  feed.forEach(it => grid.appendChild(cardEl(it)));
   startLazy();
 }
 
-/* Lazy loading images */
+/* lazy load images & replace skeleton when loaded */
 let observer = null;
 function startLazy(){
+  const cards = $$('.card');
   const imgs = $$('img[data-src]');
   if('IntersectionObserver' in window){
     if(!observer){
-      observer = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(en=>{
+      observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(en => {
           if(en.isIntersecting){
             const img = en.target;
+            // load image
             img.src = img.dataset.src;
+            img.onload = () => {
+              const card = img.closest('.card');
+              if(card){
+                card.classList.add('loaded');
+                const sk = card.querySelector('.skeleton');
+                if(sk) sk.remove();
+                // subtle lift animation
+                card.animate([{transform:'translateY(4px)'},{transform:'translateY(0)'}],{duration:420, easing:'ease-out'});
+              }
+            };
             img.removeAttribute('data-src');
             obs.unobserve(img);
           }
         });
-      }, {rootMargin:'200px', threshold:0.05});
+      }, {rootMargin:'220px', threshold:0.05});
     }
-    imgs.forEach(i=> observer.observe(i));
+    imgs.forEach(i => observer.observe(i));
   } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+    imgs.forEach(i => { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-/* Viewer modal */
+/* viewer */
 function openViewer(item){
-  const v = $('#viewer'); const c = $('#viewerContent');
-  c.innerHTML = '';
-  const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.maxWidth='100%';
-  c.appendChild(img);
+  const v = $('#viewer'), c = $('#viewerContent');
+  c.innerHTML = `<img src="${item.src}" alt="${item.title}" style="max-width:100%;border-radius:8px">`;
   v.style.display = 'flex';
 }
 $('#closeViewer').addEventListener('click', ()=> $('#viewer').style.display = 'none');
 
-/* Theme toggle (top & bottom) */
-const THEME_KEY = 'sinfiltro.theme.v2';
+/* theme toggle (top only) with animated transition */
+const THEME_KEY = 'sinfiltro.theme.v3';
 function applyTheme(t){
-  if(t === 'light'){ document.body.classList.add('light'); $('#topThemeBtn').textContent='☀️'; $('#navThemeBtn').textContent='☀️'; }
-  else { document.body.classList.remove('light'); $('#topThemeBtn').textContent='🌗'; $('#navThemeBtn').textContent='🌙'; }
+  if(t === 'light'){
+    document.body.classList.add('light');
+    $('#topThemeBtn').textContent = '☀️';
+    $('#topThemeBtn').classList.add('glow');
+    setTimeout(()=> $('#topThemeBtn').classList.remove('glow'), 700);
+  } else {
+    document.body.classList.remove('light');
+    $('#topThemeBtn').textContent = '🌗';
+    $('#topThemeBtn').classList.add('glow');
+    setTimeout(()=> $('#topThemeBtn').classList.remove('glow'), 700);
+  }
 }
 let theme = localStorage.getItem(THEME_KEY) || 'dark';
 applyTheme(theme);
-$('#topThemeBtn').addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
-$('#navThemeBtn').addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+$('#topThemeBtn').addEventListener('click', ()=> {
+  theme = (theme === 'dark') ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  // smooth CSS transition: fade background briefly
+  document.documentElement.style.transition = 'background 420ms var(--easing), color 420ms var(--easing)';
+  applyTheme(theme);
+  setTimeout(()=> document.documentElement.style.transition = '', 600);
+});
 
-/* Navigation interactions */
+/* top bar effect on scroll + logo subtle pulse when idle */
+const topBar = $('#topBar');
+const logo = $('#siteLogo');
+let lastScroll = 0;
+$('#scrollArea').addEventListener('scroll', e => {
+  const s = e.target;
+  if(s.scrollTop > 8) topBar.classList.add('scrolled'); else topBar.classList.remove('scrolled');
+  // parallax background move based on scroll
+  const bg = $('#bgLayer');
+  const pct = Math.min(1, s.scrollTop / (s.scrollHeight - s.clientHeight));
+  bg.style.transform = `translateY(${pct * -6}%)`;
+  lastScroll = s.scrollTop;
+});
+/* subtle logo pulse */
+let pulseToggle = true;
+setInterval(()=> {
+  if(document.hidden) return;
+  logo.classList.add('pulse');
+  setTimeout(()=> logo.classList.remove('pulse'), 900);
+}, 4600);
+
+/* nav interactions */
 $$('.nav-item').forEach(el=>{
   el.addEventListener('click', ()=>{
     $$('.nav-item').forEach(n=> n.classList.remove('active'));
@@ -247,14 +314,14 @@ $$('.nav-item').forEach(el=>{
     const tab = el.dataset.tab;
     if(!tab || tab === 'home'){ $('#scrollArea').scrollTop = 0; renderGrid(); }
     else if(tab === 'explore'){ feed = feed.sort(()=>Math.random()-0.5); renderGrid(); }
-    else if(tab === 'likes'){ const top = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8); $('#gridFeed').innerHTML=''; top.forEach((it,i)=> $('#gridFeed').appendChild(cardEl(it,i))); startLazy(); }
-    else if(el.id === 'navUpload'){ alert('Función subir: demo. Requiere backend para guardar archivos.'); }
+    else if(tab === 'likes'){ const top = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,8); $('#gridFeed').innerHTML = ''; top.forEach(it=> $('#gridFeed').appendChild(cardEl(it))); startLazy(); }
+    else if(el.id === 'navUpload'){ alert('Subida demo: necesita backend para guardar archivos.'); }
   });
 });
 
-/* Infinite scroll demo: append images */
-let loading=false;
-$('#scrollArea').addEventListener('scroll', ()=>{
+/* infinite scroll: append items with skeletons (debounced) */
+let loading = false;
+$('#scrollArea').addEventListener('scroll', () => {
   const s = $('#scrollArea');
   if(s.scrollTop + s.clientHeight > s.scrollHeight - 420 && !loading){
     loading = true;
@@ -273,11 +340,17 @@ $('#scrollArea').addEventListener('scroll', ()=>{
   }
 });
 
-/* Initial render */
+/* initial render */
 renderGrid();
 
-/* Accessibility: ESC closes viewer */
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ $('#viewer').style.display='none'; } });
+/* accessibility: ESC closes viewer */
+document.addEventListener('keydown', (e)=> { if(e.key === 'Escape') $('#viewer').style.display = 'none'; });
+
+/* reduce motion: respect prefers-reduced-motion */
+if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  $$('[class*="fade-up"]').forEach(n => n.style.animation = 'none');
+  document.documentElement.style.transition = 'none';
+}
 </script>
 </body>
 </html>
