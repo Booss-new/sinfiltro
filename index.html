@@ -1,267 +1,176 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SinFiltro — Premium</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinFiltro — Premium Feed</title>
+  <meta name="description" content="SinFiltro — versión premium con diseño moderno, videos e imágenes." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
-    :root {
-      --bg: #0a0a0a;
-      --text: #fff;
-      --accent: #00d1ff;
-      --card: rgba(255,255,255,0.08);
+    :root{
+      --bg1:#05060a; --bg2:#071226;
+      --accent1:#00d1ff; --accent2:#8a6eff;
+      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+      --text:#eaf7ff; --radius:14px; --trans:260ms;
     }
-    [data-theme="light"] {
-      --bg: #f7f7f7;
-      --text: #111;
-      --accent: #0077ff;
-      --card: rgba(0,0,0,0.05);
-    }
+    body{margin:0;height:100vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;}
+    body.light{--bg1:#f8fbff;--bg2:#e8f0ff;--accent1:#0066cc;--accent2:#5e3bff;--text:#0a0b10;--muted:#5c6b7a;background:linear-gradient(180deg,var(--bg1),var(--bg2));}
 
-    * {
-      box-sizing: border-box;
-      font-family: "Inter", sans-serif;
-    }
+    .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
+      radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+      radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
+      filter:blur(28px) saturate(1.05);animation:drift 24s linear infinite;}
+    @keyframes drift{0%,100%{transform:translate(0,0);}50%{transform:translate(3%,-3%);}}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      overflow-x: hidden;
-    }
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.03);}
+    .menu-btn,.theme-btn{width:42px;height:42px;border-radius:10px;background:var(--card);border:none;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:transform var(--trans);}
+    .menu-btn:active,.theme-btn:active{transform:scale(.95);}
+    .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:22px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 4px 24px rgba(0,0,0,0.4);}
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.7em 1em;
-    }
+    .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px;}
+    .section{padding:14px;}
+    .section h2{margin:0 0 10px 4px;font-size:15px;font-weight:700;color:var(--accent1);}
+    .rows{display:grid;grid-template-rows:repeat(2,auto);gap:10px;}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 
-    .menu-btn {
-      font-size: 1.5em;
-      cursor: pointer;
-      color: var(--accent);
-    }
+    .card{position:relative;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:transform var(--trans),box-shadow var(--trans);}
+    .card:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,0.6);}
+    .card img,.card video{width:100%;height:150px;object-fit:cover;display:block;}
+    .meta{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;font-size:12px;color:var(--muted);}
+    .stats{display:flex;gap:8px;}
+    .stats span{display:flex;align-items:center;gap:4px;}
 
-    .logo {
-      font-weight: 800;
-      font-size: 1.3em;
-      color: var(--accent);
-      animation: float 3s ease-in-out infinite;
-    }
+    .play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;background:rgba(0,0,0,0.25);opacity:0;transition:opacity var(--trans);}
+    .card:hover .play-btn{opacity:1;}
 
-    @keyframes float {
-      0%,100%{ transform: translateY(0px); }
-      50%{ transform: translateY(-3px); }
-    }
+    .bottom-nav{position:fixed;bottom:10px;left:10px;right:10px;height:70px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border-radius:18px;display:flex;align-items:center;justify-content:space-around;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 80px rgba(0,0,0,0.6);}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer;}
+    .nav-item.active{color:var(--accent1);}
+    .nav-item .icon{font-size:20px;}
 
-    .theme-toggle {
-      cursor: pointer;
-      background: var(--accent);
-      border: none;
-      border-radius: 50%;
-      width: 35px;
-      height: 35px;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    .section-title {
-      font-weight: 700;
-      margin: 1em;
-      font-size: 1.2em;
-      color: var(--accent);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 10px;
-      padding: 0 10px;
-    }
-
-    .item {
-      position: relative;
-      background: var(--card);
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      aspect-ratio: 1 / 1;
-      transition: transform 0.3s ease;
-    }
-    .item:hover { transform: scale(1.03); }
-
-    .item img, .item video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .overlay {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      padding: 5px 8px;
-      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-      display: flex;
-      justify-content: space-between;
-      color: #fff;
-      font-size: 0.8em;
-    }
-
-    .play-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.6);
-      border: 2px solid var(--accent);
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      font-size: 1.5em;
-      opacity: 0;
-      transition: 0.3s;
-    }
-    .item:hover .play-btn { opacity: 1; }
-
-    /* Modal video player */
-    .modal {
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background: rgba(0,0,0,0.9);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      visibility: hidden;
-      opacity: 0;
-      transition: 0.3s;
-    }
-    .modal.active {
-      visibility: visible;
-      opacity: 1;
-    }
-    .modal video {
-      max-width: 90%;
-      max-height: 80%;
-      border-radius: 10px;
-    }
-    .close-modal {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 2em;
-      color: var(--accent);
-      cursor: pointer;
-    }
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .fade-up{animation:fadeUp .4s ease both;}
   </style>
 </head>
 <body>
+  <div class="bg-anim"></div>
   <header>
-    <div class="menu-btn">☰</div>
-    <div class="logo">SinFiltro</div>
-    <button class="theme-toggle">☀️</button>
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <div class="brand">SinFiltro</div>
+    <button class="theme-btn" id="themeBtn">🌗</button>
   </header>
 
-  <div class="section-title">Tendencias</div>
-  <div class="grid" id="tendencias"></div>
+  <div class="scroll" id="scrollArea">
+    <div class="section fade-up" id="tendencias">
+      <h2>Tendencias</h2>
+      <div class="rows">
+        <div class="row" id="trend1"></div>
+        <div class="row" id="trend2"></div>
+      </div>
+    </div>
 
-  <div class="section-title">Recomendados</div>
-  <div class="grid" id="recomendados"></div>
+    <div class="section fade-up" id="recomendados">
+      <h2>Recomendados</h2>
+      <div class="rows">
+        <div class="row" id="rec1"></div>
+        <div class="row" id="rec2"></div>
+      </div>
+    </div>
 
-  <div class="section-title">Tus videos</div>
-  <div class="grid" id="tus-videos"></div>
+    <div class="section fade-up" id="antesvisto">
+      <h2>Antes visto</h2>
+      <div class="rows">
+        <div class="row" id="view1"></div>
+        <div class="row" id="view2"></div>
+      </div>
+    </div>
 
-  <div class="section-title">Antes visto</div>
-  <div class="grid" id="antes-visto"></div>
+    <div class="section fade-up" id="tusvideos">
+      <h2>Tus videos</h2>
+      <div class="rows">
+        <div class="row" id="mine1"></div>
+        <div class="row" id="mine2"></div>
+      </div>
+    </div>
 
-  <div class="section-title">Explora más</div>
-  <div class="grid" id="explora"></div>
-
-  <div class="modal" id="videoModal">
-    <div class="close-modal">&times;</div>
-    <video controls id="videoPlayer"></video>
+    <div class="section fade-up" id="feed">
+      <h2>Explora más</h2>
+      <div class="rows" id="feedRows"></div>
+    </div>
   </div>
 
-  <script>
-    const body = document.body;
-    const themeToggle = document.querySelector('.theme-toggle');
-    themeToggle.addEventListener('click', () => {
-      const current = body.getAttribute('data-theme');
-      body.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
-      themeToggle.textContent = current === 'light' ? '☀️' : '🌙';
+  <nav class="bottom-nav">
+    <div class="nav-item active"><div class="icon">🏠</div>Inicio</div>
+    <div class="nav-item"><div class="icon">🔍</div>Buscar</div>
+    <div class="nav-item"><div class="icon">＋</div>Subir</div>
+    <div class="nav-item"><div class="icon">📺</div>Tus videos</div>
+    <div class="nav-item"><div class="icon">👁</div>Antes visto</div>
+  </nav>
+
+<script>
+const $ = s => document.querySelector(s);
+const rand = n => Math.floor(Math.random()*n);
+const imgs = ['https://picsum.photos/600/400?random=','https://picsum.photos/seed/'];
+const videos = ['https://samplelib.com/lib/preview/mp4/sample-5s.mp4'];
+
+function genItem(isVideo=false){
+  return {
+    type:isVideo?'video':'image',
+    src:isVideo?videos[0]:imgs[0]+rand(9000),
+    likes:rand(999), comments:rand(400), views:rand(5000)
+  };
+}
+
+function createCard(it){
+  const el = document.createElement('div');
+  el.className='card';
+  el.innerHTML= it.type==='video'
+    ? `<video src="${it.src}" muted playsinline></video><div class="play-btn">▶️</div>`
+    : `<img src="${it.src}" alt="SinFiltro media">`;
+  const meta = document.createElement('div');
+  meta.className='meta';
+  meta.innerHTML=`<div class="stats">
+    <span>❤️ ${it.likes}</span>
+    <span>💬 ${it.comments}</span>
+    <span>👁 ${it.views}</span>
+  </div>`;
+  el.appendChild(meta);
+  if(it.type==='video'){
+    el.querySelector('.play-btn').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      const v=el.querySelector('video');
+      v.paused?v.play():v.pause();
     });
+  }
+  return el;
+}
 
-    const secciones = {
-      tendencias: 8,
-      recomendados: 8,
-      "tus-videos": 6,
-      "antes-visto": 6
-    };
+function fillRow(id){ const r=$(id); r.innerHTML=''; for(let i=0;i<2;i++){r.appendChild(createCard(Math.random()<0.5?genItem(true):genItem()));}}
+['#trend1','#trend2','#rec1','#rec2','#view1','#view2','#mine1','#mine2'].forEach(fillRow);
 
-    function crearItem(id, esVideo=false) {
-      const item = document.createElement('div');
-      item.className = 'item';
-      let media = esVideo
-        ? `<video src="https://samplelib.com/lib/preview/mp4/sample-5s.mp4" muted></video><div class="play-btn">▶️</div>`
-        : `<img src="https://picsum.photos/300?random=${id}" alt="">`;
-      item.innerHTML = media + `
-        <div class="overlay">
-          <span>❤️ ${Math.floor(Math.random()*500)}</span>
-          <span>💬 ${Math.floor(Math.random()*100)}</span>
-          <span>👁️ ${Math.floor(Math.random()*2000)}</span>
-        </div>`;
-      return item;
-    }
+function addFeedBatch(){
+  const feed=$('#feedRows');
+  for(let i=0;i<2;i++){
+    const row=document.createElement('div');row.className='row';
+    for(let j=0;j<2;j++){row.appendChild(createCard(Math.random()<0.4?genItem(true):genItem()));}
+    feed.appendChild(row);
+  }
+}
+addFeedBatch();
 
-    Object.keys(secciones).forEach(sec => {
-      const grid = document.getElementById(sec);
-      for(let i=0; i<secciones[sec]; i++){
-        grid.appendChild(crearItem(i, Math.random() > 0.6));
-      }
-    });
+$('#scrollArea').addEventListener('scroll',()=>{
+  const s=$('#scrollArea');
+  if(s.scrollTop+s.clientHeight>=s.scrollHeight-400){addFeedBatch();}
+});
 
-    // scroll infinito
-    const explora = document.getElementById('explora');
-    let loaded = 0;
-    function cargarMas() {
-      for(let i=0;i<8;i++){
-        explora.appendChild(crearItem(loaded+i, Math.random() > 0.5));
-      }
-      loaded+=8;
-    }
-    cargarMas();
-    window.addEventListener('scroll', ()=>{
-      if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 300){
-        cargarMas();
-      }
-    });
+const THEME_KEY='sinfiltro.theme';
+function applyTheme(t){t==='light'?document.body.classList.add('light'):document.body.classList.remove('light');$('#themeBtn').textContent=t==='light'?'☀️':'🌗';}
+let theme=localStorage.getItem(THEME_KEY)||'dark';
+applyTheme(theme);
+$('#themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';localStorage.setItem(THEME_KEY,theme);applyTheme(theme);};
 
-    // modal reproducción
-    const modal = document.getElementById('videoModal');
-    const videoPlayer = document.getElementById('videoPlayer');
-    document.body.addEventListener('click', e => {
-      if(e.target.classList.contains('play-btn')){
-        const videoSrc = e.target.parentElement.querySelector('video').src;
-        videoPlayer.src = videoSrc;
-        modal.classList.add('active');
-      }
-      if(e.target.classList.contains('close-modal')){
-        modal.classList.remove('active');
-        videoPlayer.pause();
-      }
-    });
-  </script>
+$('#menuBtn').onclick=()=>alert('Menú de usuario y configuración (demo)');
+</script>
 </body>
 </html>
