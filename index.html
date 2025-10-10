@@ -1,348 +1,460 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SinFiltro</title>
-<style>
-:root {
-  --fondo: #0a0a10;
-  --texto: #fff;
-  --acento: #00e0ff;
-  --vidrio: rgba(255,255,255,0.1);
-  --borde: rgba(255,255,255,0.2);
-}
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background: var(--fondo);
-  color: var(--texto);
-  overflow-x: hidden;
-}
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: rgba(10,10,20,0.8);
-  backdrop-filter: blur(8px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-header h1 {
-  color: var(--acento);
-  font-size: 1.4em;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-}
-.menu-btn, .search-btn, .mode-btn {
-  background: var(--vidrio);
-  border: 1px solid var(--borde);
-  border-radius: 12px;
-  padding: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.menu-btn:hover, .search-btn:hover, .mode-btn:hover {
-  background: rgba(255,255,255,0.15);
-}
-section {
-  padding: 10px 16px;
-}
-section h2 {
-  color: var(--acento);
-  margin-bottom: 10px;
-}
-.scroll {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  grid-auto-rows: 140px;
-  gap: 12px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-}
-.card {
-  position: relative;
-  background: var(--vidrio);
-  border-radius: 18px;
-  overflow: hidden;
-  cursor: pointer;
-  border: 1px solid var(--borde);
-  transition: 0.3s;
-}
-.card:hover {
-  transform: scale(1.02);
-  background: rgba(255,255,255,0.15);
-}
-.card img, .card video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.play-btn {
-  position: absolute;
-  top: 45%;
-  left: 45%;
-  width: 40px;
-  height: 40px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(4px);
-  border: 1px solid var(--borde);
-}
-.play-btn::before {
-  content: '▶';
-  color: var(--acento);
-  font-size: 18px;
-  margin-left: 2px;
-}
-.info {
-  position: absolute;
-  bottom: 6px;
-  left: 8px;
-  right: 8px;
-  font-size: 0.8em;
-  display: flex;
-  justify-content: space-between;
-  color: #ccc;
-}
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(10,10,20,0.9);
-  backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0;
-  border-top: 1px solid var(--borde);
-}
-footer button {
-  background: none;
-  border: none;
-  color: var(--texto);
-  font-size: 0.9em;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-footer button.active {
-  color: var(--acento);
-}
-.menu {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 240px;
-  height: 100%;
-  background: rgba(10,10,20,0.95);
-  backdrop-filter: blur(10px);
-  transition: 0.3s;
-  z-index: 15;
-  padding: 20px;
-  border-right: 1px solid var(--borde);
-}
-.menu.open {
-  left: 0;
-}
-.menu-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  color: var(--acento);
-  font-size: 20px;
-  border: none;
-  cursor: pointer;
-}
-.menu ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 40px;
-}
-.menu li {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--borde);
-  cursor: pointer;
-}
-.overlay {
-  position: fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background: rgba(0,0,0,0.6);
-  display:none;
-  z-index:14;
-}
-.overlay.show {
-  display:block;
-}
-.modal {
-  position: fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background: rgba(15,15,25,0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 10px;
-  display: none;
-  z-index:20;
-  width: 90%;
-  max-width: 500px;
-}
-.modal.show {
-  display:block;
-}
-.modal-content img, .modal-content video {
-  width: 100%;
-  border-radius: 16px;
-}
-.modal-close {
-  position: absolute;
-  top:8px;
-  right:12px;
-  background: transparent;
-  color: var(--acento);
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-}
-.modal-info {
-  margin-top: 6px;
-  color: #ccc;
-  display: flex;
-  justify-content: space-between;
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinFiltro — Demo Premium</title>
+  <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro y diseño moderno." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg-1:#05060a; --bg-2:#071226;
+      --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
+      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+      --glass: rgba(255,255,255,0.04);
+      --radius:14px; --trans:260ms;
+      --text:#eaf7ff;
+      --glass-strong: rgba(255,255,255,0.035);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+    body.light{
+      --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
+      background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+    }
+
+    /* Animated background glow */
+    .bg-anim{
+      position:fixed;inset:0;z-index:-10;pointer-events:none;
+      background:
+        radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+        radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
+      filter:blur(28px) saturate(1.05);
+      animation: drift 20s linear infinite;
+    }
+    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+
+    /* App layout */
+    .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+    header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:12px 10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
+    .header-inner{width:100%;max-width:920px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px}
+
+    /* Left menu button */
+    .left-actions{display:flex;align-items:center;gap:8px}
+    .menu-btn{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}
+    .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+    /* Top right icons */
+    .top-right{display:flex;align-items:center;gap:8px}
+
+    /* scroll area */
+    .scroll{flex:1;overflow:auto;padding-bottom:140px;-webkit-overflow-scrolling:touch;display:flex;justify-content:center}
+    .content{width:100%;max-width:920px;padding:12px}
+
+    /* Hero */
+    .hero{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .hero h1{margin:0;font-size:18px;color:var(--accent-violet);font-weight:700}
+    .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    /* Section title */
+    .section{margin-top:18px}
+    .section .title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .section .title{font-weight:800;color:var(--accent-cyan);font-size:20px}
+    .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+
+    /* Two-row horizontal scroller container */
+    .two-row-scroll{display:block;overflow:hidden}
+    .two-row-inner{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 12px 2px;scrollbar-width:none; -ms-overflow-style:none}
+    .two-row-inner::-webkit-scrollbar{display:none}
+    /* Each column holds two items stacked */
+    .col-stack{display:flex;flex-direction:column;gap:12px;flex:0 0 260px;width:260px}
+    .card-mini{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.5);min-height:110px;position:relative}
+    .card-mini img{width:100%;height:100px;object-fit:cover;display:block;filter:contrast(0.95)}
+    .card-mini .meta{position:absolute;left:10px;bottom:8px;color:#fff;font-weight:700;text-shadow:0 6px 12px rgba(0,0,0,0.6);display:flex;gap:10px;align-items:center;font-size:12px}
+    .play-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,209,255,0.95),rgba(138,110,255,0.95));color:#001;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,0.45);border:6px solid rgba(255,255,255,0.03)}
+    .play-overlay{position:absolute;left:12px;top:12px;opacity:0.98}
+
+    /* bottom feed (grid infinite) */
+    .infinite-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
+    .infinite-card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.45);cursor:pointer}
+    .infinite-card img{width:100%;height:160px;object-fit:cover}
+
+    /* Bottom nav glass */
+    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(3,8,16,0.6), rgba(6,12,22,0.5));display:flex;align-items:center;justify-content:space-around;padding:0 12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:90}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+    .nav-item.active{color:var(--accent-cyan);transform:translateY(-4px)}
+    .nav-item .icon{font-size:20px}
+
+    /* Drawer menu */
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140;display:none}
+    .drawer{position:fixed;left:12px;top:12px;bottom:12px;width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(10px);border-radius:12px;padding:12px;z-index:150;box-shadow:0 30px 80px rgba(0,0,0,0.6);transform:translateX(-20px);opacity:0;transition:all 240ms ease}
+    .drawer.open{transform:translateX(0);opacity:1}
+    .drawer .close{margin-left:auto;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
+    .drawer h3{margin:6px 0 12px 0}
+    .drawer .menu-item{padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
+    .drawer .menu-item:hover{background:rgba(255,255,255,0.01)}
+
+    /* Viewer modal full */
+    .viewer{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(0,0,0,0.7)}
+    .viewer .box{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px}
+    .viewer .meta{color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+
+    /* Small helpers */
+    .muted{color:var(--muted)}
+    .badge{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px}
+
+    @media(max-width:420px){
+      .col-stack{flex:0 0 210px;width:210px}
+      .card-mini img{height:110px}
+      .infinite-card img{height:140px}
+      .drawer{width:86%;left:6%}
+    }
+  </style>
 </head>
 <body>
+  <div class="bg-anim" aria-hidden="true"></div>
 
-<header>
-  <button class="menu-btn">☰</button>
-  <h1>SinFiltro</h1>
-  <div>
-    <button class="mode-btn">🌙</button>
-    <button class="search-btn">🔍</button>
+  <div class="app" role="application" aria-label="SinFiltro app">
+    <header>
+      <div class="header-inner">
+        <div class="left-actions" style="align-items:center;gap:10px">
+          <div class="menu-btn" id="menuBtn" title="Menú">☰</div>
+          <div class="logo" aria-hidden="false">SinFiltro</div>
+        </div>
+
+        <div class="top-right">
+          <div class="menu-btn" id="searchBtn" title="Buscar">🔎</div>
+          <div class="menu-btn" id="themeTopBtn" title="Cambiar modo">🌗</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="scroll" id="scrollArea">
+      <div class="content">
+
+        <section class="hero" aria-label="Presentación">
+          <h1>Descubre lo auténtico</h1>
+          <p class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        </section>
+
+        <!-- Sección: Tendencias (dos filas horizontales) -->
+        <section class="section" aria-label="Tendencias">
+          <div class="title-row">
+            <div class="title">🔥 Tendencias</div>
+            <div class="see-all">Ver todo</div>
+          </div>
+
+          <div class="two-row-scroll" id="trendingSection">
+            <div class="two-row-inner" id="trendingInner"></div>
+          </div>
+        </section>
+
+        <!-- Sección: Recomendados -->
+        <section class="section" aria-label="Recomendados">
+          <div class="title-row">
+            <div class="title">🎯 Recomendados</div>
+            <div class="see-all">Ver todo</div>
+          </div>
+
+          <div class="two-row-scroll" id="recoSection">
+            <div class="two-row-inner" id="recoInner"></div>
+          </div>
+        </section>
+
+        <!-- Sección: Antes visto -->
+        <section class="section" aria-label="Antes visto">
+          <div class="title-row">
+            <div class="title">⏮ Antes visto</div>
+            <div class="see-all">Ver todo</div>
+          </div>
+
+          <div class="two-row-scroll" id="recentSection">
+            <div class="two-row-inner" id="recentInner"></div>
+          </div>
+        </section>
+
+        <!-- Infinite mixed feed (aparece al final; scroll vertical continua) -->
+        <section class="section" aria-label="Explorar">
+          <div class="title-row">
+            <div class="title">🔁 Explorar — Aleatorio</div>
+            <div class="see-all">Filtrar</div>
+          </div>
+          <div class="infinite-grid" id="infiniteGrid"></div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+      <div class="nav-item active" data-tab="home" id="navHome"><div class="icon">🏠</div><div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="search" id="navSearch"><div class="icon">🔍</div><div style="font-size:11px">Buscar</div></div>
+      <div class="nav-item" id="navUpload"><div class="icon">＋</div><div style="font-size:11px">Subir</div></div>
+      <div class="nav-item" data-tab="recent" id="navRecent"><div class="icon">👁️</div><div style="font-size:11px">Antes visto</div></div>
+      <div class="nav-item" id="navTheme"><button id="navThemeBtn" class="badge" title="Modo">🌙</button></div>
+    </nav>
+
   </div>
-</header>
 
-<div class="menu" id="menu">
-  <button class="menu-close" id="closeMenu">✖</button>
-  <ul>
-    <li>Inicio</li>
-    <li>Explorar</li>
-    <li>Subir</li>
-    <li>Favoritos</li>
-    <li>Configuración</li>
-  </ul>
-</div>
-<div class="overlay" id="overlay"></div>
+  <!-- Drawer & backdrop -->
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer">
+    <div style="display:flex;align-items:center;gap:8px">
+      <h3 style="margin:0">Cuenta</h3>
+      <button class="close" id="drawerClose">✕</button>
+    </div>
+    <p class="muted" style="margin:8px 0 12px 0">Accede a ajustes, tus vídeos y monetización.</p>
+    <div class="menu-item" id="menuProfile">👤 Mi perfil</div>
+    <div class="menu-item" id="menuSettings">⚙️ Ajustes</div>
+    <div class="menu-item" id="menuMonet">💸 Monetización</div>
+    <div class="menu-item" id="menuLogout">🚪 Cerrar sesión</div>
+  </aside>
 
-<section>
-  <h2>Tendencias</h2>
-  <div class="scroll" id="tendencias"></div>
-</section>
+  <!-- Viewer modal -->
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <div class="box" role="dialog" aria-modal="true">
+      <div id="viewerContent"></div>
+      <div class="meta" style="margin-top:10px">
+        <div class="muted" id="viewerTitle">Título</div>
+        <div style="display:flex;gap:8px">
+          <div class="muted" id="viewerStats">❤ 0 • 💬 0 • 👁 0</div>
+          <button id="closeViewer" class="menu-btn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<section>
-  <h2>Recomendados</h2>
-  <div class="scroll" id="recomendados"></div>
-</section>
+  <script>
+/* ---------- Datos demo y almacenamiento local ---------- */
+const rand = n => Math.floor(Math.random()*n);
+const seedImgs = Array.from({length:40}).map((_,i)=>({
+  id: 'i'+i,
+  src: `https://picsum.photos/640/420?random=${1000+i}`,
+  type: (i%4===0)?'video':'image',
+  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: rand(1000),
+  comments: rand(500),
+  views: (rand(900)+100)+'K'
+}));
 
-<section>
-  <h2>Antes visto</h2>
-  <div class="scroll" id="antes"></div>
-</section>
+/* Secciones (cada una mostrará columnas con 2 filas apiladas) */
+let trending = seedImgs.slice(0,12);
+let recommended = seedImgs.slice(12,24);
+let recent = seedImgs.slice(24,36);
 
-<footer>
-  <button class="active">🏠<span>Inicio</span></button>
-  <button>🔍<span>Buscar</span></button>
-  <button>➕<span>Subir</span></button>
-  <button>👁️<span>Vistos</span></button>
-  <button>🎞️<span>Videos</span></button>
-</footer>
+/* Mix para infinite */
+let infinitePool = seedImgs.slice(36).concat(seedImgs.slice(0,20));
 
-<div class="modal" id="modal">
-  <button class="modal-close" id="closeModal">✖</button>
-  <div class="modal-content" id="modalContent"></div>
-  <div class="modal-info" id="modalInfo"></div>
-</div>
+/* ---------- Referencias DOM ---------- */
+const trendingInner = document.getElementById('trendingInner');
+const recoInner = document.getElementById('recoInner');
+const recentInner = document.getElementById('recentInner');
+const infiniteGrid = document.getElementById('infiniteGrid');
 
-<script>
-const menu = document.getElementById('menu');
-const overlay = document.getElementById('overlay');
-document.querySelector('.menu-btn').onclick = ()=>{
-  menu.classList.add('open');
-  overlay.classList.add('show');
+const drawer = document.getElementById('drawer');
+const backdrop = document.getElementById('drawerBackdrop');
+const menuBtn = document.getElementById('menuBtn');
+const drawerClose = document.getElementById('drawerClose');
+
+const viewer = document.getElementById('viewer');
+const viewerContent = document.getElementById('viewerContent');
+const viewerTitle = document.getElementById('viewerTitle');
+const viewerStats = document.getElementById('viewerStats');
+const closeViewerBtn = document.getElementById('closeViewer');
+
+const themeTopBtn = document.getElementById('themeTopBtn');
+const navThemeBtn = document.getElementById('navThemeBtn');
+
+/* ---------- Funciones de render (dos filas por columna) ---------- */
+function createColStack(itemTop, itemBottom){
+  const col = document.createElement('div');
+  col.className = 'col-stack';
+
+  const top = createMiniCard(itemTop);
+  const bottom = createMiniCard(itemBottom);
+
+  col.appendChild(top);
+  col.appendChild(bottom);
+  return col;
 }
-document.getElementById('closeMenu').onclick = closeMenu;
-overlay.onclick = closeMenu;
-function closeMenu(){
-  menu.classList.remove('open');
-  overlay.classList.remove('show');
-}
+function createMiniCard(item){
+  const el = document.createElement('div');
+  el.className = 'card-mini';
+  el.setAttribute('data-id', item.id);
+  el.setAttribute('role','button');
+  el.setAttribute('tabindex','0');
 
-// Generar contenido
-const imgs = [
-'https://picsum.photos/300/200?1',
-'https://picsum.photos/300/200?2',
-'https://picsum.photos/300/200?3',
-'https://picsum.photos/300/200?4',
-'https://picsum.photos/300/200?5',
-'https://picsum.photos/300/200?6'
-];
-function randomItem(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function generarCard(){
-  const div = document.createElement('div');
-  div.className = 'card';
-  if(Math.random()>.5){
-    const v = document.createElement('video');
-    v.src = 'https://www.w3schools.com/html/mov_bbb.mp4';
-    v.muted=true;
-    div.appendChild(v);
-    const btn=document.createElement('div');
-    btn.className='play-btn';
-    div.appendChild(btn);
-  } else {
-    const img=document.createElement('img');
-    img.src=randomItem(imgs);
-    div.appendChild(img);
+  // inner image / poster
+  el.innerHTML = `
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    <div style="position:absolute;left:8px;top:8px" class="play-overlay">${item.type==='video' ? `<div class="play-btn" aria-hidden="true">▶</div>` : ''}</div>
+    <div class="meta">
+      <span style="opacity:0.95">${item.type==='video'?'Video':'Foto'}</span>
+      <span style="margin-left:8px">❤ ${item.likes}</span>
+      <span style="margin-left:6px">💬 ${item.comments}</span>
+      <span style="margin-left:6px">👁 ${item.views}</span>
+    </div>
+  `;
+  el.addEventListener('click', ()=> openViewer(item));
+  el.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openViewer(item); });
+  return el;
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* Render columns by taking pairs vertically */
+function renderTwoRowSection(containerEl, items){
+  containerEl.innerHTML = '';
+  // ensure even number: pad if needed
+  if(items.length % 2 !== 0) items.push(items[0]);
+  for(let i=0;i<items.length;i+=2){
+    const top = items[i];
+    const bottom = items[i+1];
+    const col = createColStack(top, bottom);
+    containerEl.appendChild(col);
   }
-  const info=document.createElement('div');
-  info.className='info';
-  info.innerHTML=`❤️${Math.floor(Math.random()*900)} 💬${Math.floor(Math.random()*500)} 👁️${Math.floor(Math.random()*2000)}K`;
-  div.appendChild(info);
-  div.onclick=()=>abrirModal(div.innerHTML);
-  return div;
+  startLazyForContainer(containerEl);
 }
-function llenar(id){
-  const cont=document.getElementById(id);
-  for(let i=0;i<8;i++) cont.appendChild(generarCard());
-  cont.onscroll=()=>{if(cont.scrollLeft+cont.clientWidth>=cont.scrollWidth-10){for(let i=0;i<4;i++)cont.appendChild(generarCard());}}
-}
-llenar('tendencias');
-llenar('recomendados');
-llenar('antes');
 
-// Modal
-const modal=document.getElementById('modal');
-const modalContent=document.getElementById('modalContent');
-const modalInfo=document.getElementById('modalInfo');
-document.getElementById('closeModal').onclick=()=>modal.classList.remove('show');
-function abrirModal(html){
-  modalContent.innerHTML=html;
-  modalInfo.innerHTML='❤️ 543 💬 120 👁️ 3.2K';
-  modal.classList.add('show');
+/* ---------- Lazy load images for a container ---------- */
+let globalObserver = null;
+function startLazyForContainer(container){
+  const imgs = container.querySelectorAll('img[data-src]');
+  if('IntersectionObserver' in window){
+    if(!globalObserver) {
+      globalObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(en=>{
+          if(en.isIntersecting){
+            const img = en.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            obs.unobserve(img);
+          }
+        });
+      }, {rootMargin:'300px', threshold:0.05});
+    }
+    imgs.forEach(i=> globalObserver.observe(i));
+  } else {
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  }
 }
-modal.onclick=(e)=>{if(e.target===modal)modal.classList.remove('show');}
-</script>
 
+/* ---------- Infinite grid render (vertical) ---------- */
+function appendToInfinite(n=6){
+  for(let i=0;i<n;i++){
+    const item = infinitePool[(Math.floor(Math.random()*infinitePool.length))];
+    const card = document.createElement('div');
+    card.className = 'infinite-card';
+    card.setAttribute('role','button');
+    card.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div style="padding:10px;display:flex;justify-content:space-between;align-items:center"><div><strong>${escapeHtml(item.title)}</strong><div class="muted" style="font-size:12px">${item.likes} likes • ${item.views}</div></div><div>${item.type==='video'?'<div class="play-btn" style="width:40px;height:40px;border-width:5px">▶</div>':''}</div></div>`;
+    card.addEventListener('click', ()=> openViewer(item));
+    infiniteGrid.appendChild(card);
+  }
+  startLazyForContainer(infiniteGrid);
+}
+
+/* ---------- Viewer (pantalla completa con blur) ---------- */
+function openViewer(item){
+  viewerContent.innerHTML = '';
+  if(item.type === 'video'){
+    // demo: use poster image + play button; actual video backend needed for real playback
+    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.width='100%'; viewerContent.appendChild(img);
+  } else {
+    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.width='100%'; viewerContent.appendChild(img);
+  }
+  viewerTitle.textContent = item.title;
+  viewerStats.textContent = `❤ ${item.likes} • 💬 ${item.comments} • 👁 ${item.views}`;
+  viewer.style.display = 'flex';
+  viewer.setAttribute('aria-hidden','false');
+}
+/* Close viewer */
+function closeViewer(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
+
+/* Close drawer */
+function openDrawer(){ backdrop.style.display='block'; drawer.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); drawer.setAttribute('aria-hidden','false'); }
+function closeDrawer(){ backdrop.style.display='none'; drawer.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); drawer.setAttribute('aria-hidden','true'); }
+
+/* ---------- Theme toggle (top + bottom) ---------- */
+const THEME_KEY = 'sinfiltro.theme.v3';
+function applyTheme(t){
+  if(t === 'light'){ document.body.classList.add('light'); themeTopBtn.textContent='☀️'; navThemeBtn.textContent='☀️'; }
+  else { document.body.classList.remove('light'); themeTopBtn.textContent='🌗'; navThemeBtn.textContent='🌙'; }
+}
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+const themeTopBtn = document.getElementById('themeTopBtn');
+applyTheme(theme);
+themeTopBtn.addEventListener('click', ()=>{
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
+navThemeBtn.addEventListener('click', ()=>{
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
+
+/* ---------- Event listeners: drawer open/close, backdrop click, viewer close ---------- */
+menuBtn.addEventListener('click', openDrawer);
+drawerClose.addEventListener('click', closeDrawer);
+backdrop.addEventListener('click', closeDrawer);
+
+// Close drawer with Escape
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeDrawer(); closeViewer(); } });
+
+// Viewer close: button and outside click
+closeViewerBtn.addEventListener('click', closeViewer);
+viewer.addEventListener('click', (ev)=>{ if(ev.target === viewer) closeViewer(); });
+
+/* ---------- Navigation (bottom) ---------- */
+document.getElementById('navHome').addEventListener('click', ()=> { document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('navHome').classList.add('active'); document.getElementById('scrollArea').scrollTop = 0; });
+document.getElementById('navSearch').addEventListener('click', ()=> alert('Buscar (demo)'));
+document.getElementById('navUpload').addEventListener('click', ()=> alert('Subir (demo)'));
+document.getElementById('navRecent').addEventListener('click', ()=> { alert('Antes visto (demo)'); });
+
+/* ---------- Render inicial ---------- */
+renderTwoRowSection(trendingInner, trending);
+renderTwoRowSection(recoInner, recommended);
+renderTwoRowSection(recentInner, recent);
+appendToInfinite(8);
+
+/* ---------- Make each horizontal scroller infinite by duplicating content (smooth loop illusion) ---------- */
+function makeInfiniteScroller(container){
+  // duplicate children once to create loop illusion
+  const children = Array.from(container.children);
+  children.forEach(c => container.appendChild(c.cloneNode(true)));
+  // Observe when near end -> append more clones for continuous feel
+  container.addEventListener('scroll', ()=>{
+    if(container.scrollLeft + container.clientWidth >= container.scrollWidth - 400){
+      // append clones of original set
+      children.forEach(c => container.appendChild(c.cloneNode(true)));
+      startLazyForContainer(container);
+    }
+  });
+}
+makeInfiniteScroller(trendingInner);
+makeInfiniteScroller(recoInner);
+makeInfiniteScroller(recentInner);
+
+/* ---------- Infinite vertical load for grid when scrolling down ---------- */
+const scrollArea = document.getElementById('scrollArea');
+let loadingMore = false;
+scrollArea.addEventListener('scroll', ()=>{
+  const s = scrollArea;
+  if(s.scrollTop + s.clientHeight > s.scrollHeight - 800 && !loadingMore){
+    loadingMore = true;
+    setTimeout(()=>{
+      appendToInfinite(6);
+      loadingMore = false;
+    }, 700);
+  }
+});
+
+/* ---------- Start lazy for pre-existing containers ---------- */
+startLazyForContainer(document.body);
+
+/* Accessibility: close viewer on ESC */
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ closeViewer(); } });
+
+/* Utility: ensure clicks outside drawer content close it (already handled via backdrop), also support swipe on small screens could be added later */
+  </script>
 </body>
 </html>
