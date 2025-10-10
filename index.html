@@ -375,4 +375,323 @@ function renderRows(){
 function createFeedItem(item){
   const el = document.createElement('article');
   el.className = 'feed-item';
-  el.innerHTML = `<img data-src="${item.sr
+  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
+
+function renderFeed(){ feedGrid.innerHTML=''; feed.forEach(i=> feedGrid.appendChild(createFeedItem(i))); lazyObserveImages(); }
+
+/* -----------------------------
+   Viewer & Comments
+   ----------------------------- */
+let currentOpen = null;
+function openViewer(id){
+  const item = feed.find(f=>f.id===id); if(!item) return;
+  currentOpen = id;
+  viewerContent.innerHTML = '';
+  if(item.type==='video'){
+    const v = document.createElement('video'); v.src=item.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh';
+    viewerContent.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src=item.src; img.alt=item.title; viewerContent.appendChild(img);
+  }
+  // Ad impression: count when user opens viewer (simulate ad loaded)
+  recordAdImpression(1);
+  viewer.classList.add('show');
+}
+document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
+document.getElementById('openCommentsBtn').addEventListener('click', ()=> { viewer.classList.remove('show'); openComments(currentOpen, feed.find(f=>f.id===currentOpen).title); });
+
+function openComments(id, title){
+  currentOpen = id;
+  document.getElementById('drawerTitle').textContent = `Comentarios — ${title}`;
+  commentsList.innerHTML = '';
+  const arr = comments[id] || [];
+  arr.forEach(c=>{
+    const d = document.createElement('div'); d.className='comment';
+    d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escapeHtml(c.text)}</div>`;
+    commentsList.appendChild(d);
+  });
+  drawer.classList.add('show');
+}
+document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('show'));
+document.getElementById('postComment').addEventListener('click', ()=>{
+  const txt = document.getElementById('commentInput').value.trim();
+  if(!txt || !currentOpen) return;
+  comments[currentOpen] = comments[currentOpen] || [];
+  comments[currentOpen].push({text:txt,ts:Date.now()});
+  save(STORAGE_COMMENTS, comments);
+  document.getElementById('commentInput').value='';
+  openComments(currentOpen, feed.find(f=>f.id===currentOpen).title);
+  renderFeed();
+});
+
+/* -----------------------------
+   Likes, share & shortener
+   ----------------------------- */
+function toggleLike(id){
+  likes = load(STORAGE_LIKES, likes);
+  const liked = !!likes[id];
+  if(liked) delete likes[id]; else likes[id]=true;
+  save(STORAGE_LIKES, likes);
+  // update feed likes count (local demo)
+  const idx = feed.findIndex(f=>f.id===id);
+  if(idx>=0){ feed[idx].likes = feed[idx].likes || 0; feed[idx].likes = liked ? Math.max(0, feed[idx].likes-1): feed[idx].likes+1; save(STORAGE_FEED, feed); }
+  renderFeed(); renderRows();
+}
+
+/* Share flow:
+   - Attempt to use navigator.share (native)
+   - Fallback: create short link simulation (counts towards shortClicks and revenue)
+   - If you integrate a real shortener API, replace shortenLink() implementation */
+async function shareItem(item){
+  const shareText = `${item.title} — Vía SinFiltro`;
+  const urlToShare = item.src; // In production, use a canonical post URL
+  if(navigator.share){
+    try{ await navigator.share({title:item.title,text:shareText,url:urlToShare});}
+    catch(e){}
+    return;
+  }
+  // fallback: shorten link (simulated)
+  const short = await shortenLinkSim(urlToShare);
+  // open the short link in new tab
+  window.open(short, '_blank');
+}
+
+/* Simulated shortener (replace with real API call when ready).
+   Increments shortClicks when the shortened link is "opened".
+   We simulate that each open generates revenue. */
+function shortenLinkSim(url){
+  // Create a fake short URL and count a click when user opens.
+  const id = Math.random().toString(36).slice(2,8);
+  const shortUrl = `${location.origin}/s/${id}`; // demo route (not actually resolving)
+  // Simulate: register short click when user opens (we can't detect external opens reliably without backend)
+  // For demo: increase shortClicks now (as if user clicked the shortener landing)
+  stats.shortClicks += 1;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+  alert('Se ha generado un enlace acortado de demostración. (Simulación) — ' + shortUrl);
+  return Promise.resolve(shortUrl);
+}
+
+/* -----------------------------
+   Monetization events & dashboard
+   ----------------------------- */
+function recordAdImpression(n=1){
+  stats.adImpressions += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordShortClick(n=1){
+  stats.shortClicks += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordSubscription(n=1){
+  stats.subscriptions += n;
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+function recordSale(n=1, amount=0){
+  stats.marketplaceSales += n;
+  stats.donations += amount; // store sale revenue under donations for demo
+  save(STORAGE_STATS, stats);
+  updateDashboardKPIs();
+}
+
+/* Compute estimated revenue from stats */
+function computeRevenue(){
+  const fromAds = (stats.adImpressions/1000) * SIM.cpm_usd;
+  const fromShort = stats.shortClicks * SIM.short_click_usd;
+  const fromSubs = stats.subscriptions * SIM.subscription_usd_month;
+  const fromSales = stats.marketplaceSales * 5.0 * (SIM.marketplace_fee_percent/100); // assume 5$ avg sale * fee
+  const total = fromAds + fromShort + fromSubs + fromSales + (stats.donations||0);
+  return {fromAds,fromShort,fromSubs,fromSales,total};
+}
+
+/* Update dashboard UI */
+function updateDashboardKPIs(){
+  document.getElementById('kpiImpressions').textContent = stats.adImpressions.toLocaleString();
+  document.getElementById('kpiShortClicks').textContent = stats.shortClicks.toLocaleString();
+  document.getElementById('kpiSubs').textContent = stats.subscriptions.toLocaleString();
+  document.getElementById('kpiSales').textContent = stats.marketplaceSales.toLocaleString();
+  const rev = computeRevenue();
+  document.getElementById('kpiRevenue').textContent = '$' + rev.total.toFixed(2);
+}
+
+/* Dashboard actions (simulate events) */
+document.getElementById('simImp').addEventListener('click', ()=>{ recordAdImpression(1); });
+document.getElementById('simShort').addEventListener('click', ()=>{ recordShortClick(1); });
+document.getElementById('simSub').addEventListener('click', ()=>{ recordSubscription(1); alert('Simulación: usuario suscrito (demo).'); });
+document.getElementById('simSale').addEventListener('click', ()=>{ recordSale(1, 5.0); alert('Simulación: venta procesada (demo).'); });
+document.getElementById('resetStats').addEventListener('click', ()=>{ if(confirm('Resetear estadísticas demo?')){ stats={adImpressions:0,shortClicks:0,subscriptions:0,marketplaceSales:0,donations:0}; save(STORAGE_STATS,stats); updateDashboardKPIs(); }});
+document.getElementById('exportCsv').addEventListener('click', exportStatsCsv);
+
+/* Open / close dashboard */
+document.getElementById('menuBtn').addEventListener('click', ()=>{ dashboardEl.classList.add('show'); updateDashboardKPIs(); });
+document.getElementById('closeDashboard').addEventListener('click', ()=> dashboardEl.classList.remove('show'));
+
+/* Export CSV */
+function exportStatsCsv(){
+  const rev = computeRevenue();
+  const rows = [
+    ['Metric','Value'],
+    ['Ad Impressions', stats.adImpressions],
+    ['Short Clicks', stats.shortClicks],
+    ['Subscriptions', stats.subscriptions],
+    ['Marketplace Sales', stats.marketplaceSales],
+    ['Donations', stats.donations],
+    ['Estimated Revenue (USD)', rev.total.toFixed(2)]
+  ];
+  const csv = rows.map(r=> r.map(c=> `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'sinfiltro_stats.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+/* -----------------------------
+   Upload (demo local)
+   ----------------------------- */
+document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
+document.getElementById('uploadBtn').addEventListener('click', doUpload);
+function toggleUpload(){ uploadModal.classList.toggle('show'); fileInput.value=''; }
+function doUpload(){
+  const f = fileInput.files[0]; if(!f){ alert('Selecciona un archivo'); return; }
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const url = e.target.result;
+    const newItem = {id: crypto.randomUUID(), type: f.type.startsWith('video')?'video':'image', src: url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0};
+    feed.unshift(newItem);
+    save(STORAGE_FEED, feed);
+    renderFeed(); renderRows();
+    uploadModal.classList.remove('show');
+    alert('Contenido subido (demo local). Si quieres monetizar subidas reales, conecta backend + storage (Firebase/Supabase).');
+    // optional: record an impression (new content surfaced)
+    recordAdImpression(2);
+  };
+  reader.readAsDataURL(f);
+}
+
+/* -----------------------------
+   Search overlay
+   ----------------------------- */
+const searchBtn = document.getElementById('searchBtn');
+const searchOverlay = document.getElementById('searchOverlay');
+const searchInput = document.getElementById('searchInput');
+searchBtn.addEventListener('click', ()=> { searchOverlay.style.display = searchOverlay.style.display === 'block' ? 'none' : 'block'; if(searchOverlay.style.display==='block') setTimeout(()=>searchInput.focus(),80); });
+searchInput.addEventListener('input', (e)=> filterFeed(e.target.value));
+function filterFeed(q){
+  q = (q||'').toLowerCase().trim();
+  if(!q){ renderFeed(); renderRows(); return; }
+  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q));
+  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
+  trendingRow.innerHTML=''; recentRow.innerHTML='';
+  lazyObserveImages();
+}
+
+/* -----------------------------
+   Navigation (UI only)
+   ----------------------------- */
+document.querySelectorAll('.nav-item').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.getAttribute('data-tab');
+    if(tab==='home'){ document.getElementById('scrollArea').scrollTo({top:0,behavior:'smooth'}); renderFeed(); renderRows(); }
+    else if(tab==='explore'){ document.getElementById('scrollArea').scrollTo({top:document.getElementById('trendingRow').offsetTop-40,behavior:'smooth'}); }
+    else if(tab==='likes'){ showLiked(); }
+    else if(tab==='profile'){ alert('Perfil demo — conectar backend'); }
+  });
+});
+function showLiked(){
+  const likedIds = Object.keys(load(STORAGE_LIKES, {}));
+  const liked = feed.filter(f=> likedIds.includes(f.id));
+  feedGrid.innerHTML=''; liked.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
+}
+
+/* -----------------------------
+   Lazy loading images (IntersectionObserver)
+   ----------------------------- */
+let imgObserver = null;
+function lazyObserveImages(){
+  const imgs = document.querySelectorAll('img[data-src]');
+  if('IntersectionObserver' in window){
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            imgObserver.unobserve(img);
+            // when an image is loaded and visible, count as an ad impression zone (simulate)
+            recordAdImpression(1);
+          }
+        });
+      }, {rootMargin:'200px', threshold:0.1});
+    }
+    imgs.forEach(i=> imgObserver.observe(i));
+  } else {
+    // fallback: load all
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); recordAdImpression(1); });
+  }
+}
+
+/* -----------------------------
+   Init render
+   ----------------------------- */
+function init(){
+  renderFeed();
+  renderRows();
+  updateDashboardKPIs();
+  // Register service worker (optional). Create sw.js in your repo for production.
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sinfiltro/sw.js').catch(e=> console.log('Service worker not registered (add /sinfiltro/sw.js to enable):',e));
+  }
+  // Respect reduced motion
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    document.querySelectorAll('*').forEach(n=> n.style.animation='none');
+  }
+}
+init();
+
+/* -----------------------------
+   Helper: createFeedItem used in filter
+   ----------------------------- */
+function createFeedItem(item){
+  const el = document.createElement('article');
+  el.className = 'feed-item';
+  el.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="feed-body"><div class="feed-title">${escapeHtml(item.title)}</div><div class="feed-meta"><div>${escapeHtml(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
+  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
+  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
+  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item.id));
+  return el;
+}
+
+/* -----------------------------
+   Notes for real monetization integration
+   -----------------------------
+   1) Ads: Insert real ad provider script (AdSense) into the <head> and implement ad slots
+      where you want them. Use the provider documentation and your account ID (AD_NETWORK_ID).
+   2) Shortener: Replace shortenLinkSim() with actual API call to your shortener service.
+      Use webhooks to count real clicks server-side for accuracy.
+   3) Subscriptions/payments: Integrate Stripe Checkout or PayPal Buttons.
+      Use server-side endpoints (or Stripe Checkout Sessions) to handle payments securely.
+   4) Marketplace: Use cloud storage (Firebase Storage / Supabase Storage) and a backend to
+      process payments and transfer funds (Stripe Connect to send payouts to sellers).
+   5) Dashboard: Instead of localStorage, aggregate real metrics from providers (AdSense API,
+      shortener API, Stripe webhooks) into your server and show totals in the dashboard.
+   6) PWA: Add /sinfiltro/manifest.json and /sinfiltro/sw.js files to your repo for installability.
+*/
+
+/* End of script */
+</script>
+</body>
+</html>
+```0
+
