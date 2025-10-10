@@ -1,120 +1,416 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SinFiltro</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap');
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: radial-gradient(circle at center, #0f0c29, #302b63, #24243e);
-      color: #fff;
-      overflow-x: hidden;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Demo</title>
+<meta name="description" content="SinFiltro — demo visual y funcional: feed, explorar, perfil, modo claro/oscuro y panel.">
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(8px);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 10;
-    }
+<style>
+  :root{
+    --bg-1:#02020a; --bg-2:#07051a;
+    --neon-cyan: #00e1ff;
+    --neon-violet:#8a6eff;
+    --neon-pink:#ff5fb7;
+    --muted: #9fb0bf;
+    --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.04);
+    --radius:14px;
+    --nav-h:76px;
+  }
 
-    header h1 {
-      font-size: 1.6em;
-      letter-spacing: 1px;
-      color: #00ffff;
-      text-shadow: 0 0 12px #00ffff, 0 0 24px #0077ff;
-    }
+  /* Dark / Light variables applied via .theme-light on body */
+  body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+  body.theme-dark{
+    --page-bg1: linear-gradient(120deg,#050010 0%, #03041a 50%, #051024 100%);
+    --text:#eaf7ff;
+    --muted: #9fb0bf;
+    --card-bg: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  }
+  body.theme-light{
+    --page-bg1: linear-gradient(120deg,#f6f8ff 0%, #eef2ff 50%, #eaf6ff 100%);
+    --text:#071226;
+    --muted:#566a78;
+    --card-bg: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01));
+  }
 
-    header .icons {
-      display: flex;
-      gap: 16px;
-    }
+  /* Animated background band (subtle moving gradient for gamer feel) */
+  .bg-animated{
+    position:fixed;inset:0;z-index:-2;pointer-events:none;background:
+      radial-gradient(800px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 6%),
+      radial-gradient(600px 260px at 90% 80%, rgba(0,225,255,0.04), transparent 6%);
+    animation: bgShift 18s linear infinite;
+  }
+  @keyframes bgShift{
+    0%{transform:translate3d(0,0,0) rotate(0deg)}
+    50%{transform:translate3d(6%, -4%,0) rotate(3deg)}
+    100%{transform:translate3d(0,0,0) rotate(0deg)}
+  }
 
-    .icons i {
-      font-size: 1.4em;
-      cursor: pointer;
-    }
+  /* Page layout */
+  .app{min-height:100vh;display:flex;flex-direction:column;background:var(--page-bg1);color:var(--text);transition:background .4s,color .4s}
+  header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+  .hdr-left,.hdr-center,.hdr-right{display:flex;align-items:center;gap:10px}
+  .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+  .logo-wrap{display:flex;flex-direction:column;align-items:center}
+  .logo {display:flex;align-items:center;gap:8px}
+  .logo img{height:36px;width:auto;display:block;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+  .brand-text{font-weight:700;letter-spacing:0.6px}
+  .brand-sub{font-size:11px;color:var(--muted)}
 
-    main {
-      padding-top: 70px;
-      padding-bottom: 80px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-    }
+  /* Search */
+  .search-input{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text);min-width:160px}
+  .search-wrap{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)}
 
-    .post {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 12px rgba(0,255,255,0.2);
-      transition: transform 0.3s;
-    }
+  /* Scrollable content area */
+  .main{flex:1;overflow:auto;padding:12px 12px 110px; -webkit-overflow-scrolling:touch}
+  .hero{padding:14px;border-radius:14px;background:var(--card-bg);border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
+  .hero h1{margin:0;font-size:18px;color:var(--neon-violet)}
+  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-    .post:hover {
-      transform: scale(1.05);
-    }
+  /* Sections */
+  .section{margin-top:12px}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .section-title{font-weight:700;color:var(--neon-cyan);display:flex;align-items:center;gap:8px}
+  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-    .post img {
-      width: 100%;
-      display: block;
-    }
+  /* horizontal carousel */
+  .h-row{display:flex;gap:12px;overflow:auto;padding-bottom:8px}
+  .h-row::-webkit-scrollbar{display:none}
+  .thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card-bg);border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.45);transition:transform .22s}
+  .thumb img{width:170px;height:100px;object-fit:cover;display:block}
+  .thumb .t-info{padding:8px;color:var(--text);font-weight:600}
+  .thumb:hover{transform:translateY(-6px);filter:brightness(1.03);box-shadow:0 18px 60px rgba(0,0,0,0.6)}
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
+  /* feed grid */
+  .feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{border-radius:12px;overflow:hidden;background:var(--card-bg);border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.45);transition:transform .22s}
+  .card img{width:100%;height:160px;object-fit:cover;display:block}
+  .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
+  .title{font-weight:700;font-size:14px}
+  .meta .small{color:var(--muted);font-size:12px}
 
-    footer i {
-      font-size: 1.5em;
-      color: #00e0ff;
-      text-shadow: 0 0 10px #00ffff;
-    }
-  </style>
-  <script src="https://kit.fontawesome.com/a2e0e9e6b6.js" crossorigin="anonymous"></script>
+  /* floating FAB and subactions */
+  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:56px;z-index:80;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
+  .fab{pointer-events:auto;width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-violet));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:30px;cursor:pointer}
+  .fab-sub{pointer-events:auto;width:54px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-pink),var(--neon-violet));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.4);font-weight:700;opacity:0;transform:translateY(0);transition:all .25s}
+
+  .fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
+  .fab-open .fab{transform:scale(1.02)}
+
+  /* bottom nav */
+  .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:76px;border-radius:18px;background:linear-gradient(180deg, rgba(1,5,12,0.95), rgba(6,8,18,0.9));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:70}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
+  .nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
+
+  /* modals */
+  .modal{position:fixed;left:12px;right:12px;bottom:110px;background:var(--card-bg);border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.7);z-index:120;display:none}
+  .modal.show{display:block}
+
+  /* viewer */
+  .viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:flex;align-items:center;justify-content:center;z-index:140;padding:18px;gap:12px;flex-direction:column;display:none}
+  .viewer.show{display:flex}
+  .viewer .content{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000}
+  .viewer img, .viewer video{width:100%;height:auto;display:block}
+
+  /* drawer (profile/settings) */
+  .drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:150;display:none;flex-direction:column}
+  .drawer.show{display:flex}
+
+  /* small screens tweaks */
+  @media (max-width:420px){
+    .thumb{flex:0 0 150px}
+    .card img{height:140px}
+    .logo img{height:34px}
+    .fab{width:60px;height:60px}
+  }
+
+  /* subtle micro interactions (icon glow on active) */
+  .glow-animate{transition:box-shadow .24s, transform .18s}
+  .glow-animate:active{transform:translateY(1px)}
+</style>
 </head>
 <body>
+  <!-- animated bg -->
+  <div class="bg-animated" aria-hidden="true"></div>
 
-  <header>
-    <i class="fas fa-bars"></i>
-    <h1>SinFiltro</h1>
-    <div class="icons">
-      <i class="fas fa-search"></i>
+  <div id="app" class="app theme-dark">
+    <!-- header -->
+    <header>
+      <div class="hdr-left">
+        <button id="menuBtn" class="icon-btn glow-animate" aria-label="Abrir menú">☰</button>
+      </div>
+
+      <div class="hdr-center logo-wrap" role="banner" aria-label="SinFiltro">
+        <!-- Replace src with your IA-generated 3D logo image (recommended 320x80 px) -->
+        <div class="logo">
+          <img id="logoImg" src="https://placehold.co/320x88/111827/00e1ff?text=SinFiltro+Logo" alt="SinFiltro logo 3D (reemplazar por IA)">
+          <div style="display:flex;flex-direction:column;">
+            <div class="brand-text">SinFiltro</div>
+            <div class="brand-sub">Tu espacio sin límites</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hdr-right" style="gap:8px">
+        <div class="search-wrap">
+          <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar contenido">
+        </div>
+        <button id="themeToggle" class="icon-btn glow-animate" aria-label="Cambiar modo">🌙</button>
+      </div>
+    </header>
+
+    <!-- main content -->
+    <main class="main" id="main">
+      <section class="hero" aria-label="Presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Contenido corto y largo: fotos, videos y comunidad. Demo interactiva — SinFiltro.</p>
+      </section>
+
+      <section class="section" aria-labelledby="trendingTitle">
+        <div class="section-header">
+          <div class="section-title">🔥 En Tendencia</div>
+          <div class="see-all" id="seeTrending">Ver todo</div>
+        </div>
+        <div class="h-row" id="trendingRow" aria-live="polite"></div>
+      </section>
+
+      <section class="section" aria-labelledby="recoTitle">
+        <div class="section-header">
+          <div class="section-title">🎯 Recomendados</div>
+          <div class="see-all" id="seeReco">Ver todo</div>
+        </div>
+        <div class="feed" id="feedGrid"></div>
+      </section>
+    </main>
+
+    <!-- FAB (central) -->
+    <div class="fab-wrap" id="fabWrap">
+      <div id="fabRow" style="display:flex;flex-direction:column;align-items:center;gap:8px">
+        <button class="fab-sub" id="fabUpload" title="Subir">📤</button>
+        <button class="fab-sub" id="fabShort" title="Short">🎬</button>
+        <button class="fab-sub" id="fabImg" title="Imagen">🖼️</button>
+      </div>
+      <button id="fabMain" class="fab" aria-label="Crear">＋</button>
     </div>
-  </header>
 
-  <main>
-    <div class="post"><img src="https://picsum.photos/300/200?random=1"></div>
-    <div class="post"><img src="https://picsum.photos/300/200?random=2"></div>
-    <div class="post"><img src="https://picsum.photos/300/200?random=3"></div>
-    <div class="post"><img src="https://picsum.photos/300/200?random=4"></div>
-    <div class="post"><img src="https://picsum.photos/300/200?random=5"></div>
-    <div class="post"><img src="https://picsum.photos/300/200?random=6"></div>
-  </main>
+    <!-- upload modal -->
+    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true">
+      <strong>Subir contenido (demo)</strong>
+      <p style="color:var(--muted);font-size:13px">Selecciona una imagen o video; se guardará localmente (demo).</p>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <input type="file" id="fileInput" accept="image/*,video/*">
+        <button id="doUpload" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-violet));color:#001;font-weight:700">Subir</button>
+      </div>
+    </div>
 
-  <footer>
-    <i class="fas fa-home"></i>
-    <i class="fas fa-search"></i>
-    <i class="fas fa-plus-circle"></i>
-    <i class="fas fa-bell"></i>
-    <i class="fas fa-user"></i>
-  </footer>
+    <!-- viewer modal -->
+    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+      <div class="content" id="viewerContent"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="openCommentsBtn" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">💬 Comentarios</button>
+        <button id="closeViewer" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
+      </div>
+    </div>
 
-</body>
-</html>
+    <!-- drawer for profile/settings -->
+    <div id="drawer" class="drawer" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Configuración & Perfil</strong>
+        <button id="closeDrawer" class="icon-btn" aria-label="Cerrar">✕</button>
+      </div>
+      <div style="margin-top:8px;color:var(--muted);font-size:13px">
+        <p><strong>Usuario demo</strong></p>
+        <p>Opciones visuales, monetización (simulación) y ajustes rápidos.</p>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:8px 0">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button id="openAnalytics" style="padding:8px;border-radius:8px;background:var(--card-bg);border:1px solid rgba(255,255,255,0.02)">Panel de monetización (demo)</button>
+          <button id="logoutBtn" style="padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.02)">Cerrar sesión (demo)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom nav -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="videos" id="navVideos">🎬<div style="font-size:11px">Videos</div></div>
+      <div style="width:80px"></div>
+      <div class="nav-item" data-tab="community" id="navCommunity">🧑‍🤝‍🧑<div style="font-size:11px">Comunidad</div></div>
+      <div class="nav-item" data-tab="profile" id="navProfile">⚙️<div style="font-size:11px">Perfil</div></div>
+    </nav>
+  </div>
+
+<script>
+/* -----------------------------
+   Config & Storage
+   ----------------------------- */
+const STORAGE_THEME = 'sinfiltro.theme.v1';
+const STORAGE_FEED = 'sinfiltro.feed.v1';
+
+/* Default theme: dark */
+const body = document.body;
+let theme = localStorage.getItem(STORAGE_THEME) || 'dark';
+applyTheme(theme);
+
+/* Utility */
+const qs = sel => document.querySelector(sel);
+const qsa = sel => Array.from(document.querySelectorAll(sel));
+const randInt = n => Math.floor(Math.random()*n);
+
+/* Demo feed: load (or generate) images from Unsplash/Picsum */
+let feed = JSON.parse(localStorage.getItem(STORAGE_FEED) || 'null');
+if(!feed){
+  feed = Array.from({length:8}).map((_,i)=>({
+    id: 'd'+i,
+    type: 'image',
+    src: `https://source.unsplash.com/640x420/?cyberpunk,neon,city&sig=${Date.now()%1000 + i}`,
+    title: ['Luces en la ciudad','Atardecer urbano','Retrato creativo','Callejón neon','Short creativo','Nocturna','Arte digital','Modo gamer'][i%8],
+    meta: `${(randInt(300)+1)}K • ${[1,2,3,5,8,10][i%6]}d`,
+    likes: randInt(5000)
+  }));
+  localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+}
+
+/* DOM refs */
+const trendingRow = qs('#trendingRow');
+const feedGrid = qs('#feedGrid');
+const viewer = qs('#viewer');
+const viewerContent = qs('#viewerContent');
+const main = qs('.main');
+const fabMain = qs('#fabMain');
+const fabWrap = qs('#fabWrap');
+const fabRow = qs('#fabRow');
+const searchInput = qs('#searchInput');
+const themeToggle = qs('#themeToggle');
+const menuBtn = qs('#menuBtn');
+const drawer = qs('#drawer');
+const closeDrawer = qs('#closeDrawer');
+
+/* Render helpers */
+function esc(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function makeThumb(item){
+  const el = document.createElement('div');
+  el.className = 'thumb';
+  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="t-info">${esc(item.title)}</div>`;
+  el.addEventListener('click', ()=> openViewer(item));
+  return el;
+}
+function makeCard(item){
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="meta"><div><div class="title">${esc(item.title)}</div><div class="small">${esc(item.meta)}</div></div><div style="display:flex;gap:8px;align-items:center"><button class="like" data-id="${item.id}">❤ <span class="count">${item.likes}</span></button><button class="share" data-id="${item.id}">🔗</button></div></div>`;
+  el.querySelector('.like').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id, el); });
+  el.querySelector('.share').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item));
+  return el;
+}
+
+/* Render feed & trending */
+function renderAll(){
+  trendingRow.innerHTML=''; feedGrid.innerHTML='';
+  const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0));
+  sorted.slice(0,8).forEach(i=> trendingRow.appendChild(makeThumb(i)));
+  feed.forEach(i=> feedGrid.appendChild(makeCard(i)));
+  lazyLoadImages();
+}
+
+/* Lazy load images with IntersectionObserver and count impressions */
+let imgObserver = null;
+function lazyLoadImages(){
+  const imgs = qsa('img[data-src]');
+  if('IntersectionObserver' in window){
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(entry=>{
+          if(entry.isIntersecting){
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            imgObserver.unobserve(img);
+          }
+        });
+      }, {rootMargin:'200px',threshold:0.05});
+    }
+    imgs.forEach(i=> imgObserver.observe(i));
+  } else {
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  }
+}
+
+/* Viewer behavior */
+let current = null;
+function openViewer(item){
+  current = item;
+  viewerContent.innerHTML = '';
+  if(item.type === 'video'){
+    const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxHeight='70vh';
+    viewerContent.appendChild(v);
+  } else {
+    const img = document.createElement('img'); img.src = item.src; img.alt = item.title;
+    viewerContent.appendChild(img);
+  }
+  viewer.classList.add('show');
+}
+qs('#closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
+qs('#openCommentsBtn').addEventListener('click', ()=> {
+  // simple simulated comments drawer: toggle drawer
+  viewer.classList.remove('show');
+  drawer.classList.add('show');
+  drawer.setAttribute('aria-hidden','false');
+});
+
+/* Like & share */
+function toggleLike(id, el){
+  const idx = feed.findIndex(f=>f.id===id); if(idx<0) return;
+  feed[idx].likes = (feed[idx].likes||0) + 1;
+  // update UI count quickly
+  const cnt = el?.querySelector('.count'); if(cnt) cnt.textContent = feed[idx].likes;
+  localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+}
+function shareItem(item){
+  if(navigator.share){
+    navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('Abrir: '+item.src));
+  }
+}
+
+/* FAB interactions */
+let fabOpen = false;
+fabMain.addEventListener('click', ()=>{
+  fabOpen = !fabOpen;
+  if(fabOpen){ fabWrap.classList.add('fab-open'); qsa('.fab-sub').forEach((b,i)=>{ b.style.transform = `translateY(-${(i+1)*52}px)`; b.style.opacity = '1'; }); }
+  else { fabWrap.classList.remove('fab-open'); qsa('.fab-sub').forEach(b=>{ b.style.transform = 'translateY(0)'; b.style.opacity = '0'; }); }
+});
+qs('#fabUpload').addEventListener('click', ()=> { toggleModal('#uploadModal'); });
+qs('#doUpload').addEventListener('click', doUpload);
+
+/* Upload (local demo) */
+function doUpload(){
+  const f = qs('#fileInput').files?.[0];
+  if(!f){ alert('Selecciona un archivo'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    const item = { id: 'u'+Date.now(), type: f.type.startsWith('video') ? 'video' : 'image', src: url, title: f.name || 'Nuevo', meta: 'Ahora', likes:0 };
+    feed.unshift(item);
+    localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+    renderAll();
+    toggleModal('#uploadModal');
+    alert('Contenido subido (demo local).');
+  };
+  reader.readAsDataURL(f);
+}
+
+/* Toggle modal helper */
+function toggleModal(sel){
+  const m = qs(sel);
+  if(!m) return;
+  m.classList.toggle('show');
+}
+
+/* Search */
+sea
