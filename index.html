@@ -1,421 +1,233 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SinFiltro — Premium Glass</title>
-<meta name="description" content="SinFiltro — demo premium. Secciones con 2 filas, scroll lateral infinito, feed vertical infinito, preview modal y menús funcionales.">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --card: rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.06);
-    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-    --muted:#9fb0bf; --text:#eaf7ff;
-    --radius:14px; --trans:240ms;
-  }
-  html,body{height:100%;margin:0;font-family:Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Arial;color:var(--text);background:
-    radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.02), transparent 8%),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2));-webkit-font-smoothing:antialiased;overflow-y:auto;}
-  /* header */
-  header{position:sticky;top:0;z-index:120;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .left{display:flex;align-items:center;gap:12px}
-  .menu-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .right{display:flex;gap:8px;align-items:center}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  /* side drawer */
-  .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:130;display:none}
-  .drawer{position:fixed;left:0;top:0;bottom:0;width:78%;max-width:320px;background:linear-gradient(180deg,#071226,#041224);z-index:140;padding:18px;transform:translateX(-110%);transition:transform .28s;box-shadow:20px 0 60px rgba(0,0,0,0.6)}
-  .drawer.show{transform:translateX(0)}
-  .drawer-backdrop.show{display:block}
-  .drawer h3{margin:6px 0 12px 0}
-  .drawer .menu-item{padding:10px;border-radius:10px;cursor:pointer;color:var(--muted);margin-bottom:8px}
-  .drawer .menu-item:hover{background:rgba(255,255,255,0.01);color:var(--text)}
-  /* sections */
-  main{padding:12px 10px 120px}
-  .section{margin-bottom:18px}
-  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .section h2{margin:0;color:var(--accent-cyan);font-weight:700}
-  /* horizontal scroll grid: 2 filas */
-  .h-wrap{overflow-x:auto;padding-bottom:8px;display:block}
-  .h-grid{display:grid;grid-auto-flow:column;grid-auto-columns:200px;grid-template-rows:repeat(2,120px);gap:12px;align-items:start}
-  .h-grid::-webkit-scrollbar{height:8px}
-  .h-grid::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border-radius:8px}
-  .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .card img,.card video{width:100%;height:100%;object-fit:cover;display:block}
-  .meta-bar{position:absolute;left:8px;right:8px;bottom:8px;background:linear-gradient(0deg,rgba(0,0,0,0.55),transparent);padding:6px;border-radius:8px;color:var(--text);display:flex;justify-content:space-between;align-items:center;font-size:12px}
-  .meta-left{display:flex;gap:8px;align-items:center}
-  .meta-right{font-size:12px;color:var(--muted)}
-  /* play button glass */
-  .play-glass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 30px rgba(0,0,0,0.6);transition:transform .22s,opacity .22s;opacity:0.98}
-  .play-glass .triangle{width:0;height:0;border-left:10px solid var(--accent-cyan);border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:4px}
-  .card:hover .play-glass{transform:translate(-50%,-50%) scale(1.08)}
-  /* bottom nav (floating) */
-  .bottom-nav{position:fixed;left:12px;right:12px;bottom:10px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:120}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
-  .nav-item.active{color:var(--accent-cyan);transform:translateY(-3px)}
-  /* preview modal */
-  .preview{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:200;padding:18px}
-  .preview.show{display:flex}
-  .preview .box{width:100%;max-width:900px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .preview video{width:100%;height:auto;display:block}
-  .preview img{width:100%;display:block}
-  .controls{display:flex;justify-content:space-between;align-items:center;padding:10px;background:linear-gradient(180deg,rgba(0,0,0,0.6),transparent);color:var(--text)}
-  /* search/upload modals */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:210}
-  .modal.show{display:flex}
-  .modal .dialog{width:92%;max-width:520px;background:linear-gradient(180deg,#04121a,#071226);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
-  /* responsive tweaks */
-  @media (max-width:420px){
-    .h-grid{grid-auto-columns:160px;grid-template-rows:repeat(2,110px)}
-    .card{min-width:160px}
-    .play-glass{width:40px;height:40px}
-  }
+:root{
+  --bg1:#05060a;--bg2:#0b1222;
+  --accent1:#00d1ff;--accent2:#8a6eff;
+  --muted:#a7b5c4;--text:#eef6ff;
+  --glass:rgba(255,255,255,0.06);
+  --card:rgba(255,255,255,0.04);
+  --blur:18px;--trans:280ms;--radius:18px;
+}
+body{
+  margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;
+}
+body.light{
+  --bg1:#f5f9ff;--bg2:#eef3fa;--text:#0b1222;--glass:rgba(255,255,255,0.4);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));
+}
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;
+background:rgba(255,255,255,0.02);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.05)}
+.brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;
+background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;color:transparent;}
+.icon-btn{width:42px;height:42px;border-radius:12px;background:var(--card);
+display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;transition:transform var(--trans)}
+.icon-btn:active{transform:scale(.93)}
+
+/* Sidebar menu */
+#sideMenu{
+  position:fixed;top:0;left:0;height:100%;width:260px;
+  background:var(--glass);backdrop-filter:blur(var(--blur));box-shadow:4px 0 40px rgba(0,0,0,0.45);
+  transform:translateX(-100%);transition:transform 0.4s ease;z-index:150;padding:20px;
+  display:flex;flex-direction:column;gap:14px;
+}
+#sideMenu.show{transform:translateX(0)}
+#sideMenu h3{margin:10px 0;font-family:'Poppins';font-size:18px}
+#sideMenu button{padding:10px 14px;border:none;border-radius:12px;background:var(--card);color:var(--text);text-align:left;font-size:14px;cursor:pointer;transition:background .3s}
+#sideMenu button:hover{background:rgba(255,255,255,0.12)}
+
+/* Search modal */
+#searchModal{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:140;
+}
+#searchBox{
+  background:var(--glass);backdrop-filter:blur(var(--blur));
+  border-radius:var(--radius);padding:20px;box-shadow:0 10px 50px rgba(0,0,0,0.5);
+  width:90%;max-width:400px;display:flex;flex-direction:column;gap:10px;
+}
+#searchBox input{padding:10px;border-radius:10px;border:none;outline:none;width:100%;font-size:16px;background:rgba(255,255,255,0.15);color:var(--text)}
+
+/* Scroll + sections */
+.scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:90px}
+.section{padding:14px}
+.section h2{margin:4px 0 10px;font-family:Poppins;font-size:16px;color:var(--accent1)}
+
+/* Two-line horizontal scroll */
+.line-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+.item{position:relative;border-radius:14px;overflow:hidden;background:var(--card);min-width:140px;cursor:pointer;scroll-snap-align:start;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.item img,.item video{width:100%;height:100px;object-fit:cover;display:block}
+.play-btn{
+  position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(90deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;
+  color:#000;font-weight:900;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,0.6)
+}
+.stats{position:absolute;left:8px;bottom:8px;font-size:12px;color:#fff;text-shadow:0 0 8px rgba(0,0,0,0.8);display:flex;gap:6px}
+
+/* Bottom nav */
+.bottom-nav{
+  position:fixed;left:10px;right:10px;bottom:10px;height:70px;border-radius:18px;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:space-around;z-index:160;
+  border:1px solid rgba(255,255,255,0.1)
+}
+.nav-item{display:flex;flex-direction:column;align-items:center;color:var(--muted);font-size:12px;cursor:pointer;transition:transform var(--trans)}
+.nav-item.active{color:var(--accent1);transform:translateY(-6px)}
+
+/* Viewer modal */
+#viewer{display:none;position:fixed;inset:0;z-index:170;background:rgba(0,0,0,0.95);
+align-items:center;justify-content:center;padding:18px}
+#viewer img,#viewer video{max-width:95%;border-radius:12px;box-shadow:0 0 40px rgba(0,0,0,0.8)}
+#viewerClose{margin-top:12px;padding:10px 16px;border:none;border-radius:12px;background:var(--accent1);color:#000;font-weight:700;cursor:pointer}
 </style>
 </head>
+
 <body>
-  <!-- header -->
-  <header>
-    <div class="left">
-      <div class="menu-btn" id="openDrawer" title="Menú">☰</div>
-      <div class="brand">SinFiltro</div>
-    </div>
-    <div class="right">
-      <div class="icon-btn" id="themeToggle" title="Cambiar tema">🌗</div>
-      <div class="icon-btn" id="openSearch" title="Buscar">🔎</div>
-    </div>
-  </header>
+<div class="app">
+<header>
+  <button id="menuBtn" class="icon-btn">☰</button>
+  <div class="brand">SinFiltro</div>
+  <button id="searchBtn" class="icon-btn">🔍</button>
+</header>
 
-  <!-- drawer -->
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
-  <aside class="drawer" id="drawer">
-    <h3>Cuenta</h3>
-    <div class="menu-item" id="miPerfil">Mi perfil</div>
-    <div class="menu-item" id="config">Configuración</div>
-    <div class="menu-item" id="notifs">Notificaciones</div>
-    <div class="menu-item" id="ayuda">Ayuda</div>
-    <div style="height:8px"></div>
-    <div class="menu-item" id="logout">Cerrar sesión</div>
-  </aside>
+<!-- Sidebar -->
+<aside id="sideMenu">
+  <h3>Menú</h3>
+  <button>Ingresar a mi cuenta</button>
+  <button>Configuración</button>
+  <button>Centro de ayuda</button>
+  <button id="themeBtn">Cambiar tema</button>
+</aside>
 
-  <!-- main content -->
-  <main id="main">
-    <!-- sections (two rows each) -->
-    <section class="section" id="sec-tendencias">
-      <div class="section-header"><h2>Tendencias</h2></div>
-      <div class="h-wrap"><div class="h-grid" id="grid-tendencias"></div></div>
-    </section>
+<!-- Search -->
+<div id="searchModal">
+  <div id="searchBox">
+    <input type="text" placeholder="Buscar imágenes o videos...">
+    <button id="closeSearch" class="icon-btn" style="align-self:center">Cerrar</button>
+  </div>
+</div>
 
-    <section class="section" id="sec-recomendados">
-      <div class="section-header"><h2>Recomendados</h2></div>
-      <div class="h-wrap"><div class="h-grid" id="grid-recomendados"></div></div>
-    </section>
-
-    <section class="section" id="sec-antesvisto">
-      <div class="section-header"><h2>Antes visto</h2></div>
-      <div class="h-wrap"><div class="h-grid" id="grid-antesvisto"></div></div>
-    </section>
-
-    <section class="section" id="sec-tusvideos">
-      <div class="section-header"><h2>Tus videos</h2></div>
-      <div class="h-wrap"><div class="h-grid" id="grid-tusvideos"></div></div>
-    </section>
-
-    <!-- vertical feed (infinite) -->
-    <section class="section" id="feed-section">
-      <div class="section-header"><h2>Explora más</h2></div>
-      <div id="vertical-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:12px"></div>
-    </section>
-  </main>
-
-  <!-- bottom nav -->
-  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-    <div class="nav-item active" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-    <div class="nav-item" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
-    <div class="nav-item" id="navUpload">＋<div style="font-size:11px">Subir</div></div>
-    <div class="nav-item" id="navWatched">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div class="nav-item" id="navYour">📺<div style="font-size:11px">Tus videos</div></div>
-  </nav>
-
-  <!-- preview modal -->
-  <div class="preview" id="preview">
-    <div class="box">
-      <div class="controls" id="previewControls">
-        <div id="previewTitle" style="font-weight:700"></div>
-        <div style="display:flex;gap:8px">
-          <button id="likeBtn" class="icon-btn" title="Me gusta">❤</button>
-          <button id="closePreview" class="icon-btn" title="Cerrar">✕</button>
-        </div>
-      </div>
-      <div id="previewMedia"></div>
-    </div>
+<!-- Main Scroll -->
+<div class="scroll" id="scrollArea">
+  <div class="section">
+    <h2>Tendencias</h2>
+    <div class="line-grid" id="trendGrid"></div>
   </div>
 
-  <!-- search modal -->
-  <div class="modal" id="searchModal">
-    <div class="dialog">
-      <h3>Buscar</h3>
-      <input id="searchInput" placeholder="Buscar usuarios, tags o títulos..." style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)">
-      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-        <button id="closeSearch" class="icon-btn">Cerrar</button>
-        <button id="doSearch" class="icon-btn">Buscar</button>
-      </div>
-    </div>
+  <div class="section">
+    <h2>Recomendados</h2>
+    <div class="line-grid" id="recGrid"></div>
   </div>
 
-  <!-- upload modal -->
-  <div class="modal" id="uploadModal">
-    <div class="dialog">
-      <h3>Subir contenido (demo)</h3>
-      <input id="fileInput" type="file" accept="image/*,video/*" style="width:100%;padding:6px;border-radius:8px">
-      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-        <button id="cancelUpload" class="icon-btn">Cancelar</button>
-        <button id="submitUpload" class="icon-btn">Subir</button>
-      </div>
-      <p style="color:var(--muted);font-size:13px;margin-top:8px">Demo local: los archivos no se envían a servidor.</p>
-    </div>
+  <div class="section">
+    <h2>Vistos recientemente</h2>
+    <div class="line-grid" id="recentGrid"></div>
   </div>
+
+  <div class="section">
+    <h2>Explora más</h2>
+    <div id="feed" class="line-grid"></div>
+  </div>
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav">
+  <div class="nav-item active">🏠<div>Inicio</div></div>
+  <div class="nav-item">⬆️<div>Subir</div></div>
+  <div class="nav-item">🎞<div>Tus videos</div></div>
+  <div class="nav-item">❤️<div>Favoritos</div></div>
+</nav>
+
+<!-- Viewer -->
+<div id="viewer">
+  <div id="viewerContent"></div>
+  <button id="viewerClose">Cerrar</button>
+</div>
 
 <script>
-/* ---------- Utilities ---------- */
-const rand = n => Math.floor(Math.random()*n);
-const randBool = p => Math.random() < (p ?? 0.5);
-const accent = (t) => t ? 'Video' : 'Imagen';
+const $=s=>document.querySelector(s);
+const grids=['trendGrid','recGrid','recentGrid','feed'];
 
-/* ---------- Containers ---------- */
-const grids = {
-  tendencias: document.getElementById('grid-tendencias'),
-  recomendados: document.getElementById('grid-recomendados'),
-  antesvisto: document.getElementById('grid-antesvisto'),
-  tusvideos: document.getElementById('grid-tusvideos'),
+function randomMedia(){
+  const isVideo=Math.random()<0.3;
+  const src=isVideo?`https://samplelib.com/lib/preview/mp4/sample-5s.mp4`
+    :`https://picsum.photos/400/250?random=${Math.floor(Math.random()*9999)}`;
+  return {isVideo,src,likes:Math.floor(Math.random()*900),comments:Math.floor(Math.random()*200),views:Math.floor(Math.random()*10)+'K'};
+}
+
+function createItem(m){
+  const el=document.createElement('div');el.className='item';
+  if(m.isVideo){
+    el.innerHTML=`<video src="${m.src}" muted></video>
+      <div class="play-btn">▶</div>
+      <div class="stats">❤️${m.likes} 💬${m.comments} 👁${m.views}</div>`;
+  }else{
+    el.innerHTML=`<img src="${m.src}" alt="img">
+      <div class="stats">❤️${m.likes} 💬${m.comments} 👁${m.views}</div>`;
+  }
+  el.onclick=()=>openViewer(m);
+  return el;
+}
+
+function fillGrid(id,count=10){
+  const g=$("#"+id);
+  for(let i=0;i<count;i++){g.appendChild(createItem(randomMedia()));}
+}
+
+/* Fill all sections */
+grids.forEach(g=>fillGrid(g,10));
+
+/* Viewer */
+function openViewer(m){
+  const v=$("#viewer"),c=$("#viewerContent");
+  c.innerHTML="";
+  if(m.isVideo){
+    const vid=document.createElement("video");
+    vid.src=m.src;vid.controls=true;vid.autoplay=true;c.appendChild(vid);
+  }else{
+    const img=document.createElement("img");
+    img.src=m.src;c.appendChild(img);
+  }
+  v.style.display="flex";
+}
+$("#viewerClose").onclick=()=>$("#viewer").style.display="none";
+
+/* Sidebar toggle */
+$("#menuBtn").onclick=()=>$("#sideMenu").classList.toggle("show");
+
+/* Search modal */
+$("#searchBtn").onclick=()=>$("#searchModal").style.display="flex";
+$("#closeSearch").onclick=()=>$("#searchModal").style.display="none";
+
+/* Theme toggle */
+let theme='dark';
+$("#themeBtn").onclick=()=>{
+  theme=theme==='dark'?'light':'dark';
+  document.body.classList.toggle('light');
 };
-const verticalFeed = document.getElementById('vertical-feed');
 
-/* ---------- Create card element (image or video) ---------- */
-function makeCard(isVideo = false){
-  const card = document.createElement('div');
-  card.className = 'card';
-  // media
-  if(isVideo){
-    const v = document.createElement('video');
-    v.src = 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
-    v.preload = 'metadata';
-    v.muted = true;
-    v.playsInline = true;
-    card.appendChild(v);
-    // play glass
-    const play = document.createElement('div');
-    play.className = 'play-glass';
-    play.title = 'Reproducir';
-    play.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openPreview({type:'video',src:v.src,title:'Video demo',likes:card.dataset.likes,comments:card.dataset.comments,views:card.dataset.views});
-    });
-    const tri = document.createElement('div'); tri.className = 'triangle';
-    play.appendChild(tri);
-    card.appendChild(play);
-  } else {
-    const img = document.createElement('img');
-    img.src = `https://picsum.photos/seed/${Math.floor(Math.random()*100000)}/640/420`;
-    img.alt = 'Imagen';
-    card.appendChild(img);
-    card.addEventListener('click', ()=> {
-      openPreview({type:'image',src:img.src,title:'Foto demo',likes:card.dataset.likes,comments:card.dataset.comments,views:card.dataset.views});
-    });
-  }
-  // stats
-  const likes = rand(900)+20;
-  const comments = rand(400);
-  const views = rand(2000)+100;
-  card.dataset.likes = likes; card.dataset.comments = comments; card.dataset.views = views;
-  const meta = document.createElement('div'); meta.className = 'meta-bar';
-  meta.innerHTML = `<div class="meta-left"><strong style="font-size:13px">${isVideo?'Video':'Foto'}</strong></div>
-    <div class="meta-right">${'❤ '+likes}&nbsp;&nbsp;${'💬 '+comments}&nbsp;&nbsp;${'👁 '+views+'K'}</div>`;
-  card.appendChild(meta);
-  return card;
-}
-
-/* ---------- Fill initial two-rows per section and set horizontal infinite listeners ---------- */
-function fillGrid(gridEl, seedType = 'mix', batch = 12){
-  // gridEl is .h-grid which is a two-row grid flowing by columns
-  for(let i=0;i<batch;i++){
-    const isVideo = seedType === 'video' ? true : seedType === 'image' ? false : randBool(0.45);
-    gridEl.appendChild(makeCard(isVideo));
-  }
-  // attach infinite horizontal loading
-  gridEl.addEventListener('scroll', () => {
-    if(gridEl._loading) return;
-    if(gridEl.scrollLeft + gridEl.clientWidth >= gridEl.scrollWidth - 140){
-      gridEl._loading = true;
-      setTimeout(()=> {
-        for(let i=0;i<8;i++) gridEl.appendChild(makeCard(randBool(0.45)));
-        gridEl._loading = false;
-      }, 500);
-    }
-  });
-}
-
-/* ---------- Populate sections ---------- */
-fillGrid(grids.tendencias,'mix', 16);
-fillGrid(grids.recomendados,'mix', 16);
-fillGrid(grids.antesvisto,'mix', 12);
-fillGrid(grids.tusvideos,'video', 12);
-
-/* ---------- Vertical infinite feed (after sections) ---------- */
-let verticalLoading = false;
-function addVerticalBatch(count = 12){
-  for(let i=0;i<count;i++){
-    const isVideo = randBool(0.45);
-    const wrapper = document.createElement('div');
-    wrapper.style.minHeight = '120px';
-    wrapper.className = 'card';
-    // reuse makeCard but want square sizing - clone
-    const card = makeCard(isVideo);
-    // adjust card inner element sizes for grid display
-    wrapper.innerHTML = card.innerHTML;
-    wrapper.dataset.likes = card.dataset.likes;
-    wrapper.dataset.comments = card.dataset.comments;
-    wrapper.dataset.views = card.dataset.views;
-    verticalFeed.appendChild(wrapper);
-    // click open preview
-    if(isVideo){
-      wrapper.querySelector('.play-glass')?.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        const vsrc = wrapper.querySelector('video')?.src || 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
-        openPreview({type:'video',src:vsrc,title:'Video',likes:wrapper.dataset.likes,comments:wrapper.dataset.comments,views:wrapper.dataset.views});
-      });
-    } else {
-      wrapper.querySelector('img')?.addEventListener('click', ()=>{
-        const src = wrapper.querySelector('img').src;
-        openPreview({type:'image',src,title:'Imagen',likes:wrapper.dataset.likes,comments:wrapper.dataset.comments,views:wrapper.dataset.views});
-      });
-    }
-  }
-}
-addVerticalBatch(14);
-window.addEventListener('scroll', ()=>{
-  if(verticalLoading) return;
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 300){
-    verticalLoading = true;
-    setTimeout(()=>{ addVerticalBatch(10); verticalLoading=false; }, 700);
-  }
-});
-
-/* ---------- Preview modal logic ---------- */
-const preview = document.getElementById('preview');
-const previewMedia = document.getElementById('previewMedia');
-const previewTitle = document.getElementById('previewTitle');
-const closePreview = document.getElementById('closePreview');
-const likeBtn = document.getElementById('likeBtn');
-
-function openPreview({type,src,title,likes,comments,views}){
-  preview.classList.add('show');
-  previewTitle.textContent = title || '';
-  previewMedia.innerHTML = '';
-  if(type === 'video'){
-    const v = document.createElement('video');
-    v.src = src;
-    v.controls = true;
-    v.autoplay = true;
-    v.style.width = '100%';
-    previewMedia.appendChild(v);
-  } else {
-    const img = document.createElement('img');
-    img.src = src;
-    previewMedia.appendChild(img);
-  }
-  // small meta
-  const infoBar = document.createElement('div');
-  infoBar.style.padding = '8px 12px';
-  infoBar.style.color = 'var(--muted)';
-  infoBar.style.fontSize = '13px';
-  infoBar.innerHTML = `❤ ${likes} &nbsp;&nbsp; 💬 ${comments} &nbsp;&nbsp; 👁 ${views}K`;
-  previewMedia.appendChild(infoBar);
-}
-closePreview.addEventListener('click', ()=> { preview.classList.remove('show'); previewMedia.innerHTML=''; });
-preview.addEventListener('click', (e)=>{ if(e.target === preview) { preview.classList.remove('show'); previewMedia.innerHTML=''; } });
-
-/* ---------- Drawer (menu) ---------- */
-const drawer = document.getElementById('drawer');
-const backdrop = document.getElementById('drawerBackdrop');
-document.getElementById('openDrawer').addEventListener('click', ()=> { drawer.classList.add('show'); backdrop.classList.add('show'); });
-backdrop.addEventListener('click', ()=>{ drawer.classList.remove('show'); backdrop.classList.remove('show'); });
-document.getElementById('miPerfil').addEventListener('click', ()=> alert('Mi perfil (demo)'));
-document.getElementById('config').addEventListener('click', ()=> alert('Configuración (demo)'));
-document.getElementById('logout').addEventListener('click', ()=> alert('Cerrando sesión (demo)'));
-
-/* ---------- Search modal ---------- */
-const searchModal = document.getElementById('searchModal');
-document.getElementById('openSearch').addEventListener('click', ()=> searchModal.classList.add('show'));
-document.getElementById('closeSearch').addEventListener('click', ()=> searchModal.classList.remove('show'));
-document.getElementById('doSearch').addEventListener('click', ()=> {
-  const q = document.getElementById('searchInput').value.trim();
-  alert(q?`Buscando: ${q} (demo)`:'Escribe algo para buscar.');
-});
-
-/* ---------- Upload modal ---------- */
-const uploadModal = document.getElementById('uploadModal');
-document.getElementById('navUpload').addEventListener('click', ()=> uploadModal.classList.add('show'));
-document.getElementById('cancelUpload').addEventListener('click', ()=> uploadModal.classList.remove('show'));
-document.getElementById('submitUpload').addEventListener('click', ()=>{
-  const f = document.getElementById('fileInput').files[0];
-  if(!f){ alert('Selecciona un archivo primero. (demo)'); return; }
-  alert(`Se subió (demo): ${f.name}`);
-  uploadModal.classList.remove('show');
-});
-
-/* ---------- Bottom nav buttons behavior ---------- */
-document.getElementById('navSearch').addEventListener('click', ()=> searchModal.classList.add('show'));
-document.getElementById('navWatched').addEventListener('click', ()=> { window.scrollTo({top: document.getElementById('sec-antesvisto').offsetTop - 70, behavior:'smooth'}); });
-document.getElementById('navYour').addEventListener('click', ()=> { window.scrollTo({top: document.getElementById('sec-tusvideos').offsetTop - 70, behavior:'smooth'}); });
-document.getElementById('navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-
-/* ---------- Theme toggle (persisted) ---------- */
-const themeToggle = document.getElementById('themeToggle');
-const THEME_KEY = 'sinfiltro.theme.v1';
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-function applyTheme(t){
-  if(t==='light'){
-    document.documentElement.style.setProperty('--bg-1','#f5f9ff');
-    document.documentElement.style.setProperty('--bg-2','#eef6ff');
-    document.documentElement.style.setProperty('--card','rgba(0,0,0,0.04)');
-    document.documentElement.style.setProperty('--text','#071226');
-    themeToggle.textContent = '☀️';
-  } else {
-    document.documentElement.style.setProperty('--bg-1','#05060a');
-    document.documentElement.style.setProperty('--bg-2','#071226');
-    document.documentElement.style.setProperty('--card','rgba(255,255,255,0.03)');
-    document.documentElement.style.setProperty('--text','#eaf7ff');
-    themeToggle.textContent = '🌗';
-  }
-}
-applyTheme(theme);
-themeToggle.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; localStorage.setItem(THEME_KEY,theme); applyTheme(theme); });
-
-/* ---------- Accessibility & quick tweaks ---------- */
-/* Enable keyboard Esc to close preview/search/upload/drawer */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    preview.classList.remove('show');
-    searchModal.classList.remove('show');
-    uploadModal.classList.remove('show');
-    drawer.classList.remove('show'); backdrop.classList.remove('show');
-  }
-});
-
-/* ensure play-glass click doesn't trigger card click on image */
-document.addEventListener('click', (e)=>{
-  if(e.target.closest('.card') && !e.target.closest('.play-glass') && !e.target.closest('img') && !e.target.closest('video')){
-    // For safety: do nothing or could open preview for either type
-    const c = e.target.closest('.card');
-    const img = c.querySelector('img');
-    const vid = c.querySelector('video');
-    if(img) openPreview({type:'image',src:img.src,title:'Imagen',likes:c.dataset.likes,comments:c.dataset.comments,views:c.dataset.views});
-    else if(vid) openPreview({type:'video',src:vid.src,title:'Video',likes:c.dataset.likes,comments:c.dataset.comments,views:c.dataset.views});
+/* Infinite scroll for main feed */
+const scroll=$('#scrollArea');
+let loading=false;
+scroll.addEventListener('scroll',()=>{
+  if(scroll.scrollTop+scroll.clientHeight>=scroll.scrollHeight-200 && !loading){
+    loading=true;
+    setTimeout(()=>{
+      fillGrid('feed',8);
+      loading=false;
+    },700);
   }
 });
 </script>
 </body>
 </html>
-```0
