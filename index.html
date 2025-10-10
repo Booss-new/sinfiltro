@@ -1,3 +1,4 @@
+<!-- index.html - SinFiltro (Versión premium completa) -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -6,455 +7,487 @@
   <title>SinFiltro — Demo Premium</title>
   <meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro y diseño moderno." />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <meta property="og:title" content="SinFiltro — Tu espacio sin límites">
+  <meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
+
   <style>
+    /* ---------------- Variables y reset ---------------- */
     :root{
       --bg-1:#05060a; --bg-2:#071226;
-      --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-      --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+      --accent-cyan:#00d1ff; --accent-violet:#8a6eff; --accent-pink:#ff57b7;
+      --muted:#9fb0bf; --card: rgba(255,255,255,0.03);
       --glass: rgba(255,255,255,0.04);
-      --radius:14px; --trans:260ms;
-      --text:#eaf7ff;
-      --glass-strong: rgba(255,255,255,0.035);
+      --radius:14px; --trans:260ms; --text:#eaf7ff;
     }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
-    body.light{
-      --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
-      background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+    body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--accent-cyan:#0066cc;--accent-violet:#5e3bff;--muted:#516070;--text:#071226;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-    /* Animated background glow */
-    .bg-anim{
-      position:fixed;inset:0;z-index:-10;pointer-events:none;
+    /* background glow */
+    .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;
       background:
         radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
         radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-      filter:blur(28px) saturate(1.05);
-      animation: drift 20s linear infinite;
-    }
-    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+      filter:blur(24px) saturate(1.05); animation:drift 24s linear infinite}
+    @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(5%,-3%,0)}100%{transform:translate3d(0,0,0)}}
 
-    /* App layout */
+    /* app layout */
     .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-    header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:12px 10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
-    .header-inner{width:100%;max-width:920px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px}
-
-    /* Left menu button */
-    .left-actions{display:flex;align-items:center;gap:8px}
-    .menu-btn{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}
-    .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
-
-    /* Top right icons */
-    .top-right{display:flex;align-items:center;gap:8px}
+    .header{position:sticky;top:0;z-index:110;padding:10px 12px;background:linear-gradient(180deg, rgba(0,0,0,0.36), rgba(0,0,0,0.16));backdrop-filter:blur(10px);display:flex;align-items:center;gap:12px;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.02)}
+    .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+    .icon-btn:active{transform:scale(.96)}
+    .brand{display:flex;flex-direction:column;align-items:center}
+    .brand .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+    .brand .tag{font-size:11px;color:var(--muted)}
 
     /* scroll area */
-    .scroll{flex:1;overflow:auto;padding-bottom:140px;-webkit-overflow-scrolling:touch;display:flex;justify-content:center}
-    .content{width:100%;max-width:920px;padding:12px}
+    .scroll{flex:1;overflow:auto;padding-bottom:160px;-webkit-overflow-scrolling:touch}
+    .container{max-width:920px;margin:0 auto;padding:12px}
 
-    /* Hero */
-    .hero{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
-    .hero h1{margin:0;font-size:18px;color:var(--accent-violet);font-weight:700}
+    /* hero */
+    .hero{margin:10px 0;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.45)}
+    .hero h1{margin:0;color:var(--accent-violet);font-size:18px;font-weight:700}
     .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-    /* Section title */
-    .section{margin-top:18px}
-    .section .title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .section .title{font-weight:800;color:var(--accent-cyan);font-size:20px}
-    .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+    /* section headers */
+    .section{margin-top:16px}
+    .section .head{display:flex;justify-content:space-between;align-items:center;padding:0 6px 8px}
+    .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
+    .section .see{color:var(--muted);font-size:13px;cursor:pointer}
 
-    /* Two-row horizontal scroller container */
-    .two-row-scroll{display:block;overflow:hidden}
-    .two-row-inner{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 12px 2px;scrollbar-width:none; -ms-overflow-style:none}
-    .two-row-inner::-webkit-scrollbar{display:none}
-    /* Each column holds two items stacked */
-    .col-stack{display:flex;flex-direction:column;gap:12px;flex:0 0 260px;width:260px}
-    .card-mini{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.5);min-height:110px;position:relative}
-    .card-mini img{width:100%;height:100px;object-fit:cover;display:block;filter:contrast(0.95)}
-    .card-mini .meta{position:absolute;left:10px;bottom:8px;color:#fff;font-weight:700;text-shadow:0 6px 12px rgba(0,0,0,0.6);display:flex;gap:10px;align-items:center;font-size:12px}
-    .play-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,209,255,0.95),rgba(138,110,255,0.95));color:#001;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,0.45);border:6px solid rgba(255,255,255,0.03)}
-    .play-overlay{position:absolute;left:12px;top:12px;opacity:0.98}
+    /* Two-row horizontal layout (two stacked rows, infinite horizontal) */
+    .h-stack{display:flex;flex-direction:column;gap:10px;padding-left:6px}
+    .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px;scrollbar-width:none;scroll-snap-type:x proximity}
+    .h-row::-webkit-scrollbar{display:none}
+    .card-small{min-width:210px;flex:0 0 210px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:start}
+    .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.55);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+    .card-small:hover img{transform:scale(1.03)}
+    .card-small .meta{position:relative;z-index:6;display:flex;flex-direction:column;gap:6px}
+    .mini-stats{display:flex;gap:8px;align-items:center;font-size:13px;color:rgba(255,255,255,0.95)}
+    .mini-badge{position:absolute;left:12px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
+    .play-btn{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(0,209,255,0.12),rgba(138,110,255,0.12));backdrop-filter:blur(6px);box-shadow:0 10px 30px rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.04);cursor:pointer;transition:transform .18s}
+    .play-btn:hover{transform:scale(1.05)}
 
-    /* bottom feed (grid infinite) */
-    .infinite-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
-    .infinite-card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.45);cursor:pointer}
-    .infinite-card img{width:100%;height:160px;object-fit:cover}
+    /* grid infinite vertical for "Explorar" */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+    .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(0,0,0,0.55);position:relative;cursor:pointer}
+    .grid img{width:100%;height:150px;object-fit:cover;display:block}
+    .grid .body{padding:10px;color:#eaf7ff}
+    .grid .title{font-weight:700}
+    .grid .meta{font-size:12px;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;align-items:center}
 
-    /* Bottom nav glass */
-    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(3,8,16,0.6), rgba(6,12,22,0.5));display:flex;align-items:center;justify-content:space-around;padding:0 12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:90}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+    /* FAB + radial */
+    .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:48px;width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 100px rgba(0,0,0,0.6);border:none}
+    .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:120px;display:flex;gap:10px;align-items:center;z-index:188;pointer-events:none;opacity:0;transition:opacity .18s}
+    .radial.show{opacity:1;pointer-events:auto}
+    .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+
+    /* bottom nav */
+    .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:78px;border-radius:16px;background:linear-gradient(180deg, rgba(2,6,12,0.6), rgba(6,12,22,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:180}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
     .nav-item.active{color:var(--accent-cyan);transform:translateY(-4px)}
-    .nav-item .icon{font-size:20px}
 
-    /* Drawer menu */
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:140;display:none}
-    .drawer{position:fixed;left:12px;top:12px;bottom:12px;width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(10px);border-radius:12px;padding:12px;z-index:150;box-shadow:0 30px 80px rgba(0,0,0,0.6);transform:translateX(-20px);opacity:0;transition:all 240ms ease}
-    .drawer.open{transform:translateX(0);opacity:1}
-    .drawer .close{margin-left:auto;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
-    .drawer h3{margin:6px 0 12px 0}
-    .drawer .menu-item{padding:10px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
-    .drawer .menu-item:hover{background:rgba(255,255,255,0.01)}
+    /* side panel (menu) */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:160;display:none}
+    .panel{position:fixed;left:12px;top:12px;bottom:12px;width:320px;max-width:84%;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:170;box-shadow:0 30px 80px rgba(0,0,0,0.6);transform:translateX(-18px);opacity:0;transition:all 260ms ease}
+    .panel.open{transform:translateX(0);opacity:1}
+    .panel .close{margin-left:auto;padding:8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
 
-    /* Viewer modal full */
-    .viewer{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(0,0,0,0.7)}
-    .viewer .box{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px}
-    .viewer .meta{color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+    /* viewer */
+    .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:18px}
+    .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+    .viewer img{width:100%;height:auto;display:block}
+    .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
-    /* Small helpers */
-    .muted{color:var(--muted)}
-    .badge{padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px}
+    /* skeleton shimmer */
+    .skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.5s linear infinite}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+    /* micro interactions */
+    .mini-like{display:inline-block;transition:transform .22s ease}
+    .mini-like.boom{transform:scale(1.25)}
+    button, .card-small, .card{transition:transform .18s ease, box-shadow .18s ease}
+    .card-small:active{transform:scale(.995)}
+    .card:active{transform:scale(.997)}
+
+    /* responsive */
     @media(max-width:420px){
-      .col-stack{flex:0 0 210px;width:210px}
-      .card-mini img{height:110px}
-      .infinite-card img{height:140px}
-      .drawer{width:86%;left:6%}
+      .card-small{min-width:160px;height:110px}
+      .grid img{height:120px}
+      .fab{width:64px;height:64px;font-size:26px}
+      .panel{width:92%;left:4%}
     }
   </style>
 </head>
 <body>
   <div class="bg-anim" aria-hidden="true"></div>
 
-  <div class="app" role="application" aria-label="SinFiltro app">
-    <header>
-      <div class="header-inner">
-        <div class="left-actions" style="align-items:center;gap:10px">
-          <div class="menu-btn" id="menuBtn" title="Menú">☰</div>
-          <div class="logo" aria-hidden="false">SinFiltro</div>
-        </div>
-
-        <div class="top-right">
-          <div class="menu-btn" id="searchBtn" title="Buscar">🔎</div>
-          <div class="menu-btn" id="themeTopBtn" title="Cambiar modo">🌗</div>
+  <div class="app" role="application" aria-label="SinFiltro">
+    <!-- Header -->
+    <div class="header" role="banner">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="icon-btn" id="menuBtn" aria-label="Abrir menú">☰</div>
+        <div class="brand">
+          <div class="logo">SinFiltro</div>
+          <div class="tag">Tu espacio sin límites</div>
         </div>
       </div>
-    </header>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="icon-btn" id="langBtn" title="Idioma">ES</div>
+        <div class="icon-btn" id="searchBtn" title="Buscar">🔎</div>
+        <div class="icon-btn" id="themeBtn" title="Cambiar modo">🌗</div>
+      </div>
+    </div>
 
+    <!-- Side panel & overlay -->
+    <div id="overlay" class="overlay" tabindex="-1"></div>
+    <aside id="panel" class="panel" aria-hidden="true">
+      <div style="display:flex;align-items:center;gap:8px">
+        <strong style="font-size:18px">Cuenta</strong>
+        <button class="panel-close panel-action" id="closePanel" aria-label="Cerrar">✕</button>
+      </div>
+      <p class="muted" style="margin-top:8px">Accede a ajustes, monetización y tu contenido.</p>
+      <nav style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+        <button class="icon-btn" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
+        <button class="icon-btn" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+        <button class="icon-btn" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
+        <button class="icon-btn" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+      </nav>
+    </aside>
+
+    <!-- Main content (scroll) -->
     <div class="scroll" id="scrollArea">
-      <div class="content">
-
+      <div class="container">
         <section class="hero" aria-label="Presentación">
           <h1>Descubre lo auténtico</h1>
-          <p class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+          <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
 
-        <!-- Sección: Tendencias (dos filas horizontales) -->
-        <section class="section" aria-label="Tendencias">
-          <div class="title-row">
-            <div class="title">🔥 Tendencias</div>
-            <div class="see-all">Ver todo</div>
-          </div>
-
-          <div class="two-row-scroll" id="trendingSection">
-            <div class="two-row-inner" id="trendingInner"></div>
+        <!-- Tendencias (2 filas) -->
+        <section class="section" id="sec-trend">
+          <div class="head"><div class="title">🔥 Tendencias</div><div class="see">Ver todo</div></div>
+          <div class="h-stack">
+            <div class="h-row" id="trendRow1" aria-label="Tendencias fila 1"></div>
+            <div class="h-row" id="trendRow2" aria-label="Tendencias fila 2"></div>
           </div>
         </section>
 
-        <!-- Sección: Recomendados -->
-        <section class="section" aria-label="Recomendados">
-          <div class="title-row">
-            <div class="title">🎯 Recomendados</div>
-            <div class="see-all">Ver todo</div>
-          </div>
-
-          <div class="two-row-scroll" id="recoSection">
-            <div class="two-row-inner" id="recoInner"></div>
+        <!-- Recomendados (2 filas) -->
+        <section class="section" id="sec-reco">
+          <div class="head"><div class="title">🎯 Recomendados</div><div class="see">Ver todo</div></div>
+          <div class="h-stack">
+            <div class="h-row" id="recoRow1" aria-label="Recomendados fila 1"></div>
+            <div class="h-row" id="recoRow2" aria-label="Recomendados fila 2"></div>
           </div>
         </section>
 
-        <!-- Sección: Antes visto -->
-        <section class="section" aria-label="Antes visto">
-          <div class="title-row">
-            <div class="title">⏮ Antes visto</div>
-            <div class="see-all">Ver todo</div>
-          </div>
-
-          <div class="two-row-scroll" id="recentSection">
-            <div class="two-row-inner" id="recentInner"></div>
+        <!-- Antes visto (2 filas) -->
+        <section class="section" id="sec-recent">
+          <div class="head"><div class="title">⏮️ Antes visto</div><div class="see">Ver todo</div></div>
+          <div class="h-stack">
+            <div class="h-row" id="recentRow1" aria-label="Antes visto fila 1"></div>
+            <div class="h-row" id="recentRow2" aria-label="Antes visto fila 2"></div>
           </div>
         </section>
 
-        <!-- Infinite mixed feed (aparece al final; scroll vertical continua) -->
-        <section class="section" aria-label="Explorar">
-          <div class="title-row">
-            <div class="title">🔁 Explorar — Aleatorio</div>
-            <div class="see-all">Filtrar</div>
-          </div>
-          <div class="infinite-grid" id="infiniteGrid"></div>
+        <!-- Explorar: grid infinito vertical -->
+        <section class="section" id="infinite-feed">
+          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see">Filtrar</div></div>
+          <div class="grid" id="gridFeed" aria-live="polite"></div>
         </section>
-
       </div>
     </div>
 
-    <!-- Bottom nav -->
+    <!-- FAB and radial -->
+    <div id="radial" class="radial" aria-hidden="true">
+      <button id="optUpload" title="Subir foto/video">📤</button>
+      <button id="optPost" title="Crear publicación">✏️</button>
+      <button id="optShort" title="Crear short">🎬</button>
+    </div>
+    <button id="fab" class="fab" aria-label="Crear">＋</button>
+
+    <!-- bottom nav -->
     <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div class="nav-item active" data-tab="home" id="navHome"><div class="icon">🏠</div><div style="font-size:11px">Inicio</div></div>
-      <div class="nav-item" data-tab="search" id="navSearch"><div class="icon">🔍</div><div style="font-size:11px">Buscar</div></div>
-      <div class="nav-item" id="navUpload"><div class="icon">＋</div><div style="font-size:11px">Subir</div></div>
-      <div class="nav-item" data-tab="recent" id="navRecent"><div class="icon">👁️</div><div style="font-size:11px">Antes visto</div></div>
-      <div class="nav-item" id="navTheme"><button id="navThemeBtn" class="badge" title="Modo">🌙</button></div>
+      <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+      <div class="nav-item" data-tab="search" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
+      <div style="width:78px"></div>
+      <div class="nav-item" data-tab="recent" id="navRecent">👁️<div style="font-size:11px">Antes visto</div></div>
+      <div class="nav-item" data-tab="me" id="navMe">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
-  </div>
-
-  <!-- Drawer & backdrop -->
-  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
-  <aside class="drawer" id="drawer">
-    <div style="display:flex;align-items:center;gap:8px">
-      <h3 style="margin:0">Cuenta</h3>
-      <button class="close" id="drawerClose">✕</button>
-    </div>
-    <p class="muted" style="margin:8px 0 12px 0">Accede a ajustes, tus vídeos y monetización.</p>
-    <div class="menu-item" id="menuProfile">👤 Mi perfil</div>
-    <div class="menu-item" id="menuSettings">⚙️ Ajustes</div>
-    <div class="menu-item" id="menuMonet">💸 Monetización</div>
-    <div class="menu-item" id="menuLogout">🚪 Cerrar sesión</div>
-  </aside>
-
-  <!-- Viewer modal -->
-  <div class="viewer" id="viewer" aria-hidden="true">
-    <div class="box" role="dialog" aria-modal="true">
-      <div id="viewerContent"></div>
-      <div class="meta" style="margin-top:10px">
-        <div class="muted" id="viewerTitle">Título</div>
-        <div style="display:flex;gap:8px">
-          <div class="muted" id="viewerStats">❤ 0 • 💬 0 • 👁 0</div>
-          <button id="closeViewer" class="menu-btn">Cerrar</button>
+    <!-- Viewer immersive -->
+    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+      <div class="card" role="document">
+        <div id="viewerInner" style="text-align:center"></div>
+        <div class="controls">
+          <button id="prevBtn" class="icon-btn" title="Anterior">⟨</button>
+          <button id="playBtn" class="play-btn" title="Reproducir">▶</button>
+          <button id="nextBtn" class="icon-btn" title="Siguiente">⟩</button>
+          <button id="closeViewer" class="icon-btn" title="Cerrar">✕</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ---------------- JavaScript (todo en un archivo) ---------------- -->
   <script>
-/* ---------- Datos demo y almacenamiento local ---------- */
-const rand = n => Math.floor(Math.random()*n);
-const seedImgs = Array.from({length:40}).map((_,i)=>({
-  id: 'i'+i,
-  src: `https://picsum.photos/640/420?random=${1000+i}`,
-  type: (i%4===0)?'video':'image',
-  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: rand(1000),
-  comments: rand(500),
-  views: (rand(900)+100)+'K'
-}));
+  /* ---------------- Utilidades y demo data ---------------- */
+  const rand = n => Math.floor(Math.random()*n);
+  const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-/* Secciones (cada una mostrará columnas con 2 filas apiladas) */
-let trending = seedImgs.slice(0,12);
-let recommended = seedImgs.slice(12,24);
-let recent = seedImgs.slice(24,36);
+  // Demo pool (mezcla imágenes & videos flagged)
+  let pool = Array.from({length:60}).map((_,i)=>({
+    id:'p'+i,
+    src: mkImg(i),
+    kind: (i%5===0)?'video':'image',
+    title: ['Callejón neon','Atardecer','Retrato creativo','Short creativo','Nocturna','Visual'][i%6],
+    views: (rand(900)+100)+'K',
+    likes: rand(900),
+    comments: rand(300)
+  }));
 
-/* Mix para infinite */
-let infinitePool = seedImgs.slice(36).concat(seedImgs.slice(0,20));
+  // split pools for sections
+  let trends = pool.slice(0,12);
+  let reco = pool.slice(12,24);
+  let recent = pool.slice(24,36);
+  let grid = pool.slice(36);
 
-/* ---------- Referencias DOM ---------- */
-const trendingInner = document.getElementById('trendingInner');
-const recoInner = document.getElementById('recoInner');
-const recentInner = document.getElementById('recentInner');
-const infiniteGrid = document.getElementById('infiniteGrid');
+  // dom refs
+  const trendRow1 = document.getElementById('trendRow1');
+  const trendRow2 = document.getElementById('trendRow2');
+  const recoRow1 = document.getElementById('recoRow1');
+  const recoRow2 = document.getElementById('recoRow2');
+  const recentRow1 = document.getElementById('recentRow1');
+  const recentRow2 = document.getElementById('recentRow2');
+  const gridFeed = document.getElementById('gridFeed');
 
-const drawer = document.getElementById('drawer');
-const backdrop = document.getElementById('drawerBackdrop');
-const menuBtn = document.getElementById('menuBtn');
-const drawerClose = document.getElementById('drawerClose');
+  const panel = document.getElementById('panel');
+  const overlay = document.getElementById('overlay');
+  const menuBtn = document.getElementById('menuBtn');
+  const closePanel = document.getElementById('closePanel');
+  const fab = document.getElementById('fab');
+  const radial = document.getElementById('radial');
 
-const viewer = document.getElementById('viewer');
-const viewerContent = document.getElementById('viewerContent');
-const viewerTitle = document.getElementById('viewerTitle');
-const viewerStats = document.getElementById('viewerStats');
-const closeViewerBtn = document.getElementById('closeViewer');
+  const viewer = document.getElementById('viewer');
+  const viewerInner = document.getElementById('viewerInner');
+  const playBtn = document.getElementById('playBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const closeViewerBtn = document.getElementById('closeViewer');
 
-const themeTopBtn = document.getElementById('themeTopBtn');
-const navThemeBtn = document.getElementById('navThemeBtn');
+  const themeBtn = document.getElementById('themeBtn');
 
-/* ---------- Funciones de render (dos filas por columna) ---------- */
-function createColStack(itemTop, itemBottom){
-  const col = document.createElement('div');
-  col.className = 'col-stack';
-
-  const top = createMiniCard(itemTop);
-  const bottom = createMiniCard(itemBottom);
-
-  col.appendChild(top);
-  col.appendChild(bottom);
-  return col;
-}
-function createMiniCard(item){
-  const el = document.createElement('div');
-  el.className = 'card-mini';
-  el.setAttribute('data-id', item.id);
-  el.setAttribute('role','button');
-  el.setAttribute('tabindex','0');
-
-  // inner image / poster
-  el.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    <div style="position:absolute;left:8px;top:8px" class="play-overlay">${item.type==='video' ? `<div class="play-btn" aria-hidden="true">▶</div>` : ''}</div>
-    <div class="meta">
-      <span style="opacity:0.95">${item.type==='video'?'Video':'Foto'}</span>
-      <span style="margin-left:8px">❤ ${item.likes}</span>
-      <span style="margin-left:6px">💬 ${item.comments}</span>
-      <span style="margin-left:6px">👁 ${item.views}</span>
-    </div>
-  `;
-  el.addEventListener('click', ()=> openViewer(item));
-  el.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openViewer(item); });
-  return el;
-}
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-/* Render columns by taking pairs vertically */
-function renderTwoRowSection(containerEl, items){
-  containerEl.innerHTML = '';
-  // ensure even number: pad if needed
-  if(items.length % 2 !== 0) items.push(items[0]);
-  for(let i=0;i<items.length;i+=2){
-    const top = items[i];
-    const bottom = items[i+1];
-    const col = createColStack(top, bottom);
-    containerEl.appendChild(col);
-  }
-  startLazyForContainer(containerEl);
-}
-
-/* ---------- Lazy load images for a container ---------- */
-let globalObserver = null;
-function startLazyForContainer(container){
-  const imgs = container.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!globalObserver) {
-      globalObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(en=>{
-          if(en.isIntersecting){
-            const img = en.target;
-            img.src = img.dataset.src;
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
+  /* ---------------- Lazy-loading (IntersectionObserver) ---------------- */
+  let imgObserver = null;
+  function lazyObserve(container=document.body){
+    const imgs = container.querySelectorAll('img[data-src]');
+    if('IntersectionObserver' in window){
+      if(!imgObserver){
+        imgObserver = new IntersectionObserver((entries, obs) => {
+          entries.forEach(e=>{
+            if(e.isIntersecting){
+              const img = e.target;
+              img.src = img.dataset.src;
+              img.onload = ()=> { img.parentElement.classList.remove('skel'); img.style.opacity=1; }
+              img.removeAttribute('data-src');
+              obs.unobserve(img);
+            }
+          });
+        }, {rootMargin:'300px', threshold:0.05});
+      }
+      imgs.forEach(i=> imgObserver.observe(i));
+    } else {
+      imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
     }
-    imgs.forEach(i=> globalObserver.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
-}
 
-/* ---------- Infinite grid render (vertical) ---------- */
-function appendToInfinite(n=6){
-  for(let i=0;i<n;i++){
-    const item = infinitePool[(Math.floor(Math.random()*infinitePool.length))];
-    const card = document.createElement('div');
-    card.className = 'infinite-card';
-    card.setAttribute('role','button');
-    card.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div style="padding:10px;display:flex;justify-content:space-between;align-items:center"><div><strong>${escapeHtml(item.title)}</strong><div class="muted" style="font-size:12px">${item.likes} likes • ${item.views}</div></div><div>${item.type==='video'?'<div class="play-btn" style="width:40px;height:40px;border-width:5px">▶</div>':''}</div></div>`;
-    card.addEventListener('click', ()=> openViewer(item));
-    infiniteGrid.appendChild(card);
+  /* ---------------- Crear tarjetas pequeñas (two-row) ---------------- */
+  function makeSmallCard(item){
+    const d = document.createElement('div');
+    d.className = 'card-small skel';
+    d.setAttribute('role','button');
+    d.innerHTML = `
+      <img data-src="${item.src}" alt="${escapeHtml(item.title)}" />
+      ${item.likes>200?'<div class="mini-badge">TOP</div>':''}
+      <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:end">
+        <div class="meta">
+          <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+          <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+        </div>
+        <div style="position:relative;z-index:8;margin-left:8px">
+          ${item.kind==='video'?'<div class="play-btn" aria-hidden="true">▶</div>':''}
+        </div>
+      </div>
+    `;
+    d.addEventListener('click', ()=> openViewerByItem(item));
+    d.addEventListener('keypress', (e)=>{ if(e.key==='Enter') openViewerByItem(item); });
+    return d;
   }
-  startLazyForContainer(infiniteGrid);
-}
 
-/* ---------- Viewer (pantalla completa con blur) ---------- */
-function openViewer(item){
-  viewerContent.innerHTML = '';
-  if(item.type === 'video'){
-    // demo: use poster image + play button; actual video backend needed for real playback
-    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.width='100%'; viewerContent.appendChild(img);
-  } else {
-    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; img.style.width='100%'; viewerContent.appendChild(img);
+  /* ---------------- Crear tarjeta de grid ---------------- */
+  function makeGridCard(item){
+    const a = document.createElement('article');
+    a.className = 'card skel';
+    a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+    a.addEventListener('click', ()=> openViewerByItem(item));
+    return a;
   }
-  viewerTitle.textContent = item.title;
-  viewerStats.textContent = `❤ ${item.likes} • 💬 ${item.comments} • 👁 ${item.views}`;
-  viewer.style.display = 'flex';
-  viewer.setAttribute('aria-hidden','false');
-}
-/* Close viewer */
-function closeViewer(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
 
-/* Close drawer */
-function openDrawer(){ backdrop.style.display='block'; drawer.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); drawer.setAttribute('aria-hidden','false'); }
-function closeDrawer(){ backdrop.style.display='none'; drawer.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); drawer.setAttribute('aria-hidden','true'); }
+  /* ---------------- Render secciones (2 filas cada una) ---------------- */
+  function renderTwoRows(container1, container2, items){
+    container1.innerHTML=''; container2.innerHTML='';
+    items.forEach((it, idx)=>{
+      const target = (idx % 2 === 0) ? container1 : container2;
+      target.appendChild(makeSmallCard(it));
+    });
+    // Ensure infinite horizontal by appending clones when near end
+    [container1, container2].forEach(row=>{
+      row.addEventListener('scroll', function onScroll(){
+        if(row.scrollLeft + row.clientWidth >= row.scrollWidth - 120){
+          for(let k=0;k<4;k++){
+            const more = pool[Math.floor(Math.random()*pool.length)];
+            row.appendChild(makeSmallCard(more));
+          }
+          lazyObserve(row);
+        }
+      });
+    });
+    lazyObserve();
+  }
 
-/* ---------- Theme toggle (top + bottom) ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-function applyTheme(t){
-  if(t === 'light'){ document.body.classList.add('light'); themeTopBtn.textContent='☀️'; navThemeBtn.textContent='☀️'; }
-  else { document.body.classList.remove('light'); themeTopBtn.textContent='🌗'; navThemeBtn.textContent='🌙'; }
-}
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-const themeTopBtn = document.getElementById('themeTopBtn');
-applyTheme(theme);
-themeTopBtn.addEventListener('click', ()=>{
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
+  /* ---------------- Render grid (vertical infinite) ---------------- */
+  function renderGridInitial(){
+    gridFeed.innerHTML='';
+    grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+    lazyObserve(gridFeed);
+  }
+
+  /* ---------------- Viewer (immersive) ---------------- */
+  let activeList = [];
+  let currentIndex = 0;
+  function openViewerByItem(item){
+    // build activeList from where item is found or fallback to pool
+    const lists = [trends, reco, recent, grid, pool];
+    activeList = [];
+    for(const L of lists){
+      const idx = L.findIndex(x=>x.id===item.id);
+      if(idx>=0){ activeList = L; currentIndex = idx; break; }
+    }
+    if(activeList.length===0){ activeList = [item]; currentIndex=0; }
+    showViewer();
+  }
+  function showViewer(){
+    const it = activeList[currentIndex];
+    viewerInner.innerHTML = '';
+    if(it.kind === 'video'){
+      // placeholder poster + play button; real player requires backend or video files
+      const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title;
+      poster.style.maxWidth='100%';
+      const overlayPlay = document.createElement('div'); overlayPlay.className='play-btn'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
+      overlayPlay.addEventListener('click', ()=> simulatePlay(it));
+      const wrap = document.createElement('div'); wrap.style.position='relative'; wrap.appendChild(poster); wrap.appendChild(overlayPlay);
+      viewerInner.appendChild(wrap);
+    } else {
+      const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
+    }
+    viewer.style.display='flex';
+    viewer.setAttribute('aria-hidden','false');
+  }
+  function closeViewer(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
+  function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
+  function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[Math.floor(Math.random()*pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+  function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
+
+  /* ---------------- Side panel open/close (click outside closes) ---------------- */
+  function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
+  function closePanelFunc(){ overlay.style.display='none'; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+  menuBtn.addEventListener('click', openPanel);
+  closePanel.addEventListener('click', closePanelFunc);
+  overlay.addEventListener('click', closePanelFunc);
+
+  /* ---------------- FAB radial ---------------- */
+  fab.addEventListener('click', ()=> radial.classList.toggle('show'));
+  document.getElementById('optUpload').addEventListener('click', ()=> alert('Subir demo (requiere backend)'));
+  document.getElementById('optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
+  document.getElementById('optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
+
+  /* ---------------- Theme (auto + toggle) ---------------- */
+  const THEME_KEY='sinfiltro.theme.v4';
+  let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
+  function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
   applyTheme(theme);
-});
-navThemeBtn.addEventListener('click', ()=>{
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-});
+  themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* ---------- Event listeners: drawer open/close, backdrop click, viewer close ---------- */
-menuBtn.addEventListener('click', openDrawer);
-drawerClose.addEventListener('click', closeDrawer);
-backdrop.addEventListener('click', closeDrawer);
+  /* ---------------- Navigation bottom (demo actions) ---------------- */
+  document.querySelectorAll('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); n.classList.add('active');
+    const t = n.dataset.tab;
+    if(t==='home') window.scrollTo({top:0,behavior:'smooth'});
+    if(t==='search') alert('Buscar (demo)');
+    if(t==='recent') { document.getElementById('sec-recent').scrollIntoView({behavior:'smooth'}); }
+    if(t==='me') alert('Tus videos (demo)');
+  }));
 
-// Close drawer with Escape
-document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ closeDrawer(); closeViewer(); } });
-
-// Viewer close: button and outside click
-closeViewerBtn.addEventListener('click', closeViewer);
-viewer.addEventListener('click', (ev)=>{ if(ev.target === viewer) closeViewer(); });
-
-/* ---------- Navigation (bottom) ---------- */
-document.getElementById('navHome').addEventListener('click', ()=> { document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); document.getElementById('navHome').classList.add('active'); document.getElementById('scrollArea').scrollTop = 0; });
-document.getElementById('navSearch').addEventListener('click', ()=> alert('Buscar (demo)'));
-document.getElementById('navUpload').addEventListener('click', ()=> alert('Subir (demo)'));
-document.getElementById('navRecent').addEventListener('click', ()=> { alert('Antes visto (demo)'); });
-
-/* ---------- Render inicial ---------- */
-renderTwoRowSection(trendingInner, trending);
-renderTwoRowSection(recoInner, recommended);
-renderTwoRowSection(recentInner, recent);
-appendToInfinite(8);
-
-/* ---------- Make each horizontal scroller infinite by duplicating content (smooth loop illusion) ---------- */
-function makeInfiniteScroller(container){
-  // duplicate children once to create loop illusion
-  const children = Array.from(container.children);
-  children.forEach(c => container.appendChild(c.cloneNode(true)));
-  // Observe when near end -> append more clones for continuous feel
-  container.addEventListener('scroll', ()=>{
-    if(container.scrollLeft + container.clientWidth >= container.scrollWidth - 400){
-      // append clones of original set
-      children.forEach(c => container.appendChild(c.cloneNode(true)));
-      startLazyForContainer(container);
+  /* ---------------- Infinite vertical load for grid when scrolling down ---------------- */
+  let vLoading = false;
+  document.getElementById('scrollArea').addEventListener('scroll', ()=>{
+    const s = document.getElementById('scrollArea');
+    const feedSection = document.getElementById('infinite-feed');
+    const rect = feedSection.getBoundingClientRect();
+    if(rect.top - window.innerHeight < 120 && !vLoading){
+      vLoading = true;
+      setTimeout(()=> {
+        for(let i=0;i<6;i++){
+          const more = pool[Math.floor(Math.random()*pool.length)];
+          gridFeed.appendChild(makeGridCard(more));
+        }
+        lazyObserve(gridFeed);
+        vLoading = false;
+      }, 700);
     }
   });
-}
-makeInfiniteScroller(trendingInner);
-makeInfiniteScroller(recoInner);
-makeInfiniteScroller(recentInner);
 
-/* ---------- Infinite vertical load for grid when scrolling down ---------- */
-const scrollArea = document.getElementById('scrollArea');
-let loadingMore = false;
-scrollArea.addEventListener('scroll', ()=>{
-  const s = scrollArea;
-  if(s.scrollTop + s.clientHeight > s.scrollHeight - 800 && !loadingMore){
-    loadingMore = true;
-    setTimeout(()=>{
-      appendToInfinite(6);
-      loadingMore = false;
-    }, 700);
+  /* ---------------- Initial render & helpers ---------------- */
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  function renderAll(){
+    renderTwoRows(trendRow1, trendRow2, trends);
+    renderTwoRows(recoRow1, recoRow2, reco);
+    renderTwoRows(recentRow1, recentRow2, recent);
+    renderGridInitial();
+    // ensure horizontal rows have initial items if empty
+    document.querySelectorAll('.h-row').forEach(r=>{
+      if(r.children.length < 6){
+        for(let i=0;i<8;i++){ r.appendChild(makeSmallCard(pool[Math.floor(Math.random()*pool.length)])); }
+      }
+    });
+    lazyObserve();
   }
-});
 
-/* ---------- Start lazy for pre-existing containers ---------- */
-startLazyForContainer(document.body);
+  document.addEventListener('DOMContentLoaded', ()=> renderAll());
 
-/* Accessibility: close viewer on ESC */
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ closeViewer(); } });
+  /* viewer controls */
+  closeViewerBtn.addEventListener('click', closeViewer);
+  prevBtn.addEventListener('click', prevItem);
+  nextBtn.addEventListener('click', nextItem);
+  playBtn.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
 
-/* Utility: ensure clicks outside drawer content close it (already handled via backdrop), also support swipe on small screens could be added later */
+  /* accessibility: ESC closes viewer/panel */
+  document.addEventListener('keydown', (e)=> { if(e.key==='Escape'){ closeViewer(); closePanelFunc(); } });
+
+  /* micro interactions demo: like pop */
+  document.addEventListener('click', (ev)=>{
+    const t = ev.target;
+    if(t.classList.contains('mini-like')){ t.classList.add('boom'); setTimeout(()=> t.classList.remove('boom'), 350); }
+  });
+
+  /* small helper: periodically simulate metrics (demo monetization) */
+  setInterval(()=> {
+    // demo: not persistent monetization; placeholder
+  }, 4000);
+
+  /* end */
   </script>
 </body>
 </html>
+```0
+
