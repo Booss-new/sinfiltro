@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil, Final)</title>
+<title>SinFiltro — Premium (Móvil, Final - Funcional)</title>
 <meta name="description" content="SinFiltro — feed visual premium. Demo móvil optimizado: doble fila por sección, scroll infinito, PWA-ready y alto rendimiento.">
 <meta name="theme-color" content="#071226">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
   --text:#eaf7ff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased}
+html,body{height:100%;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;-webkit-font-feature-settings: "liga" 1;}
 body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
 /* ===================== LAYOUT ===================== */
@@ -211,16 +211,20 @@ body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;backgrou
 
 <script>
 /* =========================
-   SinFiltro - Versión Final Integrada
+   SinFiltro - Versión Final Funcional
    Mobile-first, doble fila por sección + scrolls infinitos,
    optimizaciones: lazy, requestIdleCallback, debounce, prefetch,
-   mini-player placeholder, PWA via Blob.
+   likes/comments stored locally, simple video playback simulation.
    ========================= */
 
-/* ---------- Helpers & Feature Detect ---------- */
+/* ---------- Helpers ---------- */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
+function debounce(fn, wait=120){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
+function throttle(fn, wait=200){ let last=0; return (...a)=>{ const now=Date.now(); if(now-last>wait){ last=now; fn(...a); last=now; } }; }
+
+/* ---------- Feature detect: webp ---------- */
 const supportsWebP = (() => {
   try {
     const c = document.createElement('canvas');
@@ -228,26 +232,31 @@ const supportsWebP = (() => {
   } catch(e){ return false; }
 })();
 
-/* ---------- Smart image generator (low -> high) ---------- */
-function mkImg(seed, size='640x420', quality='high'){
-  // uses picsum with seed; quality param affects later replacement in observer
-  const [w,h] = size.split('x');
-  if(supportsWebP) return `https://picsum.photos/seed/${seed}/${w}/${h}.webp`;
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+/* ---------- Image helpers (low -> high progressive) ---------- */
+function mkImg(seed, w=640, h=420){
+  const format = supportsWebP ? 'webp' : 'jpg';
+  return `https://picsum.photos/seed/${seed}/${w}/${h}.${format}`;
 }
+function mkLow(seed, w=320, h=200){ return mkImg(seed, w, h); }
 
-/* ---------- Demo pool (mixed) ---------- */
-let pool = Array.from({length:300}).map((_,i)=>({
-  id:`p${i}`, srcLow: mkImg(i,'320x200'), src: mkImg(i,'640x420'),
-  kind: (i%6===0)?'video':'image',
+/* ---------- Storage keys for likes/comments/stats ---------- */
+const LK_FEED = 'sinfiltro.feed.v1';
+const LK_LIKES = 'sinfiltro.likes.v1';
+const LK_COMMS = 'sinfiltro.comms.v1';
+
+/* ---------- Demo pool (mixed images + some videos) ---------- */
+let pool = Array.from({length:320}).map((_,i)=>({
+  id:`p${i}`, srcLow: mkLow(i), src: mkImg(i),
+  kind: (i%7===0)?'video':'image',
   title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: Math.floor(Math.random()*5000)+20, comments: Math.floor(Math.random()*1000), views: (Math.floor(Math.random()*900)+100)+'K'
+  likes: Math.floor(Math.random()*4200)+20,
+  comments: Math.floor(Math.random()*900),
+  views: (Math.floor(Math.random()*900)+100)+'K'
 }));
 
-// slices for sections (non-destructive)
 let trends = pool.slice(0,20), reco = pool.slice(20,40), recent = pool.slice(40,60), grid = pool.slice(60,100);
 
-/* ---------- DOM Refs ---------- */
+/* ---------- DOM refs ---------- */
 const refs = {
   trendRow1: $('#trendRow1'), trendRow2: $('#trendRow2'),
   recoRow1: $('#recoRow1'), recoRow2: $('#recoRow2'),
@@ -260,17 +269,17 @@ const refs = {
   themeBtn: $('#themeBtn'), bgLayer: $('#bgLayer'), scrollArea: $('#scrollArea')
 };
 
-/* ---------- Performance utilities ---------- */
-function debounce(fn, wait=120){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; }
-function throttle(fn, wait=200){ let last=0; return (...a)=>{ const now=Date.now(); if(now-last>wait){ last=now; fn(...a); } }; }
+/* ---------- Local like/comment storage ---------- */
+let likes = JSON.parse(localStorage.getItem(LK_LIKES) || '{}');
+let comms = JSON.parse(localStorage.getItem(LK_COMMS) || '{}');
 
-/* ---------- Parallax (light) ---------- */
+/* ---------- Parallax ---------- */
 refs.scrollArea.addEventListener('scroll', throttle(()=> {
   const t = Math.min(40, refs.scrollArea.scrollTop/30);
   refs.bgLayer.style.transform = `translateY(${t}px)`;
 }, 33), {passive:true});
 
-/* ---------- Lazy loading (progressive): load low-res first, upgrade on intersect ---------- */
+/* ---------- Lazy loading (progressive) ---------- */
 let imgObserver = null;
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
@@ -280,11 +289,9 @@ function lazyObserve(root=document){
         entries.forEach(e=>{
           if(e.isIntersecting){
             const img = e.target;
-            // set low-res first if provided, else set full
             const low = img.dataset.low;
             const high = img.dataset.src;
             if(low && !img.src) img.src = low;
-            // then upgrade to high-res
             const upgrade = new Image();
             upgrade.src = high;
             upgrade.decoding = 'async';
@@ -300,25 +307,30 @@ function lazyObserve(root=document){
   }
 }
 
-/* ---------- Card creators ---------- */
+/* ---------- Card creators (small & grid) ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
+  const liked = likes[item.id] || false;
   d.innerHTML = `
     <img data-low="${item.srcLow}" data-src="${item.src}" alt="${escapeHtml(item.title)}" width="320" height="210" loading="lazy">
     ${item.likes>1500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
         <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+        <div class="mini-stats"><span class="stat-like">❤ ${item.likes + (liked?1:0)}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
       <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
+  // interactions
   d.addEventListener('click', ()=> openViewerByItem(item));
+  // long-press like (touch) or double-click to like
+  d.addEventListener('dblclick', ()=> toggleLike(item.id, d));
+  d.addEventListener('contextmenu', e=>{ e.preventDefault(); toggleLike(item.id, d); });
   d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
   return d;
 }
@@ -326,9 +338,27 @@ function makeSmallCard(item){
 function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
-  a.innerHTML = `<img data-low="${item.srcLow}" data-src="${item.src}" alt="${escapeHtml(item.title)}" width="640" height="420" loading="lazy"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  const liked = likes[item.id] || false;
+  a.innerHTML = `<img data-low="${item.srcLow}" data-src="${item.src}" alt="${escapeHtml(item.title)}" width="640" height="420" loading="lazy"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div class="meta-right">❤ <span class="g-like">${item.likes + (liked?1:0)}</span> • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
+  a.addEventListener('dblclick', ()=> toggleLike(item.id, a));
   return a;
+}
+
+/* ---------- Like toggle (updates UI & localStorage) ---------- */
+function toggleLike(id, element){
+  likes[id] = !likes[id];
+  localStorage.setItem(LK_LIKES, JSON.stringify(likes));
+  // visual update: find stat-like or g-like within element
+  const stat = element.querySelector('.stat-like');
+  const gstat = element.querySelector('.g-like');
+  // find base data
+  const base = pool.find(p=>p.id===id) || {};
+  const newVal = (base.likes || 0) + (likes[id]?1:0);
+  if(stat) stat.textContent = `❤ ${newVal}`;
+  if(gstat) gstat.textContent = `${newVal}`;
+  // simple pulse
+  element.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:250});
 }
 
 /* ---------- Render two rows with infinite horizontal append ---------- */
@@ -340,16 +370,15 @@ function renderTwoRows(row1,row2,items){
   });
   // ensure smooth amount
   [row1,row2].forEach(r=>{
-    if(r.children.length < 6){
-      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    if(r.children.length < 8){
+      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
     }
-    // Event: append when near right end
+    // append when near right end
     r.addEventListener('scroll', debounce(()=>{
       if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
         for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
         lazyObserve(r);
-        // prefetch next images when idle
-        if('requestIdleCallback' in window) requestIdleCallback(()=> prefetchImages(4), {timeout:1000});
+        if('requestIdleCallback' in window) requestIdleCallback(()=> prefetchImages(4), {timeout:1200});
       }
     }, 150), {passive:true});
   });
@@ -374,7 +403,6 @@ refs.scrollArea.addEventListener('scroll', throttle(()=>{
     setTimeout(()=> {
       for(let i=0;i<6;i++) refs.gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
       lazyObserve(refs.gridFeed); loadingGrid = false;
-      // prefetch images ahead of time
       if('requestIdleCallback' in window) requestIdleCallback(()=> prefetchImages(6), {timeout:1200});
     }, 600);
   }
@@ -393,25 +421,26 @@ function showViewer(){
   const it = activeList[currentIndex];
   refs.viewerInner.innerHTML = '';
   if(it.kind === 'video'){
-    const wrap = document.createElement('div'); wrap.style.position='relative';
-    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
-    const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
-    overlayPlay.addEventListener('click', ()=> simulatePlay(it));
-    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
-    refs.viewerInner.appendChild(wrap);
+    // create actual video element for demo (auto play muted)
+    const video = document.createElement('video');
+    video.src = 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4'; // small demo file
+    video.controls = true; video.autoplay = true; video.muted = true; video.playsInline = true;
+    refs.viewerInner.appendChild(video);
+    // update play icon to pause/play toggling
+    refs.vvPlay.textContent = '⏸';
+    refs.vvPlay.onclick = ()=> { if(video.paused) { video.play(); refs.vvPlay.textContent='⏸'; } else { video.pause(); refs.vvPlay.textContent='▶'; } };
   } else {
     const img = document.createElement('img'); img.src = it.src; img.alt = it.title; refs.viewerInner.appendChild(img);
+    refs.vvPlay.textContent = '▶';
+    refs.vvPlay.onclick = ()=> alert('Este es un elemento imagen (no reproducible).');
   }
   refs.viewer.style.display = 'flex'; refs.viewer.setAttribute('aria-hidden','false');
 }
-function closeViewerFunc(){ refs.viewer.style.display = 'none'; refs.viewer.setAttribute('aria-hidden','true'); }
+function closeViewerFunc(){ refs.viewer.style.display = 'none'; refs.viewer.setAttribute('aria-hidden','true'); refs.vvPlay.onclick = null; }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
-function simulatePlay(it){ // demo placeholder: open video new window or alert
-  alert('Reproduciendo demo (simulado): '+it.title);
-}
 
-/* ---------- Panel open/close (touch outside to close) ---------- */
+/* ---------- Panel open/close ---------- */
 function openPanel(){ refs.overlay.style.display='block'; refs.panel.classList.add('open'); refs.panel.setAttribute('aria-hidden','false'); }
 function closePanel(){ refs.overlay.style.display='none'; refs.panel.classList.remove('open'); refs.panel.setAttribute('aria-hidden','true'); }
 refs.menuBtn.addEventListener('click', openPanel);
@@ -431,7 +460,7 @@ function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); r
 applyTheme(theme);
 refs.themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* ---------- Bottom nav behaviour ---------- */
+/* ---------- Bottom nav ---------- */
 $$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
   $$('.nav-item').forEach(x=>x.classList.remove('active')); n.classList.add('active');
   const t = n.dataset.tab;
@@ -441,7 +470,7 @@ $$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
   if(t==='me') alert('Tus videos demo');
 }));
 
-/* ---------- Prefetch helper (load image objects into browser cache) ---------- */
+/* ---------- Prefetch helper ---------- */
 function prefetchImages(count=4){
   for(let i=0;i<count;i++){
     const item = pool[rand(pool.length)];
@@ -450,20 +479,18 @@ function prefetchImages(count=4){
   }
 }
 
-/* ---------- Performance: initial render using idle callback ---------- */
+/* ---------- Initial render (idle-friendly) ---------- */
 function renderAll(){
   renderTwoRows(refs.trendRow1, refs.trendRow2, trends);
   renderTwoRows(refs.recoRow1, refs.recoRow2, reco);
   renderTwoRows(refs.recentRow1, refs.recentRow2, recent);
   renderGridInitial();
-  // seed rows with extra for smooth experience
   $$('.h-row').forEach(r=> {
     if(r.children.length < 8){
       for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
     }
   });
   lazyObserve();
-  // prefetch some images when idle
   if('requestIdleCallback' in window) requestIdleCallback(()=> prefetchImages(12), {timeout:2000});
   else setTimeout(()=> prefetchImages(6), 2000);
 }
@@ -474,19 +501,12 @@ else setTimeout(renderAll, 300);
 refs.closeViewer.addEventListener('click', closeViewerFunc);
 refs.prevBtn.addEventListener('click', prevItem);
 refs.nextBtn.addEventListener('click', nextItem);
-refs.vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
 
 /* ---------- Accessibility & gestures ---------- */
 document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); } });
 refs.viewer.addEventListener('click', e=> { if(e.target === refs.viewer) closeViewerFunc(); });
 
-/* ---------- Tiny microinteraction: like demo (hook placeholder) ---------- */
-document.addEventListener('click', e=> {
-  const t = e.target;
-  if(t.classList && t.classList.contains('mini-like')){ t.classList.add('boom'); setTimeout(()=> t.classList.remove('boom'),350); }
-});
-
-/* ---------- PWA: manifest + service worker via Blob (single-file) ---------- */
+/* ---------- PWA: manifest + service worker in single file ---------- */
 (function registerPWA(){
   try{
     const manifest = {
@@ -546,7 +566,6 @@ document.addEventListener('click', e=> {
   }
 })();
 
-/* End of script */
 </script>
 </body>
 </html>
