@@ -1,391 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SinFiltro — Versión Móvil Elegante</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg-1:#030319;
-    --bg-2:#06132a;
-    --accent-1:#00d8ff;
-    --accent-2:#6ec1ff;
-    --accent-3:#9b6eff;
-    --muted:#9fb0bf;
-    --card:#071226;
-    --glass: rgba(255,255,255,0.03);
-    --radius:14px;
-    --shadow-lg: 0 20px 50px rgba(2,10,20,0.7);
-    --trans: 260ms cubic-bezier(.2,.9,.2,1);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SinFiltro</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #000;
+      color: #00ffff;
+      overflow-x: hidden;
+    }
 
-  html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
-    radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.04), transparent 8%),
-    radial-gradient(500px 300px at 90% 80%, rgba(155,110,255,0.03), transparent 8%),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2) 70%);color:#eaf7ff;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow:hidden}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 15px 20px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+      border-bottom: 1px solid #00ffff;
+    }
 
-  /* Page wrapper that scrolls */
-  .page {height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .scroll {overflow-y:auto;padding-bottom:120px; -webkit-overflow-scrolling:touch;}
+    header h1 {
+      font-size: 1.5em;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #00ffff;
+    }
 
-  /* Top header */
-  header{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .left, .center, .right{display:flex;align-items:center}
-  .btn-icon{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);box-shadow:0 6px 20px rgba(0,0,0,0.5);cursor:pointer}
-  .brand{flex-direction:column;align-items:center;gap:2px;text-align:center}
-  .brand .title{color:var(--accent-1);font-weight:700;font-size:16px;letter-spacing:0.6px}
-  .brand .subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+    nav a {
+      margin-left: 15px;
+      color: #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
 
-  /* Animated subtle background shapes */
-  .bg-blob{position:fixed;left:-10%;top:-20%;width:700px;height:700px;border-radius:50%;filter:blur(90px);opacity:0.12;z-index:0;background:radial-gradient(circle at 30% 30%, var(--accent-1), transparent 20%)}
-  .bg-blob.b2{left:auto;right:-12%;top:40%;background:radial-gradient(circle at 70% 70%, var(--accent-3), transparent 18%);opacity:0.09}
+    nav a:hover {
+      color: white;
+    }
 
-  /* Hero */
-  .hero{margin:12px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);box-shadow:var(--shadow-lg);backdrop-filter: blur(6px)}
-  .hero h1{font-size:18px;color:var(--accent-1);margin:0}
-  .hero p{margin-top:6px;color:var(--muted);font-size:13px}
+    .content {
+      margin-top: 90px;
+      padding: 20px;
+    }
 
-  /* Sections */
-  .section{margin-top:18px;padding:0 12px}
-  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .section-title{display:flex;align-items:center;gap:8px;color:var(--accent-2);font-weight:600}
-  .see-all{color:var(--muted);font-size:13px;cursor:pointer}
+    .section-title {
+      font-size: 1.3em;
+      margin: 15px 0;
+      color: #00ffff;
+      border-left: 3px solid #00ffff;
+      padding-left: 10px;
+    }
 
-  /* Horizontal scroller row */
-  .row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;padding-top:6px}
-  .row::-webkit-scrollbar{display:none}
-  .card{flex:0 0 140px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.6);transition:transform var(--trans)}
-  .card:hover{transform:translateY(-6px)}
-  .thumb{width:140px;height:100px;object-fit:cover;display:block}
-  .card .meta{padding:8px;color:#def7ff;font-size:13px;font-weight:600;line-height:1.1}
-  .card .submeta{padding:0 8px 10px 8px;color:var(--muted);font-size:12px}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
 
-  /* Feed grid (two columns) */
-  .feed{padding:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px rgba(0,0,0,0.6);transition:transform var(--trans)}
-  .feed-item:hover{transform:translateY(-6px)}
-  .feed-item img{width:100%;height:140px;object-fit:cover;display:block}
-  .feed-body{padding:10px}
-  .feed-title{font-weight:700;color:#eaffff;font-size:13px}
-  .feed-meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted);font-size:12px}
+    .card {
+      background: #111;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px #00ffff33;
+      transition: transform 0.3s ease;
+    }
 
-  /* Floating central action (Play / Upload) */
-  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;z-index:80}
-  .fab{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));color:#002;padding:0;margin:0;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:28px;cursor:pointer;transition:transform var(--trans)}
-  .fab:active{transform:translateY(2px) scale(.98)}
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00ffff88;
+    }
 
-  /* Bottom nav */
-  .bottom{position:fixed;left:8px;right:8px;bottom:8px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:70}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-  .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
+    .card img {
+      width: 100%;
+      display: block;
+    }
 
-  /* Viewer modal */
-  .viewer{position:fixed;left:0;right:0;top:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,0.95),rgba(0,0,0,0.95));display:flex;align-items:center;justify-content:center;z-index:120;padding:20px;gap:12px;flex-direction:column;display:none}
-  .viewer.show{display:flex}
-  .viewer .content{width:100%;max-width:900px;border-radius:12px;overflow:hidden;background:#000}
-  .viewer img, .viewer video{width:100%;height:auto;display:block}
-
-  /* Comments drawer */
-  .drawer{position:fixed;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none;flex-direction:column}
-  .drawer.show{display:flex}
-  .drawer .handle{width:48px;height:6px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
-  .comments{overflow:auto;margin-top:8px;flex:1;padding-right:6px}
-  .comment{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
-  .comment strong{display:block;color:#e7fbff}
-
-  /* Modal upload */
-  .upload-modal{position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:110;display:none}
-  .upload-modal.show{display:block}
-
-  /* small screens adjustments */
-  @media (max-width:420px){
-    .card{flex:0 0 120px}
-    .thumb{width:120px;height:88px}
-    .feed-item img{height:110px}
-    header{padding:10px}
-    .fab{width:62px;height:62px}
-  }
-</style>
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #000;
+      border-top: 1px solid #00ffff;
+      color: #00ffff;
+    }
+  </style>
 </head>
 <body>
-<div class="bg-blob" aria-hidden="true"></div>
-<div class="bg-blob b2" aria-hidden="true"></div>
-
-<div class="page">
   <header>
-    <div class="left">
-      <div class="btn-icon" id="menuBtn" aria-label="Menú">☰</div>
-    </div>
-
-    <div class="center brand" aria-hidden="false">
-      <div class="title">SinFiltro</div>
-      <div class="subtitle">Tu espacio sin límites</div>
-    </div>
-
-    <div class="right">
-      <div class="btn-icon" id="searchBtn" aria-label="Buscar">🔎</div>
-    </div>
+    <h1>SinFiltro</h1>
+    <nav>
+      <a href="#">Inicio</a>
+      <a href="#">Tendencias</a>
+      <a href="#">Subir</a>
+      <a href="#">Perfil</a>
+    </nav>
   </header>
 
-  <div class="scroll" id="scrollArea" tabindex="0">
-    <main>
-      <section class="hero" role="region" aria-label="Presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-      </section>
+  <div class="content">
+    <div class="section-title">Videos en Tendencia</div>
+    <div class="grid">
+      <div class="card"><img src="https://picsum.photos/200/300?random=1" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=2" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=3" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=4" alt=""></div>
+    </div>
 
-      <section class="section" aria-labelledby="h-trending">
-        <div class="section-header">
-          <div class="section-title">🔥 En Tendencia</div>
-          <div class="see-all" id="seeTrending">Ver todo</div>
-        </div>
-        <div class="row" id="trendingRow" aria-live="polite"></div>
-      </section>
-
-      <section class="section" aria-labelledby="h-recent">
-        <div class="section-header">
-          <div class="section-title">⏮️ Vistos recientemente</div>
-          <div class="see-all" id="seeRecent">Ver todo</div>
-        </div>
-        <div class="row" id="recentRow"></div>
-      </section>
-
-      <section class="section" aria-labelledby="h-reco">
-        <div class="section-header">
-          <div class="section-title">🎯 Recomendados</div>
-          <div class="see-all" id="seeReco">Ver todo</div>
-        </div>
-        <div class="feed" id="feedGrid"></div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Floating action button -->
-  <div class="fab-wrap" aria-hidden="false">
-    <button class="fab" id="fabBtn" aria-label="Crear / Subir">＋</button>
-  </div>
-
-  <!-- Upload modal -->
-  <div class="upload-modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <strong>Subir contenido (demo)</strong>
-    <div style="color:var(--muted);font-size:13px;margin-top:6px">Selecciona imagen o video. Se guarda localmente en este navegador.</div>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-      <input type="file" id="fileInput" accept="image/*,video/*">
-      <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#002;font-weight:700">Subir</button>
+    <div class="section-title">Imágenes Recientes</div>
+    <div class="grid">
+      <div class="card"><img src="https://picsum.photos/200/300?random=5" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=6" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=7" alt=""></div>
+      <div class="card"><img src="https://picsum.photos/200/300?random=8" alt=""></div>
     </div>
   </div>
 
-  <!-- Viewer modal -->
-  <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
-    <div class="content" id="viewerContent"></div>
-    <div style="display:flex;gap:8px">
-      <button id="openCommentsBtn" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">💬 Comentarios</button>
-      <button id="closeViewer" style="background:none;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--muted)">Cerrar</button>
-    </div>
-  </div>
-
-  <!-- Comments drawer -->
-  <div class="drawer" id="drawer" aria-hidden="true">
-    <div class="handle" aria-hidden="true"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong id="drawerTitle">Comentarios</strong>
-      <button id="closeDrawer" style="background:none;border:none;color:var(--muted)">Cerrar</button>
-    </div>
-    <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#eaf7ff" />
-      <button id="postComment" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#002;font-weight:700">Enviar</button>
-    </div>
-  </div>
-
-  <!-- Bottom nav -->
-  <nav class="bottom" role="navigation" aria-label="Navegación principal">
-    <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-    <div class="nav-item" data-tab="explore" id="navExplore">🔎<div style="font-size:11px">Explorar</div></div>
-    <div style="width:68px"></div><!-- space for FAB -->
-    <div class="nav-item" data-tab="likes" id="navLikes">❤<div style="font-size:11px">Favoritos</div></div>
-    <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
-  </nav>
-</div>
-
-<script>
-/* ---------------------
-   Datos demo y storage
-   --------------------- */
-const STORAGE_KEY = 'sinfiltro.feed.v2';
-const COMMENTS_KEY = 'sinfiltro.comments.v2';
-const LIKES_KEY = 'sinfiltro.likes.v2';
-
-const demoFeed = [
-  {id: 'a1', type:'image', src:'https://picsum.photos/640/420?random=21', title:'Paisaje urbano con neón', meta:'12K • 2 días', likes:124},
-  {id: 'a2', type:'image', src:'https://picsum.photos/640/420?random=22', title:'Retrato nocturno', meta:'8.2K • 1 día', likes:98},
-  {id: 'a3', type:'image', src:'https://picsum.photos/640/420?random=23', title:'Callejón iluminado', meta:'6.4K • 5 días', likes:45},
-  {id: 'a4', type:'image', src:'https://picsum.photos/640/420?random=24', title:'Mini documental', meta:'210K • 1 semana', likes:340},
-  {id: 'a5', type:'image', src:'https://picsum.photos/640/420?random=25', title:'Short creativo', meta:'3.4K • 2 semanas', likes:72},
-  {id: 'a6', type:'image', src:'https://picsum.photos/640/420?random=26', title:'Ciudad y luces', meta:'18K • 4 días', likes:180}
-];
-
-function loadFeed(){ try{const r=localStorage.getItem(STORAGE_KEY); return r?JSON.parse(r):demoFeed.slice()}catch(e){return demoFeed.slice()} }
-function saveFeed(f){ localStorage.setItem(STORAGE_KEY, JSON.stringify(f)) }
-function loadComments(){ try{const r=localStorage.getItem(COMMENTS_KEY); return r?JSON.parse(r):{} }catch(e){return{}} }
-function saveComments(c){ localStorage.setItem(COMMENTS_KEY, JSON.stringify(c)) }
-function loadLikes(){ try{const r=localStorage.getItem(LIKES_KEY); return r?JSON.parse(r):{} }catch(e){return{}} }
-function saveLikes(l){ localStorage.setItem(LIKES_KEY, JSON.stringify(l)) }
-
-let feed = loadFeed();
-let comments = loadComments();
-let likes = loadLikes();
-
-/* ---------------------
-   DOM references
-   --------------------- */
-const trendingRow = document.getElementById('trendingRow');
-const recentRow = document.getElementById('recentRow');
-const feedGrid = document.getElementById('feedGrid');
-const viewer = document.getElementById('viewer');
-const viewerContent = document.getElementById('viewerContent');
-const drawer = document.getElementById('drawer');
-const commentsList = document.getElementById('commentsList');
-const drawerTitle = document.getElementById('drawerTitle');
-const uploadModal = document.getElementById('uploadModal');
-const fileInput = document.getElementById('fileInput');
-
-/* ---------------------
-   Render functions
-   --------------------- */
-function createCard(item){
-  const el = document.createElement('div');
-  el.className = 'card';
-  el.innerHTML = `<img class="thumb" src="${item.src}" alt="${escape(item.title)}"><div class="meta">${escape(item.title)}</div><div class="submeta">${escape(item.meta)}</div>`;
-  el.addEventListener('click', ()=> openViewer(item.id));
-  return el;
-}
-
-function renderRows(){
-  trendingRow.innerHTML = '';
-  recentRow.innerHTML = '';
-  // trending: sort by likes desc
-  const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,6);
-  trend.forEach(it=> trendingRow.appendChild(createCard(it)));
-  // recent: last items (reverse)
-  const recent = [...feed].slice().reverse().slice(0,6);
-  recent.forEach(it=> recentRow.appendChild(createCard(it)));
-}
-
-function createFeedItem(item){
-  const el = document.createElement('article');
-  el.className = 'feed-item';
-  el.innerHTML = `<img src="${item.src}" alt="${escape(item.title)}"><div class="feed-body"><div class="feed-title">${escape(item.title)}</div><div class="feed-meta"><div>${escape(item.meta)}</div><div style="display:flex;gap:8px;align-items:center"><button class="like-btn" data-id="${item.id}">❤ <span class="count">${item.likes||0}</span></button><button class="comment-btn" data-id="${item.id}">💬 <span class="count">${(comments[item.id]||[]).length}</span></button><button class="share-btn" data-id="${item.id}">🔗</button></div></div></div>`;
-  // events
-  el.querySelector('.like-btn').addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(item.id); });
-  el.querySelector('.comment-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openComments(item.id, item.title); });
-  el.querySelector('.share-btn').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
-  el.addEventListener('click', ()=> openViewer(item.id));
-  return el;
-}
-
-function renderFeed(){
-  feedGrid.innerHTML = '';
-  feed.forEach(i=> feedGrid.appendChild(createFeedItem(i)));
-}
-
-/* ---------------------
-   Viewer & Comments
-   --------------------- */
-let currentOpen = null;
-function openViewer(id){
-  const item = feed.find(f=>f.id===id); if(!item) return;
-  currentOpen = id;
-  viewerContent.innerHTML = '';
-  if(item.type==='video'){
-    const v = document.createElement('video'); v.src = item.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh';
-    viewerContent.appendChild(v);
-  } else {
-    const img = document.createElement('img'); img.src=item.src; img.alt=item.title;
-    viewerContent.appendChild(img);
-  }
-  viewer.classList.add('show');
-}
-document.getElementById('closeViewer').addEventListener('click', ()=> viewer.classList.remove('show'));
-document.getElementById('openCommentsBtn').addEventListener('click', ()=> { viewer.classList.remove('show'); openComments(currentOpen, feed.find(f=>f.id===currentOpen).title); });
-
-function openComments(id, title){
-  currentOpen = id;
-  drawerTitle.textContent = `Comentarios — ${title}`;
-  commentsList.innerHTML = '';
-  const arr = comments[id] || [];
-  arr.forEach(c=>{
-    const d = document.createElement('div'); d.className='comment';
-    d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escape(c.text)}</div>`;
-    commentsList.appendChild(d);
-  });
-  drawer.classList.add('show');
-}
-document.getElementById('closeDrawer').addEventListener('click', ()=> drawer.classList.remove('show'));
-
-document.getElementById('postComment').addEventListener('click', ()=>{
-  const txt = document.getElementById('commentInput').value.trim();
-  if(!txt || !currentOpen) return;
-  comments[currentOpen] = comments[currentOpen] || [];
-  comments[currentOpen].push({text:txt,ts:Date.now()});
-  saveComments(comments);
-  document.getElementById('commentInput').value='';
-  openComments(currentOpen, feed.find(f=>f.id===currentOpen).title);
-  renderFeed();
-});
-
-/* ---------------------
-   Like, Share
-   --------------------- */
-function toggleLike(id){
-  likes = loadLikes();
-  const liked = !!likes[id];
-  if(liked) delete likes[id];
-  else likes[id]=true;
-  saveLikes(likes);
-  // update count in feed
-  const idx = feed.findIndex(f=>f.id===id); if(idx>=0){
-    feed[idx].likes = feed[idx].likes || 0;
-    feed[idx].likes = liked ? Math.max(0,feed[idx].likes-1) : feed[idx].likes+1;
-    saveFeed(feed);
-  }
-  renderFeed(); renderRows();
-}
-
-function shareItem(item){
-  const url = item.src;
-  if(navigator.share){
-    navigator.share({title:item.title,text:'Mira esto en SinFiltro',url});
-  } else {
-    navigator.clipboard.writeText(url).then(()=> alert('Enlace copiado al portapapeles'));
-  }
-}
-
-/* ---------------------
-   Upload (local demo)
-   --------------------- */
-document.getElementById('fabBtn').addEventListener('click', ()=> toggleUpload());
-document.getElementById('uploadBtn').addEventListener('click', doUpload);
-function toggleUpload(){ uploadModal.classList.toggle('show'); document.getElementById('fileInput').value=''; }
-function doUpload(){
-  const f = fileInput.files[0]; if(!f){ alert('Selecciona un archivo'); return; }
-  const reader = new FileReader();
-  reader.onload = (e)=>{
-    const url = e.target.result;
-    const newItem = {id: crypto.randomUUID(), type: f.type.startsWith('video')?'video':'image', src: url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0};
-    feed.unshift(newItem);
-    saveFeed(feed);
-    renderFeed(); renderRows();
-    uploadModal.classList.remove('show');
-    alert('Contenido subido (demo local).');
-  };
-  reader.readAsDataURL(f);
-}
-
-/* ---------------------
-   Search toggle
-   --------------------- */
-const searchBtn = document.getElementById('searchBtn');
-const searchInputWrap = document.createElement('div');
-searchInputWrap.style.position='absolute'; 
+  <footer>
+    © 2025 SinFiltro — Revoluciona tu forma de ver contenido.
+  </footer>
+</body>
+</html>
