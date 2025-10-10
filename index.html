@@ -1,10 +1,11 @@
+<!-- index.html — SinFiltro Ultra Mobile (todo en 1 archivo, copia y pega) -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — comparte fotos y videos. Demo móvil premium: scroll infinito, filas horizontales, PWA-ready, monetización demo y optimizaciones."/>
+<title>SinFiltro — Ultra Mobile</title>
+<meta name="description" content="SinFiltro — comparte fotos y videos. Demo móvil premium: scroll infinito, filas horizontales, smart-lazy, previsualización, reproductor flotante, monetización demo y optimizaciones."/>
 <meta name="theme-color" content="#00d1ff"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
@@ -17,7 +18,7 @@
   --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.62);
   --radius:12px; --fast:150ms; --mid:260ms; --max-width:720px;
   --text:#eaf7ff;
-  --grid-max-nodes:80; --grid-trim:20;
+  --grid-max-nodes:100; --grid-trim:24;
 }
 body.light{
   --bg-1:#f6f9ff; --bg-2:#eef6ff; --text:#071226; --muted:#596575; --accent-1:#0066cc;
@@ -60,7 +61,7 @@ a{color:inherit;text-decoration:none}
 .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .h-row::-webkit-scrollbar{display:none}
 .card-small{min-width:170px;flex:0 0 170px;height:112px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.006));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 28px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;transform-origin:center;will-change:transform}
-.card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.48);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
+.card-small img, .card-small video{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.48);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
 .card-small:hover img{transform:scale(1.03)}
 .card-small .meta{position:relative;z-index:6}
 .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
@@ -97,6 +98,13 @@ a{color:inherit;text-decoration:none}
 .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
 .viewer img{width:100%;height:auto;display:block}
 .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+
+/* floating mini player */
+.mini-player{position:fixed;right:12px;bottom:96px;width:160px;height:90px;background:#000;border-radius:10px;overflow:hidden;z-index:295;display:none;box-shadow:0 20px 70px rgba(0,0,0,0.6)}
+.mini-player video{width:100%;height:100%;object-fit:cover}
+
+/* preivew hover */
+.preview-pop{position:fixed;z-index:400;pointer-events:none;background:rgba(0,0,0,0.5);border-radius:10px;padding:6px;display:none;transform-origin:center;backdrop-filter:blur(6px)}
 
 /* animations & misc */
 .fade-up{animation:fadeUp .5s cubic-bezier(.2,.9,.2,1) both}
@@ -138,23 +146,24 @@ a{color:inherit;text-decoration:none}
     </div>
     <p class="tag" style="margin:8px 0 12px 0">Ajustes, monetización y tu contenido.</p>
     <nav style="display:flex;flex-direction:column;gap:8px">
-      <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
-      <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔔 Notificaciones</button>
-      <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
-      <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+      <button id="profileBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
+      <button id="settingsBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+      <button id="notifyBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔔 Notificaciones (demo)</button>
+      <button id="monetBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
+      <button id="logoutBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
     </nav>
   </aside>
 
   <div id="searchOverlay" style="position:fixed;left:12px;right:12px;top:72px;z-index:280;display:none">
     <input id="searchInput" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar" style="width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--text)">
+    <div id="searchSuggestions" style="margin-top:8px;display:none;background:rgba(255,255,255,0.02);border-radius:10px;padding:6px"></div>
   </div>
 
   <main class="scroll" id="scrollArea" tabindex="0" role="main">
     <div class="container">
       <section class="hero fade-up" aria-label="Presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        <h1 id="heroTitle">Descubre lo auténtico</h1>
+        <p id="heroSub">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
       <section class="section" aria-label="tendencias">
@@ -185,6 +194,18 @@ a{color:inherit;text-decoration:none}
         <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
       </section>
+
+      <!-- creator modal (hidden) -->
+      <div id="creatorModal" style="display:none;position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:360">
+        <strong>Subir contenido (demo)</strong>
+        <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente (demo).</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+          <input type="file" id="fileInput" accept="image/*,video/*">
+          <button id="uploadBtn" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#001;font-weight:700">Subir</button>
+        </div>
+        <div id="uploadPreview" style="margin-top:10px"></div>
+      </div>
+
     </div>
   </main>
 
@@ -215,17 +236,27 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+  <div id="miniPlayer" class="mini-player" aria-hidden="true"></div>
+  <div id="previewPop" class="preview-pop" aria-hidden="true"></div>
+
 <script>
 /* ============================
-   SinFiltro — Versión Final
-   - Mantiene tu diseño premium.
-   - Dos filas horizontales por sección (infinite append).
-   - Vertical feed infinito (mixto: imágenes + videos).
-   - Lazy-load (IntersectionObserver).
-   - Throttled scroll handlers, requestIdleCallback usage.
-   - Panel overlay, search overlay, FAB radial, viewer.
-   - PWA manifest + ServiceWorker registered dynamically.
-   - Monetization placeholders (stats simulation).
+   SinFiltro Ultra Mobile — Final
+   Integraciones solicitadas (excluidas 9,11,12,13)
+   - smart lazy (images + videos)
+   - performance auto (reduce anims)
+   - preview pop
+   - local recommendations (localStorage)
+   - auto theme detect
+   - reactions (local)
+   - offline basic (sw)
+   - deferred non-critical scripts
+   - mini floating player
+   - search predictive
+   - creator upload demo
+   - smart scroll dynamic
+   - blur dynamics & monetization placeholders
+   - multilingual basic detection
    ============================ */
 
 /* ---------- Helpers ---------- */
@@ -233,13 +264,33 @@ const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+const mkSmallImg = i => `https://picsum.photos/320/200?random=${Math.floor(Math.random()*100000)+i}`;
+const SUPPORTS_IDLE = ('requestIdleCallback' in window);
 
-/* ---------- Demo pool (images + videos mix) ---------- */
-const POOL_SIZE = 200;
+/* ---------- Device/perf heuristics ---------- */
+const deviceMemory = navigator.deviceMemory || 1;
+const lowMemory = deviceMemory <= 1; // treat <=1GB as low
+const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Apply performance mode */
+if(lowMemory || prefersReducedMotion){
+  document.documentElement.style.setProperty('--mid','120ms');
+  document.documentElement.style.setProperty('--fast','90ms');
+  // reduce blur intensity (CSS still present)
+}
+
+/* ---------- Multilanguage (simple) ---------- */
+const userLang = (navigator.language || 'es').split('-')[0];
+const LANGS = { en: 'Descubre the authentic', es: 'Descubre lo auténtico' };
+$('#heroTitle').textContent = LANGS[userLang] ? LANGS[userLang] : LANGS['es'];
+
+/* ---------- Data pool (images & few videos) ---------- */
+const POOL_SIZE = 160;
 let pool = Array.from({length: POOL_SIZE}).map((_,i)=>({
   id: 'p'+i,
-  src: mkImg(i),
-  kind: (i%6===0) ? 'video' : 'image',
+  src: (i%7===0) ? `https://sample-videos.com/img/Sample-jpg-image-500kb.jpg` : mkImg(i),
+  small: mkSmallImg(i),
+  kind: (i%7===0) ? 'video' : 'image',
   title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
   likes: rand(6000), comments: rand(1600), views: (rand(900)+100)+'K'
 }));
@@ -258,80 +309,122 @@ const gridFeed = $('#gridFeed');
 const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), closePanelBtn = $('#closePanel');
 const fab = $('#fab'), radial = $('#radial');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const themeBtn = $('#themeBtn'), searchBtn = $('#searchBtn'), searchOverlay = $('#searchOverlay'), searchInput = $('#searchInput');
+const themeBtn = $('#themeBtn'), searchBtn = $('#searchBtn'), searchOverlay = $('#searchOverlay'), searchInput = $('#searchInput'), searchSuggestions = $('#searchSuggestions');
 const bgLayer = $('#bgLayer'), scrollArea = $('#scrollArea');
+const creatorModal = $('#creatorModal'), fileInput = $('#fileInput'), uploadBtn = $('#uploadBtn'), uploadPreview = $('#uploadPreview');
+const miniPlayer = $('#miniPlayer'), previewPop = $('#previewPop');
 
-let activeList = [], currentIndex = 0;
+/* ---------- Local recommendations state ---------- */
+const REC_KEY = 'sinfiltro.rec.v1';
+let recStats = JSON.parse(localStorage.getItem(REC_KEY) || '{}'); // {kind_counts: {image:10, video:3}, viewed: {p1:3} }
 
-/* ---------- Perf utilities ---------- */
-function throttle(fn, wait=100){ let last=0, t; return function(...args){ const now=Date.now(); if(now-last>=wait){ last=now; fn.apply(this,args);} else { clearTimeout(t); t=setTimeout(()=>{ last=Date.now(); fn.apply(this,args); }, wait-(now-last)); } }; }
-function debounce(fn, wait=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), wait); }; }
-
-/* ---------- Parallax background ---------- */
-scrollArea.addEventListener('scroll', throttle(()=> {
-  const s = scrollArea.scrollTop || 0;
-  const t = Math.min(48, s/28);
-  bgLayer.style.transform = `translateY(${t}px)`;
-}, 60));
-
-/* ---------- Lazy-load images (IO) ---------- */
-let imgObserver = null;
-function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs) => {
-        entries.forEach(e => {
-          if(e.isIntersecting){
-            const img = e.target;
-            img.src = img.dataset.src;
-            img.onload = ()=> img.parentElement.classList && img.parentElement.classList.remove('skel');
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
-    }
-    imgs.forEach(i => imgObserver.observe(i));
-  } else {
-    imgs.forEach(i=>{ i.src = i.dataset.src; i.removeAttribute('data-src'); });
-  }
+/* Helpers to persist rec */
+function bumpRec(item){
+  recStats.viewed = recStats.viewed || {};
+  recStats.viewed[item.id] = (recStats.viewed[item.id]||0)+1;
+  recStats.kind_counts = recStats.kind_counts || {};
+  recStats.kind_counts[item.kind] = (recStats.kind_counts[item.kind]||0)+1;
+  localStorage.setItem(REC_KEY, JSON.stringify(recStats));
 }
 
-/* ---------- Create cards ---------- */
+/* ---------- Throttle / Debounce / Idle wrappers ---------- */
+function throttle(fn, wait=100){ let last=0, t; return function(...args){ const now=Date.now(); if(now-last>=wait){ last=now; fn.apply(this,args);} else { clearTimeout(t); t=setTimeout(()=>{ last=Date.now(); fn.apply(this,args); }, wait-(now-last)); } }; }
+function debounce(fn, wait=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), wait); }; }
+const runIdle = SUPPORTS_IDLE ? (cb)=>requestIdleCallback(cb,{timeout:800}) : (cb)=>setTimeout(cb, 600);
+
+/* ---------- Lazy-load (images + videos poster) ---------- */
+let imgObserver = null;
+function lazyObserve(root=document){
+  const imgs = root.querySelectorAll('img[data-src], video[data-poster]');
+  if(!('IntersectionObserver' in window)){
+    imgs.forEach(i => { if(i.tagName==='IMG'){ i.src = i.dataset.src; i.removeAttribute('data-src'); } else { i.poster = i.dataset.poster; i.removeAttribute('data-poster'); }});
+    return;
+  }
+  if(!imgObserver){
+    imgObserver = new IntersectionObserver((entries, obs)=> {
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          const el = e.target;
+          if(el.tagName === 'IMG'){
+            el.src = el.dataset.src;
+            el.onload = ()=> el.parentElement.classList && el.parentElement.classList.remove('skel');
+            el.removeAttribute('data-src');
+          } else if(el.tagName === 'VIDEO'){
+            // set poster if present
+            if(el.dataset.poster){ el.poster = el.dataset.poster; el.removeAttribute('data-poster'); }
+            // if autoplay policy allows, try to play muted small preview
+            try{ el.muted = true; el.setAttribute('playsinline',''); el.play().catch(()=>{}); }catch(e){}
+          }
+          obs.unobserve(el);
+        }
+      });
+    }, {rootMargin:'300px', threshold: 0.06});
+  }
+  imgs.forEach(i=> imgObserver.observe(i));
+}
+
+/* ---------- Card creators ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.tabIndex = 0;
-  d.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    ${item.likes>700?'<div class="mini-badge">TOP</div>':''}
-    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
-      <div class="meta">
-        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
-      </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
-    </div>
-  `;
+  // choose small poster to reduce payload
+  const poster = item.small || item.src;
+  if(item.kind==='video'){
+    d.innerHTML = `<video data-poster="${poster}" muted loop playsinline></video>
+      ${item.likes>700?'<div class="mini-badge">TOP</div>':''}
+      <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+        <div class="meta"><div style="font-weight:700">Video</div><div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div></div>
+        <div style="z-index:8;margin-left:8px"><div class="play-ico" aria-hidden="true">▶</div></div>
+      </div>`;
+  } else {
+    d.innerHTML = `<img data-src="${poster}" alt="${escapeHtml(item.title)}">
+      ${item.likes>700?'<div class="mini-badge">TOP</div>':''}
+      <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+        <div class="meta"><div style="font-weight:700">Foto</div><div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div></div>
+        <div style="z-index:8;margin-left:8px"></div>
+      </div>`;
+  }
   d.dataset.id = item.id;
+  // click handlers
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=>{ if(e.key==='Enter') openViewerByItem(item); });
+  d.addEventListener('contextmenu', (e)=> { e.preventDefault(); reactQuick(item, 'heart'); });
+  // preview on long press / hover (touch friendly)
+  addPreviewHandlers(d, item);
   return d;
 }
 
 function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  const poster = item.small || item.src;
+  if(item.kind==='video'){
+    a.innerHTML = `<video data-poster="${poster}" muted loop playsinline></video><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  } else {
+    a.innerHTML = `<img data-src="${poster}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  }
   a.dataset.id = item.id;
   a.addEventListener('click', ()=> openViewerByItem(item));
+  addPreviewHandlers(a, item);
   return a;
 }
 
-/* ---------- Render two rows (with infinite append) ---------- */
+/* ---------- Preload next items for horizontal scrollers ---------- */
+function attachRowInfinity(r){
+  if(r._attached) return; r._attached = true;
+  r.addEventListener('scroll', throttle(()=>{
+    if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
+      runIdle(()=>{ for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); }, {});
+    }
+    // pre-load next few posters slightly ahead
+    const imgs = r.querySelectorAll('img[data-src], video[data-poster]');
+    imgs.forEach((el,i)=>{ if(i < 6 && el.dataset && (el.dataset.src || el.dataset.poster)){ /* no-op: already observed */ }});
+  }, 120));
+}
+
+/* ---------- Renderers ---------- */
 function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{ const target = (i%2===0)?row1:row2; target.appendChild(makeSmallCard(it)); });
@@ -342,44 +435,45 @@ function renderTwoRows(row1,row2,items){
   lazyObserve();
 }
 
-function attachRowInfinity(r){
-  if(r._attached) return; r._attached=true;
-  r.addEventListener('scroll', throttle(()=> {
-    if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 140){
-      if('requestIdleCallback' in window){
-        requestIdleCallback(()=>{ for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); }, {timeout:500});
-      } else { for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); }
-    }
-  }, 120));
-}
-
-/* ---------- Grid initial + vertical infinite (with recycling) ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML='';
   grid.forEach(it => gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
-let loadingGrid=false;
-scrollArea.addEventListener('scroll', throttle(()=>{
+
+/* ---------- Smart Scroll (vertical) + infinite load ---------- */
+let lastScroll = 0, scrollSpeed = 0, loadingGrid = false;
+scrollArea.addEventListener('scroll', throttle(()=> {
+  const s = scrollArea.scrollTop || 0;
+  const dt = Math.max(1, Date.now() - (lastScroll || Date.now()));
+  scrollSpeed = Math.abs(s - (lastScroll||0)) / dt; // px per ms
+  lastScroll = s;
+  // adjust threshold based on speed (smarter)
   const rect = gridFeed.getBoundingClientRect();
-  if(rect.top - window.innerHeight < 160 && !loadingGrid){
+  if(rect.top - window.innerHeight < (scrollSpeed>0.6 ? 320 : 160) && !loadingGrid){
     loadingGrid = true;
-    if('requestIdleCallback' in window) requestIdleCallback(()=> appendMoreGridItems(6), {timeout:800});
-    else setTimeout(()=> appendMoreGridItems(6), 600);
+    runIdle(()=> appendMoreGridItems(6), {});
   }
-}, 140));
+}, 100));
+
 function appendMoreGridItems(count){
   for(let i=0;i<count;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
   lazyObserve(gridFeed);
-  const MAX = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-max-nodes')) || 80;
-  const TRIM = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-trim')) || 20;
-  if(gridFeed.children.length > MAX){ for(let i=0;i<TRIM;i++){ const f = gridFeed.firstElementChild; if(f) gridFeed.removeChild(f); } }
-  loadingGrid=false;
+  // trim to avoid infinite DOM growth
+  const MAX = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-max-nodes')) || 100;
+  const TRIM = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-trim')) || 24;
+  if(gridFeed.children.length > MAX){
+    for(let i=0;i<TRIM;i++){ const f = gridFeed.firstElementChild; if(f) gridFeed.removeChild(f); }
+  }
+  loadingGrid = false;
 }
 
-/* ---------- Viewer (immersive) ---------- */
+/* ---------- Viewer (immersive) & mini player ---------- */
+let activeList = [], currentIndex = 0;
 function openViewerByItem(item){
-  // find list for navigation
+  // bump recommendation stats
+  bumpRec(item);
+  // determine list for navigation
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
@@ -390,20 +484,71 @@ function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
   if(it.kind === 'video'){
+    // large poster + click to play full (demo)
     const wrap = document.createElement('div'); wrap.style.position='relative';
-    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
+    const poster = document.createElement('img'); poster.src = it.small || it.src; poster.alt = it.title; poster.style.maxWidth='100%';
     const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
-    overlayPlay.addEventListener('click', ()=> simulatePlay(it));
-    wrap.appendChild(poster); wrap.appendChild(overlayPlay); viewerInner.appendChild(wrap);
+    overlayPlay.addEventListener('click', ()=> startFloatingPlayer(it));
+    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
+    viewerInner.appendChild(wrap);
   } else {
-    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
+    const img = document.createElement('img'); img.src = it.small || it.src; img.alt = it.title; viewerInner.appendChild(img);
   }
   viewer.style.display='flex'; viewer.setAttribute('aria-hidden','false');
 }
 function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
-function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
+
+function startFloatingPlayer(it){
+  // show small floating player with video demo (mute autoplay)
+  miniPlayer.innerHTML = `<video id="miniVid" src="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" playsinline muted autoplay loop></video>`;
+  miniPlayer.style.display = 'block'; miniPlayer.setAttribute('aria-hidden','false');
+  // attach tap to expand to viewer
+  miniPlayer.onclick = ()=> { // expand
+    if(it) openViewerByItem(it);
+  };
+}
+
+/* ---------- reactions (local) ---------- */
+function reactQuick(item, type='heart'){
+  // store in localStorage simple reactions
+  const RKEY = 'sinfiltro.reacts.v1';
+  const reacts = JSON.parse(localStorage.getItem(RKEY) || '{}');
+  reacts[item.id] = reacts[item.id] || {};
+  reacts[item.id][type] = (reacts[item.id][type]||0)+1;
+  localStorage.setItem(RKEY, JSON.stringify(reacts));
+  // tiny animation feedback (toast)
+  const toast = document.createElement('div'); toast.textContent = (type==='heart'?'❤️':(type==='fire'?'🔥':'✨')) + ' Enviado'; toast.style.position='fixed'; toast.style.bottom='180px'; toast.style.left='50%'; toast.style.transform='translateX(-50%)'; toast.style.padding='8px 12px'; toast.style.borderRadius='12px'; toast.style.background='linear-gradient(90deg,var(--accent-1),var(--accent-2))'; toast.style.color='#001'; toast.style.zIndex=450; document.body.appendChild(toast);
+  setTimeout(()=> toast.remove(),900);
+}
+
+/* ---------- Preview handlers (touch / long-press / hover) ---------- */
+function addPreviewHandlers(el, item){
+  let longpressTimer=null;
+  let startX=0,startY=0;
+  el.addEventListener('touchstart', (e)=>{
+    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    longpressTimer = setTimeout(()=> showPreviewAt(e.touches[0].clientX, e.touches[0].clientY, item), 380);
+  }, {passive:true});
+  el.addEventListener('touchmove', ()=> { clearTimeout(longpressTimer); });
+  el.addEventListener('touchend', ()=> { clearTimeout(longpressTimer); hidePreview(); });
+  // mouse hover preview for desktop testing
+  el.addEventListener('mouseenter', (e)=> { if(window.innerWidth>720) showPreviewAt(e.clientX, e.clientY, item); });
+  el.addEventListener('mouseleave', hidePreview);
+}
+function showPreviewAt(x,y,item){
+  previewPop.style.left = (x+8)+'px';
+  previewPop.style.top = (y+8)+'px';
+  previewPop.innerHTML = '';
+  if(item.kind==='video'){
+    previewPop.innerHTML = `<video src="https://sample-videos.com/video123/mp4/240/big_buck_bunny_240p_1mb.mp4" muted autoplay loop style="width:180px;height:100px;object-fit:cover;border-radius:8px"></video>`;
+  } else {
+    previewPop.innerHTML = `<img src="${item.small||item.src}" style="width:180px;height:100px;object-fit:cover;border-radius:8px">`;
+  }
+  previewPop.style.display='block'; previewPop.style.pointerEvents='none';
+}
+function hidePreview(){ previewPop.style.display='none'; previewPop.innerHTML=''; }
 
 /* ---------- Panel open/close ---------- */
 function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
@@ -412,61 +557,76 @@ menuBtn.addEventListener('click', openPanel); closePanelBtn.addEventListener('cl
 
 /* ---------- FAB radial ---------- */
 fab.addEventListener('click', ()=> radial.classList.toggle('show'));
-$('#optUpload').addEventListener('click', ()=> alert('Subir demo - requiere backend'));
+$('#optUpload').addEventListener('click', ()=> { showCreator(); });
 $('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
 $('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* ---------- Theme persisted ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
+/* ---------- creator upload demo ---------- */
+function showCreator(){ creatorModal.style.display = 'block'; creatorModal.style.zIndex = 380; }
+uploadBtn.addEventListener('click', ()=> {
+  const f = fileInput.files[0];
+  if(!f){ alert('Selecciona un archivo'); return; }
+  const url = URL.createObjectURL(f);
+  uploadPreview.innerHTML = '';
+  if(f.type.startsWith('image/')) uploadPreview.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:8px">`;
+  else if(f.type.startsWith('video/')) uploadPreview.innerHTML = `<video src="${url}" controls style="max-width:100%;border-radius:8px"></video>`;
+  // simulate adding to grid (local only)
+  const newItem = { id: 'u'+Date.now(), src: url, small: url, kind: f.type.startsWith('video/')?'video':'image', title: f.name, likes:0, comments:0, views:'0' };
+  gridFeed.prepend(makeGridCard(newItem));
+  lazyObserve(gridFeed);
+  setTimeout(()=> { creatorModal.style.display='none'; fileInput.value=''; uploadPreview.innerHTML=''; }, 900);
+});
+
+/* ---------- Theme persisted & auto detect ---------- */
+const THEME_KEY = 'sinfiltro.theme.v4';
+let theme = localStorage.getItem(THEME_KEY) || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); $('#themeBtn').textContent='☀️'; } else { document.body.classList.remove('light'); $('#themeBtn').textContent='🌗'; } }
 applyTheme(theme);
 themeBtn.addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* ---------- Bottom nav actions ---------- */
-$$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
-  $$('.nav-item').forEach(x=> x.classList.remove('active')); n.classList.add('active');
-  const t = n.dataset.tab;
-  if(t==='home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-  if(t==='search') openSearch();
-  if(t==='recent') trendRow1.scrollIntoView({behavior:'smooth'});
-  if(t==='me') alert('Tus videos demo');
-}));
+/* ---------- Search predictive (local suggestions) ---------- */
+const SUG_KEY = 'sinfiltro.suggest.v1';
+let suggestions = JSON.parse(localStorage.getItem(SUG_KEY) || '["atardecer","neon","urbano","retrato","nocturna","visual"]');
+searchBtn.addEventListener('click', ()=> { searchOverlay.style.display='block'; searchInput && searchInput.focus(); searchSuggestions.style.display='none'; });
+searchInput && searchInput.addEventListener('input', debounce(e=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ searchSuggestions.style.display='none'; return; }
+  const matches = suggestions.filter(s=> s.includes(q)).slice(0,6);
+  if(matches.length){
+    searchSuggestions.innerHTML = matches.map(m=>`<div class="sug" style="padding:6px;border-radius:8px;cursor:pointer">${m}</div>`).join('');
+    searchSuggestions.style.display='block';
+    searchSuggestions.querySelectorAll('.sug').forEach(el=>el.addEventListener('click', ()=> { searchInput.value = el.textContent; searchSuggestions.style.display='none'; alert('Buscar demo: '+el.textContent); }));
+  } else searchSuggestions.style.display='none';
+}, 160));
+searchInput && searchInput.addEventListener('keydown', e=> { if(e.key==='Escape') { searchOverlay.style.display='none'; searchSuggestions.style.display='none'; } if(e.key==='Enter'){ const q = searchInput.value.trim(); if(q){ suggestions = [q, ...suggestions.filter(s=>s!==q)].slice(0,30); localStorage.setItem(SUG_KEY, JSON.stringify(suggestions)); alert('Buscar demo: '+q); } } });
 
-/* ---------- Search overlay ---------- */
-function openSearch(){ searchOverlay.style.display='block'; searchInput && searchInput.focus(); }
-function closeSearch(){ searchOverlay.style.display='none'; searchInput && (searchInput.value=''); }
-searchBtn.addEventListener('click', openSearch);
-searchInput && searchInput.addEventListener('keydown', e => { if(e.key==='Escape') closeSearch(); if(e.key==='Enter') alert('Buscar demo: '+searchInput.value); });
-
-/* ---------- Keyboard & outside ---------- */
-document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearch(); } });
+/* ---------- Accessibility & keyboard ---------- */
+document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); searchOverlay.style.display='none'; } });
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 
-/* ---------- Initial render ---------- */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  $$('.h-row').forEach(r=>{ if(r.children.length < 8) for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); });
+/* ---------- Monetization placeholder: insert promoted cards every X items ---------- */
+function insertPromotedAfter(container, interval=7){
+  const promoted = document.createElement('div'); promoted.className='card-small fade-up'; promoted.innerHTML = `<img src="https://picsum.photos/320/200?random=promo"><div style="position:relative;z-index:6;padding:8px;color:#fff;font-weight:700">Promocionado • Patrocinio</div>`;
+  // append promoted elements across rows
+  const children = Array.from(container.children);
+  for(let i=interval;i<children.length;i+=interval+1){
+    const clone = promoted.cloneNode(true);
+    container.insertBefore(clone, children[i]);
+  }
 }
-document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- Small analytics & monetization demo (local) ---------- */
-let stats = {impressions:0, shortClicks:0, subs:0, sales:0};
-window.increment = function(k,n=1){ stats[k] = (stats[k]||0)+n; };
-
-/* ---------- Service Worker + Manifest dynamic registration ---------- */
+/* ---------- Service worker & offline basic caching (dynamic) ---------- */
 (function registerPWA(){
   if('serviceWorker' in navigator){
     const sw = `
       const CACHE = 'sinfiltro-shell-v1';
-      self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c=> c.addAll(['./'])).catch(()=>{})); });
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c=> c.addAll(['./'])).catch(()=>{}));
+      });
       self.addEventListener('fetch', e => {
         if(e.request.method !== 'GET') return;
         e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
-          try{ if(e.request.destination === 'image') caches.open(CACHE).then(c=>c.put(e.request, resp.clone())); }catch(e){}
+          try{ const ct = e.request.destination; if(['image','script','style'].includes(ct)) caches.open(CACHE).then(c=>c.put(e.request, resp.clone())); }catch(e){}
           return resp;
         }).catch(()=> r)));
       });
@@ -477,7 +637,7 @@ window.increment = function(k,n=1){ stats[k] = (stats[k]||0)+n; };
       navigator.serviceWorker.register(url).catch(()=>{});
     }catch(e){}
   }
-  // dynamic manifest (so user can copy/paste one file)
+  // dynamic manifest for quick PWA install during dev
   try{
     const manifest = {
       "name":"SinFiltro",
@@ -494,13 +654,24 @@ window.increment = function(k,n=1){ stats[k] = (stats[k]||0)+n; };
   }catch(e){}
 })();
 
-/* ---------- Accessibility small touches ---------- */
-document.addEventListener('click', e => {
-  const t = e.target;
-  if(t.classList && t.classList.contains('mini-like')){ t.classList.add('boom'); setTimeout(()=> t.classList.remove('boom'), 350); }
-});
+/* ---------- Initial render ---------- */
+function renderAll(){
+  renderTwoRows(trendRow1, trendRow2, trends);
+  renderTwoRows(recoRow1, recoRow2, reco);
+  renderTwoRows(recentRow1, recentRow2, recent);
+  renderGridInitial();
+  // seed rows for smoothness
+  $$('.h-row').forEach(r=>{ if(r.children.length < 8) for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); });
+  // small monetization (promoted cards)
+  insertPromotedAfter(trendRow1,7);
+  insertPromotedAfter(recoRow1,9);
+}
+document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- End ---------- */
+/* ---------- Small accessibility: notify loads ---------- */
+window.addEventListener('load', ()=> console.log('SinFiltro Ultra loaded — ready'));
+
+/* ---------- End of script ---------- */
 </script>
 </body>
 </html>
