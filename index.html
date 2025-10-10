@@ -1,118 +1,271 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SinFiltro - Plataforma de Videos</title>
-  <style>
-    body {
-      background-color: #000;
-      color: #0ff; /* Cian neón */
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+<title>SinFiltro — Mockup móvil</title>
+<style>
+  :root{
+    --bg:#000;
+    --panel:#07111a;
+    --accent:#00f0ff; /* cian neón */
+    --accent-2:#6ee7ff;
+    --muted:#9aa6b0;
+    --glass: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: Inter, system-ui, Arial, sans-serif;
+    background:linear-gradient(180deg,#000 0%, #020614 60%);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    -webkit-touch-callout:none;
+    -webkit-user-select:none;
+  }
 
-    header {
-      background: linear-gradient(90deg, #000428, #004e92);
-      padding: 15px 0;
-      box-shadow: 0 0 20px #0ff;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
+  /* Header */
+  header{
+    position:sticky;
+    top:0;
+    z-index:30;
+    backdrop-filter: blur(6px);
+    background:linear-gradient(90deg, rgba(0,10,20,0.6), rgba(0,20,40,0.45));
+    border-bottom:1px solid rgba(0,255,255,0.03);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .logo .mark{
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    background: radial-gradient(circle at 30% 30%, rgba(0,240,255,0.18), rgba(0,150,255,0.06));
+    box-shadow:0 0 14px rgba(0,240,255,0.12), inset 0 -6px 24px rgba(0,0,0,0.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--bg);
+    font-weight:700;
+  }
+  .logo h1{
+    margin:0;
+    font-size:18px;
+    color:var(--accent);
+    text-shadow:0 0 8px rgba(0,240,255,0.3);
+    letter-spacing:0.6px;
+  }
 
-    header h1 {
-      font-size: 1.8em;
-      color: #0ff;
-      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-      margin: 0;
-    }
+  /* Container */
+  .main{
+    padding:14px;
+    padding-bottom:84px; /* space for bottom nav */
+  }
 
-    .container {
-      padding: 30px 10px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
-    }
+  /* Featured video */
+  .featured{
+    background: linear-gradient(180deg, rgba(0,30,50,0.3), rgba(0,10,20,0.4));
+    border:1px solid rgba(0,240,255,0.05);
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 6px 30px rgba(0,240,255,0.03);
+  }
+  .feat-thumb{
+    position:relative;
+    height:200px;
+    background-image: url('https://placehold.co/800x450/001f33/00f0ff?text=Destacado');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .play-btn{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    background: linear-gradient(180deg, rgba(0,255,255,0.95), rgba(0,180,255,0.88));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#001;
+    font-size:26px;
+    box-shadow:0 8px 30px rgba(0,240,255,0.18), 0 2px 6px rgba(0,0,0,0.6);
+    transform:translateY(6px);
+  }
+  .feat-info{
+    padding:12px;
+    text-align:left;
+  }
+  .feat-title{
+    color:var(--accent-2);
+    font-weight:700;
+    font-size:16px;
+    margin:0 0 6px 0;
+    text-shadow:0 0 6px rgba(0,240,255,0.08);
+  }
+  .feat-meta{
+    color:var(--muted);
+    font-size:13px;
+  }
 
-    .video-card {
-      background: #00111a;
-      border: 2px solid #0ff;
-      border-radius: 15px;
-      box-shadow: 0 0 20px #00ffff55;
-      transition: transform 0.3s, box-shadow 0.3s;
-      overflow: hidden;
-      padding-bottom: 10px;
-    }
+  /* Feed (cards) */
+  .feed{
+    margin-top:14px;
+    display:grid;
+    gap:12px;
+  }
+  .card{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:12px;
+    padding:8px;
+    border:1px solid rgba(0,240,255,0.03);
+    box-shadow:0 6px 18px rgba(0,240,255,0.02);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{ transform: translateY(-6px); box-shadow:0 18px 45px rgba(0,240,255,0.08); }
+  .thumb{
+    width:120px;
+    height:72px;
+    border-radius:8px;
+    background-size:cover;
+    background-position:center;
+    flex-shrink:0;
+    border:2px solid rgba(0,240,255,0.06);
+  }
+  .meta{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .title{
+    color:var(--accent);
+    font-weight:600;
+    font-size:14px;
+  }
+  .small{
+    color:var(--muted);
+    font-size:12px;
+  }
 
-    .video-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 35px #00ffffaa;
-    }
+  /* Bottom nav */
+  .bottom-nav{
+    position:fixed;
+    left:12px;
+    right:12px;
+    bottom:12px;
+    height:56px;
+    border-radius:14px;
+    background:linear-gradient(90deg, rgba(0,10,20,0.8), rgba(0,20,40,0.65));
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    border:1px solid rgba(0,240,255,0.04);
+    box-shadow:0 8px 30px rgba(0,240,255,0.06);
+  }
+  .nav-btn{
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    align-items:center;
+  }
+  .nav-btn.active{ color:var(--accent-2); transform:scale(1.02); }
 
-    .video-thumbnail {
-      background: linear-gradient(135deg, #001f33, #003366);
-      height: 160px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #0ff;
-      font-size: 2em;
-      font-weight: bold;
-    }
+  /* Neon glow pulse for logo */
+  @keyframes neon {
+    0%{ text-shadow:0 0 6px rgba(0,240,255,0.08); transform:translateY(0); }
+    50%{ text-shadow:0 0 20px rgba(0,240,255,0.28); transform:translateY(-2px); }
+    100%{ text-shadow:0 0 6px rgba(0,240,255,0.08); transform:translateY(0); }
+  }
+  .logo h1{ animation:neon 2.6s ease-in-out infinite; }
 
-    .video-title {
-      margin-top: 10px;
-      font-size: 1.1em;
-      color: #0ff;
-      text-shadow: 0 0 10px #0ff;
-    }
-
-    footer {
-      margin-top: 50px;
-      background: #000428;
-      color: #0ff;
-      padding: 20px;
-      font-size: 0.9em;
-      box-shadow: 0 0 20px #00ffff55;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .video-card {
-      animation: fadeIn 0.8s ease-in-out;
-    }
-  </style>
+  /* Responsive tweaks small screens */
+  @media (max-width:420px){
+    .feat-thumb{ height:180px; }
+    .thumb{ width:100px; height:64px; }
+    .logo h1{ font-size:16px }
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>🎬 SinFiltro - Plataforma de Videos</h1>
-  </header>
 
-  <div class="container">
-    <div class="video-card">
-      <div class="video-thumbnail">🎥 Video 1</div>
-      <div class="video-title">Inspiración Diaria</div>
+<header>
+  <div class="logo">
+    <div class="mark" style="width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#00f0ff,#0077cc);box-shadow:0 6px 30px rgba(0,240,255,0.14);">
+      <strong style="color:#001">SF</strong>
     </div>
-
-    <div class="video-card">
-      <div class="video-thumbnail">🔥 Video 2</div>
-      <div class="video-title">Motivación SinFiltro</div>
-    </div>
-
-    <div class="video-card">
-      <div class="video-thumbnail">💡 Video 3</div>
-      <div class="video-title">Historias Reales</div>
-    </div>
+    <h1>SinFiltro</h1>
   </div>
+</header>
 
-  <footer>
-    © 2025 SinFiltro — Inspiración sin límites 💫
-  </footer>
+<main class="main">
+  <!-- Featured -->
+  <section class="featured" id="featured">
+    <div class="feat-thumb" id="featThumb">
+      <div class="play-btn" id="playBtn">▶</div>
+    </div>
+    <div class="feat-info">
+      <div class="feat-title" id="featTitle">Destacado: Lo nuevo en SinFiltro</div>
+      <div class="feat-meta">1.2M vistas • Hace 2 horas</div>
+    </div>
+  </section>
+
+  <!-- Feed -->
+  <div class="feed" id="feed">
+    <!-- cards generadas por JS -->
+  </div>
+</main>
+
+<nav class="bottom-nav" aria-label="navegación">
+  <div class="nav-btn active"><div>🏠</div><div>Inicio</div></div>
+  <div class="nav-btn"><div>🔎</div><div>Buscar</div></div>
+  <div class="nav-btn"><div>➕</div><div>Subir</div></div>
+  <div class="nav-btn"><div>👤</div><div>Perfil</div></div>
+</nav>
+
+<script>
+  // Datos demo para el feed
+  const videos = [
+    {title:"Eres la razón por la que sonrío cada vez que veo mi pantalla",thumb:"https://placehold.co/400x240/001f33/00f0ff?text=Video+1",meta:"54K vistas • 1 día"},
+    {title:"Motivación para hoy: haz que valga la pena",thumb:"https://placehold.co/400x240/001f33/00f0ff?text=Video+2",meta:"12K vistas • 3 días"},
+    {title:"Historias reales que inspiran",thumb:"https://placehold.co/400x240/001f33/00f0ff?text=Video+3",meta:"8.5K vistas • 5 días"},
+    {title:"Top 10 momentos inolvidables",thumb:"https://placehold.co/400x240/001f33/00f0ff?text=Video+4",meta:"210K vistas • 1 semana"},
+    {title:"Detrás de escenas: SinFiltro",thumb:"https://placehold.co/400x240/001f33/00f0ff?text=Video+5",meta:"3.4K vistas • 2 semanas"}
+  ];
+
+  const feed = document.getElementById('feed');
+  videos.forEach(v=>{
+    const c = document.createElement('div');
+    c.className='card';
+    c.innerHTML = `
+      <div class="thumb" style="background-image:url('${v.thumb}')"></div>
+      <div class="meta">
+        <div class="title">${v.title}</div>
+        <div class="small">${v.meta}</div>
+      </div>`;
+    feed.appendChild(c);
+  });
+
+  // Click en play del destacado (solo demo)
+  document.getElementById('playBtn').addEventListener('click', ()=>{
+    alert('Reproduciendo video destacado (demo).');
+  });
+</script>
+
 </body>
 </html>
