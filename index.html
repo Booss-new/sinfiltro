@@ -1,176 +1,441 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SinFiltro</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }body {
-  background: radial-gradient(circle at top, #0a0a0f, #000);
-  color: #fff;
-  overflow-x: hidden;
-}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SinFiltro — Móvil (Limpio & Elegante)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:#020316;
+    --bg-2:#04102a;
+    --glass: rgba(255,255,255,0.03);
+    --muted:#9aa6b0;
+    --accent:#00d8ff; /* cian elegante */
+    --accent-2:#6ec1ff;
+    --card:#071428;
+    --radius:14px;
+    --shadow: 0 10px 30px rgba(4,24,40,0.6);
+    --trans: 220ms cubic-bezier(.2,.9,.2,1);
+  }
 
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  background: rgba(10, 10, 15, 0.9);
-  backdrop-filter: blur(10px);
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 10;
-}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:'Poppins',system-ui,Arial,sans-serif;background:
+    radial-gradient(800px 350px at 10% 5%, rgba(0,120,255,0.03), transparent 6%),
+    linear-gradient(180deg,var(--bg-1),var(--bg-2) 60%); color:#fff;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  button{font:inherit}
 
-header h1 {
-  font-size: 1.5rem;
-  letter-spacing: 1px;
-  background: linear-gradient(90deg, #00ffff, #0077ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 10px rgba(0,255,255,0.5);
-}
+  /* Header */
+  header{
+    position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;
+    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-bottom:1px solid rgba(255,255,255,0.02);
+    backdrop-filter: blur(8px);
+  }
+  .left, .right{display:flex;gap:10px;align-items:center}
+  .brand{display:flex;flex-direction:column;align-items:center;gap:0}
+  .brand .title{font-weight:700;color:var(--accent);letter-spacing:0.4px}
+  .brand .subtitle{font-size:11px;color:var(--muted);margin-top:2px}
 
-.icon-btn {
-  font-size: 1.4rem;
-  color: #fff;
-}
+  .icon{
+    width:40px;height:40px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);box-shadow:var(--shadow);
+  }
 
-main {
-  margin-top: 4.5rem;
-  padding: 0 1rem 5rem;
-}
+  /* Search bar hidden toggle */
+  .search-wrap{padding:10px 14px;display:none}
+  .search-input{width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02);color:#fff}
 
-section {
-  margin-bottom: 2rem;
-}
+  /* Main content area */
+  main{padding:14px;padding-bottom:110px;max-width:900px;margin:0 auto}
+  .hero{
+    display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);
+    box-shadow: 0 12px 40px rgba(3,18,34,0.5);
+  }
+  .hero h2{margin:0;color:var(--accent);font-size:18px}
+  .hero p{margin:0;color:var(--muted);font-size:13px}
 
-h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.8rem;
-}
+  /* Sections grid */
+  .section{margin-top:18px}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 10px}
+  .section-header h3{margin:0;font-size:14px;color:var(--accent-2)}
+  .see-all{font-size:12px;color:var(--muted)}
 
-.scroll-row {
-  display: flex;
-  overflow-x: auto;
-  gap: 0.8rem;
-  scroll-behavior: smooth;
-}
+  .h-scroll{display:flex;gap:12px;overflow-x:auto;padding:6px 2px}
+  .h-scroll::-webkit-scrollbar{display:none}
 
-.scroll-row::-webkit-scrollbar {
-  display: none;
-}
+  .media-card{
+    flex:0 0 145px;height:210px;border-radius:12px;background:linear-gradient(180deg,var(--card),rgba(6,18,28,0.8));
+    overflow:hidden;border:1px solid rgba(255,255,255,0.02);position:relative;box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    transition: transform var(--trans), box-shadow var(--trans);
+  }
+  .media-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,0.7)}
+  .media-thumb{width:100%;height:130px;object-fit:cover;display:block}
+  .media-info{padding:8px}
+  .media-title{font-size:13px;color:#e6f9ff;font-weight:600;line-height:1.1}
+  .media-meta{font-size:11px;color:var(--muted);margin-top:6px}
 
-.card {
-  flex: 0 0 auto;
-  width: 120px;
-  height: 180px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #111;
-  position: relative;
-  transition: transform 0.3s ease;
-}
+  /* Feed grid (two columns) */
+  .feed-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+  .feed-item{border-radius:12px;overflow:hidden;background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 28px rgba(0,0,0,0.6);transition:transform var(--trans)}
+  .feed-item:hover{transform:translateY(-6px)}
+  .feed-item img{width:100%;height:130px;object-fit:cover;display:block}
+  .feed-body{padding:10px}
+  .feed-title{font-weight:600;color:#e7fbff;font-size:13px}
+  .feed-meta{font-size:11px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+  /* Bottom nav fixed */
+  .bottom-nav{
+    position:fixed;left:10px;right:10px;bottom:12px;height:66px;border-radius:18px;background:linear-gradient(90deg, rgba(2,6,12,0.88), rgba(4,10,20,0.72));
+    display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.6);z-index:60
+  }
+  .nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:11px;cursor:pointer;user-select:none}
+  .nav-btn.active{color:var(--accent);transform:translateY(-3px)}
 
-.card:hover {
-  transform: scale(1.05);
-}
+  /* Floating upload/play button (central) */
+  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;z-index:70}
+  .fab{
+    width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#002024;font-size:22px;font-weight:800;box-shadow:0 18px 50px rgba(0,216,255,0.14);border:3px solid rgba(255,255,255,0.03);transition:transform var(--trans)
+  }
+  .fab:active{transform:translateY(2px) scale(.98)}
 
-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: rgba(10, 10, 15, 0.95);
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0.6rem 0;
-}
+  /* Modal / upload panel */
+  .modal {
+    position:fixed;left:12px;right:12px;bottom:100px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:90;display:none;
+  }
+  .modal.show{display:block}
+  .file-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .file-row input[type=file]{display:block}
 
-.nav-btn {
-  color: #aaa;
-  font-size: 1.4rem;
-  transition: 0.3s;
-}
+  /* Comments drawer */
+  .drawer{
+    position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#061324,#03101b);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:100;display:none;flex-direction:column;
+  }
+  .drawer.show{display:flex}
+  .drawer .handle{width:40px;height:5px;background:rgba(255,255,255,0.06);border-radius:20px;margin:6px auto}
+  .comments{overflow:auto;margin-top:8px;flex:1;padding-right:6px}
+  .comment{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:10px}
+  .comment strong{display:block;color:#e7fbff}
 
-.nav-btn:hover, .active {
-  color: #00ffff;
-  text-shadow: 0 0 8px #00ffff;
-}
-
-.play-btn {
-  background: radial-gradient(circle, #00ffff, #0077ff);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.8rem;
-  box-shadow: 0 0 20px #00ffff80;
-  transform: translateY(-15px);
-  transition: 0.3s;
-}
-
-.play-btn:hover {
-  transform: translateY(-18px) scale(1.05);
-  box-shadow: 0 0 25px #00ffffcc;
-}
-
-  </style>
-  <script src="https://kit.fontawesome.com/a2d9b6b8f1.js" crossorigin="anonymous"></script>
+  /* small screens */
+  @media (max-width:420px){
+    .media-card{width:135px;height:195px}
+    .feed-item img{height:120px}
+    .fab{width:58px;height:58px;font-size:20px}
+  }
+</style>
 </head>
-<body>  <header>
-    <i class="fas fa-bars icon-btn"></i>
-    <h1>SinFiltro</h1>
-    <i class="fas fa-search icon-btn"></i>
-  </header>  <main>
-    <section>
-      <h2>Tendencias</h2>
-      <div class="scroll-row">
-        <div class="card"><img src="https://picsum.photos/200/300?random=1" alt=""></div>
-        <div class="card"><img src="https://picsum.photos/200/300?random=2" alt=""></div>
-        <div class="card"><img src="https://picsum.photos/200/300?random=3" alt=""></div>
-        <div class="card"><img src="https://picsum.photos/200/300?random=4" alt=""></div>
+<body>
+
+<header>
+  <div class="left">
+    <div class="icon" id="menuBtn" title="Menú">☰</div>
+  </div>
+
+  <div class="brand" aria-hidden="false">
+    <div class="title">SinFiltro</div>
+    <div class="subtitle">Tu espacio sin límites</div>
+  </div>
+
+  <div class="right">
+    <div class="icon" id="searchBtn" title="Buscar">🔎</div>
+  </div>
+</header>
+
+<div class="search-wrap" id="searchWrap">
+  <input id="searchInput" class="search-input" placeholder="Buscar videos, imágenes, usuarios..." aria-label="Buscar"/>
+</div>
+
+<main id="main">
+  <section class="hero" aria-label="presentación">
+    <h2>Descubre lo auténtico</h2>
+    <p>Ve videos y fotos creadas por la comunidad. Da like, comenta y comparte.</p>
+  </section>
+
+  <!-- Horizontal sections -->
+  <section class="section" aria-labelledby="trending">
+    <div class="section-header">
+      <h3 id="trending">🔥 En Tendencia</h3>
+      <div class="see-all" id="seeTrending">Ver todo</div>
+    </div>
+    <div class="h-scroll" id="trendingRow" aria-live="polite"></div>
+  </section>
+
+  <section class="section" aria-labelledby="recent">
+    <div class="section-header">
+      <h3 id="recent">⏮️ Vistos recientemente</h3>
+      <div class="see-all" id="seeRecent">Ver todo</div>
+    </div>
+    <div class="h-scroll" id="recentRow"></div>
+  </section>
+
+  <section class="section" aria-labelledby="recommended">
+    <div class="section-header">
+      <h3 id="recommended">🎯 Recomendados</h3>
+      <div class="see-all" id="seeReco">Ver todo</div>
+    </div>
+    <div class="feed-grid" id="feedGrid"></div>
+  </section>
+</main>
+
+<!-- Floating central action -->
+<div class="fab-wrap" aria-hidden="false">
+  <button class="fab" id="openUpload" title="Subir / Crear">＋</button>
+</div>
+
+<!-- Upload modal -->
+<div class="modal" id="uploadModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <strong>Subir contenido</strong>
+  <div style="color:var(--muted);font-size:13px;margin-top:6px">Selecciona imagen o video (demo guarda en local).</div>
+  <div class="file-row">
+    <input type="file" id="fileInput" accept="image/*,video/*">
+    <button id="doUpload" style="background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;padding:8px 12px;border-radius:10px;color:#002;font-weight:700">Subir</button>
+  </div>
+  <div style="margin-top:10px;font-size:13px;color:var(--muted)">Tu archivo se añadirá al inicio del feed (solo en este dispositivo).</div>
+</div>
+
+<!-- Comments drawer -->
+<div class="drawer" id="commentsDrawer" aria-hidden="true">
+  <div class="handle" aria-hidden="true"></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+    <div style="flex:1"><strong id="drawerTitle">Comentarios</strong></div>
+    <button id="closeComments" style="background:none;border:none;color:var(--muted)">Cerrar</button>
+  </div>
+  <div class="comments" id="commentsList" role="log" aria-live="polite"></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+    <input id="commentInput" placeholder="Escribe un comentario..." style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#fff" />
+    <button id="postComment" style="background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;padding:10px;border-radius:10px;color:#002;font-weight:700">Enviar</button>
+  </div>
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+  <div class="nav-btn active" data-tab="home" id="navHome">🏠<span style="font-size:10px">Inicio</span></div>
+  <div class="nav-btn" data-tab="explore" id="navExplore">🔎<span style="font-size:10px">Explorar</span></div>
+  <div style="width:64px"></div><!-- space for FAB -->
+  <div class="nav-btn" data-tab="likes" id="navLikes">❤<span style="font-size:10px">Favoritos</span></div>
+  <div class="nav-btn" data-tab="profile" id="navProfile">👤<span style="font-size:10px">Perfil</span></div>
+</nav>
+
+<script>
+  // Demo starter data (images/videos placeholders)
+  const demo = [
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=11',title:'Paisaje urbano',meta:'12K • 2 días',likes:124,comments:3},
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=12',title:'Fotografía nocturna',meta:'8.2K • 1 día',likes:98,comments:10},
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=13',title:'Retrato artístico',meta:'6.4K • 5 días',likes:45,comments:2},
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=14',title:'Mini documental',meta:'210K • 1 semana',likes:340,comments:24},
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=15',title:'Short creativo',meta:'3.4K • 2 semanas',likes:72,comments:6},
+    {id:crypto.randomUUID(),type:'image',src:'https://picsum.photos/420/280?random=16',title:'Callejón con luces',meta:'18K • 4 días',likes:180,comments:12}
+  ];
+
+  // Storage keys
+  const STORAGE_KEY = 'sinfiltro_feed_v1';
+  const COMMENTS_KEY = 'sinfiltro_comments_v1';
+  const LIKES_KEY = 'sinfiltro_likes_v1';
+
+  // Load feed from storage or use demo
+  function loadFeed(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : demo.slice();
+  }
+  function saveFeed(feed){ localStorage.setItem(STORAGE_KEY, JSON.stringify(feed)); }
+
+  // Likes state
+  function loadLikes(){ return JSON.parse(localStorage.getItem(LIKES_KEY) || '{}') }
+  function saveLikes(obj){ localStorage.setItem(LIKES_KEY, JSON.stringify(obj)) }
+
+  // Comments state: {mediaId: [ {text,ts} ]}
+  function loadComments(){ return JSON.parse(localStorage.getItem(COMMENTS_KEY) || '{}') }
+  function saveComments(obj){ localStorage.setItem(COMMENTS_KEY, JSON.stringify(obj)) }
+
+  // DOM containers
+  const trendingRow = document.getElementById('trendingRow');
+  const recentRow = document.getElementById('recentRow');
+  const feedGrid = document.getElementById('feedGrid');
+
+  let feed = loadFeed();
+  let likes = loadLikes();
+  let comments = loadComments();
+
+  // Render functions
+  function createMediaCard(item){
+    const el = document.createElement('div');
+    el.className = 'media-card';
+    el.setAttribute('data-id', item.id);
+    el.innerHTML = `
+      <img class="media-thumb" src="${item.src}" alt="">
+      <div class="media-info">
+        <div class="media-title">${escapeHtml(item.title)}</div>
+        <div class="media-meta">${item.meta}</div>
       </div>
-    </section><section>
-  <h2>Últimos vistos</h2>
-  <div class="scroll-row">
-    <div class="card"><img src="https://picsum.photos/200/300?random=5" alt=""></div>
-    <div class="card"><img src="https://picsum.photos/200/300?random=6" alt=""></div>
-    <div class="card"><img src="https://picsum.photos/200/300?random=7" alt=""></div>
-  </div>
-</section>
+    `;
+    el.addEventListener('click', ()=> openViewer(item.id));
+    return el;
+  }
 
-<section>
-  <h2>Recomendados</h2>
-  <div class="scroll-row">
-    <div class="card"><img src="https://picsum.photos/200/300?random=8" alt=""></div>
-    <div class="card"><img src="https://picsum.photos/200/300?random=9" alt=""></div>
-    <div class="card"><img src="https://picsum.photos/200/300?random=10" alt=""></div>
-  </div>
-</section>
+  function renderHorizontals(){
+    trendingRow.innerHTML = '';
+    recentRow.innerHTML = '';
+    // Trend: top 4 by likes
+    const trend = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0)).slice(0,6);
+    trend.forEach(it=> trendingRow.appendChild(createMediaCard(it)));
+    // Recent: newest first
+    const recent = [...feed].slice().reverse().slice(0,6);
+    recent.forEach(it=> recentRow.appendChild(createMediaCard(it)));
+  }
 
-  </main>  <footer>
-    <i class="fas fa-home nav-btn active"></i>
-    <i class="fas fa-compass nav-btn"></i>
-    <div class="play-btn"><i class="fas fa-play"></i></div>
-    <i class="fas fa-video nav-btn"></i>
-    <i class="fas fa-user nav-btn"></i>
-  </footer></body>
-</html>
+  function createFeedItem(item){
+    const el = document.createElement('article');
+    el.className = 'feed-item';
+    el.setAttribute('data-id', item.id);
+    el.innerHTML = `
+      <img src="${item.src}" alt="">
+      <div class="feed-body">
+        <div class="feed-title">${escapeHtml(item.title)}</div>
+        <div class="feed-meta">
+          <div>${item.meta}</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="like-btn" aria-label="Like">❤ <span class="like-count">${item.likes||0}</span></button>
+            <button class="comment-btn" aria-label="Comentarios">💬 <span class="comment-count">${(comments[item.id]||[]).length}</span></button>
+            <button class="share-btn" aria-label="Compartir">🔗</button>
+          </div>
+        </div>
+      </div>
+    `;
+    // events
+    el.querySelector('.like-btn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      toggleLike(item.id, el);
+    });
+    el.querySelector('.comment-btn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      openComments(item.id, item.title);
+    });
+    el.querySelector('.share-btn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      shareItem(item);
+    });
+    el.addEventListener('click', ()=> openViewer(item.id));
+    return el;
+  }
+
+  function renderFeed(){
+    feedGrid.innerHTML = '';
+    feed.forEach(it=> feedGrid.appendChild(createFeedItem(it)));
+  }
+
+  // Viewer (simple full-screen modal)
+  function openViewer(id){
+    const item = feed.find(x=>x.id===id);
+    if(!item) return;
+    // simple viewer using window.open for demo (or modal)
+    const w = window.open('', '_blank');
+    w.document.write(`<title>${escapeHtml(item.title)}</title><style>body{margin:0;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh}img,video{max-width:100%;max-height:100%;display:block}</style>`);
+    if(item.type==='video'){
+      w.document.write(`<video src="${item.src}" controls autoplay></video>`);
+    } else {
+      w.document.write(`<img src="${item.src}" alt="${escapeHtml(item.title)}">`);
+    }
+    w.document.close();
+  }
+
+  // Toggle like
+  function toggleLike(id, el){
+    likes = loadLikes();
+    const liked = !!likes[id];
+    if(liked){ delete likes[id]; }
+    else { likes[id]=true; }
+    saveLikes(likes);
+    // update counts (naive: increase/decrease stored feed)
+    const idx = feed.findIndex(f=>f.id===id);
+    if(idx>=0){
+      feed[idx].likes = feed[idx].likes || 0;
+      feed[idx].likes = liked ? Math.max(0, feed[idx].likes-1) : feed[idx].likes+1;
+      saveFeed(feed);
+    }
+    renderFeed();
+    renderHorizontals();
+  }
+
+  // Comments drawer
+  let currentCommentTarget = null;
+  function openComments(id, title){
+    currentCommentTarget = id;
+    document.getElementById('drawerTitle').textContent = `Comentarios — ${title}`;
+    const list = document.getElementById('commentsList');
+    list.innerHTML = '';
+    const arr = comments[id] || [];
+    arr.forEach(c=>{
+      const d = document.createElement('div');
+      d.className='comment';
+      d.innerHTML = `<strong>Usuario</strong><div style="color:var(--muted);font-size:13px">${escapeHtml(c.text)}</div>`;
+      list.appendChild(d);
+    });
+    document.getElementById('commentsDrawer').classList.add('show');
+  }
+  document.getElementById('closeComments').addEventListener('click', ()=> document.getElementById('commentsDrawer').classList.remove('show'));
+  document.getElementById('postComment').addEventListener('click', ()=>{
+    const txt = document.getElementById('commentInput').value.trim();
+    if(!txt || !currentCommentTarget) return;
+    comments[currentCommentTarget] = comments[currentCommentTarget] || [];
+    comments[currentCommentTarget].push({text:txt,ts:Date.now()});
+    saveComments(comments);
+    document.getElementById('commentInput').value='';
+    openComments(currentCommentTarget, feed.find(f=>f.id===currentCommentTarget).title);
+    renderFeed();
+  });
+
+  // Share (uses navigator.share if available)
+  function shareItem(item){
+    const url = item.src;
+    if(navigator.share){
+      navigator.share({title:item.title,text:'Mira esto en SinFiltro',url});
+    } else {
+      // fallback: copy link
+      navigator.clipboard.writeText(url).then(()=> alert('Enlace copiado al portapapeles'));
+    }
+  }
+
+  // Upload handling (local demo)
+  document.getElementById('openUpload').addEventListener('click', ()=> toggleUploadModal());
+  document.getElementById('doUpload').addEventListener('click', doUpload);
+  document.getElementById('fileInput').addEventListener('change', ()=> {/* file chosen */});
+
+  function toggleUploadModal(){ document.getElementById('uploadModal').classList.toggle('show') }
+
+  function doUpload(){
+    const f = document.getElementById('fileInput').files[0];
+    if(!f){ alert('Selecciona un archivo'); return; }
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const url = e.target.result;
+      const newItem = {id:crypto.randomUUID(), type: f.type.startsWith('video') ? 'video':'image', src:url, title: f.name || 'Nuevo contenido', meta:'Ahora', likes:0, comments:0};
+      feed.unshift(newItem);
+      saveFeed(feed);
+      renderFeed();
+      renderHorizontals();
+      document.getElementById('uploadModal').classList.remove('show');
+      document.getElementById('fileInput').value='';
+      // quick feedback
+      alert('Contenido subido (demo local).');
+    };
+    reader.readAsDataURL(f);
+  }
+
+  // Search toggle
+  const searchBtn = document.getElementById('searchBtn');
+  const searchWrap = document.getElementById('searchWrap');
+  const searchInput = document.getElementById('searchInput');
+  searchBtn.addEventListener('click', ()=>{
+    if(searchWrap.style.display==='block'){ searchWrap.style.display='none'; searchInput.value=''; filterFeed(''); }
+    else { searchWrap.style.display='block'; searchInput.focus(); }
+  });
+  searchInput.addEventListener('input', (e)=> filterFeed(e.target.value));
+
+  function filterFeed(q){
+    q = (q||'').toLowerCase().trim();
+    if(!q){ renderFeed(); renderHorizontals(); return; }
+    const filtered = feed.filter(it => it.title.toLowerCase().includes(q));
+    // render filtered in feedGrid and horizontals
+    feedGrid.innerHTML=''; filtered.forEach(it=> feedGrid.appendChild(createFeedItem(it)));
+    trendingRow.innerHTML=''; recentRow.innerHTML=''; 
