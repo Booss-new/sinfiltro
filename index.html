@@ -1,62 +1,63 @@
-<!-- index.html — SinFiltro Ultra Mobile (todo en 1 archivo, copia y pega) -->
+<!-- index.html — SinFiltro Ultra Mobile (versión final, todo en 1 archivo) -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>SinFiltro — Ultra Mobile</title>
-<meta name="description" content="SinFiltro — comparte fotos y videos. Demo móvil premium: scroll infinito, filas horizontales, smart-lazy, previsualización, reproductor flotante, monetización demo y optimizaciones."/>
+<title>SinFiltro — Ultra Mobile (Final)</title>
+<meta name="description" content="SinFiltro — comparte fotos y videos. Demo móvil premium: scroll infinito, filas horizontales, smart-lazy, previsualización, reproductor flotante, menú flotante, y optimizaciones."/>
 <meta name="theme-color" content="#00d1ff"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-/* -------------------- VARIABLES & BASE -------------------- */
+/* =================== VARIABLES & BASE =================== */
 :root{
   --bg-1:#05060a; --bg-2:#071226;
   --accent-1:#00d1ff; --accent-2:#8a6eff;
   --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.62);
   --radius:12px; --fast:150ms; --mid:260ms; --max-width:720px;
-  --text:#eaf7ff;
-  --grid-max-nodes:100; --grid-trim:24;
+  --text:#eaf7ff; --glass: rgba(255,255,255,0.04);
+  --grid-max-nodes:120; --grid-trim:28;
 }
 body.light{
   --bg-1:#f6f9ff; --bg-2:#eef6ff; --text:#071226; --muted:#596575; --accent-1:#0066cc;
 }
+
+/* Allow native scrolling (important) */
+html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow-y:auto;touch-action:pan-y}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit;text-decoration:none}
 
-/* -------------------- BACKGROUND & LAYOUT -------------------- */
+/* Background decorative layer */
 .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
-.bg-layer{position:absolute;inset:-10% -20% -10% -20%;background:
+.bg-layer{position:absolute;inset:-10% -25% -10% -25%;background:
   radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
   radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
   filter:blur(26px) saturate(1.03);transition:transform 9s linear;will-change:transform}
 
-/* header */
+/* Header */
 .header{position:sticky;top:0;z-index:240;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.02)}
 .left-row{display:flex;align-items:center;gap:12px}
 .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer}
 .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .tag{font-size:11px;color:var(--muted)}
 
-/* scrollable content */
-.scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+/* Container (page content flows naturally) */
 .container{max-width:var(--max-width);margin:0 auto;padding:12px;contain:layout}
 
-/* hero */
+/* Hero */
 .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 36px var(--card-shadow)}
 .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
 .hero p{margin-top:6px;color:var(--muted);font-size:13px}
 
-/* section headers */
+/* Sections header */
 .section{margin-top:14px}
 .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
 .section .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-/* two-row horizontal scrollers */
+/* Two-row horizontal scrollers */
 .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
 .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .h-row::-webkit-scrollbar{display:none}
@@ -68,7 +69,7 @@ a{color:inherit;text-decoration:none}
 .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 24px rgba(0,0,0,0.35);z-index:6}
 .play-ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.45);z-index:8}
 
-/* grid vertical for infinite feed after sections */
+/* Grid vertical for infinite feed after sections */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
 .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 36px var(--card-shadow);cursor:pointer}
 .grid img{width:100%;height:150px;object-fit:cover}
@@ -76,11 +77,16 @@ a{color:inherit;text-decoration:none}
 .grid .title{font-weight:700}
 .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-/* FAB & radial */
-.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:290;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-.radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:289;pointer-events:none;opacity:0;transition:opacity var(--fast)}
+/* FAB & radial menu */
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:56px;width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:290;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+.radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:12px;align-items:center;z-index:289;pointer-events:none;opacity:0;transition:opacity var(--fast)}
 .radial.show{opacity:1;pointer-events:auto}
-.radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+.radial button{width:56px;height:56px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+
+/* Floating creator menu (fresón) */
+.creator-menu{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;z-index:295;display:none;gap:8px;flex-direction:column;align-items:center;padding:10px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.04);box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+.creator-menu.show{display:flex}
+.creator-menu button{min-width:220px;padding:10px;border-radius:12px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001;font-weight:700;display:flex;align-items:center;gap:10px;justify-content:center}
 
 /* bottom nav */
 .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:280}
@@ -99,31 +105,37 @@ a{color:inherit;text-decoration:none}
 .viewer img{width:100%;height:auto;display:block}
 .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
-/* floating mini player */
+/* mini floating player */
 .mini-player{position:fixed;right:12px;bottom:96px;width:160px;height:90px;background:#000;border-radius:10px;overflow:hidden;z-index:295;display:none;box-shadow:0 20px 70px rgba(0,0,0,0.6)}
 .mini-player video{width:100%;height:100%;object-fit:cover}
 
-/* preivew hover */
+/* preview pop */
 .preview-pop{position:fixed;z-index:400;pointer-events:none;background:rgba(0,0,0,0.5);border-radius:10px;padding:6px;display:none;transform-origin:center;backdrop-filter:blur(6px)}
 
-/* animations & misc */
-.fade-up{animation:fadeUp .5s cubic-bezier(.2,.9,.2,1) both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* shimmer skeleton */
 .skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+/* fade animation */
+.fade-up{animation:fadeUp .5s cubic-bezier(.2,.9,.2,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* responsive tweaks */
 @media (max-width:420px){
   .card-small{min-width:140px;height:96px}
   .grid img{height:120px}
   .fab{width:64px;height:64px}
   .radial{bottom:112px}
   .panel{width:92%;left:4%}
+  .creator-menu button{min-width:180px}
 }
 </style>
 </head>
 <body>
+
   <div class="bg-wrap"><div id="bgLayer" class="bg-layer" aria-hidden="true"></div></div>
 
+  <!-- Header -->
   <header class="header" role="banner">
     <div class="left-row">
       <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
@@ -138,6 +150,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </header>
 
+  <!-- Overlay & Panel -->
   <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
@@ -148,24 +161,27 @@ a{color:inherit;text-decoration:none}
     <nav style="display:flex;flex-direction:column;gap:8px">
       <button id="profileBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
       <button id="settingsBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button id="notifyBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔔 Notificaciones (demo)</button>
+      <button id="notifyBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔔 Notificaciones</button>
       <button id="monetBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
       <button id="logoutBtn" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
     </nav>
   </aside>
 
+  <!-- Search overlay (glass style) -->
   <div id="searchOverlay" style="position:fixed;left:12px;right:12px;top:72px;z-index:280;display:none">
     <input id="searchInput" placeholder="Buscar videos, imágenes o usuarios..." aria-label="Buscar" style="width:100%;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--text)">
     <div id="searchSuggestions" style="margin-top:8px;display:none;background:rgba(255,255,255,0.02);border-radius:10px;padding:6px"></div>
   </div>
 
-  <main class="scroll" id="scrollArea" tabindex="0" role="main">
+  <!-- Main content (native scrolling) -->
+  <main id="mainContent" role="main">
     <div class="container">
       <section class="hero fade-up" aria-label="Presentación">
         <h1 id="heroTitle">Descubre lo auténtico</h1>
         <p id="heroSub">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
+      <!-- Tendencias (2 filas) -->
       <section class="section" aria-label="tendencias">
         <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrend">Ver todo</div></div>
         <div class="h-stack">
@@ -174,6 +190,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </section>
 
+      <!-- Recomendados (2 filas) -->
       <section class="section" aria-label="recomendados">
         <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
         <div class="h-stack">
@@ -182,6 +199,7 @@ a{color:inherit;text-decoration:none}
         </div>
       </section>
 
+      <!-- Antes visto (2 filas) -->
       <section class="section" aria-label="antes visto">
         <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
         <div class="h-stack">
@@ -190,12 +208,13 @@ a{color:inherit;text-decoration:none}
         </div>
       </section>
 
+      <!-- Explorar: grid vertical infinito -->
       <section class="section" aria-label="explorar">
         <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
       </section>
 
-      <!-- creator modal (hidden) -->
+      <!-- Creator modal (hidden by default) -->
       <div id="creatorModal" style="display:none;position:fixed;left:12px;right:12px;bottom:120px;border-radius:12px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 40px rgba(0,0,0,0.7);z-index:360">
         <strong>Subir contenido (demo)</strong>
         <div style="color:var(--muted);font-size:13px;margin-top:8px">Selecciona imagen o video. Se guarda localmente (demo).</div>
@@ -209,6 +228,12 @@ a{color:inherit;text-decoration:none}
     </div>
   </main>
 
+  <!-- FAB, Creator menu & radial -->
+  <div id="creatorMenu" class="creator-menu" aria-hidden="true">
+    <button id="cmPhoto">📸 Subir Foto</button>
+    <button id="cmVideo">🎥 Subir Video</button>
+    <button id="cmPost">✍️ Crear publicación</button>
+  </div>
   <div id="radial" class="radial" aria-hidden="true">
     <button id="optUpload" title="Subir foto/video">📤</button>
     <button id="optPost" title="Crear publicación">✏️</button>
@@ -216,6 +241,7 @@ a{color:inherit;text-decoration:none}
   </div>
   <button id="fab" class="fab" aria-label="Crear">＋</button>
 
+  <!-- Bottom nav -->
   <nav class="bottom-nav" role="navigation">
     <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
     <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
@@ -224,6 +250,7 @@ a{color:inherit;text-decoration:none}
     <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
   </nav>
 
+  <!-- Viewer immersive -->
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
     <div class="card">
       <div id="viewerInner"></div>
@@ -236,59 +263,49 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+  <!-- Mini player & preview -->
   <div id="miniPlayer" class="mini-player" aria-hidden="true"></div>
   <div id="previewPop" class="preview-pop" aria-hidden="true"></div>
 
 <script>
-/* ============================
-   SinFiltro Ultra Mobile — Final
-   Integraciones solicitadas (excluidas 9,11,12,13)
-   - smart lazy (images + videos)
-   - performance auto (reduce anims)
-   - preview pop
-   - local recommendations (localStorage)
-   - auto theme detect
-   - reactions (local)
-   - offline basic (sw)
-   - deferred non-critical scripts
-   - mini floating player
-   - search predictive
-   - creator upload demo
-   - smart scroll dynamic
-   - blur dynamics & monetization placeholders
-   - multilingual basic detection
-   ============================ */
+/* ======================================================
+   SinFiltro Ultra Mobile — Código final integrado
+   - Mantiene diseño aprobado
+   - Scroll nativo desde cualquier parte
+   - Carruseles horizontales (2 filas por sección)
+   - Grid vertical infinito
+   - Lazy-load inteligente (images + video poster)
+   - Preview (long-press / hover)
+   - Menu lateral, búsqueda, theme persistente
+   - FAB con menú "fresón" (Subir Foto/Video/Create)
+   - Mini floating player
+   - Small monetization placeholders
+   - PWA basic registration (service worker blob)
+   ====================================================== */
 
-/* ---------- Helpers ---------- */
+/* -------------------- Helpers -------------------- */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 const mkSmallImg = i => `https://picsum.photos/320/200?random=${Math.floor(Math.random()*100000)+i}`;
 const SUPPORTS_IDLE = ('requestIdleCallback' in window);
+const runIdle = SUPPORTS_IDLE ? (cb)=>requestIdleCallback(cb,{timeout:800}) : (cb)=>setTimeout(cb,600);
 
-/* ---------- Device/perf heuristics ---------- */
+/* Performance heuristics */
 const deviceMemory = navigator.deviceMemory || 1;
-const lowMemory = deviceMemory <= 1; // treat <=1GB as low
+const lowMemory = deviceMemory <= 1;
 const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* Apply performance mode */
 if(lowMemory || prefersReducedMotion){
   document.documentElement.style.setProperty('--mid','120ms');
   document.documentElement.style.setProperty('--fast','90ms');
-  // reduce blur intensity (CSS still present)
 }
 
-/* ---------- Multilanguage (simple) ---------- */
-const userLang = (navigator.language || 'es').split('-')[0];
-const LANGS = { en: 'Descubre the authentic', es: 'Descubre lo auténtico' };
-$('#heroTitle').textContent = LANGS[userLang] ? LANGS[userLang] : LANGS['es'];
-
-/* ---------- Data pool (images & few videos) ---------- */
-const POOL_SIZE = 160;
+/* -------------------- Data pool -------------------- */
+const POOL_SIZE = 140;
 let pool = Array.from({length: POOL_SIZE}).map((_,i)=>({
   id: 'p'+i,
-  src: (i%7===0) ? `https://sample-videos.com/img/Sample-jpg-image-500kb.jpg` : mkImg(i),
+  src: (i%7===0) ? 'https://sample-videos.com/img/Sample-jpg-image-500kb.jpg' : mkImg(i),
   small: mkSmallImg(i),
   kind: (i%7===0) ? 'video' : 'image',
   title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
@@ -300,44 +317,31 @@ let reco = pool.slice(12,24);
 let recent = pool.slice(24,36);
 let grid = pool.slice(36,56);
 
-/* ---------- DOM refs ---------- */
+/* -------------------- DOM refs -------------------- */
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 
 const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), closePanelBtn = $('#closePanel');
-const fab = $('#fab'), radial = $('#radial');
+const fab = $('#fab'), radial = $('#radial'), creatorMenu = $('#creatorMenu');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
 const themeBtn = $('#themeBtn'), searchBtn = $('#searchBtn'), searchOverlay = $('#searchOverlay'), searchInput = $('#searchInput'), searchSuggestions = $('#searchSuggestions');
-const bgLayer = $('#bgLayer'), scrollArea = $('#scrollArea');
+const bgLayer = $('#bgLayer'), mainContent = $('#mainContent');
 const creatorModal = $('#creatorModal'), fileInput = $('#fileInput'), uploadBtn = $('#uploadBtn'), uploadPreview = $('#uploadPreview');
 const miniPlayer = $('#miniPlayer'), previewPop = $('#previewPop');
 
-/* ---------- Local recommendations state ---------- */
-const REC_KEY = 'sinfiltro.rec.v1';
-let recStats = JSON.parse(localStorage.getItem(REC_KEY) || '{}'); // {kind_counts: {image:10, video:3}, viewed: {p1:3} }
-
-/* Helpers to persist rec */
-function bumpRec(item){
-  recStats.viewed = recStats.viewed || {};
-  recStats.viewed[item.id] = (recStats.viewed[item.id]||0)+1;
-  recStats.kind_counts = recStats.kind_counts || {};
-  recStats.kind_counts[item.kind] = (recStats.kind_counts[item.kind]||0)+1;
-  localStorage.setItem(REC_KEY, JSON.stringify(recStats));
-}
-
-/* ---------- Throttle / Debounce / Idle wrappers ---------- */
-function throttle(fn, wait=100){ let last=0, t; return function(...args){ const now=Date.now(); if(now-last>=wait){ last=now; fn.apply(this,args);} else { clearTimeout(t); t=setTimeout(()=>{ last=Date.now(); fn.apply(this,args); }, wait-(now-last)); } }; }
+/* -------------------- Utility functions -------------------- */
+function throttle(fn, wait=100){ let last=0, t; return function(...args){ const now = Date.now(); if(now-last>=wait){ last=now; fn.apply(this,args); } else { clearTimeout(t); t=setTimeout(()=>{ last=Date.now(); fn.apply(this,args); }, wait-(now-last)); } }; }
 function debounce(fn, wait=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a), wait); }; }
-const runIdle = SUPPORTS_IDLE ? (cb)=>requestIdleCallback(cb,{timeout:800}) : (cb)=>setTimeout(cb, 600);
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-/* ---------- Lazy-load (images + videos poster) ---------- */
+/* -------------------- Lazy load (images & video poster) -------------------- */
 let imgObserver = null;
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src], video[data-poster]');
   if(!('IntersectionObserver' in window)){
-    imgs.forEach(i => { if(i.tagName==='IMG'){ i.src = i.dataset.src; i.removeAttribute('data-src'); } else { i.poster = i.dataset.poster; i.removeAttribute('data-poster'); }});
+    imgs.forEach(i => { if(i.tagName==='IMG'){ i.src = i.dataset.src; i.removeAttribute('data-src'); } else { if(i.dataset.poster){ i.poster = i.dataset.poster; i.removeAttribute('data-poster'); } }});
     return;
   }
   if(!imgObserver){
@@ -345,14 +349,10 @@ function lazyObserve(root=document){
       entries.forEach(e=>{
         if(e.isIntersecting){
           const el = e.target;
-          if(el.tagName === 'IMG'){
-            el.src = el.dataset.src;
-            el.onload = ()=> el.parentElement.classList && el.parentElement.classList.remove('skel');
-            el.removeAttribute('data-src');
-          } else if(el.tagName === 'VIDEO'){
-            // set poster if present
+          if(el.tagName === 'IMG'){ el.src = el.dataset.src; el.onload = ()=> el.parentElement.classList && el.parentElement.classList.remove('skel'); el.removeAttribute('data-src'); }
+          else if(el.tagName === 'VIDEO'){
             if(el.dataset.poster){ el.poster = el.dataset.poster; el.removeAttribute('data-poster'); }
-            // if autoplay policy allows, try to play muted small preview
+            // Try to play a muted preview if allowed
             try{ el.muted = true; el.setAttribute('playsinline',''); el.play().catch(()=>{}); }catch(e){}
           }
           obs.unobserve(el);
@@ -363,16 +363,13 @@ function lazyObserve(root=document){
   imgs.forEach(i=> imgObserver.observe(i));
 }
 
-/* ---------- Card creators ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
+/* -------------------- Card creators -------------------- */
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.tabIndex = 0;
-  // choose small poster to reduce payload
   const poster = item.small || item.src;
-  if(item.kind==='video'){
+  if(item.kind === 'video'){
     d.innerHTML = `<video data-poster="${poster}" muted loop playsinline></video>
       ${item.likes>700?'<div class="mini-badge">TOP</div>':''}
       <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
@@ -388,10 +385,8 @@ function makeSmallCard(item){
       </div>`;
   }
   d.dataset.id = item.id;
-  // click handlers
   d.addEventListener('click', ()=> openViewerByItem(item));
   d.addEventListener('contextmenu', (e)=> { e.preventDefault(); reactQuick(item, 'heart'); });
-  // preview on long press / hover (touch friendly)
   addPreviewHandlers(d, item);
   return d;
 }
@@ -400,7 +395,7 @@ function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
   const poster = item.small || item.src;
-  if(item.kind==='video'){
+  if(item.kind === 'video'){
     a.innerHTML = `<video data-poster="${poster}" muted loop playsinline></video><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   } else {
     a.innerHTML = `<img data-src="${poster}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
@@ -411,20 +406,17 @@ function makeGridCard(item){
   return a;
 }
 
-/* ---------- Preload next items for horizontal scrollers ---------- */
+/* -------------------- Row infinity & attach handlers -------------------- */
 function attachRowInfinity(r){
   if(r._attached) return; r._attached = true;
   r.addEventListener('scroll', throttle(()=>{
     if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
       runIdle(()=>{ for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); }, {});
     }
-    // pre-load next few posters slightly ahead
-    const imgs = r.querySelectorAll('img[data-src], video[data-poster]');
-    imgs.forEach((el,i)=>{ if(i < 6 && el.dataset && (el.dataset.src || el.dataset.poster)){ /* no-op: already observed */ }});
   }, 120));
 }
 
-/* ---------- Renderers ---------- */
+/* -------------------- Renderers -------------------- */
 function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{ const target = (i%2===0)?row1:row2; target.appendChild(makeSmallCard(it)); });
@@ -441,39 +433,32 @@ function renderGridInitial(){
   lazyObserve(gridFeed);
 }
 
-/* ---------- Smart Scroll (vertical) + infinite load ---------- */
-let lastScroll = 0, scrollSpeed = 0, loadingGrid = false;
-scrollArea.addEventListener('scroll', throttle(()=> {
-  const s = scrollArea.scrollTop || 0;
-  const dt = Math.max(1, Date.now() - (lastScroll || Date.now()));
-  scrollSpeed = Math.abs(s - (lastScroll||0)) / dt; // px per ms
-  lastScroll = s;
-  // adjust threshold based on speed (smarter)
+/* -------------------- Vertical infinite scroll (native page) -------------------- */
+let loadingGrid = false;
+window.addEventListener('scroll', throttle(()=>{
   const rect = gridFeed.getBoundingClientRect();
-  if(rect.top - window.innerHeight < (scrollSpeed>0.6 ? 320 : 160) && !loadingGrid){
+  if(rect.top - window.innerHeight < 220 && !loadingGrid){
     loadingGrid = true;
     runIdle(()=> appendMoreGridItems(6), {});
   }
-}, 100));
+}, 120));
 
 function appendMoreGridItems(count){
   for(let i=0;i<count;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
   lazyObserve(gridFeed);
-  // trim to avoid infinite DOM growth
-  const MAX = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-max-nodes')) || 100;
-  const TRIM = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-trim')) || 24;
+  // trim DOM to avoid huge memory
+  const MAX = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-max-nodes')) || 120;
+  const TRIM = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--grid-trim')) || 28;
   if(gridFeed.children.length > MAX){
     for(let i=0;i<TRIM;i++){ const f = gridFeed.firstElementChild; if(f) gridFeed.removeChild(f); }
   }
   loadingGrid = false;
 }
 
-/* ---------- Viewer (immersive) & mini player ---------- */
+/* -------------------- Viewer & mini player -------------------- */
 let activeList = [], currentIndex = 0;
 function openViewerByItem(item){
-  // bump recommendation stats
   bumpRec(item);
-  // determine list for navigation
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
@@ -484,7 +469,6 @@ function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
   if(it.kind === 'video'){
-    // large poster + click to play full (demo)
     const wrap = document.createElement('div'); wrap.style.position='relative';
     const poster = document.createElement('img'); poster.src = it.small || it.src; poster.alt = it.title; poster.style.maxWidth='100%';
     const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
@@ -501,39 +485,43 @@ function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
 function startFloatingPlayer(it){
-  // show small floating player with video demo (mute autoplay)
+  // create small floating player with a demo video (replace with real source in production)
   miniPlayer.innerHTML = `<video id="miniVid" src="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" playsinline muted autoplay loop></video>`;
   miniPlayer.style.display = 'block'; miniPlayer.setAttribute('aria-hidden','false');
-  // attach tap to expand to viewer
-  miniPlayer.onclick = ()=> { // expand
-    if(it) openViewerByItem(it);
-  };
+  miniPlayer.onclick = ()=> { openViewerByItem(it); };
 }
 
-/* ---------- reactions (local) ---------- */
+/* -------------------- Local recommendations (simple) -------------------- */
+const REC_KEY = 'sinfiltro.rec.v1';
+let recStats = JSON.parse(localStorage.getItem(REC_KEY) || '{}');
+function bumpRec(item){
+  recStats.viewed = recStats.viewed || {};
+  recStats.viewed[item.id] = (recStats.viewed[item.id]||0)+1;
+  recStats.kind_counts = recStats.kind_counts || {};
+  recStats.kind_counts[item.kind] = (recStats.kind_counts[item.kind]||0)+1;
+  localStorage.setItem(REC_KEY, JSON.stringify(recStats));
+}
+
+/* -------------------- Reactions (local) -------------------- */
 function reactQuick(item, type='heart'){
-  // store in localStorage simple reactions
   const RKEY = 'sinfiltro.reacts.v1';
   const reacts = JSON.parse(localStorage.getItem(RKEY) || '{}');
   reacts[item.id] = reacts[item.id] || {};
   reacts[item.id][type] = (reacts[item.id][type]||0)+1;
   localStorage.setItem(RKEY, JSON.stringify(reacts));
-  // tiny animation feedback (toast)
   const toast = document.createElement('div'); toast.textContent = (type==='heart'?'❤️':(type==='fire'?'🔥':'✨')) + ' Enviado'; toast.style.position='fixed'; toast.style.bottom='180px'; toast.style.left='50%'; toast.style.transform='translateX(-50%)'; toast.style.padding='8px 12px'; toast.style.borderRadius='12px'; toast.style.background='linear-gradient(90deg,var(--accent-1),var(--accent-2))'; toast.style.color='#001'; toast.style.zIndex=450; document.body.appendChild(toast);
   setTimeout(()=> toast.remove(),900);
 }
 
-/* ---------- Preview handlers (touch / long-press / hover) ---------- */
+/* -------------------- Preview handlers (long-press / hover) -------------------- */
 function addPreviewHandlers(el, item){
   let longpressTimer=null;
-  let startX=0,startY=0;
   el.addEventListener('touchstart', (e)=>{
-    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-    longpressTimer = setTimeout(()=> showPreviewAt(e.touches[0].clientX, e.touches[0].clientY, item), 380);
+    const t = e.touches[0];
+    longpressTimer = setTimeout(()=> showPreviewAt(t.clientX, t.clientY, item), 380);
   }, {passive:true});
-  el.addEventListener('touchmove', ()=> { clearTimeout(longpressTimer); });
+  el.addEventListener('touchmove', ()=> { clearTimeout(longpressTimer); hidePreview(); }, {passive:true});
   el.addEventListener('touchend', ()=> { clearTimeout(longpressTimer); hidePreview(); });
-  // mouse hover preview for desktop testing
   el.addEventListener('mouseenter', (e)=> { if(window.innerWidth>720) showPreviewAt(e.clientX, e.clientY, item); });
   el.addEventListener('mouseleave', hidePreview);
 }
@@ -546,23 +534,26 @@ function showPreviewAt(x,y,item){
   } else {
     previewPop.innerHTML = `<img src="${item.small||item.src}" style="width:180px;height:100px;object-fit:cover;border-radius:8px">`;
   }
-  previewPop.style.display='block'; previewPop.style.pointerEvents='none';
+  previewPop.style.display='block';
 }
 function hidePreview(){ previewPop.style.display='none'; previewPop.innerHTML=''; }
 
-/* ---------- Panel open/close ---------- */
+/* -------------------- Panel open/close -------------------- */
 function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
 function closePanel(){ overlay.style.display='none'; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', openPanel); closePanelBtn.addEventListener('click', closePanel); overlay.addEventListener('click', closePanel);
 
-/* ---------- FAB radial ---------- */
-fab.addEventListener('click', ()=> radial.classList.toggle('show'));
-$('#optUpload').addEventListener('click', ()=> { showCreator(); });
-$('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
-$('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
+/* -------------------- FAB & Creator menu interactions -------------------- */
+fab.addEventListener('click', ()=> {
+  // toggle creator menu (fresón)
+  const open = creatorMenu.classList.contains('show');
+  if(open){ creatorMenu.classList.remove('show'); } else { creatorMenu.classList.add('show'); }
+});
+$('#cmPhoto').addEventListener('click', ()=> { creatorMenu.classList.remove('show'); $('#fileInput').click(); showCreatorModal(); });
+$('#cmVideo').addEventListener('click', ()=> { creatorMenu.classList.remove('show'); $('#fileInput').click(); showCreatorModal(); });
+$('#cmPost').addEventListener('click', ()=> { creatorMenu.classList.remove('show'); alert('Crear publicación (demo)'); });
 
-/* ---------- creator upload demo ---------- */
-function showCreator(){ creatorModal.style.display = 'block'; creatorModal.style.zIndex = 380; }
+function showCreatorModal(){ creatorModal.style.display='block'; creatorModal.style.zIndex=380; }
 uploadBtn.addEventListener('click', ()=> {
   const f = fileInput.files[0];
   if(!f){ alert('Selecciona un archivo'); return; }
@@ -570,44 +561,40 @@ uploadBtn.addEventListener('click', ()=> {
   uploadPreview.innerHTML = '';
   if(f.type.startsWith('image/')) uploadPreview.innerHTML = `<img src="${url}" style="max-width:100%;border-radius:8px">`;
   else if(f.type.startsWith('video/')) uploadPreview.innerHTML = `<video src="${url}" controls style="max-width:100%;border-radius:8px"></video>`;
-  // simulate adding to grid (local only)
   const newItem = { id: 'u'+Date.now(), src: url, small: url, kind: f.type.startsWith('video/')?'video':'image', title: f.name, likes:0, comments:0, views:'0' };
   gridFeed.prepend(makeGridCard(newItem));
   lazyObserve(gridFeed);
-  setTimeout(()=> { creatorModal.style.display='none'; fileInput.value=''; uploadPreview.innerHTML=''; }, 900);
+  setTimeout(()=> { creatorModal.style.display='none'; fileInput.value=''; uploadPreview.innerHTML=''; }, 800);
 });
+document.addEventListener('click', (e)=> { if(!creatorMenu.contains(e.target) && e.target !== fab) creatorMenu.classList.remove('show'); });
 
-/* ---------- Theme persisted & auto detect ---------- */
-const THEME_KEY = 'sinfiltro.theme.v4';
+/* -------------------- Theme persist & auto-detect -------------------- */
+const THEME_KEY = 'sinfiltro.theme.vFinal';
 let theme = localStorage.getItem(THEME_KEY) || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); $('#themeBtn').textContent='☀️'; } else { document.body.classList.remove('light'); $('#themeBtn').textContent='🌗'; } }
 applyTheme(theme);
 themeBtn.addEventListener('click', ()=>{ theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* ---------- Search predictive (local suggestions) ---------- */
-const SUG_KEY = 'sinfiltro.suggest.v1';
+/* -------------------- Search predictive -------------------- */
+const SUG_KEY = 'sinfiltro.suggest.vFinal';
 let suggestions = JSON.parse(localStorage.getItem(SUG_KEY) || '["atardecer","neon","urbano","retrato","nocturna","visual"]');
-searchBtn.addEventListener('click', ()=> { searchOverlay.style.display='block'; searchInput && searchInput.focus(); searchSuggestions.style.display='none'; });
-searchInput && searchInput.addEventListener('input', debounce(e=>{
-  const q = e.target.value.trim().toLowerCase();
-  if(!q){ searchSuggestions.style.display='none'; return; }
-  const matches = suggestions.filter(s=> s.includes(q)).slice(0,6);
-  if(matches.length){
-    searchSuggestions.innerHTML = matches.map(m=>`<div class="sug" style="padding:6px;border-radius:8px;cursor:pointer">${m}</div>`).join('');
-    searchSuggestions.style.display='block';
-    searchSuggestions.querySelectorAll('.sug').forEach(el=>el.addEventListener('click', ()=> { searchInput.value = el.textContent; searchSuggestions.style.display='none'; alert('Buscar demo: '+el.textContent); }));
-  } else searchSuggestions.style.display='none';
-}, 160));
-searchInput && searchInput.addEventListener('keydown', e=> { if(e.key==='Escape') { searchOverlay.style.display='none'; searchSuggestions.style.display='none'; } if(e.key==='Enter'){ const q = searchInput.value.trim(); if(q){ suggestions = [q, ...suggestions.filter(s=>s!==q)].slice(0,30); localStorage.setItem(SUG_KEY, JSON.stringify(suggestions)); alert('Buscar demo: '+q); } } });
+searchBtn.addEventListener('click', ()=> { searchOverlay.style.display='block'; setTimeout(()=> searchInput && searchInput.focus(),80); searchSuggestions.style.display='none'; });
+if(searchInput){
+  searchInput.addEventListener('input', debounce(e=>{
+    const q = e.target.value.trim().toLowerCase(); if(!q){ searchSuggestions.style.display='none'; return; }
+    const matches = suggestions.filter(s=> s.includes(q)).slice(0,6);
+    if(matches.length){
+      searchSuggestions.innerHTML = matches.map(m=>`<div class="sug" style="padding:6px;border-radius:8px;cursor:pointer">${m}</div>`).join('');
+      searchSuggestions.style.display='block';
+      searchSuggestions.querySelectorAll('.sug').forEach(el=>el.addEventListener('click', ()=> { searchInput.value = el.textContent; searchSuggestions.style.display='none'; alert('Buscar demo: '+el.textContent); }));
+    } else searchSuggestions.style.display='none';
+  }, 160));
+  searchInput.addEventListener('keydown', e=> { if(e.key==='Escape'){ searchOverlay.style.display='none'; searchSuggestions.style.display='none'; } if(e.key==='Enter'){ const q = searchInput.value.trim(); if(q){ suggestions = [q, ...suggestions.filter(s=>s!==q)].slice(0,30); localStorage.setItem(SUG_KEY, JSON.stringify(suggestions)); alert('Buscar demo: '+q); } } });
+}
 
-/* ---------- Accessibility & keyboard ---------- */
-document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); searchOverlay.style.display='none'; } });
-viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-
-/* ---------- Monetization placeholder: insert promoted cards every X items ---------- */
+/* -------------------- Monetization placeholders (promoted cards) -------------------- */
 function insertPromotedAfter(container, interval=7){
   const promoted = document.createElement('div'); promoted.className='card-small fade-up'; promoted.innerHTML = `<img src="https://picsum.photos/320/200?random=promo"><div style="position:relative;z-index:6;padding:8px;color:#fff;font-weight:700">Promocionado • Patrocinio</div>`;
-  // append promoted elements across rows
   const children = Array.from(container.children);
   for(let i=interval;i<children.length;i+=interval+1){
     const clone = promoted.cloneNode(true);
@@ -615,14 +602,12 @@ function insertPromotedAfter(container, interval=7){
   }
 }
 
-/* ---------- Service worker & offline basic caching (dynamic) ---------- */
+/* -------------------- PWA Service Worker registration (blob) -------------------- */
 (function registerPWA(){
   if('serviceWorker' in navigator){
     const sw = `
-      const CACHE = 'sinfiltro-shell-v1';
-      self.addEventListener('install', e => {
-        e.waitUntil(caches.open(CACHE).then(c=> c.addAll(['./'])).catch(()=>{}));
-      });
+      const CACHE = 'sinfiltro-shell-final-v1';
+      self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c=> c.addAll(['./'])).catch(()=>{})); });
       self.addEventListener('fetch', e => {
         if(e.request.method !== 'GET') return;
         e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
@@ -637,7 +622,6 @@ function insertPromotedAfter(container, interval=7){
       navigator.serviceWorker.register(url).catch(()=>{});
     }catch(e){}
   }
-  // dynamic manifest for quick PWA install during dev
   try{
     const manifest = {
       "name":"SinFiltro",
@@ -654,25 +638,28 @@ function insertPromotedAfter(container, interval=7){
   }catch(e){}
 })();
 
-/* ---------- Initial render ---------- */
+/* -------------------- Initial render -------------------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  // seed rows for smoothness
   $$('.h-row').forEach(r=>{ if(r.children.length < 8) for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); lazyObserve(r); });
-  // small monetization (promoted cards)
   insertPromotedAfter(trendRow1,7);
   insertPromotedAfter(recoRow1,9);
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- Small accessibility: notify loads ---------- */
-window.addEventListener('load', ()=> console.log('SinFiltro Ultra loaded — ready'));
+/* -------------------- Basic interactions & accessibility -------------------- */
+document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); searchOverlay.style.display='none'; creatorModal.style.display='none'; } });
+viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 
-/* ---------- End of script ---------- */
+/* -------------------- Small debug log -------------------- */
+window.addEventListener('load', ()=> console.log('SinFiltro Ultra Mobile — listo'));
+
+/* ======================================================
+   Fin del script
+   ====================================================== */
 </script>
 </body>
 </html>
-```0
