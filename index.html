@@ -1,284 +1,421 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SinFiltro — Premium</title>
-  <style>
-    body {
-      margin: 0;
-      background: radial-gradient(circle at top, #0b0c10, #000);
-      font-family: "Poppins", sans-serif;
-      color: #fff;
-      overflow-x: hidden;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px 20px;
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-
-    header .logo {
-      font-size: 1.4em;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #00d1ff;
-      text-shadow: 0 0 10px #00d1ff;
-    }
-
-    header .menu-icon {
-      font-size: 1.5em;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    header .menu-icon:hover {
-      color: #00d1ff;
-    }
-
-    header .mode-btn {
-      border: none;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: 0.3s;
-    }
-
-    header .mode-btn:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    h2.section-title {
-      font-size: 1.2em;
-      margin: 20px 15px 10px;
-      color: #eee;
-    }
-
-    .section {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      padding-bottom: 10px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      padding: 0 15px;
-    }
-
-    .item {
-      position: relative;
-      width: 180px;
-      height: 100px;
-      border-radius: 15px;
-      overflow: hidden;
-      flex-shrink: 0;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      transition: transform 0.3s;
-    }
-
-    .item:hover {
-      transform: scale(1.05);
-    }
-
-    .item img,
-    .item video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .play-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 209, 255, 0.8);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.2em;
-      box-shadow: 0 0 15px #00d1ff;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .item:hover .play-btn {
-      opacity: 1;
-    }
-
-    .stats {
-      position: absolute;
-      bottom: 5px;
-      left: 5px;
-      font-size: 0.8em;
-      background: rgba(0, 0, 0, 0.5);
-      border-radius: 10px;
-      padding: 3px 6px;
-    }
-
-    .fab-container {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 20px;
-      z-index: 30;
-    }
-
-    .fab {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #00d1ff;
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4em;
-      cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    }
-
-    .fab:hover {
-      background: rgba(0, 209, 255, 0.2);
-      transform: scale(1.1);
-    }
-
-    .preview-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-
-    .preview-modal.active {
-      display: flex;
-    }
-
-    .preview-content {
-      max-width: 90%;
-      max-height: 80%;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
-    }
-
-    .preview-content img,
-    .preview-content video {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Premium Glass</title>
+<meta name="description" content="SinFiltro — demo premium. Secciones con 2 filas, scroll lateral infinito, feed vertical infinito, preview modal y menús funcionales.">
+<style>
+  :root{
+    --bg-1:#05060a; --bg-2:#071226;
+    --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.06);
+    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
+    --muted:#9fb0bf; --text:#eaf7ff;
+    --radius:14px; --trans:240ms;
+  }
+  html,body{height:100%;margin:0;font-family:Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto, Arial;color:var(--text);background:
+    radial-gradient(600px 300px at 10% 10%, rgba(0,200,255,0.02), transparent 8%),
+    linear-gradient(180deg,var(--bg-1),var(--bg-2));-webkit-font-smoothing:antialiased;overflow-y:auto;}
+  /* header */
+  header{position:sticky;top:0;z-index:120;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  .left{display:flex;align-items:center;gap:12px}
+  .menu-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+  .brand{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .right{display:flex;gap:8px;align-items:center}
+  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+  /* side drawer */
+  .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:130;display:none}
+  .drawer{position:fixed;left:0;top:0;bottom:0;width:78%;max-width:320px;background:linear-gradient(180deg,#071226,#041224);z-index:140;padding:18px;transform:translateX(-110%);transition:transform .28s;box-shadow:20px 0 60px rgba(0,0,0,0.6)}
+  .drawer.show{transform:translateX(0)}
+  .drawer-backdrop.show{display:block}
+  .drawer h3{margin:6px 0 12px 0}
+  .drawer .menu-item{padding:10px;border-radius:10px;cursor:pointer;color:var(--muted);margin-bottom:8px}
+  .drawer .menu-item:hover{background:rgba(255,255,255,0.01);color:var(--text)}
+  /* sections */
+  main{padding:12px 10px 120px}
+  .section{margin-bottom:18px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .section h2{margin:0;color:var(--accent-cyan);font-weight:700}
+  /* horizontal scroll grid: 2 filas */
+  .h-wrap{overflow-x:auto;padding-bottom:8px;display:block}
+  .h-grid{display:grid;grid-auto-flow:column;grid-auto-columns:200px;grid-template-rows:repeat(2,120px);gap:12px;align-items:start}
+  .h-grid::-webkit-scrollbar{height:8px}
+  .h-grid::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));border-radius:8px}
+  .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.6);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .card img,.card video{width:100%;height:100%;object-fit:cover;display:block}
+  .meta-bar{position:absolute;left:8px;right:8px;bottom:8px;background:linear-gradient(0deg,rgba(0,0,0,0.55),transparent);padding:6px;border-radius:8px;color:var(--text);display:flex;justify-content:space-between;align-items:center;font-size:12px}
+  .meta-left{display:flex;gap:8px;align-items:center}
+  .meta-right{font-size:12px;color:var(--muted)}
+  /* play button glass */
+  .play-glass{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.12);box-shadow:0 8px 30px rgba(0,0,0,0.6);transition:transform .22s,opacity .22s;opacity:0.98}
+  .play-glass .triangle{width:0;height:0;border-left:10px solid var(--accent-cyan);border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:4px}
+  .card:hover .play-glass{transform:translate(-50%,-50%) scale(1.08)}
+  /* bottom nav (floating) */
+  .bottom-nav{position:fixed;left:12px;right:12px;bottom:10px;height:72px;border-radius:18px;background:linear-gradient(180deg,rgba(2,8,16,0.9),rgba(4,12,22,0.85));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.02);box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:120}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:12px;cursor:pointer}
+  .nav-item.active{color:var(--accent-cyan);transform:translateY(-3px)}
+  /* preview modal */
+  .preview{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:200;padding:18px}
+  .preview.show{display:flex}
+  .preview .box{width:100%;max-width:900px;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .preview video{width:100%;height:auto;display:block}
+  .preview img{width:100%;display:block}
+  .controls{display:flex;justify-content:space-between;align-items:center;padding:10px;background:linear-gradient(180deg,rgba(0,0,0,0.6),transparent);color:var(--text)}
+  /* search/upload modals */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:210}
+  .modal.show{display:flex}
+  .modal .dialog{width:92%;max-width:520px;background:linear-gradient(180deg,#04121a,#071226);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  /* responsive tweaks */
+  @media (max-width:420px){
+    .h-grid{grid-auto-columns:160px;grid-template-rows:repeat(2,110px)}
+    .card{min-width:160px}
+    .play-glass{width:40px;height:40px}
+  }
+</style>
 </head>
 <body>
-
+  <!-- header -->
   <header>
-    <div class="menu-icon">☰</div>
-    <div class="logo">SinFiltro</div>
-    <button class="mode-btn">🌙</button>
+    <div class="left">
+      <div class="menu-btn" id="openDrawer" title="Menú">☰</div>
+      <div class="brand">SinFiltro</div>
+    </div>
+    <div class="right">
+      <div class="icon-btn" id="themeToggle" title="Cambiar tema">🌗</div>
+      <div class="icon-btn" id="openSearch" title="Buscar">🔎</div>
+    </div>
   </header>
 
-  <h2 class="section-title">Tendencias</h2>
-  <div class="section" id="tendencias"></div>
+  <!-- drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <aside class="drawer" id="drawer">
+    <h3>Cuenta</h3>
+    <div class="menu-item" id="miPerfil">Mi perfil</div>
+    <div class="menu-item" id="config">Configuración</div>
+    <div class="menu-item" id="notifs">Notificaciones</div>
+    <div class="menu-item" id="ayuda">Ayuda</div>
+    <div style="height:8px"></div>
+    <div class="menu-item" id="logout">Cerrar sesión</div>
+  </aside>
 
-  <h2 class="section-title">Recomendados</h2>
-  <div class="section" id="recomendados"></div>
+  <!-- main content -->
+  <main id="main">
+    <!-- sections (two rows each) -->
+    <section class="section" id="sec-tendencias">
+      <div class="section-header"><h2>Tendencias</h2></div>
+      <div class="h-wrap"><div class="h-grid" id="grid-tendencias"></div></div>
+    </section>
 
-  <h2 class="section-title">Antes visto</h2>
-  <div class="section" id="vistos"></div>
+    <section class="section" id="sec-recomendados">
+      <div class="section-header"><h2>Recomendados</h2></div>
+      <div class="h-wrap"><div class="h-grid" id="grid-recomendados"></div></div>
+    </section>
 
-  <h2 class="section-title">Explora más</h2>
-  <div class="section" id="explora"></div>
+    <section class="section" id="sec-antesvisto">
+      <div class="section-header"><h2>Antes visto</h2></div>
+      <div class="h-wrap"><div class="h-grid" id="grid-antesvisto"></div></div>
+    </section>
 
-  <div class="fab-container">
-    <div class="fab">🔍</div>
-    <div class="fab">⏫</div>
-    <div class="fab">📹</div>
-    <div class="fab">❤️</div>
+    <section class="section" id="sec-tusvideos">
+      <div class="section-header"><h2>Tus videos</h2></div>
+      <div class="h-wrap"><div class="h-grid" id="grid-tusvideos"></div></div>
+    </section>
+
+    <!-- vertical feed (infinite) -->
+    <section class="section" id="feed-section">
+      <div class="section-header"><h2>Explora más</h2></div>
+      <div id="vertical-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;padding:12px"></div>
+    </section>
+  </main>
+
+  <!-- bottom nav -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+    <div class="nav-item active" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+    <div class="nav-item" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
+    <div class="nav-item" id="navUpload">＋<div style="font-size:11px">Subir</div></div>
+    <div class="nav-item" id="navWatched">👁️<div style="font-size:11px">Antes visto</div></div>
+    <div class="nav-item" id="navYour">📺<div style="font-size:11px">Tus videos</div></div>
+  </nav>
+
+  <!-- preview modal -->
+  <div class="preview" id="preview">
+    <div class="box">
+      <div class="controls" id="previewControls">
+        <div id="previewTitle" style="font-weight:700"></div>
+        <div style="display:flex;gap:8px">
+          <button id="likeBtn" class="icon-btn" title="Me gusta">❤</button>
+          <button id="closePreview" class="icon-btn" title="Cerrar">✕</button>
+        </div>
+      </div>
+      <div id="previewMedia"></div>
+    </div>
   </div>
 
-  <div class="preview-modal" id="previewModal">
-    <div class="preview-content" id="previewContent"></div>
+  <!-- search modal -->
+  <div class="modal" id="searchModal">
+    <div class="dialog">
+      <h3>Buscar</h3>
+      <input id="searchInput" placeholder="Buscar usuarios, tags o títulos..." style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)">
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="closeSearch" class="icon-btn">Cerrar</button>
+        <button id="doSearch" class="icon-btn">Buscar</button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const sections = ['tendencias', 'recomendados', 'vistos', 'explora'];
-    sections.forEach(sec => {
-      const section = document.getElementById(sec);
-      for (let r = 0; r < 2; r++) {
-        const row = document.createElement('div');
-        row.className = 'row';
-        for (let i = 0; i < 10; i++) {
-          const item = document.createElement('div');
-          item.className = 'item';
-          const isVideo = Math.random() > 0.6;
-          if (isVideo) {
-            item.innerHTML = `
-              <video src="https://www.w3schools.com/html/mov_bbb.mp4" muted></video>
-              <div class="play-btn">▶</div>
-              <div class="stats">❤ ${Math.floor(Math.random()*500)} 💬 ${Math.floor(Math.random()*100)}</div>
-            `;
-          } else {
-            item.innerHTML = `
-              <img src="https://picsum.photos/400/200?random=${Math.random()}" />
-              <div class="stats">❤ ${Math.floor(Math.random()*500)} 💬 ${Math.floor(Math.random()*100)}</div>
-            `;
-          }
-          row.appendChild(item);
-        }
-        section.appendChild(row);
-      }
+  <!-- upload modal -->
+  <div class="modal" id="uploadModal">
+    <div class="dialog">
+      <h3>Subir contenido (demo)</h3>
+      <input id="fileInput" type="file" accept="image/*,video/*" style="width:100%;padding:6px;border-radius:8px">
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="cancelUpload" class="icon-btn">Cancelar</button>
+        <button id="submitUpload" class="icon-btn">Subir</button>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-top:8px">Demo local: los archivos no se envían a servidor.</p>
+    </div>
+  </div>
+
+<script>
+/* ---------- Utilities ---------- */
+const rand = n => Math.floor(Math.random()*n);
+const randBool = p => Math.random() < (p ?? 0.5);
+const accent = (t) => t ? 'Video' : 'Imagen';
+
+/* ---------- Containers ---------- */
+const grids = {
+  tendencias: document.getElementById('grid-tendencias'),
+  recomendados: document.getElementById('grid-recomendados'),
+  antesvisto: document.getElementById('grid-antesvisto'),
+  tusvideos: document.getElementById('grid-tusvideos'),
+};
+const verticalFeed = document.getElementById('vertical-feed');
+
+/* ---------- Create card element (image or video) ---------- */
+function makeCard(isVideo = false){
+  const card = document.createElement('div');
+  card.className = 'card';
+  // media
+  if(isVideo){
+    const v = document.createElement('video');
+    v.src = 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
+    v.preload = 'metadata';
+    v.muted = true;
+    v.playsInline = true;
+    card.appendChild(v);
+    // play glass
+    const play = document.createElement('div');
+    play.className = 'play-glass';
+    play.title = 'Reproducir';
+    play.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openPreview({type:'video',src:v.src,title:'Video demo',likes:card.dataset.likes,comments:card.dataset.comments,views:card.dataset.views});
     });
+    const tri = document.createElement('div'); tri.className = 'triangle';
+    play.appendChild(tri);
+    card.appendChild(play);
+  } else {
+    const img = document.createElement('img');
+    img.src = `https://picsum.photos/seed/${Math.floor(Math.random()*100000)}/640/420`;
+    img.alt = 'Imagen';
+    card.appendChild(img);
+    card.addEventListener('click', ()=> {
+      openPreview({type:'image',src:img.src,title:'Foto demo',likes:card.dataset.likes,comments:card.dataset.comments,views:card.dataset.views});
+    });
+  }
+  // stats
+  const likes = rand(900)+20;
+  const comments = rand(400);
+  const views = rand(2000)+100;
+  card.dataset.likes = likes; card.dataset.comments = comments; card.dataset.views = views;
+  const meta = document.createElement('div'); meta.className = 'meta-bar';
+  meta.innerHTML = `<div class="meta-left"><strong style="font-size:13px">${isVideo?'Video':'Foto'}</strong></div>
+    <div class="meta-right">${'❤ '+likes}&nbsp;&nbsp;${'💬 '+comments}&nbsp;&nbsp;${'👁 '+views+'K'}</div>`;
+  card.appendChild(meta);
+  return card;
+}
 
-    // Preview modal
-    document.querySelectorAll('.item').forEach(item=>{
-      item.addEventListener('click', ()=>{
-        const modal = document.getElementById('previewModal');
-        const content = document.getElementById('previewContent');
-        const img = item.querySelector('img');
-        const vid = item.querySelector('video');
-        if (img) content.innerHTML = `<img src="${img.src}" />`;
-        if (vid) content.innerHTML = `<video src="${vid.src}" controls autoplay></video>`;
-        modal.classList.add('active');
+/* ---------- Fill initial two-rows per section and set horizontal infinite listeners ---------- */
+function fillGrid(gridEl, seedType = 'mix', batch = 12){
+  // gridEl is .h-grid which is a two-row grid flowing by columns
+  for(let i=0;i<batch;i++){
+    const isVideo = seedType === 'video' ? true : seedType === 'image' ? false : randBool(0.45);
+    gridEl.appendChild(makeCard(isVideo));
+  }
+  // attach infinite horizontal loading
+  gridEl.addEventListener('scroll', () => {
+    if(gridEl._loading) return;
+    if(gridEl.scrollLeft + gridEl.clientWidth >= gridEl.scrollWidth - 140){
+      gridEl._loading = true;
+      setTimeout(()=> {
+        for(let i=0;i<8;i++) gridEl.appendChild(makeCard(randBool(0.45)));
+        gridEl._loading = false;
+      }, 500);
+    }
+  });
+}
+
+/* ---------- Populate sections ---------- */
+fillGrid(grids.tendencias,'mix', 16);
+fillGrid(grids.recomendados,'mix', 16);
+fillGrid(grids.antesvisto,'mix', 12);
+fillGrid(grids.tusvideos,'video', 12);
+
+/* ---------- Vertical infinite feed (after sections) ---------- */
+let verticalLoading = false;
+function addVerticalBatch(count = 12){
+  for(let i=0;i<count;i++){
+    const isVideo = randBool(0.45);
+    const wrapper = document.createElement('div');
+    wrapper.style.minHeight = '120px';
+    wrapper.className = 'card';
+    // reuse makeCard but want square sizing - clone
+    const card = makeCard(isVideo);
+    // adjust card inner element sizes for grid display
+    wrapper.innerHTML = card.innerHTML;
+    wrapper.dataset.likes = card.dataset.likes;
+    wrapper.dataset.comments = card.dataset.comments;
+    wrapper.dataset.views = card.dataset.views;
+    verticalFeed.appendChild(wrapper);
+    // click open preview
+    if(isVideo){
+      wrapper.querySelector('.play-glass')?.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const vsrc = wrapper.querySelector('video')?.src || 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4';
+        openPreview({type:'video',src:vsrc,title:'Video',likes:wrapper.dataset.likes,comments:wrapper.dataset.comments,views:wrapper.dataset.views});
       });
-    });
+    } else {
+      wrapper.querySelector('img')?.addEventListener('click', ()=>{
+        const src = wrapper.querySelector('img').src;
+        openPreview({type:'image',src,title:'Imagen',likes:wrapper.dataset.likes,comments:wrapper.dataset.comments,views:wrapper.dataset.views});
+      });
+    }
+  }
+}
+addVerticalBatch(14);
+window.addEventListener('scroll', ()=>{
+  if(verticalLoading) return;
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 300){
+    verticalLoading = true;
+    setTimeout(()=>{ addVerticalBatch(10); verticalLoading=false; }, 700);
+  }
+});
 
-    document.getElementById('previewModal').addEventListener('click', e=>{
-      if(e.target.id === 'previewModal') e.target.classList.remove('active');
-    });
-  </script>
+/* ---------- Preview modal logic ---------- */
+const preview = document.getElementById('preview');
+const previewMedia = document.getElementById('previewMedia');
+const previewTitle = document.getElementById('previewTitle');
+const closePreview = document.getElementById('closePreview');
+const likeBtn = document.getElementById('likeBtn');
 
+function openPreview({type,src,title,likes,comments,views}){
+  preview.classList.add('show');
+  previewTitle.textContent = title || '';
+  previewMedia.innerHTML = '';
+  if(type === 'video'){
+    const v = document.createElement('video');
+    v.src = src;
+    v.controls = true;
+    v.autoplay = true;
+    v.style.width = '100%';
+    previewMedia.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = src;
+    previewMedia.appendChild(img);
+  }
+  // small meta
+  const infoBar = document.createElement('div');
+  infoBar.style.padding = '8px 12px';
+  infoBar.style.color = 'var(--muted)';
+  infoBar.style.fontSize = '13px';
+  infoBar.innerHTML = `❤ ${likes} &nbsp;&nbsp; 💬 ${comments} &nbsp;&nbsp; 👁 ${views}K`;
+  previewMedia.appendChild(infoBar);
+}
+closePreview.addEventListener('click', ()=> { preview.classList.remove('show'); previewMedia.innerHTML=''; });
+preview.addEventListener('click', (e)=>{ if(e.target === preview) { preview.classList.remove('show'); previewMedia.innerHTML=''; } });
+
+/* ---------- Drawer (menu) ---------- */
+const drawer = document.getElementById('drawer');
+const backdrop = document.getElementById('drawerBackdrop');
+document.getElementById('openDrawer').addEventListener('click', ()=> { drawer.classList.add('show'); backdrop.classList.add('show'); });
+backdrop.addEventListener('click', ()=>{ drawer.classList.remove('show'); backdrop.classList.remove('show'); });
+document.getElementById('miPerfil').addEventListener('click', ()=> alert('Mi perfil (demo)'));
+document.getElementById('config').addEventListener('click', ()=> alert('Configuración (demo)'));
+document.getElementById('logout').addEventListener('click', ()=> alert('Cerrando sesión (demo)'));
+
+/* ---------- Search modal ---------- */
+const searchModal = document.getElementById('searchModal');
+document.getElementById('openSearch').addEventListener('click', ()=> searchModal.classList.add('show'));
+document.getElementById('closeSearch').addEventListener('click', ()=> searchModal.classList.remove('show'));
+document.getElementById('doSearch').addEventListener('click', ()=> {
+  const q = document.getElementById('searchInput').value.trim();
+  alert(q?`Buscando: ${q} (demo)`:'Escribe algo para buscar.');
+});
+
+/* ---------- Upload modal ---------- */
+const uploadModal = document.getElementById('uploadModal');
+document.getElementById('navUpload').addEventListener('click', ()=> uploadModal.classList.add('show'));
+document.getElementById('cancelUpload').addEventListener('click', ()=> uploadModal.classList.remove('show'));
+document.getElementById('submitUpload').addEventListener('click', ()=>{
+  const f = document.getElementById('fileInput').files[0];
+  if(!f){ alert('Selecciona un archivo primero. (demo)'); return; }
+  alert(`Se subió (demo): ${f.name}`);
+  uploadModal.classList.remove('show');
+});
+
+/* ---------- Bottom nav buttons behavior ---------- */
+document.getElementById('navSearch').addEventListener('click', ()=> searchModal.classList.add('show'));
+document.getElementById('navWatched').addEventListener('click', ()=> { window.scrollTo({top: document.getElementById('sec-antesvisto').offsetTop - 70, behavior:'smooth'}); });
+document.getElementById('navYour').addEventListener('click', ()=> { window.scrollTo({top: document.getElementById('sec-tusvideos').offsetTop - 70, behavior:'smooth'}); });
+document.getElementById('navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ---------- Theme toggle (persisted) ---------- */
+const themeToggle = document.getElementById('themeToggle');
+const THEME_KEY = 'sinfiltro.theme.v1';
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+function applyTheme(t){
+  if(t==='light'){
+    document.documentElement.style.setProperty('--bg-1','#f5f9ff');
+    document.documentElement.style.setProperty('--bg-2','#eef6ff');
+    document.documentElement.style.setProperty('--card','rgba(0,0,0,0.04)');
+    document.documentElement.style.setProperty('--text','#071226');
+    themeToggle.textContent = '☀️';
+  } else {
+    document.documentElement.style.setProperty('--bg-1','#05060a');
+    document.documentElement.style.setProperty('--bg-2','#071226');
+    document.documentElement.style.setProperty('--card','rgba(255,255,255,0.03)');
+    document.documentElement.style.setProperty('--text','#eaf7ff');
+    themeToggle.textContent = '🌗';
+  }
+}
+applyTheme(theme);
+themeToggle.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; localStorage.setItem(THEME_KEY,theme); applyTheme(theme); });
+
+/* ---------- Accessibility & quick tweaks ---------- */
+/* Enable keyboard Esc to close preview/search/upload/drawer */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    preview.classList.remove('show');
+    searchModal.classList.remove('show');
+    uploadModal.classList.remove('show');
+    drawer.classList.remove('show'); backdrop.classList.remove('show');
+  }
+});
+
+/* ensure play-glass click doesn't trigger card click on image */
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.card') && !e.target.closest('.play-glass') && !e.target.closest('img') && !e.target.closest('video')){
+    // For safety: do nothing or could open preview for either type
+    const c = e.target.closest('.card');
+    const img = c.querySelector('img');
+    const vid = c.querySelector('video');
+    if(img) openPreview({type:'image',src:img.src,title:'Imagen',likes:c.dataset.likes,comments:c.dataset.comments,views:c.dataset.views});
+    else if(vid) openPreview({type:'video',src:vid.src,title:'Video',likes:c.dataset.likes,comments:c.dataset.comments,views:c.dataset.views});
+  }
+});
+</script>
 </body>
 </html>
+```0
