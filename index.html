@@ -1,612 +1,386 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil) — Optimizado</title>
-<meta name="description" content="SinFiltro demo móvil. Diseño premium, scroll fluido, carruseles 2 filas, lazy-load, búsqueda visual demo y PWA-ready." />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-<style>
-  /* ---------- Variables / Reset ---------- */
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
-    --muted:#9fb0bf; --glass: rgba(255,255,255,0.03);
-    --card-shadow: rgba(2,8,20,0.6);
-    --radius:12px; --fast:160ms; --mid:260ms; --text:#eaf7ff;
-    --max-row-children: 24;
-    --max-grid-children: 40;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
-  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SinFiltro — Tu espacio sin límites</title>
+  <style>
+    /* ======= BASE ======= */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
 
-  *{box-sizing:border-box}
-  a{color:inherit}
+    html, body {
+      height: 100%;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s ease, color 0.3s ease;
+      touch-action: pan-y;
+    }
 
-  /* ---------- Layout ---------- */
-  .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  header{position:sticky;top:0;z-index:120;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .left-row{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
-  .icon-btn:active{transform:scale(.96)}
-  .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .tag{font-size:11px;color:var(--muted)}
+    :root {
+      --bg-color: #0d1117;
+      --card-color: #161b22;
+      --text-color: #e6edf3;
+      --accent: #00bfff;
+      --subtle: #8b949e;
+    }
 
-  /* ---------- Scroll area ---------- */
-  .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
-  .container{max-width:720px;margin:0 auto;padding:12px}
+    body.light {
+      --bg-color: #f6f8fa;
+      --card-color: #ffffff;
+      --text-color: #0d1117;
+      --subtle: #57606a;
+      --accent: #007bff;
+    }
 
-  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
-  .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
-  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+    /* ======= NAV ======= */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: var(--card-color);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
 
-  /* ---------- Section headers ---------- */
-  .section{margin-top:14px}
-  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+    header h1 {
+      color: var(--accent);
+      font-size: 1.4rem;
+    }
 
-  /* ---------- Two-row horizontal stack ---------- */
-  .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
-  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory; will-change:scroll-position}
-  .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:170px;flex:0 0 170px;height:110px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;transform-origin:center}
-  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.56);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
-  .card-small:hover img{transform:scale(1.04)}
-  .card-small .meta{position:relative;z-index:6}
-  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
-  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
-  .play-ico{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-  /* ---------- Vertical grid (infinite) ---------- */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px;margin-bottom:120px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
-  .grid .body{padding:8px;color:var(--text)}
-  .grid .title{font-weight:700}
-  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
 
-  /* ---------- FAB & radial ---------- */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--fast)}
-  .radial.show{opacity:1;pointer-events:auto}
-  .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
 
-  /* ---------- Bottom nav ---------- */
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-  .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
+    /* ======= MENÚ LATERAL ======= */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -260px;
+      width: 250px;
+      height: 100%;
+      background: var(--card-color);
+      box-shadow: 3px 0 12px rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      transition: left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
 
-  /* ---------- Side panel & overlay ---------- */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
-  .overlay.show{display:block}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
-  .panel.open{transform:translateX(0);opacity:1}
-  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .sidebar.active {
+      left: 0;
+    }
 
-  /* ---------- Viewer ---------- */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img, .viewer video{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+    .sidebar h2 {
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
 
-  /* ---------- Search-visual modal (demo) ---------- */
-  .sv-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:230;display:none;align-items:center;justify-content:center;padding:12px}
-  .sv-modal .card{width:100%;max-width:680px;background:#0b1117;padding:12px;border-radius:12px}
-  .sv-results{display:flex;gap:8px;flex-wrap:wrap}
+    .sidebar a {
+      color: var(--text-color);
+      text-decoration: none;
+      margin: 8px 0;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s ease;
+    }
 
-  .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  @media(max-width:420px){
-    .card-small{min-width:150px;height:100px}
-    .grid img{height:120px}
-    .fab{width:64px;height:64px}
-    .radial{bottom:112px}
-    .panel{width:92%;left:4%}
-  }
-</style>
+    .sidebar a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      z-index: 1500;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    /* ======= MAIN CONTENT ======= */
+    main {
+      padding: 20px;
+    }
+
+    section {
+      margin-bottom: 25px;
+    }
+
+    section h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-sub {
+      color: var(--subtle);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    /* ======= CARDS ======= */
+    .infinite-scroll {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .card {
+      width: calc(50% - 10px);
+      background: var(--card-color);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .card img {
+      width: 100%;
+      height: 130px;
+      object-fit: cover;
+    }
+
+    .card-info {
+      padding: 8px 10px;
+    }
+
+    .card-info span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .card-info p {
+      font-size: 0.85rem;
+      color: var(--subtle);
+    }
+
+    /* ======= FAB ======= */
+    .fab {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #007bff, #00bfff);
+      border-radius: 50%;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* ======= FOOTER ======= */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: var(--card-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+    }
+
+    footer button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    /* ======= MENÚ EMERGENTE ======= */
+    .popup {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-color);
+      color: var(--text-color);
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1200;
+    }
+
+    .popup.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* ======= ANIMACIÓN ======= */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (min-width: 768px) {
+      .card {
+        width: calc(25% - 15px);
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="SinFiltro">
-
-    <!-- header -->
-    <header>
-      <div class="left-row">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
-        <div>
-          <div class="logo">SinFiltro</div>
-          <div class="tag">Tu espacio sin límites</div>
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchBtn" class="icon-btn" aria-label="buscar">🔎</button>
-        <button id="themeBtn" class="icon-btn" aria-label="modo">🌗</button>
-      </div>
-    </header>
-
-    <!-- overlay + panel -->
-    <div id="overlay" class="overlay" tabindex="-1"></div>
-    <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
-      <div style="display:flex;align-items:center;gap:8px">
-        <strong>Cuenta</strong>
-        <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
-      </div>
-      <p class="tag" style="margin:8px 0 12px 0">Ajustes, exploración y tu contenido (demo).</p>
-      <nav style="display:flex;flex-direction:column;gap:8px">
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">📌 Guardados</button>
-        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
-      </nav>
-    </aside>
-
-    <!-- main scroll -->
-    <main class="scroll" id="scrollArea" tabindex="0">
-      <div class="container">
-        <section class="hero fade-up" aria-label="presentación">
-          <h1>Descubre lo auténtico</h1>
-          <p>Fotos y vídeos creados por la comunidad. Da like, comenta y comparte.</p>
-        </section>
-
-        <!-- Tendencias -->
-        <section class="section" aria-label="tendencias">
-          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="trendAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
-            <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Recomendados -->
-        <section class="section" aria-label="recomendados">
-          <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="recoAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
-            <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Antes visto -->
-        <section class="section" aria-label="antes visto">
-          <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="recentAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
-            <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Explorar - grid infinito vertical -->
-        <section class="section" aria-label="explorar">
-          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all">Filtrar</div></div>
-          <div id="gridFeed" class="grid" aria-live="polite"></div>
-        </section>
-
-      </div>
-    </main>
-
-    <!-- FAB + radial -->
-    <div id="radial" class="radial" aria-hidden="true">
-      <button id="optUpload" title="Subir foto/video">📤</button>
-      <button id="optPost" title="Crear publicación">✏️</button>
-      <button id="optShort" title="Crear short">🎬</button>
+  <header>
+    <h1 id="menuBtn">☰ SinFiltro</h1>
+    <div class="nav-actions">
+      <button class="nav-btn" id="searchBtn">🔍</button>
+      <button class="nav-btn" id="themeToggle">🌙</button>
     </div>
-    <button id="fab" class="fab" aria-label="Crear">＋</button>
+  </header>
 
-    <!-- bottom nav -->
-    <nav class="bottom-nav" role="navigation" aria-label="navegación">
-      <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
-      <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
-      <div style="width:78px"></div>
-      <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-      <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
-    </nav>
-
-    <!-- viewer modal -->
-    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-      <div class="card">
-        <div id="viewerInner"></div>
-        <div class="controls">
-          <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-          <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-          <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-          <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- search-visual modal (demo) -->
-    <div id="svModal" class="sv-modal" role="dialog" aria-hidden="true">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Búsqueda visual (demo)</strong>
-          <button id="closeSv" class="icon-btn" style="width:40px;height:40px">✕</button>
-        </div>
-        <p style="color:var(--muted);margin-top:8px">Long-press sobre una miniatura para recortar y buscar imágenes similares (demo local).</p>
-        <div id="svCropArea" style="margin-top:10px;border-radius:8px;padding:8px;background:rgba(255,255,255,0.02)"></div>
-        <div style="margin-top:10px"><strong>Resultados</strong></div>
-        <div id="svResults" class="sv-results" style="margin-top:8px"></div>
-      </div>
-    </div>
-
+  <!-- ======= SIDEBAR ======= -->
+  <div class="sidebar" id="sidebar">
+    <h2>Menú</h2>
+    <a href="#">Perfil</a>
+    <a href="#">Ajustes</a>
+    <a href="#">Favoritos</a>
+    <a href="#">Notificaciones</a>
+    <a href="#">Cerrar sesión</a>
   </div>
+  <div class="sidebar-overlay" id="overlay"></div>
 
-<script>
-/* =========================
-   SinFiltro — Integrado & Optimizado
-   - Mantiene diseño aprobado
-   - Scroll vertical fluido + horizontales 2 filas con infinite append
-   - Lazy-load (srcset/loading + IntersectionObserver)
-   - DOM cap/recycle to prevent bloat
-   - Long-press "visual search" demo
-   - Service worker registered from blob for caching demo
-   ========================= */
+  <main>
+    <section>
+      <h2>🔥 Tendencias <span>Ver todo</span></h2>
+      <p class="section-sub">Explora lo más nuevo creado por la comunidad.</p>
+      <div class="infinite-scroll" id="feed"></div>
+    </section>
+  </main>
 
-/* ---------- Helpers ---------- */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const rand = n => Math.floor(Math.random()*n);
-const mkImg = (i,w=640,h=420) => `https://picsum.photos/${w}/${h}?random=${Math.floor(Math.random()*100000)+i}`;
+  <div class="fab" id="addBtn">+</div>
 
-/* ---------- Demo data pool ---------- */
-let pool = Array.from({length:200}).map((_,i)=>({
-  id: 'p'+i,
-  src: mkImg(i),
-  src320: mkImg(i,320,210),
-  src640: mkImg(i,640,420),
-  kind: (i%7===0)?'video':'image',
-  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: rand(5000), comments: rand(800), views: (rand(900)+100)+'K'
-}));
+  <footer>
+    <button id="homeBtn">🏠<small>Inicio</small></button>
+    <button id="searchFooter">🔎<small>Buscar</small></button>
+    <button id="viewedBtn">👁️<small>Vistos</small></button>
+    <button id="videoBtn">🎥<small>Videos</small></button>
+  </footer>
 
-let trends = pool.slice(0,12);
-let reco = pool.slice(12,24);
-let recent = pool.slice(24,36);
-let grid = pool.slice(36,56);
+  <div class="popup" id="popup">Opción demo (sin contenido)</div>
 
-/* ---------- DOM refs ---------- */
-const scrollArea = $('#scrollArea');
-const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
-const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
-const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
-const gridFeed = $('#gridFeed');
+  <script>
+    // ======= MODO OSCURO/CLARO =======
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      themeToggle.textContent = document.body.classList.contains('light') ? '🌞' : '🌙';
+    });
 
-const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), closePanelBtn = $('#closePanel');
-const fab = $('#fab'), radial = $('#radial');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewerBtn = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const themeBtn = $('#themeBtn');
-const svModal = $('#svModal'), svCropArea = $('#svCropArea'), svResults = $('#svResults'), closeSv = $('#closeSv');
+    // ======= SIDEBAR =======
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuBtn = document.getElementById('menuBtn');
+    menuBtn.addEventListener('click', () => {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+    });
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    });
 
-/* ---------- Perf utilities ---------- */
-let rafScheduled = false;
-function raf(fn){ if(!rafScheduled){ requestAnimationFrame(()=>{ fn(); rafScheduled = false; }); rafScheduled = true; } }
-function throttle(fn, delay=200){ let last=0; return function(...args){ const now=Date.now(); if(now-last>delay){ last=now; fn(...args); } } }
-
-/* ---------- Lazy loading: IntersectionObserver (optimized) ---------- */
-let imgObserver = null;
-function lazyObserve(root=document){
-  const imgs = (root === document) ? document.querySelectorAll('img[data-src]') : root.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            const img = e.target;
-            // set srcset for responsive
-            const ds = img.dataset;
-            if(ds.src640 && ds.src320){
-              img.srcset = `${ds.src320} 320w, ${ds.src640} 640w`;
-              img.sizes = "(max-width:420px) 45vw, 33vw";
-            }
-            img.src = ds.src || ds.src640 || ds.src320;
-            img.onload = ()=> img.parentElement.classList.remove('skel');
-            img.removeAttribute('data-src'); img.removeAttribute('data-src320'); img.removeAttribute('data-src640');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin: '400px 0px 400px 0px', threshold: 0.05});
+    // ======= POPUP DEMO =======
+    const popup = document.getElementById('popup');
+    function showPopup() {
+      popup.classList.add('active');
+      setTimeout(() => popup.classList.remove('active'), 1800);
     }
-    imgs.forEach(i => imgObserver.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src || i.dataset.src640 || i.dataset.src320; i.removeAttribute('data-src'); });
-  }
-}
 
-/* ---------- Element factories ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+    document.getElementById('homeBtn').onclick = showPopup;
+    document.getElementById('searchFooter').onclick = showPopup;
+    document.getElementById('viewedBtn').onclick = showPopup;
+    document.getElementById('videoBtn').onclick = showPopup;
+    document.getElementById('searchBtn').onclick = showPopup;
+    document.getElementById('addBtn').onclick = showPopup;
 
-function makeSmallCard(item){
-  const el = document.createElement('div');
-  el.className = 'card-small skel fade-up';
-  el.setAttribute('tabindex','0');
-  el.innerHTML = `
-    <img data-src="${item.src}" data-src320="${item.src320}" data-src640="${item.src640}" alt="${escapeHtml(item.title)}" />
-    ${item.likes>2000?'<div class="mini-badge">TOP</div>':''}
-    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
-      <div class="meta">
-        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
-      </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
-    </div>
-  `;
-  // long-press support for visual search demo
-  attachLongPress(el, ()=> openVisualSearch(item, el) );
-  el.addEventListener('click', ()=> openViewerByItem(item));
-  el.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
-  return el;
-}
-
-function makeGridCard(item){
-  const a = document.createElement('article');
-  a.className = 'card skel fade-up';
-  a.innerHTML = `
-    <img data-src="${item.src}" data-src320="${item.src320}" data-src640="${item.src640}" alt="${escapeHtml(item.title)}">
-    <div class="body">
-      <div class="title">${escapeHtml(item.title)}</div>
-      <div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div>
-    </div>
-  `;
-  a.addEventListener('click', ()=> openViewerByItem(item));
-  return a;
-}
-
-/* ---------- DOM caps & recycle helpers ---------- */
-// To avoid DOM bloat we cap children and remove oldest when exceeding
-function capRowChildren(row, max=24){
-  while(row.children.length > max){
-    row.removeChild(row.firstChild);
-  }
-}
-function capGridChildren(max=40){
-  while(gridFeed.children.length > max){
-    gridFeed.removeChild(gridFeed.firstChild);
-  }
-}
-
-/* ---------- Render two-row lists with infinite append (throttled & capped) ---------- */
-function renderTwoRows(row1,row2,items){
-  const frag1 = document.createDocumentFragment();
-  const frag2 = document.createDocumentFragment();
-  items.forEach((it,i)=>{
-    const targetFrag = (i%2===0)?frag1:frag2;
-    targetFrag.appendChild(makeSmallCard(it));
-  });
-  row1.appendChild(frag1); row2.appendChild(frag2);
-  // ensure minimum seed
-  [row1,row2].forEach(r=>{
-    while(r.children.length < 6){
-      r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    // ======= SCROLL INFINITO =======
+    const feed = document.getElementById('feed');
+    function createCard() {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <img src="https://picsum.photos/400/250?random=${Math.random()}" alt="foto">
+        <div class="card-info">
+          <span>Publicación</span>
+          <p>${Math.floor(Math.random() * 9000)} likes</p>
+        </div>`;
+      return div;
     }
-    // cap to prevent bloat
-    capRowChildren(r, parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-row-children')) || 24);
-    lazyObserve(r);
-    // attach infinite append on end (throttled)
-    const scroller = throttle(()=> {
-      if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
-        // append a few from pool using a fragment
-        const frag = document.createDocumentFragment();
-        for(let k=0;k<4;k++) frag.appendChild(makeSmallCard(pool[rand(pool.length)]));
-        r.appendChild(frag);
-        capRowChildren(r);
-        lazyObserve(r);
+
+    function loadInitialCards() {
+      for (let i = 0; i < 8; i++) feed.appendChild(createCard());
+    }
+
+    loadInitialCards();
+
+    let loading = false;
+    window.addEventListener('scroll', async () => {
+      const bottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+      if (bottom && !loading) {
+        loading = true;
+        await new Promise(r => setTimeout(r, 600));
+        for (let i = 0; i < 6; i++) feed.appendChild(createCard());
+        loading = false;
       }
-    }, 300);
-    r.addEventListener('scroll', scroller, {passive:true});
-  });
-}
-
-/* ---------- Initial grid render & infinite vertical ---------- */
-function renderGridInitial(){
-  const frag = document.createDocumentFragment();
-  grid.forEach(it => frag.appendChild(makeGridCard(it)));
-  gridFeed.appendChild(frag);
-  capGridChildren();
-  lazyObserve(gridFeed);
-}
-
-let loadingGrid = false;
-function handleVerticalInfinite(){
-  // if user scrolled near bottom of page, append more cards (but recycle)
-  const rect = gridFeed.getBoundingClientRect();
-  if(rect.top < window.innerHeight && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=>{
-      const frag = document.createDocumentFragment();
-      for(let i=0;i<6;i++){
-        frag.appendChild(makeGridCard(pool[rand(pool.length)]));
-      }
-      gridFeed.appendChild(frag);
-      capGridChildren();
-      lazyObserve(gridFeed);
-      loadingGrid = false;
-    }, 600);
-  }
-}
-
-/* ---------- Viewer (immersive) ---------- */
-let activeList = [];
-let currentIndex = 0;
-function openViewerByItem(item){
-  // pick the list where item exists (trends, reco, recent, grid) else fallback to array with item
-  const lists = [trends, reco, recent, grid];
-  activeList = [];
-  for(const L of lists){
-    const idx = L.findIndex(x=>x.id === item.id);
-    if(idx >= 0){ activeList = L; currentIndex = idx; break; }
-  }
-  if(activeList.length === 0){ activeList = [item]; currentIndex = 0; }
-  showViewer();
-}
-function showViewer(){
-  const it = activeList[currentIndex];
-  viewerInner.innerHTML = '';
-  if(it.kind === 'video'){
-    const wrap = document.createElement('div'); wrap.style.position='relative';
-    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
-    const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
-    overlayPlay.addEventListener('click', ()=> simulatePlay(it));
-    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
-    viewerInner.appendChild(wrap);
-  } else {
-    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
-  }
-  viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
-}
-function closeViewer(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length -1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
-function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
-
-/* ---------- Panel open/close ---------- */
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.style.display='block'; }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.style.display='none'; }
-menuBtn.addEventListener('click', openPanel);
-closePanelBtn.addEventListener('click', closePanel);
-overlay.addEventListener('click', closePanel);
-
-/* ---------- FAB radial ---------- */
-fab.addEventListener('click', ()=> radial.classList.toggle('show'));
-$('#optUpload').addEventListener('click', ()=> alert('Subir demo - requiere backend'));
-$('#optPost').addEventListener('click', ()=> alert('Crear publicación - demo'));
-$('#optShort').addEventListener('click', ()=> alert('Crear short - demo'));
-
-/* ---------- Theme toggle (persist) ---------- */
-const THEME_KEY = 'sinfiltro.theme.mobile';
-let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
-function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
-applyTheme(theme);
-themeBtn.addEventListener('click', ()=> { theme = (theme === 'dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
-
-/* ---------- Bottom nav behavior ---------- */
-$$('.nav-item').forEach(n => n.addEventListener('click', ()=>{
-  $$('.nav-item').forEach(x => x.classList.remove('active')); n.classList.add('active');
-  const t = n.dataset.tab;
-  if(t === 'home'){ scrollArea.scrollTo({top:0,behavior:'smooth'}); }
-  if(t === 'search'){ alert('Buscar demo'); }
-  if(t === 'recent'){ const el = document.querySelector('[aria-label="antes visto"]'); el && el.scrollIntoView({behavior:'smooth', block:'start'}); }
-  if(t === 'me'){ alert('Tus videos demo'); }
-}));
-
-/* ---------- Horizontal "drag anywhere" for h-row (pointer events) ---------- */
-function enableRowDrag(row){
-  let isDown=false, startX=0, scrollLeft=0;
-  row.addEventListener('pointerdown', (e)=>{
-    // allow only primary pointer
-    if(e.isPrimary === false) return;
-    isDown = true;
-    row.setPointerCapture && row.setPointerCapture(e.pointerId);
-    startX = e.clientX;
-    scrollLeft = row.scrollLeft;
-    row.classList.add('dragging');
-  }, {passive:true});
-  row.addEventListener('pointermove', (e)=>{
-    if(!isDown) return;
-    const x = e.clientX;
-    const walk = (startX - x);
-    row.scrollLeft = scrollLeft + walk;
-  }, {passive:true});
-  ['pointerup','pointercancel','pointerleave'].forEach(evt=>{
-    row.addEventListener(evt, (e)=>{ isDown=false; try{ row.releasePointerCapture && row.releasePointerCapture(e.pointerId);}catch(_){ } row.classList.remove('dragging'); }, {passive:true});
-  });
-}
-
-/* ---------- Long-press (for visual search demo) ---------- */
-function attachLongPress(el, callback, ms=600){
-  let timer=null;
-  let moved = false;
-  const start = (e)=>{
-    moved = false;
-    timer = setTimeout(()=> { callback(e); timer=null; }, ms);
-  };
-  const cancel = ()=> { if(timer){ clearTimeout(timer); timer=null; } };
-  el.addEventListener('pointerdown', start, {passive:true});
-  el.addEventListener('pointermove', ()=> { moved = true; cancel(); }, {passive:true});
-  ['pointerup','pointercancel','pointerleave'].forEach(evt=> el.addEventListener(evt, cancel, {passive:true}));
-}
-
-/* ---------- Visual search demo (long-press) ---------- */
-function openVisualSearch(item, el){
-  // Show modal with a crop preview (demo: we just show the image and mock results)
-  svCropArea.innerHTML = `<img src="${item.src}" alt="crop" style="width:100%;border-radius:8px">`;
-  svResults.innerHTML = '';
-  // populate mock similar images (from pool)
-  for(let i=0;i<6;i++){
-    const s = pool[rand(pool.length)];
-    const img = document.createElement('img');
-    img.src = s.src320;
-    img.style.width = '120px';
-    img.style.height = '80px';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '8px';
-    img.style.margin = '6px';
-    img.addEventListener('click', ()=> openViewerByItem(s));
-    svResults.appendChild(img);
-  }
-  svModal.style.display = 'flex';
-  svModal.setAttribute('aria-hidden','false');
-}
-closeSv.addEventListener('click', ()=> { svModal.style.display='none'; svModal.setAttribute('aria-hidden','true'); });
-
-/* ---------- Parallax minimal (low CPU) ---------- */
-const bgLayer = document.createElement('div'); bgLayer.style.cssText = 'position:fixed;inset:0;z-index:-10;pointer-events:none;background:radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%), radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(22px) saturate(1.05);'; document.body.insertBefore(bgLayer, document.body.firstChild);
-const doParallax = throttle(()=> { const s = scrollArea.scrollTop; const t = Math.min(40, s/30); bgLayer.style.transform = `translateY(${t}px)`; }, 50);
-
-/* ---------- Scroll wiring (vertical infinite) ---------- */
-scrollArea.addEventListener('scroll', (e)=>{
-  // parallax
-  doParallax();
-  // vertical infinite near grid
-  handleVerticalInfinite();
-}, {passive:true});
-
-/* ---------- Initial render ---------- */
-function renderAll(){
-  // seed each h-row with items (two rows per section)
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  // enable drag on h-rows
-  $$('.h-row').forEach(r => { enableRowDrag(r); });
-  // seed extra for smooth UX
-  $$('.h-row').forEach(r=>{
-    if(r.children.length < 8){
-      const frag = document.createDocumentFragment();
-      for(let i=0;i<6;i++) frag.appendChild(makeSmallCard(pool[rand(pool.length)]));
-      r.appendChild(frag);
-    }
-    lazyObserve(r);
-  });
-  lazyObserve(document);
-}
-document.addEventListener('DOMContentLoaded', renderAll);
-
-/* ---------- Viewer controls ---------- */
-closeViewerBtn.addEventListener('click', closeViewer);
-prevBtn.addEventListener('click', prevItem);
-nextBtn.addEventListener('click', nextItem);
-vvPlay.addEventListener('click', ()=> { const it = (activeList[currentIndex] || pool[0]); simulatePlay(it); });
-viewer.addEventListener('click', (e)=> { if(e.target === viewer) closeViewer(); });
-
-/* ---------- Accessibility ---------- */
-document.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeViewer(); closePanel(); svModal.style.display='none'; } });
-
-/* ---------- Service worker registration from blob (simple cache for demo) ---------- */
-if('serviceWorker' in navigator){
-  const swCode = `
-    const CACHE='sinfiltro-demo-v1';
-    const ASSETS=['/','index.html'];
-    self.addEventListener('install', e=>{ self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c=> c.addAll(ASSETS).catch(()=>{}))); });
-    self.addEventListener('activate', e=>{ self.clients.claim(); });
-    self.addEventListener('fetch', e=>{ if(e.request.method !== 'GET') return; e.respondWith(caches.match(e.request).then(r=> r || fetch(e.request).catch(()=> caches.match('/')))); });
-  `;
-  const blob = new Blob([swCode], {type: 'application/javascript'});
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore in some sandboxes */});
-}
-
-/* ---------- End ---------- */
-</script>
+    });
+  </script>
 </body>
 </html>
