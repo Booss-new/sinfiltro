@@ -3,237 +3,306 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Mobile Demo</title>
-<meta name="description" content="SinFiltro — interfaz móvil demo. Feed, explorar, perfil, modo oscuro/claro y navegación.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>SinFiltro — Demo móvil</title>
+<meta name="description" content="SinFiltro — comparte fotos y videos sin filtros. Descubre tendencias, comenta y conecta.">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:title" content="SinFiltro — Tu espacio sin límites">
+<meta property="og:description" content="Fotos y videos creados por la comunidad. Da like, comenta y comparte.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:url" content=".">
+<meta name="twitter:card" content="summary_large_image">
+
+<meta name="theme-color" content="#00e1ff">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg-1: #04040a;
-    --bg-2: #071222;
-    --neon-cyan: #00e1ff;
-    --neon-blue: #00a7ff;
-    --neon-violet: #8a6eff;
-    --muted: #9fb0bf;
-    --card: rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.04);
-    --radius:14px;
-    --nav-h:78px;
-  }
+/* -------------------------
+   Styles - SinFiltro (mobile-first)
+   ------------------------- */
+:root{
+  --bg-1:#04040a; --bg-2:#071222;
+  --neon-cyan:#00e1ff; --neon-blue:#00a7ff; --neon-violet:#8a6eff;
+  --muted:#9fb0bf; --card:rgba(255,255,255,0.03); --glass:rgba(255,255,255,0.04);
+  --radius:14px; --nav-h:78px; --trans:240ms;
+}
+html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:#eaf7ff}
 
-  /* Theme control (dark default) */
-  html,body{height:100%;margin:0;font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#eaf7ff;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));-webkit-font-smoothing:antialiased}
-  body.theme-light{
-    --bg-1:#f6f9ff; --bg-2:#eef4ff; --neon-cyan:#008fb3; --neon-blue:#0066aa; --neon-violet:#6b4ed6; --muted:#617183; color:#071226;
-    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  }
+/* theme light override (applied via body.classList) */
+body.theme-light{
+  --bg-1:#f6f9ff; --bg-2:#eef4ff; --neon-cyan:#008fb3; --neon-blue:#0066aa; --neon-violet:#6b4ed6; --muted:#617183; color:#071226;
+  background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+}
 
-  /* animated subtle background */
-  .bg-anim{
-    position:fixed;inset:0;z-index:-3;background:
-      radial-gradient(600px 240px at 10% 10%, rgba(138,110,255,0.05), transparent 8%),
-      radial-gradient(800px 320px at 90% 80%, rgba(0,225,255,0.04), transparent 8%);
-    animation: drift 20s linear infinite;
-    pointer-events:none;
-  }
-  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+/* animated background */
+.bg-animated{
+  position:fixed;inset:0;z-index:-5;pointer-events:none;
+  background:
+    radial-gradient(600px 240px at 10% 10%, rgba(138,110,255,0.05), transparent 8%),
+    radial-gradient(800px 320px at 90% 80%, rgba(0,225,255,0.04), transparent 8%);
+  animation: drift 20s linear infinite;
+}
+@keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
 
-  /* layout */
-  .app{min-height:100vh;display:flex;flex-direction:column}
-  header{position:sticky;top:0;z-index:40;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
-  .hdr-left,.hdr-center,.hdr-right{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  .logo-wrap{display:flex;flex-direction:column;align-items:center}
-  .brand-text{font-weight:700;color:var(--neon-cyan);letter-spacing:0.6px}
-  .brand-sub{font-size:11px;color:var(--muted);margin-top:2px}
+/* layout */
+.app{min-height:100vh;display:flex;flex-direction:column}
+.header{position:sticky;top:0;z-index:40;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+.icon-btn{width:44px;height:44px;border-radius:12px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+.logo-img{height:44px;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
 
-  .search-input{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);background:transparent;color:inherit;min-width:120px}
+/* search */
+.search-wrap{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)}
+.search-input{padding:8px;border-radius:10px;border:0;background:transparent;color:inherit;outline:none;width:160px}
 
-  main{flex:1;overflow:auto;padding:14px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
+/* main */
+.main{flex:1;overflow:auto;padding:14px;padding-bottom:120px;-webkit-overflow-scrolling:touch}
+.hero{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);margin-bottom:12px}
+.hero h1{margin:0;color:var(--neon-violet);font-size:18px}
+.hero p{margin:8px 0 0;color:var(--muted);font-size:13px}
 
-  .hero{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);margin-bottom:14px}
-  .hero h1{margin:0;color:var(--neon-violet);font-size:18px}
-  .hero p{margin:8px 0 0;color:var(--muted);font-size:13px}
+/* sections */
+.section{margin-top:10px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.section-title{font-weight:700;color:var(--neon-cyan)}
+.see-all{background:transparent;border:0;color:var(--muted);cursor:pointer}
 
-  .section{margin-top:8px}
-  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section-title{font-weight:700;color:var(--neon-cyan);display:flex;align-items:center;gap:8px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+/* horizontal row */
+.h-row{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
+.h-row::-webkit-scrollbar{display:none}
+.thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform var(--trans)}
+.thumb img{width:170px;height:100px;object-fit:cover;display:block}
+.t-info{padding:8px;color:inherit;font-weight:700}
 
-  .h-row{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
-  .h-row::-webkit-scrollbar{display:none}
-  .thumb{flex:0 0 170px;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid rgba(255,255,255,0.02);box-shadow:0 6px 24px rgba(0,0,0,0.45);transition:transform .22s}
-  .thumb img{width:170px;height:100px;object-fit:cover;display:block}
-  .thumb .t-info{padding:8px;color:inherit;font-weight:700;background:linear-gradient(180deg,rgba(0,0,0,0.02),transparent)}
+/* feed grid */
+.feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform var(--trans)}
+.card img{width:100%;height:160px;object-fit:cover;display:block}
+.card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
+.title{font-weight:700;font-size:14px}
+.small{color:var(--muted);font-size:12px}
 
-  .row-title{font-size:13px;color:var(--muted);margin-top:6px}
+/* FAB */
+.fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:60px;z-index:90;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
+.fab{pointer-events:auto;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:34px;cursor:pointer}
+.fab-row{display:flex;flex-direction:column;gap:8px;align-items:center}
+.fab-sub{pointer-events:auto;width:56px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-violet),var(--neon-blue));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.35);font-weight:700;opacity:0;transform:translateY(0);transition:all 220ms}
+.fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
 
-  .feed{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-  .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);transition:transform .18s}
-  .card img{width:100%;height:160px;object-fit:cover;display:block}
-  .card .meta{padding:10px;display:flex;justify-content:space-between;align-items:center}
-  .title{font-weight:700;font-size:14px}
-  .small{color:var(--muted);font-size:12px}
+/* modal, viewer, drawer */
+.modal{position:fixed;left:12px;right:12px;bottom:110px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:95;display:none}
+.modal.show{display:block}
+.viewer{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:none;align-items:center;justify-content:center;z-index:120;padding:18px}
+.viewer.show{display:flex}
+.viewer-content{width:100%;max-width:980px;border-radius:12px;overflow:hidden;background:#000}
+.drawer{position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none}
+.drawer.show{display:block}
 
-  /* floating center FAB */
-  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:60px;z-index:90;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none}
-  .fab{pointer-events:auto;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none;box-shadow:0 30px 80px rgba(0,200,255,0.12);font-size:34px;cursor:pointer}
-  .fab-sub{pointer-events:auto;width:56px;height:44px;border-radius:12px;background:linear-gradient(90deg,var(--neon-violet),var(--neon-blue));display:flex;align-items:center;justify-content:center;color:#001;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.35);font-weight:700;opacity:0;transform:translateY(0);transition:all .25s}
+/* bottom nav */
+.bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:78px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:80}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+.nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
 
-  .fab-open .fab-sub{opacity:1;transform:translateY(-10px)}
-  .fab-open .fab{transform:scale(1.02)}
+/* buttons */
+.btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;cursor:pointer}
+.btn.primary{background:linear-gradient(90deg,var(--neon-cyan),var(--neon-blue));color:#001;border:none}
 
-  /* bottom nav */
-  .bottom-nav{position:fixed;left:8px;right:8px;bottom:8px;height:78px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:80}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;user-select:none}
-  .nav-item.active{color:var(--neon-cyan);transform:translateY(-3px)}
-
-  /* small screens adjustments */
-  @media (max-width:420px){
-    .thumb{flex:0 0 150px}
-    .card img{height:140px}
-    .fab{width:64px;height:64px;font-size:30px}
-  }
-
-  /* micro-interactions */
-  .clickable{cursor:pointer}
-  .glow{box-shadow:0 6px 30px rgba(0,225,255,0.08)}
+/* responsive tweaks */
+@media (max-width:420px){
+  .thumb{flex:0 0 150px}
+  .card img{height:140px}
+  .fab{width:64px;height:64px}
+}
 </style>
 </head>
 <body>
-<div class="bg-anim" aria-hidden="true"></div>
+  <div class="bg-animated" aria-hidden="true"></div>
 
-<div id="app" class="app">
-  <!-- header -->
-  <header>
-    <div class="hdr-left">
-      <button id="menuBtn" class="icon-btn clickable" aria-label="Abrir menú">☰</button>
+  <div id="app" class="app theme-dark" role="application" aria-label="SinFiltro app">
+    <header class="header" role="banner">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="menuBtn" class="icon-btn" aria-label="Abrir menú">☰</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <!-- Reemplaza el src por tu logo IA 3D (recomendado 320x88 / 640x176) -->
+        <img id="logoImg" class="logo-img" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='88'><rect width='100%' height='100%' rx='12' fill='%230b1220'/><text x='50%' y='55%' font-family='Poppins,Inter,Arial' font-size='28' fill='%2300e1ff' font-weight='700' text-anchor='middle'>SinFiltro</text></svg>" alt="SinFiltro logo (reemplazar)">
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="search-wrap" role="search">
+          <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar">
+        </div>
+        <button id="themeToggle" class="icon-btn" aria-label="Cambiar tema">🌙</button>
+      </div>
+    </header>
+
+    <main id="main" class="main" role="main">
+      <section class="hero" aria-label="Presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+      </section>
+
+      <section class="section" aria-labelledby="trendingTitle">
+        <div class="section-header">
+          <div class="section-title">🔥 En Tendencia</div>
+          <button class="see-all" id="seeTrending">Ver todo</button>
+        </div>
+        <div class="h-row" id="trendingRow" aria-live="polite"></div>
+      </section>
+
+      <section class="section" aria-labelledby="recentTitle">
+        <div class="section-header">
+          <div class="section-title">⏱️ Vistos recientemente</div>
+          <button class="see-all" id="seeRecent">Ver todo</button>
+        </div>
+        <div class="h-row" id="recentRow"></div>
+      </section>
+
+      <section class="section" aria-labelledby="recoTitle">
+        <div class="section-header">
+          <div class="section-title">🎯 Recomendados</div>
+          <button class="see-all" id="seeReco">Ver todo</button>
+        </div>
+        <div class="feed" id="feedGrid" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- FAB -->
+    <div class="fab-wrap" id="fabWrap" aria-hidden="false">
+      <div id="fabRow" class="fab-row">
+        <button id="fabImg" class="fab-sub" title="Imagen" aria-label="Subir imagen">🖼️</button>
+        <button id="fabShort" class="fab-sub" title="Short" aria-label="Crear short">🎬</button>
+        <button id="fabUpload" class="fab-sub" title="Subir" aria-label="Subir">📤</button>
+      </div>
+      <button id="fabMain" class="fab" aria-label="Crear">＋</button>
     </div>
 
-    <div class="hdr-center logo-wrap" role="banner">
-      <!-- placeholder image for IA logo (replace src with your IA 3D logo file) -->
-      <div style="display:flex;align-items:center;gap:10px">
-        <img id="logoImg" src="https://placehold.co/140x44/0b1220/00e1ff?text=SinFiltro" alt="SinFiltro logo" style="height:44px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.6)">
-        <div style="display:flex;flex-direction:column">
-          <div class="brand-text">SinFiltro</div>
-          <div class="brand-sub">Tu espacio sin límites</div>
+    <!-- upload modal (demo local) -->
+    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true" aria-modal="true">
+      <h3 id="uploadTitle">Subir contenido (demo)</h3>
+      <p class="muted" style="color:var(--muted)">Selecciona una imagen o video. Se guardará localmente en tu navegador (demo).</p>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+        <input type="file" id="fileInput" accept="image/*,video/*" aria-label="Seleccionar archivo">
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button id="doUpload" class="btn primary">Subir</button>
+          <button id="closeUpload" class="btn">Cerrar</button>
         </div>
       </div>
     </div>
 
-    <div class="hdr-right" style="gap:8px">
-      <div class="search-wrap" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:12px;background:var(--card);border:1px solid rgba(255,255,255,0.02)">
-        <input id="searchInput" class="search-input" placeholder="Buscar..." aria-label="Buscar">
+    <!-- viewer -->
+    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+      <div id="viewerContent" class="viewer-content" role="document"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="closeViewer" class="btn">Cerrar</button>
       </div>
-      <button id="themeToggle" class="icon-btn clickable" aria-label="Cambiar modo">🌙</button>
     </div>
-  </header>
 
-  <!-- main content -->
-  <main id="main" class="main" role="main">
-    <section class="hero">
-      <h1>Descubre lo auténtico</h1>
-      <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-    </section>
-
-    <section class="section" aria-labelledby="trendingTitle">
-      <div class="section-header">
-        <div class="section-title">🔥 En Tendencia</div>
-        <div class="see-all clickable" id="seeTrending">Ver todo</div>
+    <!-- drawer (profile/settings) -->
+    <div id="drawer" class="drawer" role="dialog" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="color:var(--neon-cyan)">Perfil & Ajustes</strong>
+        <button id="closeDrawer" class="icon-btn">✕</button>
       </div>
-      <div class="h-row" id="trendingRow" aria-live="polite"></div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <div class="section-title">⏱️ Vistos recientemente</div>
-        <div class="see-all clickable" id="seeRecent">Ver todo</div>
+      <div style="margin-top:10px;color:var(--muted);font-size:13px">
+        <p><strong>Usuario demo</strong></p>
+        <p>Panel de opciones y previsualización (demo).</p>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:8px 0">
+        <button id="analyticsBtn" class="btn">Panel de monetización (demo)</button>
       </div>
-      <div class="h-row" id="recentRow"></div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <div class="section-title">🎯 Recomendados</div>
-        <div class="see-all clickable" id="seeReco">Ver todo</div>
-      </div>
-      <div class="feed" id="feedGrid"></div>
-    </section>
-  </main>
-
-  <!-- FAB -->
-  <div class="fab-wrap" id="fabWrap">
-    <div id="fabRow" style="display:flex;flex-direction:column;align-items:center;gap:10px">
-      <button id="fabImg" class="fab-sub clickable" title="Imagen">🖼️</button>
-      <button id="fabShort" class="fab-sub clickable" title="Short">🎬</button>
-      <button id="fabUpload" class="fab-sub clickable" title="Subir">📤</button>
     </div>
-    <button id="fabMain" class="fab clickable" aria-label="Crear">＋</button>
+
+    <!-- bottom nav -->
+    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+      <div class="nav-item active" data-tab="home" id="navHome" role="button" aria-pressed="true">🏠<span style="font-size:11px">Inicio</span></div>
+      <div class="nav-item" data-tab="videos" id="navVideos" role="button">🎬<span style="font-size:11px">Videos</span></div>
+      <div style="width:88px"></div>
+      <div class="nav-item" data-tab="likes" id="navLikes" role="button">❤️<span style="font-size:11px">Favoritos</span></div>
+      <div class="nav-item" data-tab="profile" id="navProfile" role="button">👤<span style="font-size:11px">Perfil</span></div>
+    </nav>
   </div>
-
-  <!-- upload modal (demo) -->
-  <div id="uploadModal" style="position:fixed;left:12px;right:12px;bottom:110px;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.4));border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:95;display:none">
-    <strong style="color:var(--neon-cyan)">Subir contenido (demo)</strong>
-    <p style="color:var(--muted);font-size:13px">Selecciona un archivo para agregarlo al feed localmente (demo).</p>
-    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-      <input type="file" id="fileInput" accept="image/*,video/*">
-      <button id="doUpload" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--neon-cyan),var(--neon-blue));color:#001;font-weight:700">Subir</button>
-      <button id="closeUpload" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted)">Cerrar</button>
-    </div>
-  </div>
-
-  <!-- viewer -->
-  <div id="viewer" style="position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.96),rgba(0,0,0,0.92));display:none;align-items:center;justify-content:center;z-index:120;padding:18px">
-    <div style="width:100%;max-width:980px;border-radius:12px;overflow:hidden;background:#000" id="viewerContent"></div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button id="closeViewer" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--muted)">Cerrar</button>
-    </div>
-  </div>
-
-  <!-- drawer (profile / settings) -->
-  <div id="drawer" style="position:fixed;left:0;right:0;bottom:0;height:56%;background:linear-gradient(180deg,#071226,#041224);border-top-left-radius:18px;border-top-right-radius:18px;padding:12px;z-index:130;display:none">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong style="color:var(--neon-cyan)">Perfil & Ajustes</strong>
-      <button id="closeDrawer" class="icon-btn clickable">✕</button>
-    </div>
-    <div style="margin-top:10px;color:var(--muted);font-size:13px">
-      <p><strong>Usuario demo</strong></p>
-      <p>Panel de opciones y previsualización (demo).</p>
-    </div>
-  </div>
-
-  <!-- bottom nav -->
-  <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-    <div class="nav-item active" data-tab="home" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-    <div class="nav-item" data-tab="videos" id="navVideos">🎬<div style="font-size:11px">Videos</div></div>
-    <div style="width:88px"></div>
-    <div class="nav-item" data-tab="likes" id="navLikes">❤️<div style="font-size:11px">Me gusta</div></div>
-    <div class="nav-item" data-tab="profile" id="navProfile">👤<div style="font-size:11px">Perfil</div></div>
-  </nav>
-</div>
 
 <script>
-/* --- Helpers & storage keys --- */
-const STORAGE_THEME = 'sinfiltro.theme.v1';
-const STORAGE_FEED = 'sinfiltro.feed.v1';
-const body = document.body;
+/* -------------------------
+   script inline - SinFiltro (single file)
+   ------------------------- */
+
+/* Storage keys */
+const STORAGE_THEME = 'sinfiltro.theme.v3';
+const STORAGE_FEED = 'sinfiltro.feed.v3';
+
+/* Helpers */
 const qs = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
 const randInt = n => Math.floor(Math.random()*n);
+
+/* Create manifest dynamically (so no external manifest file required) */
+(function createManifestBlob(){
+  const manifest = {
+    name: "SinFiltro",
+    short_name: "SinFiltro",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#04040a",
+    theme_color: "#00e1ff",
+    icons: [
+      {src: "icons/icon-192.png", sizes:"192x192", type:"image/png"},
+      {src: "icons/icon-512.png", sizes:"512x512", type:"image/png"}
+    ]
+  };
+  try {
+    const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = url;
+    document.head.appendChild(link);
+  } catch(e){
+    console.warn('Manifest blob failed', e);
+  }
+})();
+
+/* Create & register simple service worker from a blob (single-file PWA) */
+(function registerSWBlob(){
+  if('serviceWorker' in navigator){
+    const swCode = `
+      const CACHE = 'sinfiltro-shell-v1';
+      const URLS = ['.', location.pathname, 'index.html'];
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)).catch(()=>{}));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+      self.addEventListener('fetch', e => {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)).catch(()=> caches.match('index.html')));
+      });
+    `;
+    try {
+      const blob = new Blob([swCode], {type:'application/javascript'});
+      const swUrl = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl).catch(err => console.warn('SW reg failed', err));
+    } catch(e){
+      console.warn('SW blob failed', e);
+    }
+  }
+})();
 
 /* Theme init */
 let theme = localStorage.getItem(STORAGE_THEME) || 'dark';
 applyTheme(theme);
 
-/* Demo feed: generate or restore */
+/* Demo feed: restore or create */
 let feed = JSON.parse(localStorage.getItem(STORAGE_FEED) || 'null');
 if(!feed){
-  feed = Array.from({length:8}).map((_,i)=>({
+  feed = Array.from({length:10}).map((_,i)=>({
     id: 'd'+i,
     type: 'image',
     src: `https://source.unsplash.com/640x420/?neon,city,cyberpunk&sig=${Date.now()%1000 + i}`,
-    title: ['Callejón neon','Nocturna','Short creativo','Luces urbanas','Arte digital','Pixel night','Modo gamer','Retrato neon'][i%8],
-    meta: `${(randInt(500)+1)}K • ${[1,2,3,4,6,8][i%6]}d`,
-    likes: randInt(9000)
+    title: ['Callejón neon','Nocturna','Short creativo','Luces urbanas','Arte digital','Pixel night','Modo gamer','Retrato neon','Atardecer urbano','Vibras'][i%10],
+    meta: `${(randInt(900)+1)}K • ${[1,2,3,4,6,8][i%6]}d`,
+    likes: randInt(8000)
   }));
   localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
 }
@@ -242,8 +311,6 @@ if(!feed){
 const trendingRow = qs('#trendingRow');
 const recentRow = qs('#recentRow');
 const feedGrid = qs('#feedGrid');
-const viewer = qs('#viewer');
-const viewerContent = qs('#viewerContent');
 const main = qs('#main');
 const fabMain = qs('#fabMain');
 const fabWrap = qs('#fabWrap');
@@ -252,123 +319,158 @@ const searchInput = qs('#searchInput');
 const themeToggle = qs('#themeToggle');
 const menuBtn = qs('#menuBtn');
 const drawer = qs('#drawer');
+const closeDrawer = qs('#closeDrawer');
 
-/* Render helpers */
-function esc(s){return String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function makeThumb(it){ const el = document.createElement('div'); el.className='thumb'; el.innerHTML = `<img data-src="${it.src}" alt="${esc(it.title)}"><div class="t-info">${esc(it.title)}</div>`; el.addEventListener('click', ()=> openViewer(it)); return el; }
-function makeCard(it){ const el=document.createElement('article'); el.className='card'; el.innerHTML = `<img data-src="${it.src}" alt="${esc(it.title)}"><div class="meta"><div><div class="title">${esc(it.title)}</div><div class="small">${esc(it.meta)}</div></div><div style="display:flex;gap:8px;align-items:center"><button class="like" data-id="${it.id}">❤ <span class="count">${it.likes}</span></button><button class="share" data-id="${it.id}">🔗</button></div></div>`; el.querySelector('.like').addEventListener('click',(e)=>{ e.stopPropagation(); likeItem(it.id,el);}); el.querySelector('.share').addEventListener('click',(e)=>{ e.stopPropagation(); shareItem(it);}); el.addEventListener('click', ()=> openViewer(it)); return el; }
+/* render helpers */
+function esc(s){return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function makeThumb(item){
+  const el = document.createElement('div');
+  el.className = 'thumb';
+  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="t-info">${esc(item.title)}</div>`;
+  el.addEventListener('click', ()=> openViewer(item));
+  return el;
+}
+function makeCard(item){
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="meta"><div><div class="title">${esc(item.title)}</div><div class="small">${esc(item.meta)}</div></div><div style="display:flex;gap:8px;align-items:center"><button class="like" data-id="${item.id}" aria-label="Me gusta">❤ <span class="count">${item.likes}</span></button><button class="share" data-id="${item.id}" aria-label="Compartir">🔗</button></div></div>`;
+  el.querySelector('.like').addEventListener('click', (e)=>{ e.stopPropagation(); likeItem(item.id, el); });
+  el.querySelector('.share').addEventListener('click', (e)=>{ e.stopPropagation(); shareItem(item); });
+  el.addEventListener('click', ()=> openViewer(item));
+  return el;
+}
 
+/* render feed */
 function renderAll(){
-  trendingRow.innerHTML=''; recentRow.innerHTML=''; feedGrid.innerHTML='';
+  trendingRow.innerHTML = '';
+  recentRow.innerHTML = '';
+  feedGrid.innerHTML = '';
   const sorted = [...feed].sort((a,b)=> (b.likes||0)-(a.likes||0));
-  sorted.slice(0,6).forEach(i=> trendingRow.appendChild(makeThumb(i)));
-  feed.slice(0,6).forEach(i=> recentRow.appendChild(makeThumb(i)));
+  sorted.slice(0,8).forEach(i=> trendingRow.appendChild(makeThumb(i)));
+  feed.slice(0,8).forEach(i=> recentRow.appendChild(makeThumb(i)));
   feed.forEach(i=> feedGrid.appendChild(makeCard(i)));
   lazyLoadImages();
 }
 
-/* Lazy load images */
-let imgObs = null;
+/* lazy load images */
+let imgObserver = null;
 function lazyLoadImages(){
   const imgs = qsa('img[data-src]');
   if('IntersectionObserver' in window){
-    if(!imgObs){
-      imgObs = new IntersectionObserver((entries,obs)=>{
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
         entries.forEach(entry=>{
           if(entry.isIntersecting){
             const img = entry.target;
             img.src = img.dataset.src;
             img.removeAttribute('data-src');
-            imgObs.unobserve(img);
+            obs.unobserve(img);
           }
         });
-      },{rootMargin:'200px',threshold:0.05});
+      }, {rootMargin:'200px', threshold:0.05});
     }
-    imgs.forEach(i=> imgObs.observe(i));
+    imgs.forEach(i=> imgObserver.observe(i));
   } else {
     imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-/* Viewer */
+/* viewer logic */
 function openViewer(item){
-  viewerContent.innerHTML = '';
+  const viewer = qs('#viewer');
+  const content = qs('#viewerContent');
+  content.innerHTML = '';
   if(item.type === 'video'){
-    const v = document.createElement('video'); v.src = item.src; v.controls=true; v.autoplay=true; v.style.maxHeight='70vh'; viewerContent.appendChild(v);
+    const v = document.createElement('video'); v.src = item.src; v.controls = true; v.autoplay = true; v.style.maxHeight = '70vh'; content.appendChild(v);
   } else {
-    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; viewerContent.appendChild(img);
+    const img = document.createElement('img'); img.src = item.src; img.alt = item.title; content.appendChild(img);
   }
-  viewer.style.display='flex';
+  viewer.classList.add('show'); viewer.style.display = 'flex';
 }
-qs('#closeViewer').addEventListener('click', ()=> viewer.style.display='none');
+qs('#closeViewer').addEventListener('click', ()=> { qs('#viewer').style.display = 'none'; });
 
-/* Like & share */
-function likeItem(id,el){
-  const idx = feed.findIndex(f=> f.id===id); if(idx<0) return;
+/* like & share */
+function likeItem(id, el){
+  const idx = feed.findIndex(f=> f.id === id); if(idx < 0) return;
   feed[idx].likes = (feed[idx].likes||0) + 1;
-  el.querySelector('.count').textContent = feed[idx].likes;
+  const cnt = el.querySelector('.count'); if(cnt) cnt.textContent = feed[idx].likes;
   localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+  // micro-animation
+  const btn = el.querySelector('.like');
+  if(btn) btn.animate([{transform:'scale(.9)'},{transform:'scale(1.06)'},{transform:'scale(1)'}], {duration:260, easing:'ease-out'});
 }
 function shareItem(item){
-  if(navigator.share){ navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{}); }
-  else { navigator.clipboard?.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('Abrir: '+item.src)); }
+  if(navigator.share){
+    navigator.share({title:item.title,text:'Mira esto en SinFiltro',url:item.src}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(item.src).then(()=> alert('Enlace copiado (demo)')).catch(()=> alert('No se pudo copiar'));
+  } else alert('Compartir: ' + item.src);
 }
 
-/* FAB interactions */
+/* FAB */
 let fabOpen = false;
 fabMain.addEventListener('click', ()=>{
   fabOpen = !fabOpen;
   if(fabOpen){ fabWrap.classList.add('fab-open'); qsa('.fab-sub').forEach((b,i)=>{ b.style.transform = `translateY(-${(i+1)*52}px)`; b.style.opacity = '1'; }); }
   else { fabWrap.classList.remove('fab-open'); qsa('.fab-sub').forEach(b=>{ b.style.transform = 'translateY(0)'; b.style.opacity = '0'; }); }
 });
-qs('#fabUpload').addEventListener('click', ()=> toggle('#uploadModal'));
-qs('#fabImg').addEventListener('click', ()=> toggle('#uploadModal'));
+qs('#fabUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
+qs('#fabImg').addEventListener('click', ()=> toggleModal('#uploadModal'));
 qs('#fabShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* Upload (demo local) */
-qs('#closeUpload').addEventListener('click', ()=> toggle('#uploadModal'));
+/* upload (demo local) */
+qs('#closeUpload').addEventListener('click', ()=> toggleModal('#uploadModal'));
 qs('#doUpload').addEventListener('click', ()=>{
-  const f = qs('#fileInput').files?.[0]; if(!f){ alert('Selecciona un archivo'); return; }
+  const file = qs('#fileInput').files?.[0];
+  if(!file){ alert('Selecciona un archivo'); return; }
   const reader = new FileReader();
   reader.onload = e => {
     const url = e.target.result;
-    const it = { id: 'u'+Date.now(), type: f.type.startsWith('video')? 'video':'image', src: url, title: f.name||'Nuevo', meta: 'Ahora', likes:0 };
-    feed.unshift(it); localStorage.setItem(STORAGE_FEED, JSON.stringify(feed)); renderAll(); toggle('#uploadModal'); alert('Subido (demo local).');
+    const item = { id: 'u' + Date.now(), type: file.type.startsWith('video') ? 'video' : 'image', src: url, title: file.name || 'Nuevo', meta: 'Ahora', likes: 0 };
+    feed.unshift(item);
+    localStorage.setItem(STORAGE_FEED, JSON.stringify(feed));
+    renderAll();
+    toggleModal('#uploadModal');
+    alert('Contenido subido (demo local).');
   };
-  reader.readAsDataURL(f);
+  reader.readAsDataURL(file);
 });
 
-/* Toggle element show/hide */
-function toggle(sel){
+/* toggle modal helper */
+function toggleModal(sel){
   const el = document.querySelector(sel);
   if(!el) return;
-  el.style.display = (el.style.display === 'none' || getComputedStyle(el).display === 'none') ? 'block' : 'none';
+  const visible = getComputedStyle(el).display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
 }
 
-/* Search */
+/* search */
 searchInput.addEventListener('input', (e)=>{
   const q = (e.target.value||'').toLowerCase().trim();
   if(!q){ renderAll(); return; }
-  const filtered = feed.filter(it=> it.title.toLowerCase().includes(q) || it.meta.toLowerCase().includes(q));
-  feedGrid.innerHTML=''; filtered.forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages();
+  const filtered = feed.filter(it => it.title.toLowerCase().includes(q) || it.meta.toLowerCase().includes(q));
+  feedGrid.innerHTML = '';
+  filtered.forEach(i=> feedGrid.appendChild(makeCard(i)));
+  lazyLoadImages();
 });
 
-/* Theme toggle */
+/* theme toggle */
 themeToggle.addEventListener('click', ()=>{
   theme = (theme === 'dark') ? 'light' : 'dark';
   applyTheme(theme);
   localStorage.setItem(STORAGE_THEME, theme);
 });
 function applyTheme(t){
-  if(t === 'light'){ body.classList.add('theme-light'); themeToggle.textContent = '☀️'; }
-  else { body.classList.remove('theme-light'); themeToggle.textContent = '🌙'; }
+  const body = document.body;
+  if(t === 'light'){ body.classList.add('theme-light'); document.getElementById('themeToggle').textContent = '☀️'; }
+  else { body.classList.remove('theme-light'); document.getElementById('themeToggle').textContent = '🌙'; }
 }
 
-/* Drawer */
-menuBtn.addEventListener('click', ()=> drawer.style.display = 'block');
-qs('#closeDrawer').addEventListener('click', ()=> drawer.style.display = 'none');
+/* drawer */
+menuBtn.addEventListener('click', ()=> { drawer.style.display = 'block'; drawer.classList.add('show'); });
+qs('#closeDrawer')?.addEventListener('click', ()=> { drawer.style.display = 'none'; drawer.classList.remove('show'); });
 
-/* Bottom nav */
+/* bottom nav */
 qsa('.nav-item').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     qsa('.nav-item').forEach(n=> n.classList.remove('active'));
@@ -377,13 +479,40 @@ qsa('.nav-item').forEach(btn=>{
     navigateTo(tab);
   });
 });
-
 function navigateTo(tab){
   if(tab === 'home'){ main.scrollTo({top:0,behavior:'smooth'}); renderAll(); }
-  else if(tab === 'videos'){ feedGrid.innerHTML=''; feed.filter((f,i)=> i%2===0).forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages(); }
-  else if(tab === 'likes'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)">Me gusta — (demo)</div>`; }
+  else if(tab === 'videos'){ feedGrid.innerHTML = ''; feed.filter((f,i)=> i%2===0).forEach(i=> feedGrid.appendChild(makeCard(i))); lazyLoadImages(); }
+  else if(tab === 'likes'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)">Favoritos — demo</div>`; }
   else if(tab === 'profile'){ feedGrid.innerHTML = `<div style="padding:18px;color:var(--muted)"><strong>Perfil demo</strong><p>Publicaciones: ${feed.length}</p></div>`; }
 }
 
-/* Infinite scroll simulation */
-let loading
+/* infinite scroll simulation */
+let loading = false;
+main.addEventListener('scroll', ()=>{
+  const nearBottom = main.scrollTop + main.clientHeight > main.scrollHeight - 420;
+  if(nearBottom && !loading){
+    loading = true;
+    setTimeout(()=> {
+      const more = Array.from({length:6}).map((_,i)=>({
+        id:'m'+Date.now()+i, type:'image',
+        src:`https://source.unsplash.com/640x420/?neon,night,city&sig=${Date.now()%100000 + i}`,
+        title:['Nuevo visual','Clip urbano','Arte neon','Retrato'][i%4], meta:`${randInt(90)+1}K • ${randInt(10)+1}d`, likes:randInt(500)
+      }));
+      feed = feed.concat(more); localStorage.setItem(STORAGE_FEED, JSON.stringify(feed)); renderAll(); loading = false;
+    }, 900);
+  }
+});
+
+/* PWA registration done earlier with blob - good to go */
+
+/* init */
+renderAll();
+applyTheme(theme);
+
+/* accessibility: ESC to close overlays */
+document.addEventListener('keydown', (e)=> {
+  if(e.key === 'Escape'){ qs('#viewer').style.display = 'none'; drawer.style.display = 'none'; qs('#uploadModal').style.display = 'none'; }
+});
+</script>
+</body>
+</html>
