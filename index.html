@@ -1,216 +1,486 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>App Premium</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Premium (Móvil)</title>
+<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, menú lateral funcional (imágenes demo aleatorias)." />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  * {margin: 0; padding: 0; box-sizing: border-box;}
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(180deg, #0f0f0f, #1c1c1c);
-    color: white;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100vh;
+  /* ---------------- VARIABLES ---------------- */
+  :root{
+    --bg-1:#05060a; --bg-2:#071226;
+    --glass: rgba(255,255,255,0.04);
+    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
+    --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.6);
+    --radius:12px; --fast:160ms; --mid:260ms;
+    --text:#eaf7ff;
   }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785; background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 60px;
-    backdrop-filter: blur(15px);
-    background: rgba(30, 30, 30, 0.5);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 1000;
-  }
+  /* ---------------- BACKGROUND & PARALLAX ---------------- */
+  .bg-wrap{position:fixed;inset:0;z-index:-20;overflow:hidden;pointer-events:none}
+  .bg-layer{position:absolute;inset:-10% -20% -10% -20%;background:
+    radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
+    filter:blur(26px) saturate(1.05); transform:translateZ(0); will-change:transform; transition:transform 8s linear}
 
-  .menu-icon, .search-icon, .mode-toggle {
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
+  /* ---------------- LAYOUT ---------------- */
+  .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  .left-row{display:flex;align-items:center;gap:10px}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
+  .icon-btn:active{transform:scale(.96)}
+  .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{font-size:11px;color:var(--muted)}
 
-  main {
-    margin-top: 70px;
-    padding-bottom: 80px;
-  }
+  /* ---------------- SCROLL AREA ---------------- */
+  #scrollArea{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;touch-action:pan-y}
+  .container{max-width:720px;margin:0 auto;padding:12px}
 
-  section {
-    margin-bottom: 25px;
-    padding: 0 10px;
-  }
+  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
+  .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
+  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-  h2 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
+  .section{margin-top:14px}
+  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
+  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  .scroll-container {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-  }
+  /* ---------------- TWO-ROW HORIZONTAL SCROLL ---------------- */
+  .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:6px}
+  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .h-row::-webkit-scrollbar{display:none}
+  .card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center}
+  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
+  .card-small:hover img{transform:scale(1.04)}
+  .card-small .meta{position:relative;z-index:6}
+  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
+  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
+  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  .scroll-container::-webkit-scrollbar {
-    display: none;
-  }
+  /* ---------------- GRID (vertical infinite) ---------------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
+  .grid img{width:100%;height:150px;object-fit:cover}
+  .grid .body{padding:8px;color:var(--text)}
+  .grid .title{font-weight:700}
+  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  .card {
-    position: relative;
-    width: 180px;
-    height: 120px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    flex-shrink: 0;
-  }
+  /* ---------------- FAB radial & bottom nav ---------------- */
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+  .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  .card img, .card video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  /* ---------------- SIDE PANEL & OVERLAY ---------------- */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
+  .overlay.show{display:block}
+  .panel{position:fixed;left:6px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(18px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-18px);opacity:0;transition:all 300ms ease}
+  .panel.open{transform:translateX(0);opacity:1}
+  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  .play-btn {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 50%;
-    width: 40px; height: 40px;
-    font-size: 20px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
+  .panel nav{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .panel .nav-link{padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer;color:var(--text);background:transparent;border:1px solid rgba(255,255,255,0.02)}
+  .panel .nav-link:hover{background:rgba(255,255,255,0.015)}
 
-  /* --- Menú lateral --- */
-  .side-menu {
-    position: fixed;
-    top: 0; left: -260px;
-    width: 260px;
-    height: 100vh;
-    background: rgba(25,25,25,0.85);
-    backdrop-filter: blur(20px);
-    transition: 0.3s ease;
-    z-index: 1200;
-    padding: 20px;
-  }
-  .side-menu.active {
-    left: 0;
-  }
-  .side-menu h3 {
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-  }
-  .side-menu ul {
-    list-style: none;
-  }
-  .side-menu ul li {
-    margin: 12px 0;
-    cursor: pointer;
-    font-size: 1.1rem;
-  }
+  /* ---------------- VIEWER (IMMERSIVE) ---------------- */
+  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .viewer img{width:100%;height:auto;display:block}
+  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
 
-  .close-btn {
-    position: absolute;
-    top: 15px; right: 15px;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
+  /* ---------------- MICRO-ANIM, TRANSITIONS ---------------- */
+  .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-  .overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(2px);
-    opacity: 0; visibility: hidden;
-    transition: 0.3s ease;
-    z-index: 1100;
-  }
-  .overlay.active {
-    opacity: 1; visibility: visible;
+  /* responsive mobile */
+  @media(max-width:420px){
+    .card-small{min-width:150px;height:100px}
+    .grid img{height:120px}
+    .fab{width:64px;height:64px}
+    .panel{width:92%;left:4%}
   }
 </style>
 </head>
 <body>
+  <div class="bg-wrap"><div class="bg-layer" id="bgLayer"></div></div>
 
-<header>
-  <div class="menu-icon" id="menuBtn">☰</div>
-  <div class="search-icon">🔍</div>
-  <div class="mode-toggle" id="modeToggle">🌙</div>
-</header>
+  <div class="app" role="application" aria-label="SinFiltro">
+    <header class="header" role="banner">
+      <div class="left-row">
+        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
+        <div>
+          <div class="logo">SinFiltro</div>
+          <div class="tag">Tu espacio sin límites</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="searchBtn" class="icon-btn" aria-label="buscar">🔎</button>
+        <button id="themeBtn" class="icon-btn" aria-label="modo">🌗</button>
+      </div>
+    </header>
 
-<div class="side-menu" id="sideMenu">
-  <div class="close-btn" id="closeMenu">✖</div>
-  <h3>Menú</h3>
-  <ul>
-    <li>Inicio</li>
-    <li>Tendencias</li>
-    <li>Recomendados</li>
-    <li>Favoritos</li>
-    <li>Configuración</li>
-  </ul>
-</div>
+    <aside id="overlay" class="overlay" tabindex="-1"></aside>
+    <aside id="panel" class="panel" role="dialog" aria-hidden="true">
+      <div style="display:flex;align-items:center;gap:8px">
+        <strong>Cuenta & Panel</strong>
+        <button id="closePanel" class="panel-close" style="margin-left:auto" aria-label="Cerrar panel">✕</button>
+      </div>
+      <p class="tag" style="margin:8px 0 12px 0">Acciones demo: vistas, monetización y ajustes.</p>
+      <nav>
+        <div class="nav-link" data-action="home">🏠 Inicio</div>
+        <div class="nav-link" data-action="explore">🔎 Explorar</div>
+        <div class="nav-link" data-action="fav">⭐ Favoritos</div>
+        <div class="nav-link" data-action="settings">⚙️ Configuración</div>
+        <div class="nav-link" data-action="logout">🚪 Cerrar sesión</div>
+      </nav>
+    </aside>
 
-<div class="overlay" id="overlay"></div>
+    <main id="scrollArea" class="scroll" tabindex="0">
+      <div class="container">
 
-<main id="mainContent">
-  <section>
-    <h2>Tendencias</h2>
-    <div class="scroll-container">
-      <div class="card"><img src="https://picsum.photos/300/200?1" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/300/200?2" alt=""></div>
-      <div class="card"><video src="" poster="https://picsum.photos/300/200?3"></video><button class="play-btn">▶</button></div>
-      <div class="card"><img src="https://picsum.photos/300/200?4" alt=""></div>
+        <section class="hero fade-up" aria-label="presentación">
+          <h1>Descubre lo auténtico</h1>
+          <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+        </section>
+
+        <!-- Tendencias -->
+        <section class="section" aria-label="tendencias">
+          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrending">Ver todo</div></div>
+          <div class="h-stack">
+            <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
+            <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
+          </div>
+        </section>
+
+        <!-- Recomendados -->
+        <section class="section" aria-label="recomendados">
+          <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
+          <div class="h-stack">
+            <div id="recoRow1" class="h-row" aria-label="reco fila 1"></div>
+            <div id="recoRow2" class="h-row" aria-label="reco fila 2"></div>
+          </div>
+        </section>
+
+        <!-- Antes visto -->
+        <section class="section" aria-label="antes visto">
+          <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
+          <div class="h-stack">
+            <div id="recentRow1" class="h-row" aria-label="recent fila 1"></div>
+            <div id="recentRow2" class="h-row" aria-label="recent fila 2"></div>
+          </div>
+        </section>
+
+        <!-- Explorar: grid infinito -->
+        <section class="section" aria-label="explorar">
+          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
+          <div id="gridFeed" class="grid" aria-live="polite"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <button id="fab" class="fab" aria-label="Crear">＋</button>
+
+    <nav class="bottom-nav" role="navigation">
+      <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
+      <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
+      <div style="width:78px"></div>
+      <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
+      <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
+    </nav>
+
+    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+      <div class="card" role="document">
+        <div id="viewerInner"></div>
+        <div class="controls">
+          <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
+          <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
+          <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
+          <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+        </div>
+      </div>
     </div>
-  </section>
-
-  <section>
-    <h2>Recomendados</h2>
-    <div class="scroll-container">
-      <div class="card"><img src="https://picsum.photos/300/200?5" alt=""></div>
-      <div class="card"><video poster="https://picsum.photos/300/200?6"></video><button class="play-btn">▶</button></div>
-      <div class="card"><img src="https://picsum.photos/300/200?7" alt=""></div>
-      <div class="card"><img src="https://picsum.photos/300/200?8" alt=""></div>
-    </div>
-  </section>
-</main>
+  </div>
 
 <script>
-  const menuBtn = document.getElementById('menuBtn');
-  const sideMenu = document.getElementById('sideMenu');
-  const overlay = document.getElementById('overlay');
-  const closeMenu = document.getElementById('closeMenu');
-  const modeToggle = document.getElementById('modeToggle');
+/* ============================
+   SinFiltro — Menú lateral funcional (parte de la versión aprobada)
+   Mantengo diseño EXACTO y solo añado lógica del panel y scroll táctil.
+   ============================ */
 
-  menuBtn.addEventListener('click', () => {
-    sideMenu.classList.add('active');
-    overlay.classList.add('active');
-  });
-  closeMenu.addEventListener('click', closeSideMenu);
-  overlay.addEventListener('click', closeSideMenu);
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
+const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-  function closeSideMenu(){
-    sideMenu.classList.remove('active');
-    overlay.classList.remove('active');
+/* DOM refs */
+const scrollArea = $('#scrollArea');
+const panel = $('#panel');
+const overlay = $('#overlay');
+const menuBtn = $('#menuBtn');
+const closePanelBtn = $('#closePanel');
+const navLinks = $$('.panel .nav-link');
+const themeBtn = $('#themeBtn');
+const searchBtn = $('#searchBtn');
+const fab = $('#fab');
+const viewer = $('#viewer');
+const viewerInner = $('#viewerInner') || document.getElementById('viewerInner');
+const closeViewer = $('#closeViewer');
+const prevBtn = $('#prevBtn');
+const nextBtn = $('#nextBtn');
+const vvPlay = $('#vvPlay');
+const bgLayer = $('#bgLayer');
+const gridFeed = $('#gridFeed');
+
+let pool = Array.from({length:160}).map((_,i)=>({
+  id:'p'+i, src:mkImg(i), kind: (i%6===0)?'video':'image',
+  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: rand(9000), comments: rand(1500), views: (rand(900)+100)+'K'
+}));
+
+let trends = pool.slice(0,12);
+let reco = pool.slice(12,24);
+let recent = pool.slice(24,36);
+let grid = pool.slice(36,80);
+
+/* ---------- Lazy loading ---------- */
+let imgObserver = null;
+function initLazyObserver(){
+  if('IntersectionObserver' in window && !imgObserver){
+    imgObserver = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          const img = e.target;
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          img.onload = ()=> img.parentElement.classList.remove('skel');
+          obs.unobserve(img);
+        }
+      });
+    }, {root:null, rootMargin:'300px', threshold: 0.05});
   }
+}
 
-  modeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('light-mode');
-    modeToggle.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+function lazyObserve(root=document){
+  if(!imgObserver) initLazyObserver();
+  const imgs = root.querySelectorAll('img[data-src]');
+  imgs.forEach(i => {
+    try{ imgObserver.observe(i); }catch(e){}
   });
+}
+
+/* ---------- Element creators ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function makeSmallCard(item){
+  const d = document.createElement('div');
+  d.className = 'card-small skel';
+  d.tabIndex = 0;
+  d.innerHTML = `
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    ${item.likes>3000?'<div class="mini-badge">TOP</div>':''}
+    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+      <div class="meta">
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+      </div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" title="Reproducir">▶</div>':'' }</div>
+    </div>
+  `;
+  d.addEventListener('click', ()=> openViewerByItem(item));
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
+  return d;
+}
+
+function makeGridCard(item){
+  const a = document.createElement('article');
+  a.className = 'card skel';
+  a.innerHTML = `
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    <div class="body">
+      <div class="title">${escapeHtml(item.title)}</div>
+      <div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div>
+    </div>
+  `;
+  a.addEventListener('click', ()=> openViewerByItem(item));
+  return a;
+}
+
+/* ---------- Render two-rows (infinite-right) ---------- */
+function renderTwoRows(row1, row2, items){
+  row1.innerHTML = ''; row2.innerHTML = '';
+  items.forEach((it,i)=>{
+    const target = (i % 2 === 0) ? row1 : row2;
+    target.appendChild(makeSmallCard(it));
+  });
+
+  [row1, row2].forEach(r=>{
+    while(r.children.length < 6){
+      r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+    let loading = false;
+    r.addEventListener('scroll', (ev)=>{
+      if(loading) return;
+      if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 180){
+        loading = true;
+        requestAnimationFrame(()=> {
+          for(let i=0;i<4;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+          lazyObserve(r);
+          setTimeout(()=> loading=false, 240);
+        });
+      }
+    }, {passive:true});
+  });
+
+  lazyObserve();
+}
+
+/* ---------- Grid initial & infinite vertical ---------- */
+function renderGridInitial(){
+  gridFeed.innerHTML = '';
+  grid.forEach(it => gridFeed.appendChild(makeGridCard(it)));
+  lazyObserve(gridFeed);
+}
+
+let loadingGrid = false;
+scrollArea.addEventListener('scroll', throttle(()=> {
+  if(bgLayer) bgLayer.style.transform = `translateY(${Math.min(60, scrollArea.scrollTop / 20)}px)`;
+  const rect = gridFeed.getBoundingClientRect();
+  if(rect.top - window.innerHeight < 200 && !loadingGrid){
+    loadingGrid = true;
+    setTimeout(()=> {
+      for(let i=0;i<6;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
+      lazyObserve(gridFeed);
+      loadingGrid = false;
+    }, 450);
+  }
+}, 120), {passive:true});
+
+/* ---------- Viewer ---------- */
+let activeList = [];
+let currentIndex = 0;
+
+function openViewerByItem(item){
+  const lists = [trends, reco, recent, grid, pool];
+  activeList = [];
+  for(const L of lists){
+    const idx = L.findIndex(x=>x.id===item.id);
+    if(idx >= 0){ activeList = L; currentIndex = idx; break; }
+  }
+  if(activeList.length === 0){ activeList = [item]; currentIndex = 0; }
+  showViewer();
+}
+function showViewer(){
+  const it = activeList[currentIndex];
+  viewerInner.innerHTML = '';
+  if(it.kind === 'video'){
+    const wrap = document.createElement('div'); wrap.style.position='relative';
+    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
+    const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
+    overlayPlay.addEventListener('click', ()=> simulatePlay(it));
+    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
+    viewerInner.appendChild(wrap);
+  } else {
+    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
+  }
+  viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
+}
+function closeViewerFunc(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
+function prevItem(){ if(currentIndex > 0){ currentIndex--; showViewer(); } }
+function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
+function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
+
+/* ---------- Panel open/close ---------- */
+function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
+function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+menuBtn.addEventListener('click', openPanel);
+closePanelBtn.addEventListener('click', closePanel);
+overlay.addEventListener('click', closePanel, {passive:true});
+navLinks.forEach(n => n.addEventListener('click', ()=> { alert('Demo: ' + n.textContent.trim()); closePanel(); }));
+
+/* ---------- Theme toggle ---------- */
+const THEME_KEY = 'sinfiltro.theme.v5';
+let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
+function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } localStorage.setItem(THEME_KEY, t); }
+applyTheme(theme);
+themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; applyTheme(theme); });
+
+/* ---------- Search (demo) ---------- */
+searchBtn.addEventListener('click', ()=> {
+  const q = prompt('Buscar (demo). Ingresa término:');
+  if(q) alert('Demo: buscar "'+q+'".');
+});
+
+/* ---------- FAB ---------- */
+fab.addEventListener('click', ()=> {
+  const r = confirm('Elegir: Aceptar = Subir (demo) | Cancelar = Crear post (demo)');
+  if(r) alert('Subir (demo): requiere backend real');
+  else alert('Crear post (demo)');
+});
+
+/* ---------- Nav items ---------- */
+$$('.nav-item').forEach(n => n.addEventListener('click', ()=>{
+  $$('.nav-item').forEach(x=> x.classList.remove('active'));
+  n.classList.add('active');
+  const t = n.dataset.tab;
+  if(t==='home') scrollArea.scrollTo({top:0,behavior:'smooth'});
+  if(t==='search'){ const q = prompt('Buscar (demo)'); if(q) alert('Buscar demo: '+q); }
+  if(t==='recent') document.querySelector('.section[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'});
+  if(t==='me') alert('Tus videos (demo)');
+}));
+
+/* ---------- Utility functions ---------- */
+function throttle(fn, wait=100){
+  let last = 0, t;
+  return function(...args){
+    const now = Date.now();
+    if(now - last >= wait){ last = now; fn.apply(this, args); last = now; }
+    else { clearTimeout(t); t = setTimeout(()=> { last = Date.now(); fn.apply(this, args); }, wait - (now - last)); }
+  };
+}
+
+/* ---------- Init rendering ---------- */
+function renderAll(){
+  renderTwoRows($('#trendRow1'), $('#trendRow2'), trends);
+  renderTwoRows($('#recoRow1'), $('#recoRow2'), reco);
+  renderTwoRows($('#recentRow1'), $('#recentRow2'), recent);
+  renderGridInitial();
+  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
+  lazyObserve();
+}
+document.addEventListener('DOMContentLoaded', renderAll);
+
+/* ---------- Global touch-to-scroll: allow touch anywhere to scroll main feed ---------- */
+(function enableGlobalTouchScroll(){
+  let startY = 0;
+  let startScroll = 0;
+  let active = false;
+
+  document.addEventListener('touchstart', (e) => {
+    if(!e.touches || e.touches.length > 1) return;
+    startY = e.touches[0].pageY;
+    startScroll = scrollArea.scrollTop;
+    active = true;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', (e) => {
+    if(!active) return;
+    const y = e.touches[0].pageY;
+    const delta = startY - y;
+    scrollArea.scrollTop = Math.max(0, startScroll + delta);
+  }, {passive:true});
+
+  document.addEventListener('touchend', (e) => { active = false; }, {passive:true});
+})();
+
+/* ---------- Re-init lazy on mutations ---------- */
+new MutationObserver(()=> { if(!imgObserver) initLazyObserver(); }).observe(document.body, {childList:true, subtree:true});
 </script>
 </body>
 </html>
