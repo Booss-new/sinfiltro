@@ -4,106 +4,110 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, menú lateral funcional (imágenes demo aleatorias)." />
+<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, menú lateral funcional con pantallas integradas." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  /* ---------------- VARIABLES ---------------- */
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --glass: rgba(255,255,255,0.04);
-    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
-    --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.6);
-    --radius:12px; --fast:160ms; --mid:260ms;
-    --text:#eaf7ff;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
-  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785; background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+/* ---------------- VARIABLES ---------------- */
+:root{
+  --bg-1:#05060a; --bg-2:#071226;
+  --glass: rgba(255,255,255,0.04);
+  --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
+  --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.6);
+  --radius:12px; --fast:160ms; --mid:260ms;
+  --text:#eaf7ff;
+}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785; background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  /* ---------------- BACKGROUND & PARALLAX ---------------- */
-  .bg-wrap{position:fixed;inset:0;z-index:-20;overflow:hidden;pointer-events:none}
-  .bg-layer{position:absolute;inset:-10% -20% -10% -20%;background:
-    radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-    filter:blur(26px) saturate(1.05); transform:translateZ(0); will-change:transform; transition:transform 8s linear}
+/* ---------------- BACKGROUND ---------------- */
+.bg-wrap{position:fixed;inset:0;z-index:-20;overflow:hidden;pointer-events:none}
+.bg-layer{position:absolute;inset:-10% -20% -10% -20%;background:
+  radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+  radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
+  filter:blur(26px) saturate(1.05); transform:translateZ(0); will-change:transform; transition:transform 8s linear}
 
-  /* ---------------- LAYOUT ---------------- */
-  .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .left-row{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
-  .icon-btn:active{transform:scale(.96)}
-  .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .tag{font-size:11px;color:var(--muted)}
+/* ---------------- LAYOUT ---------------- */
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
+.left-row{display:flex;align-items:center;gap:10px}
+.icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
+.icon-btn:active{transform:scale(.96)}
+.logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{font-size:11px;color:var(--muted)}
 
-  /* ---------------- SCROLL AREA ---------------- */
-  #scrollArea{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;touch-action:pan-y}
-  .container{max-width:720px;margin:0 auto;padding:12px}
+/* ---------------- MAIN SCROLL ---------------- */
+#scrollArea{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;touch-action:pan-y}
+.container{max-width:720px;margin:0 auto;padding:12px}
 
-  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
-  .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
-  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
+.hero h1{margin:0;font-size:18px;color:var(--accent-2)}
+.hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-  .section{margin-top:14px}
-  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+/* ---------------- SECTIONS ---------------- */
+.section{margin-top:14px}
+.section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.section .title{font-weight:800;color:var(--accent-1);font-size:16px}
+.see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* ---------------- TWO-ROW HORIZONTAL SCROLL ---------------- */
-  .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:6px}
-  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-  .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center}
-  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
-  .card-small:hover img{transform:scale(1.04)}
-  .card-small .meta{position:relative;z-index:6}
-  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
-  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
-  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+/* ---------------- HORIZONTAL TWO-ROW ---------------- */
+.h-stack{display:flex;flex-direction:column;gap:8px;padding-left:6px}
+.h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.h-row::-webkit-scrollbar{display:none}
+.card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center}
+.card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
+.card-small:hover img{transform:scale(1.04)}
+.card-small .meta{position:relative;z-index:6}
+.mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
+.mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
+.play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* ---------------- GRID (vertical infinite) ---------------- */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
-  .grid .body{padding:8px;color:var(--text)}
-  .grid .title{font-weight:700}
-  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+/* ---------------- GRID ---------------- */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
+.grid img{width:100%;height:150px;object-fit:cover}
+.grid .body{padding:8px;color:var(--text)}
+.grid .title{font-weight:700}
+.grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* ---------------- FAB radial & bottom nav ---------------- */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-  .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
+/* ---------------- FAB & NAV ---------------- */
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+.bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+.nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  /* ---------------- SIDE PANEL & OVERLAY ---------------- */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
-  .overlay.show{display:block}
-  .panel{position:fixed;left:6px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(18px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-18px);opacity:0;transition:all 300ms ease}
-  .panel.open{transform:translateX(0);opacity:1}
-  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+/* ---------------- PANEL & OVERLAY ---------------- */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
+.overlay.show{display:block}
+.panel{position:fixed;left:6px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(18px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-18px);opacity:0;transition:all 300ms ease}
+.panel.open{transform:translateX(0);opacity:1}
+.panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+.panel nav{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.panel .nav-link{padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer;color:var(--text);background:transparent;border:1px solid rgba(255,255,255,0.02)}
+.panel .nav-link:hover{background:rgba(255,255,255,0.015)}
 
-  .panel nav{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-  .panel .nav-link{padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer;color:var(--text);background:transparent;border:1px solid rgba(255,255,255,0.02)}
-  .panel .nav-link:hover{background:rgba(255,255,255,0.015)}
+/* ---------------- FLOATING SCREEN (SPA) ---------------- */
+.screen{position:fixed;inset:0;z-index:250;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+.screen.show{display:flex}
+.screen .card{width:100%;max-width:720px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02);box-shadow:0 30px 80px rgba(0,0,0,0.7);padding:12px;color:var(--text)}
 
-  /* ---------------- VIEWER (IMMERSIVE) ---------------- */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
+/* ---------------- VIEWER ---------------- */
+.viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:320;display:none;align-items:center;justify-content:center;padding:10px}
+.viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+.viewer img{width:100%;height:auto;display:block}
+.viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
 
-  /* ---------------- MICRO-ANIM, TRANSITIONS ---------------- */
-  .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* ---------------- MISC ---------------- */
+.fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-  /* responsive mobile */
-  @media(max-width:420px){
-    .card-small{min-width:150px;height:100px}
-    .grid img{height:120px}
-    .fab{width:64px;height:64px}
-    .panel{width:92%;left:4%}
-  }
+@media(max-width:420px){
+  .card-small{min-width:150px;height:100px}
+  .grid img{height:120px}
+  .fab{width:64px;height:64px}
+  .panel{width:92%;left:4%}
+}
 </style>
 </head>
 <body>
@@ -124,6 +128,7 @@
       </div>
     </header>
 
+    <!-- panel + overlay -->
     <aside id="overlay" class="overlay" tabindex="-1"></aside>
     <aside id="panel" class="panel" role="dialog" aria-hidden="true">
       <div style="display:flex;align-items:center;gap:8px">
@@ -133,13 +138,16 @@
       <p class="tag" style="margin:8px 0 12px 0">Acciones demo: vistas, monetización y ajustes.</p>
       <nav>
         <div class="nav-link" data-action="home">🏠 Inicio</div>
+        <div class="nav-link" data-action="profile">👤 Perfil</div>
         <div class="nav-link" data-action="explore">🔎 Explorar</div>
         <div class="nav-link" data-action="fav">⭐ Favoritos</div>
         <div class="nav-link" data-action="settings">⚙️ Configuración</div>
-        <div class="nav-link" data-action="logout">🚪 Cerrar sesión</div>
+        <div class="nav-link" data-action="support">💬 Soporte</div>
+        <div class="nav-link" data-action="logout">🔒 Cerrar sesión</div>
       </nav>
     </aside>
 
+    <!-- main content (scrollable) -->
     <main id="scrollArea" class="scroll" tabindex="0">
       <div class="container">
 
@@ -184,8 +192,10 @@
       </div>
     </main>
 
+    <!-- FAB -->
     <button id="fab" class="fab" aria-label="Crear">＋</button>
 
+    <!-- bottom nav -->
     <nav class="bottom-nav" role="navigation">
       <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
       <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
@@ -194,6 +204,77 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
+    <!-- Floating internal screens (SPA) -->
+    <div id="screenProfile" class="screen" aria-hidden="true">
+      <div class="card">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:72px;height:72px;border-radius:14px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#001;font-size:28px">U</div>
+          <div>
+            <div style="font-weight:800;font-size:18px">Usuario Demo</div>
+            <div style="color:var(--muted);font-size:13px;margin-top:4px">@usuario_demo • 120K seguidores</div>
+          </div>
+          <button id="closeProfile" class="icon-btn" style="margin-left:auto">✕</button>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button style="padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Editar perfil</button>
+          <button style="padding:8px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Compartir</button>
+        </div>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.03);margin:12px 0">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+          <div><div style="font-weight:800">1.2K</div><div style="color:var(--muted);font-size:12px">Publicaciones</div></div>
+          <div><div style="font-weight:800">120K</div><div style="color:var(--muted);font-size:12px">Seguidores</div></div>
+          <div><div style="font-weight:800">560</div><div style="color:var(--muted);font-size:12px">Siguiendo</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screenSettings" class="screen" aria-hidden="true">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><strong>Configuración</strong><div style="color:var(--muted);font-size:13px">Ajustes de la app (demo)</div></div>
+          <button id="closeSettings" class="icon-btn">✕</button>
+        </div>
+        <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Modo oscuro</strong><div style="color:var(--muted);font-size:12px">Activa o desactiva</div></div>
+            <label style="display:inline-flex;align-items:center;gap:8px">
+              <input id="toggleDark" type="checkbox"> 
+            </label>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Notificaciones</strong><div style="color:var(--muted);font-size:12px">Push & novedades</div></div>
+            <label style="display:inline-flex;align-items:center;gap:8px">
+              <input id="toggleNotif" type="checkbox" checked> 
+            </label>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>Idioma</strong><div style="color:var(--muted);font-size:12px">Español (demo)</div></div>
+            <select id="langSel" style="background:transparent;color:var(--text);border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:8px">
+              <option>Español</option>
+              <option>Inglés</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="screenSupport" class="screen" aria-hidden="true">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><strong>Soporte</strong><div style="color:var(--muted);font-size:13px">Envíanos un mensaje (demo)</div></div>
+          <button id="closeSupport" class="icon-btn">✕</button>
+        </div>
+        <div style="margin-top:12px">
+          <textarea id="supportMsg" placeholder="Escribe tu mensaje..." style="width:100%;min-height:120px;padding:10px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--text)"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="sendSupport" style="padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:none;color:#001">Enviar</button>
+            <button id="cancelSupport" style="padding:8px 12px;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- viewer (media) -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
       <div class="card" role="document">
         <div id="viewerInner"></div>
@@ -205,12 +286,13 @@
         </div>
       </div>
     </div>
+
   </div>
 
 <script>
 /* ============================
-   SinFiltro — Menú lateral funcional (parte de la versión aprobada)
-   Mantengo diseño EXACTO y solo añado lógica del panel y scroll táctil.
+   SinFiltro — SPA integrado (menú lateral + pantallas)
+   Mantengo EXACTO el diseño aprobado. Solo añado lógica.
    ============================ */
 
 /* ---------- Helpers ---------- */
@@ -238,6 +320,20 @@ const vvPlay = $('#vvPlay');
 const bgLayer = $('#bgLayer');
 const gridFeed = $('#gridFeed');
 
+/* SPA screens */
+const screenProfile = $('#screenProfile');
+const screenSettings = $('#screenSettings');
+const screenSupport = $('#screenSupport');
+const closeProfile = $('#closeProfile');
+const closeSettings = $('#closeSettings');
+const closeSupport = $('#closeSupport');
+const sendSupport = $('#sendSupport');
+const cancelSupport = $('#cancelSupport');
+const toggleDark = $('#toggleDark');
+const toggleNotif = $('#toggleNotif');
+const langSel = $('#langSel');
+
+/* Data pool */
 let pool = Array.from({length:160}).map((_,i)=>({
   id:'p'+i, src:mkImg(i), kind: (i%6===0)?'video':'image',
   title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
@@ -266,16 +362,13 @@ function initLazyObserver(){
     }, {root:null, rootMargin:'300px', threshold: 0.05});
   }
 }
-
 function lazyObserve(root=document){
   if(!imgObserver) initLazyObserver();
   const imgs = root.querySelectorAll('img[data-src]');
-  imgs.forEach(i => {
-    try{ imgObserver.observe(i); }catch(e){}
-  });
+  imgs.forEach(i => { try{ imgObserver.observe(i); }catch(e){} });
 }
 
-/* ---------- Element creators ---------- */
+/* ---------- Creators ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
@@ -312,7 +405,7 @@ function makeGridCard(item){
   return a;
 }
 
-/* ---------- Render two-rows (infinite-right) ---------- */
+/* ---------- Renderers ---------- */
 function renderTwoRows(row1, row2, items){
   row1.innerHTML = ''; row2.innerHTML = '';
   items.forEach((it,i)=>{
@@ -341,7 +434,6 @@ function renderTwoRows(row1, row2, items){
   lazyObserve();
 }
 
-/* ---------- Grid initial & infinite vertical ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML = '';
   grid.forEach(it => gridFeed.appendChild(makeGridCard(it)));
@@ -362,7 +454,7 @@ scrollArea.addEventListener('scroll', throttle(()=> {
   }
 }, 120), {passive:true});
 
-/* ---------- Viewer ---------- */
+/* ---------- Viewer (media) ---------- */
 let activeList = [];
 let currentIndex = 0;
 
@@ -402,14 +494,31 @@ function closePanel(){ overlay.classList.remove('show'); panel.classList.remove(
 menuBtn.addEventListener('click', openPanel);
 closePanelBtn.addEventListener('click', closePanel);
 overlay.addEventListener('click', closePanel, {passive:true});
-navLinks.forEach(n => n.addEventListener('click', ()=> { alert('Demo: ' + n.textContent.trim()); closePanel(); }));
+navLinks.forEach(n => n.addEventListener('click', (e)=> {
+  const act = n.dataset.action;
+  // abrir la pantalla correspondiente (SPA)
+  if(act === 'home') { closePanel(); scrollArea.scrollTo({top:0,behavior:'smooth'}); }
+  if(act === 'profile') { openScreen(screenProfile); }
+  if(act === 'explore') { closePanel(); document.querySelector('.section[aria-label="explorar"]')?.scrollIntoView({behavior:'smooth'}); }
+  if(act === 'fav') { alert('Favoritos (demo)'); closePanel(); }
+  if(act === 'settings') { openScreen(screenSettings); }
+  if(act === 'support') { openScreen(screenSupport); }
+  if(act === 'logout') { 
+    closePanel();
+    setTimeout(()=> {
+      const ok = confirm('¿Cerrar sesión? (demo)');
+      if(ok) alert('Sesión cerrada (demo).');
+    },150);
+  }
+}));
 
 /* ---------- Theme toggle ---------- */
 const THEME_KEY = 'sinfiltro.theme.v5';
 let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
-function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } localStorage.setItem(THEME_KEY, t); }
+function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; toggleDark.checked = true; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; toggleDark.checked = false; } localStorage.setItem(THEME_KEY, t); }
 applyTheme(theme);
 themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; applyTheme(theme); });
+toggleDark && toggleDark.addEventListener('change', ()=> { theme = toggleDark.checked ? 'light' : 'dark'; applyTheme(theme); });
 
 /* ---------- Search (demo) ---------- */
 searchBtn.addEventListener('click', ()=> {
@@ -432,8 +541,35 @@ $$('.nav-item').forEach(n => n.addEventListener('click', ()=>{
   if(t==='home') scrollArea.scrollTo({top:0,behavior:'smooth'});
   if(t==='search'){ const q = prompt('Buscar (demo)'); if(q) alert('Buscar demo: '+q); }
   if(t==='recent') document.querySelector('.section[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'});
-  if(t==='me') alert('Tus videos (demo)');
+  if(t==='me') openScreen(screenProfile);
 }));
+
+/* ---------- SPA screens open/close ---------- */
+function openScreen(el){
+  // close panel if open
+  closePanel();
+  // show screen
+  el.classList.add('show');
+  el.setAttribute('aria-hidden','false');
+  // lock background scrolling while screen open
+  document.body.style.overflow = 'hidden';
+}
+function closeScreen(el){
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+}
+closeProfile.addEventListener('click', ()=> closeScreen(screenProfile));
+closeSettings.addEventListener('click', ()=> closeScreen(screenSettings));
+closeSupport.addEventListener('click', ()=> closeScreen(screenSupport));
+cancelSupport.addEventListener('click', ()=> closeScreen(screenSupport));
+sendSupport.addEventListener('click', ()=> {
+  const msg = document.getElementById('supportMsg').value.trim();
+  if(!msg){ alert('Escribe un mensaje antes de enviar (demo).'); return; }
+  alert('Mensaje enviado (demo): ' + msg);
+  document.getElementById('supportMsg').value = '';
+  closeScreen(screenSupport);
+});
 
 /* ---------- Utility functions ---------- */
 function throttle(fn, wait=100){
@@ -451,12 +587,20 @@ function renderAll(){
   renderTwoRows($('#recoRow1'), $('#recoRow2'), reco);
   renderTwoRows($('#recentRow1'), $('#recentRow2'), recent);
   renderGridInitial();
-  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
+  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]); ) });
   lazyObserve();
 }
-document.addEventListener('DOMContentLoaded', renderAll);
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderTwoRows($('#trendRow1'), $('#trendRow2'), trends);
+  renderTwoRows($('#recoRow1'), $('#recoRow2'), reco);
+  renderTwoRows($('#recentRow1'), $('#recentRow2'), recent);
+  renderGridInitial();
+  // seed a bit more for smooth UX
+  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]); ) });
+  lazyObserve();
+});
 
-/* ---------- Global touch-to-scroll: allow touch anywhere to scroll main feed ---------- */
+/* ---------- Global touch-to-scroll (allow touch anywhere to drag main feed) ---------- */
 (function enableGlobalTouchScroll(){
   let startY = 0;
   let startScroll = 0;
@@ -479,7 +623,13 @@ document.addEventListener('DOMContentLoaded', renderAll);
   document.addEventListener('touchend', (e) => { active = false; }, {passive:true});
 })();
 
-/* ---------- Re-init lazy on mutations ---------- */
+/* ---------- Viewer controls ---------- */
+closeViewer.addEventListener('click', closeViewerFunc);
+prevBtn.addEventListener('click', prevItem);
+nextBtn.addEventListener('click', nextItem);
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
+
+/* ---------- Ensure lazy observer exists on DOM changes ---------- */
 new MutationObserver(()=> { if(!imgObserver) initLazyObserver(); }).observe(document.body, {childList:true, subtree:true});
 </script>
 </body>
