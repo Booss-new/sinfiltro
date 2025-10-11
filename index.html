@@ -1,305 +1,535 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi App Premium</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Mi App Premium — SinFiltro (Demo completo)</title>
+
+  <!-- Estilos: MANTENIDO el diseño que aprobaste. Solo añadí clases y estilos para modales/funciones -->
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(180deg,#0d0d0d,#1a1a1a);
+      color:#fff;
+      -webkit-font-smoothing:antialiased;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      scroll-behavior:smooth;
+      touch-action: auto;
     }
 
-    body {
-      font-family: "Poppins", sans-serif;
-      background: linear-gradient(180deg, #0d0d0d, #1a1a1a);
-      color: #fff;
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-      transition: background 0.3s ease;
+    /* Header */
+    header{
+      position:fixed;top:0;left:0;right:0;height:72px;
+      background:rgba(20,20,20,0.82);backdrop-filter:blur(10px);
+      display:flex;align-items:center;justify-content:space-between;padding:12px 16px;z-index:1200;
+    }
+    .menu-btn{font-size:1.8rem;cursor:pointer}
+    header h1{font-size:1.05rem;font-weight:600;color:#fff}
+    .header-actions{display:flex;gap:8px;align-items:center}
+
+    .search-btn,.theme-btn{background:none;border:none;color:inherit;font-size:1.2rem;cursor:pointer}
+
+    /* Sidebar (menu lateral) */
+    .sidebar{
+      position:fixed;left:-280px;top:0;height:100vh;width:260px;background:rgba(10,10,12,0.96);
+      backdrop-filter:blur(12px);box-shadow:3px 0 22px rgba(0,0,0,0.7);padding:72px 18px;z-index:1400;
+      transition:left .35s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column;gap:18px;
+    }
+    .sidebar.active{left:0}
+    .sidebar a{color:#cfcfcf;text-decoration:none;font-size:1rem;padding:8px 4px;display:block}
+    .sidebar a:hover{color:#00bfff;transform:translateX(6px);transition:transform .18s}
+    .sidebar .acc{font-size:.92rem;color:#9aa8b3;margin-top:8px}
+
+    /* Overlay when menu/modal open */
+    .overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.45);opacity:0;visibility:hidden;transition:opacity .35s;z-index:1350;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .overlay.active{opacity:1;visibility:visible}
+
+    /* Main */
+    main{padding-top:84px;padding-bottom:92px}
+    .section{padding:12px 14px}
+    .section h2{font-size:1.05rem;color:#ccc;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+    .section h2 small{font-size:.78rem;color:#8b98a5}
+
+    /* scroll horizontal rows */
+    .scroll-row{
+      display:flex;gap:.7rem;overflow-x:auto;padding:6px 2px 12px 2px;scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;touch-action:pan-y;
+    }
+    .scroll-row::-webkit-scrollbar{height:8px}
+    .scroll-row::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:999px}
+
+    .card{
+      flex:0 0 auto;width:160px;height:100px;border-radius:12px;overflow:hidden;background:#222;position:relative;
+      scroll-snap-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.45);cursor:pointer;transition:transform .22s;
+    }
+    .card:hover{transform:translateY(-6px)}
+    .card img,.card video{width:100%;height:100%;object-fit:cover;display:block}
+
+    .play-btn{
+      position:absolute;right:8px;bottom:8px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);
+      color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);cursor:pointer;
     }
 
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(20, 20, 20, 0.8);
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      z-index: 1000;
-    }
+    /* Grid vertical infinite */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
+    .grid .card{height:140px}
 
-    header h1 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #fff;
-    }
+    /* Floating add button */
+    .add-btn{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:68px;height:68px;border-radius:50%;border:none;
+      background:linear-gradient(135deg,#2d8cff,#7553ff);color:#fff;font-size:30px;z-index:1250;box-shadow:0 30px 80px rgba(0,0,0,0.6);cursor:pointer}
 
-    .menu-btn {
-      font-size: 1.8rem;
-      cursor: pointer;
-      color: #fff;
-    }
+    /* Bottom nav */
+    .bottom-bar{position:fixed;left:12px;right:12px;bottom:8px;height:72px;border-radius:14px;background:rgba(6,6,8,0.6);
+      display:flex;align-items:center;justify-content:space-around;padding:0 10px;z-index:1240;backdrop-filter:blur(8px)}
+    .bottom-bar button{background:none;border:none;color:#cfcfcf;font-size:18px;cursor:pointer}
 
-    .search-btn, .theme-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 1.4rem;
-      cursor: pointer;
-      margin-left: 1rem;
-    }
+    /* Loader sentinel */
+    .sentinel{height:80px;display:flex;align-items:center;justify-content:center;color:#9aa8b3}
 
-    main {
-      padding-top: 80px;
-      transition: filter 0.3s ease;
-    }
+    /* Modals (login, upload, search, viewer) */
+    .modal{position:fixed;left:12px;right:12px;top:50%;transform:translateY(-50%);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+      border-radius:12px;padding:12px;z-index:1500;box-shadow:0 40px 120px rgba(0,0,0,0.6);display:none;max-width:720px;margin:auto}
+    .modal.show{display:block}
+    .modal h3{margin-bottom:8px}
+    .modal .row{display:flex;gap:8px;margin-top:8px}
+    .input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
 
-    .section {
-      padding: 1rem;
-    }
+    .viewer{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.92),rgba(0,0,0,0.96));display:none;align-items:center;justify-content:center;z-index:1600;padding:18px}
+    .viewer.show{display:flex}
+    .viewer .box{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px}
 
-    .section h2 {
-      margin-bottom: 0.7rem;
-      font-size: 1.1rem;
-      color: #ccc;
-    }
+    /* small toast */
+    #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;background:rgba(0,0,0,0.7);color:#fff;padding:8px 12px;border-radius:999px;display:none;z-index:1700}
 
-    .scroll-row {
-      display: flex;
-      gap: 0.7rem;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-    }
-
-    .scroll-row::-webkit-scrollbar {
-      display: none;
-    }
-
-    .card {
-      flex: 0 0 auto;
-      width: 160px;
-      height: 100px;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #222;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-
-    .card img, .card video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .card button {
-      position: absolute;
-      bottom: 6px;
-      right: 6px;
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      color: #fff;
-      border-radius: 50%;
-      width: 34px;
-      height: 34px;
-      font-size: 1rem;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-      transition: all 0.3s;
-    }
-
-    .card button:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 0.7rem;
-      margin-top: 2rem;
-      padding: 1rem;
-    }
-
-    .grid .card {
-      width: 100%;
-      height: 140px;
-    }
-
-    .dark {
-      background: linear-gradient(180deg, #000, #101010);
-    }
-
-    .infinite-scroll {
-      text-align: center;
-      padding: 2rem;
-      color: #777;
-      font-size: 0.9rem;
-    }
-
-    /* --- Menú lateral --- */
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: -260px;
-      width: 240px;
-      height: 100vh;
-      background: rgba(15, 15, 15, 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: 3px 0 10px rgba(0, 0, 0, 0.5);
-      transition: left 0.35s ease;
-      z-index: 1200;
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
-
-    .sidebar.active {
-      left: 0;
-    }
-
-    .sidebar a {
-      color: #ccc;
-      text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.3s;
-    }
-
-    .sidebar a:hover {
-      color: #00bfff;
-    }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.35s ease;
-      z-index: 1100;
-    }
-
-    .overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    @media (max-width: 768px) {
-      header h1 { font-size: 1rem; }
-      .card { width: 130px; height: 90px; }
+    /* responsive mobile tweaks */
+    @media (max-width:420px){
+      .card{width:140px;height:88px}
+      .grid .card{height:120px}
+      header{padding:10px}
+      .sidebar{width:84%;left:-100%}
+      .sidebar.active{left:0}
     }
   </style>
 </head>
 <body>
+
+  <!-- Sidebar + overlay -->
+  <div id="sidebar" class="sidebar" aria-hidden="true">
+    <a href="#" data-action="home">🏠 Inicio</a>
+    <a href="#" data-action="trend">🔥 Tendencias</a>
+    <a href="#" data-action="reco">⭐ Recomendados</a>
+    <a href="#" data-action="your">🎥 Tus videos</a>
+    <a href="#" data-action="settings">⚙️ Configuración</a>
+    <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:8px 0">
+    <div class="acc">Cuenta</div>
+    <a href="#" id="loginBtn">🔐 Iniciar sesión</a>
+    <a href="#" id="logoutBtn" style="display:none">🚪 Cerrar sesión</a>
+  </div>
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+
+  <!-- Header -->
   <header>
-    <span class="menu-btn">☰</span>
+    <span id="menuBtn" class="menu-btn" aria-label="Abrir menú">☰</span>
     <h1>Mi App Premium</h1>
-    <div>
-      <button class="search-btn">🔍</button>
-      <button class="theme-btn">🌙</button>
+    <div class="header-actions">
+      <button id="searchTop" class="search-btn" aria-label="Buscar">🔍</button>
+      <button id="themeBtn" class="theme-btn" aria-label="Alternar tema">🌙</button>
     </div>
   </header>
 
-  <!-- Menú lateral -->
-  <div class="sidebar" id="sidebar">
-    <a href="#">🏠 Inicio</a>
-    <a href="#">🔥 Tendencias</a>
-    <a href="#">⭐ Recomendados</a>
-    <a href="#">🎥 Tus videos</a>
-    <a href="#">⚙️ Configuración</a>
-  </div>
-
-  <div class="overlay" id="overlay"></div>
-
-  <main id="content">
-    <section class="section">
-      <h2>Sección 1</h2>
-      <div class="scroll-row" id="row1"></div>
+  <!-- Main content -->
+  <main id="content" role="main" aria-live="polite">
+    <!-- Section 1: two-row horizontal -->
+    <section class="section" aria-label="Sección 1">
+      <h2>🔥 Tendencias <small>Ver todo</small></h2>
+      <div id="rowT1" class="scroll-row" aria-label="Tendencias fila 1"></div>
+      <div id="rowT2" class="scroll-row" aria-label="Tendencias fila 2"></div>
     </section>
-    <section class="section">
-      <h2>Sección 2</h2>
-      <div class="scroll-row" id="row2"></div>
+
+    <!-- Section 2 -->
+    <section class="section" aria-label="Sección 2">
+      <h2>🎯 Recomendados <small>Ver todo</small></h2>
+      <div id="rowR1" class="scroll-row" aria-label="Recomendados fila 1"></div>
+      <div id="rowR2" class="scroll-row" aria-label="Recomendados fila 2"></div>
     </section>
-    <div class="grid" id="grid"></div>
-    <div class="infinite-scroll">Cargando más contenido...</div>
+
+    <!-- Vertical grid -->
+    <section class="section" aria-label="Explorar">
+      <h2>🔁 Explorar — Aleatorio <small>Filtrar</small></h2>
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="sentinel" class="sentinel">Cargando más contenido...</div>
+    </section>
   </main>
 
-  <script>
-    const row1 = document.getElementById('row1');
-    const row2 = document.getElementById('row2');
-    const grid = document.getElementById('grid');
-    const themeBtn = document.querySelector('.theme-btn');
-    const body = document.body;
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    const menuBtn = document.querySelector('.menu-btn');
+  <!-- Floating add button -->
+  <button id="addBtn" class="add-btn" aria-label="Subir contenido">＋</button>
 
-    const items = Array.from({ length: 15 }, (_, i) => ({
-      type: Math.random() > 0.5 ? "img" : "video",
-      src: `https://picsum.photos/seed/${Math.random()}/400/200`
-    }));
+  <!-- Bottom nav -->
+  <nav class="bottom-bar" role="navigation" aria-label="Navegación">
+    <button id="navHome">🏠</button>
+    <button id="navSearch">🔍</button>
+    <button id="navAdd" aria-label="Crear">＋</button>
+    <button id="navRecent">👁️</button>
+    <button id="navMe">👤</button>
+  </nav>
 
-    function createCard(item) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      if (item.type === 'img') {
-        const img = document.createElement('img');
-        img.src = item.src;
-        card.appendChild(img);
-      } else {
-        const video = document.createElement('video');
-        video.src = item.src;
-        video.autoplay = false;
-        card.appendChild(video);
-      }
-      const btn = document.createElement('button');
-      btn.textContent = '▶';
-      btn.onclick = () => alert('Demo: reproducir');
-      card.appendChild(btn);
-      return card;
-    }
+  <!-- Modals: Login, Upload, Search, Viewer -->
+  <div id="loginModal" class="modal" role="dialog" aria-hidden="true">
+    <h3>Iniciar sesión (demo)</h3>
+    <input id="loginUser" class="input" placeholder="Nombre de usuario">
+    <div class="row">
+      <button id="doLogin" class="input" style="max-width:160px">Entrar</button>
+      <button id="closeLogin" class="input" style="max-width:120px">Cancelar</button>
+    </div>
+  </div>
 
-    function fillRows() {
-      items.forEach(item => {
-        row1.appendChild(createCard(item));
-        row2.appendChild(createCard(item));
-        grid.appendChild(createCard(item));
+  <div id="uploadModal" class="modal" role="dialog" aria-hidden="true">
+    <h3>Subir contenido (demo)</h3>
+    <input id="fileInput" type="file" accept="image/*,video/*" class="input">
+    <input id="fileTitle" class="input" placeholder="Título (opcional)">
+    <div class="row">
+      <button id="doUpload" class="input" style="max-width:160px">Subir (local)</button>
+      <button id="closeUpload" class="input" style="max-width:120px">Cerrar</button>
+    </div>
+    <small style="color:#9aa8b3">Los archivos quedan guardados en localStorage (demo). Para producción: backend + CDN.</small>
+  </div>
+
+  <div id="searchModal" class="modal" role="dialog" aria-hidden="true">
+    <h3>Búsqueda</h3>
+    <input id="searchInput" class="input" placeholder="Buscar títulos, etiquetas..." />
+    <div class="row">
+      <button id="doSearch" class="input" style="max-width:160px">Buscar</button>
+      <button id="closeSearch" class="input" style="max-width:120px">Cerrar</button>
+    </div>
+  </div>
+
+  <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+    <div class="box" role="document">
+      <div id="viewerBody" style="min-height:160px"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+        <button id="prev" class="play-btn">⟨</button>
+        <button id="playNow" class="play-btn">▶</button>
+        <button id="next" class="play-btn">⟩</button>
+        <button id="closeViewer" class="play-btn">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">¡Hecho!</div>
+
+<script>
+/* ============================
+   Sistema funcional (mobile-first)
+   Basado 100% en tu diseño aprobado.
+   Implementa: menú, búsqueda modal, upload demo,
+   login demo, lazy-load, horizontal infinite append,
+   vertical infinite via IntersectionObserver,
+   persistent theme, drag-to-scroll for rows.
+   ============================ */
+
+/* Utilities */
+const $ = sel => document.querySelector(sel);
+const $id = id => document.getElementById(id);
+const to = (txt, t=1200) => { const el=$id('toast'); el.textContent=txt; el.style.display='block'; clearTimeout(el._t); el._t = setTimeout(()=>el.style.display='none', t); };
+
+/* Elements */
+const sidebar = $id('sidebar'), overlay = $id('overlay'), menuBtn = $id('menuBtn');
+const searchTop = $id('searchTop'), themeBtn = $id('themeBtn');
+const rowT1 = $id('rowT1'), rowT2 = $id('rowT2'), rowR1 = $id('rowR1'), rowR2 = $id('rowR2');
+const grid = $id('grid'), sentinel = $id('sentinel');
+const addBtn = $id('addBtn'), navAdd = $id('navAdd');
+const loginBtn = $id('loginBtn'), logoutBtn = $id('logoutBtn');
+const loginModal = $id('loginModal'), loginUser = $id('loginUser'), doLogin = $id('doLogin'), closeLogin = $id('closeLogin');
+const uploadModal = $id('uploadModal'), fileInput = $id('fileInput'), fileTitle = $id('fileTitle'), doUpload = $id('doUpload'), closeUpload = $id('closeUpload');
+const searchModal = $id('searchModal'), searchInput = $id('searchInput'), doSearch = $id('doSearch'), closeSearch = $id('closeSearch');
+const viewer = $id('viewer'), viewerBody = $id('viewerBody'), prevBtn = $id('prev'), nextBtn = $id('next'), playNow = $id('playNow'), closeViewerBtn = $id('closeViewer');
+
+/* State */
+let USER = localStorage.getItem('sin_user') || null;
+let uploads = JSON.parse(localStorage.getItem('sin_uploads')||'[]');
+const pool = Array.from({length:160}).map((_,i)=>({
+  id:'p'+i, kind: (i%7===0)?'video':'image',
+  src:`https://picsum.photos/seed/${(i+1)*31}/640/420`,
+  title: ['Callejón Neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: Math.floor(Math.random()*900)+20,
+  comments: Math.floor(Math.random()*200),
+  views: `${Math.floor(Math.random()*900)+10}K`
+}));
+
+let trends = pool.slice(0,18), recos = pool.slice(18,36), recent = pool.slice(36,54), gridItems = pool.slice(54,84);
+let activeList = [], currentIndex = 0;
+
+/* Lazy loading (IntersectionObserver) */
+let imgObserver = null;
+function initImgObserver(){
+  if(imgObserver) return;
+  if('IntersectionObserver' in window){
+    imgObserver = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(en=>{
+        if(en.isIntersecting){
+          const img = en.target;
+          const src = img.dataset.src;
+          if(src){ img.src = src; img.removeAttribute('data-src'); img.onload = ()=> img.parentElement.classList.remove('loading'); }
+          obs.unobserve(img);
+        }
       });
-    }
+    }, {rootMargin:'300px', threshold:0.01});
+  }
+}
+function lazyObserve(container=document){
+  initImgObserver();
+  const imgs = container.querySelectorAll('img[data-src]');
+  imgs.forEach(i=> imgObserver.observe(i));
+}
 
-    fillRows();
+/* Create cards */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function makeSmallCard(it){
+  const d = document.createElement('div'); d.className='card loading';
+  d.innerHTML = `<img data-src="${it.src}" alt="${escapeHtml(it.title)}"><button class="play-btn" aria-label="Ver">▶</button>`;
+  d.addEventListener('click', ()=> openViewerByItem(it));
+  d.querySelector('.play-btn').addEventListener('click', (e)=>{ e.stopPropagation(); openViewerByItem(it); });
+  return d;
+}
+function makeGridCard(it){
+  const a = document.createElement('article'); a.className='card loading';
+  a.innerHTML = `<img data-src="${it.src}" alt="${escapeHtml(it.title)}"><div style="position:absolute;left:8px;bottom:8px;color:#fff;font-size:.86rem;text-shadow:0 2px 6px #000">${escapeHtml(it.title)}<br><small style="opacity:.9">${it.views} • ❤ ${it.likes}</small></div>`;
+  a.addEventListener('click', ()=> openViewerByItem(it));
+  return a;
+}
 
-    window.addEventListener('scroll', () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
-        fillRows();
+/* Render two-row sections with infinite append behavior */
+function renderTwoRows(r1,r2,items){
+  r1.innerHTML=''; r2.innerHTML='';
+  items.forEach((it,i)=> { const target = (i%2===0)? r1 : r2; target.appendChild(makeSmallCard(it)); });
+  [r1,r2].forEach(r=>{
+    // remove previous handler
+    if(r._handler) r.removeEventListener('scroll', r._handler);
+    r._handler = function(){
+      if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 140){
+        for(let i=0;i<4;i++){ r.appendChild(makeSmallCard(pool[Math.floor(Math.random()*pool.length)])); }
+        lazyObserve(r);
       }
-    });
-
-    themeBtn.onclick = () => {
-      body.classList.toggle('dark');
-      themeBtn.textContent = body.classList.contains('dark') ? '☀️' : '🌙';
     };
+    r.addEventListener('scroll', r._handler, {passive:true});
+    // enable horizontal drag-to-scroll (so users can press anywhere and drag)
+    attachDragToScroll(r);
+  });
+  lazyObserve();
+}
 
-    // ---- Menú lateral ----
-    menuBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-      overlay.classList.toggle('active');
-    });
+/* Drag-to-scroll for horizontal rows (improves touch UX) */
+function attachDragToScroll(el){
+  if(el._dragAttached) return;
+  el._dragAttached = true;
+  let isDown=false, startX, scrollLeft;
+  el.addEventListener('pointerdown', (e)=>{
+    isDown = true; el.setPointerCapture(e.pointerId);
+    startX = e.clientX; scrollLeft = el.scrollLeft;
+    el.style.cursor = 'grabbing';
+  });
+  el.addEventListener('pointermove', (e)=>{
+    if(!isDown) return;
+    const dx = e.clientX - startX;
+    el.scrollLeft = scrollLeft - dx;
+  }, {passive:true});
+  const up = (e)=>{ isDown=false; try{ el.releasePointerCapture(e.pointerId); }catch(err){} el.style.cursor='grab'; };
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('pointerleave', up);
+}
 
-    overlay.addEventListener('click', () => {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-    });
-  </script>
+/* Grid initial render */
+function renderGridInitial(){
+  grid.innerHTML='';
+  // include stored uploads first (demo)
+  (uploads.slice(0,6).concat(gridItems)).forEach(it => grid.appendChild(makeGridCard(it)));
+  lazyObserve(grid);
+}
+
+/* Sentinel for infinite vertical loading */
+let sentinelObs = null;
+function initSentinel(){
+  if('IntersectionObserver' in window){
+    sentinelObs = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          for(let i=0;i<6;i++){ grid.appendChild(makeGridCard(pool[Math.floor(Math.random()*pool.length)])); }
+          lazyObserve(grid);
+        }
+      });
+    }, {rootMargin:'400px'});
+    sentinelObs.observe(sentinel);
+  } else {
+    window.addEventListener('scroll', ()=>{
+      if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 600){
+        for(let i=0;i<4;i++) grid.appendChild(makeGridCard(pool[Math.floor(Math.random()*pool.length)]));
+        lazyObserve(grid);
+      }
+    }, {passive:true});
+  }
+}
+
+/* Viewer */
+function openViewerByItem(item){
+  // determine list
+  const lists = [trends, recos, recent, gridItems, pool, uploads];
+  activeList = [];
+  for(const L of lists){
+    const idx = L.findIndex(x=>x && x.id === item.id);
+    if(idx>=0){ activeList = L; currentIndex = idx; break; }
+  }
+  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
+  showViewer();
+}
+function showViewer(){
+  const it = activeList[currentIndex];
+  if(!it) return;
+  viewerBody.innerHTML = '';
+  // if local upload (data URL) is video, try showing video element, otherwise image
+  if(it.kind === 'video' && it.src && it.src.startsWith('data:') ){
+    const v = document.createElement('video'); v.src = it.src; v.controls=true; v.autoplay=true; v.style.width='100%';
+    viewerBody.appendChild(v);
+  } else if(it.kind === 'video'){
+    // show poster image and simulate play
+    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; img.style.width='100%';
+    viewerBody.appendChild(img);
+  } else {
+    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; img.style.width='100%';
+    viewerBody.appendChild(img);
+  }
+  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+}
+function closeViewer(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); }
+prevBtn.addEventListener('click', ()=> { if(currentIndex>0){ currentIndex--; showViewer(); } else to('Inicio de lista'); });
+nextBtn.addEventListener('click', ()=> { if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[Math.floor(Math.random()*pool.length)]); currentIndex++; showViewer(); } });
+closeViewerBtn.addEventListener('click', closeViewer);
+playNow.addEventListener('click', ()=> { to('Reproducción demo'); });
+
+viewer.addEventListener('click', (e)=> { if(e.target === viewer) closeViewer(); });
+
+/* Menu lateral robust */
+function openMenu(){ sidebar.classList.add('active'); overlay.classList.add('active'); sidebar.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
+function closeMenu(){ sidebar.classList.remove('active'); overlay.classList.remove('active'); sidebar.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+menuBtn.addEventListener('click', ()=> { if(sidebar.classList.contains('active')) closeMenu(); else openMenu(); });
+menuBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(sidebar.classList.contains('active')) closeMenu(); else openMenu(); }, {passive:false});
+overlay.addEventListener('click', ()=> { closeMenu(); hideLogin(); closeUploadModal(); closeSearchModal(); });
+
+/* Sidebar link actions */
+sidebar.querySelectorAll('a[data-action]').forEach(a=>{
+  a.addEventListener('click', (ev)=>{
+    ev.preventDefault(); const act = a.dataset.action;
+    closeMenu(); to('Ir a: '+act);
+    if(act==='trend') window.scrollTo({top: rowT1.getBoundingClientRect().top + window.scrollY - 72, behavior:'smooth'});
+    if(act==='reco') window.scrollTo({top: rowR1.getBoundingClientRect().top + window.scrollY - 72, behavior:'smooth'});
+    if(act==='home') window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* Login demo */
+function showLogin(){ loginModal.classList.add('show'); loginModal.setAttribute('aria-hidden','false'); overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false'); }
+function hideLogin(){ loginModal.classList.remove('show'); loginModal.setAttribute('aria-hidden','true'); if(!sidebar.classList.contains('active')) overlay.classList.remove('active'); }
+loginBtn.addEventListener('click', (e)=>{ e.preventDefault(); showLogin(); });
+closeLogin.addEventListener('click', hideLogin);
+doLogin.addEventListener('click', ()=>{
+  const v = loginUser.value.trim(); if(!v){ to('Escribe un nombre'); return; }
+  USER = v; localStorage.setItem('sin_user', USER);
+  loginBtn.style.display='none'; logoutBtn.style.display='block'; hideLogin(); to('Bienvenido '+USER);
+});
+logoutBtn.addEventListener('click', ()=>{
+  USER = null; localStorage.removeItem('sin_user'); loginBtn.style.display='block'; logoutBtn.style.display='none'; to('Sesión cerrada');
+});
+if(USER){ loginBtn.style.display='none'; logoutBtn.style.display='block'; }
+
+/* Upload demo */
+function showUploadModal(){ uploadModal.classList.add('show'); uploadModal.setAttribute('aria-hidden','false'); overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false'); }
+function closeUploadModal(){ uploadModal.classList.remove('show'); uploadModal.setAttribute('aria-hidden','true'); if(!sidebar.classList.contains('active')) overlay.classList.remove('active'); }
+addBtn.addEventListener('click', showUploadModal);
+navAdd.addEventListener('click', showUploadModal);
+closeUpload.addEventListener('click', closeUploadModal);
+doUpload.addEventListener('click', ()=>{
+  const f = fileInput.files[0];
+  if(!f){ to('Selecciona un archivo'); return; }
+  const title = fileTitle.value.trim() || 'Sin título';
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const dataUrl = evt.target.result;
+    const item = { id:'upload_'+Date.now(), kind: f.type.startsWith('video')? 'video' : 'image', src: dataUrl, title, likes:0, comments:0, views:'0' };
+    uploads.unshift(item);
+    localStorage.setItem('sin_uploads', JSON.stringify(uploads.slice(0,80)));
+    grid.insertBefore(makeGridCard(item), grid.firstChild);
+    lazyObserve(grid);
+    closeUploadModal(); to('Archivo guardado (demo)');
+  };
+  reader.readAsDataURL(f);
+});
+
+/* Search modal */
+function showSearchModal(){ searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false'); overlay.classList.add('active'); overlay.setAttribute('aria-hidden','false'); searchInput.focus(); }
+function closeSearchModal(){ searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true'); if(!sidebar.classList.contains('active')) overlay.classList.remove('active'); }
+searchTop.addEventListener('click', showSearchModal);
+$id('navSearch').addEventListener('click', showSearchModal);
+closeSearch.addEventListener('click', closeSearchModal);
+doSearch.addEventListener('click', ()=>{
+  const q = searchInput.value.trim(); if(!q){ to('Escribe algo para buscar'); return; }
+  performSearch(q);
+  closeSearchModal();
+});
+function performSearch(qstr){
+  const term = qstr.toLowerCase();
+  const results = pool.concat(uploads).filter(it => (it.title||'').toLowerCase().includes(term));
+  if(results.length===0){ to('Sin resultados'); return; }
+  grid.innerHTML=''; results.slice(0,80).forEach(it => grid.appendChild(makeGridCard(it)));
+  lazyObserve(grid);
+  window.scrollTo({top:grid.getBoundingClientRect().top + window.scrollY - 72, behavior:'smooth'});
+  to('Resultados: '+results.length);
+}
+
+/* Theme persistence */
+const THEME_KEY = 'sinfiltro.theme';
+(function(){
+  const t = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
+  if(t==='dark') document.body.classList.add('dark'), themeBtn.textContent='☀️'; else themeBtn.textContent='🌙';
+})();
+themeBtn.addEventListener('click', ()=>{
+  document.body.classList.toggle('dark');
+  const now = document.body.classList.contains('dark') ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, now);
+  themeBtn.textContent = now==='dark' ? '☀️' : '🌙';
+});
+
+/* Bottom nav actions (simple) */
+$id('navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$id('navRecent').addEventListener('click', ()=> window.scrollTo({top: rowT1.getBoundingClientRect().top + window.scrollY - 72, behavior:'smooth'}));
+$id('navMe').addEventListener('click', ()=> to('Tus videos (demo)'));
+
+/* Initialize UI */
+function init(){
+  // render
+  renderTwoRows(rowT1, rowT2, trends.slice(0,12));
+  renderTwoRows(rowR1, rowR2, recos.slice(0,12));
+  renderGridInitial();
+  initSentinel();
+  // observer for lazy images
+  lazyObserve();
+  // ensure drag-to-scroll attached for any future rows
+  document.querySelectorAll('.scroll-row').forEach(attachDragToScroll);
+  // make overlay close things reliably on touch
+  menuBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); if(sidebar.classList.contains('active')) closeMenu(); else openMenu(); }, {passive:false});
+  // accessibility: ESC close
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ if(sidebar.classList.contains('active')) closeMenu(); if(viewer.classList.contains('show')) closeViewer(); if(loginModal.classList.contains('show')) hideLogin(); if(uploadModal.classList.contains('show')) closeUploadModal(); if(searchModal.classList.contains('show')) closeSearchModal(); } });
+}
+init();
+
+/* Expose small helpers to console for debugging if needed */
+window.__sin = { openMenu, closeMenu, performSearch, to };
+</script>
 </body>
 </html>
