@@ -1,590 +1,366 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Demo Premium</title>
-<meta name="description" content="SinFiltro — feed visual premium. Demo móvil con modo claro/oscuro y diseño moderno." />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-    --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.04);
-    --radius:14px; --trans:260ms;
-    --text:#eaf7ff;
-  }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;padding:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden;touch-action:manipulation}
-  body.light{
-    --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226;
-    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sin Filtro</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* Background glow (visual only) */
-  .bg-anim{
-    position:fixed;inset:0;z-index:-10;pointer-events:none;
-    background:
-      radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-      radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-    filter:blur(28px) saturate(1.05);
-    animation: drift 20s linear infinite;
-  }
-  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(180deg, #0d0d0d, #1a1a1a);
+      color: #fff;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  /* Layout & header */
-  .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:center;padding:14px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px}
-  .brand{display:flex;align-items:center;gap:10px;justify-content:center;flex:1}
-  .brand .logo { font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 28px rgba(0,0,0,0.5);display:inline-block;cursor:pointer }
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(20, 20, 20, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      z-index: 1000;
+    }
 
-  .top-actions{display:flex;align-items:center;gap:8px}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans);touch-action:manipulation}
-  .icon-btn.small{width:38px;height:38px;border-radius:8px}
-  .icon-btn:active{transform:scale(.96)}
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+    }
 
-  /* Scroll area */
-  .scroll{flex:1;overflow:auto;padding-bottom:120px; -webkit-overflow-scrolling:touch;display:flex;justify-content:center;touch-action:pan-y}
-  .content{width:100%;max-width:720px;padding:12px}
+    .menu-btn {
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: #fff;
+      user-select: none;
+    }
 
-  /* Hero */
-  .hero{margin-top:8px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45);display:flex;flex-direction:column;gap:6px}
-  .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
-  .hero p{margin:0;color:var(--muted);font-size:13px}
+    .search-btn, .theme-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.4rem;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
 
-  /* Section header */
-  .section-head{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
-  .section-head h2{margin:0;color:var(--accent-cyan);font-size:18px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+    main {
+      padding-top: 80px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  /* Two-row horizontal */
-  .h-stack{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;touch-action:pan-x}
-  .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:180px;flex:0 0 180px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);transition:transform var(--trans), box-shadow var(--trans);cursor:pointer;scroll-snap-align:center}
-  .card-small img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.6)}
-  .card-small .meta{position:absolute;left:12px;bottom:10px;z-index:6;color:#fff}
-  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
-  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
-  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+    .section {
+      padding: 1rem;
+    }
 
-  /* Grid feed */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{position:relative;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 18px 50px rgba(2,10,18,0.6);cursor:pointer}
-  .grid .card img{width:100%;height:150px;object-fit:cover;display:block}
-  .grid .body{padding:8px;color:var(--text)}
-  .grid .title{font-weight:700}
-  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+    .section h2 {
+      margin-bottom: 0.7rem;
+      font-size: 1.1rem;
+      color: #ccc;
+    }
 
-  /* FAB & bottom nav */
-  .spacer{height:78px}
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none;touch-action:manipulation}
-  .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--trans)}
-  .radial.show{opacity:1;pointer-events:auto}
-  .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer;touch-action:manipulation}
-  .nav-item.active{color:var(--accent-cyan);transform:translateY(-6px)}
+    .scroll-row {
+      display: flex;
+      gap: 0.7rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  /* Panel & overlay */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;touch-action:none}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(0,0,0,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;touch-action:pan-y}
-  .panel.open{transform:translateX(0);opacity:1}
-  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .scroll-row::-webkit-scrollbar {
+      display: none;
+    }
 
-  /* Viewer modal */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.92), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px;touch-action:manipulation}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+    .card {
+      flex: 0 0 auto;
+      width: 160px;
+      height: 100px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #222;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
 
-  /* Search & mini modals */
-  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-radius:12px;padding:14px;z-index:230;box-shadow:0 30px 80px rgba(0,0,0,0.7);display:none}
-  .modal.open{display:block}
-  .modal h3{margin:0 0 8px 0;color:var(--accent-cyan)}
-  .modal .row{display:flex;gap:8px;margin-top:10px}
+    .card:active {
+      transform: scale(0.97);
+    }
 
-  /* micro animations */
-  .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .card img, .card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-  @media (max-width:420px){
-    .card-small{min-width:140px;height:100px}
-    .grid .card img{height:120px}
-    .fab{width:64px;height:64px}
-    .radial{bottom:112px}
-    .panel{width:92%;left:4%}
-  }
-</style>
+    .card button {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      font-size: 1rem;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: all 0.3s;
+    }
+
+    .card button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.7rem;
+      margin-top: 2rem;
+      padding: 1rem;
+    }
+
+    .grid .card {
+      width: 100%;
+      height: 140px;
+    }
+
+    .infinite-scroll {
+      text-align: center;
+      padding: 2rem;
+      color: #777;
+      font-size: 0.9rem;
+    }
+
+    /* --- Menú lateral --- */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 260px;
+      height: 100%;
+      background: rgba(15, 15, 15, 0.95);
+      backdrop-filter: blur(10px);
+      transition: left 0.3s ease;
+      padding: 1rem;
+      z-index: 1500;
+    }
+
+    .side-menu.active {
+      left: 0;
+    }
+
+    .side-menu ul {
+      list-style: none;
+      margin-top: 2rem;
+    }
+
+    .side-menu ul li {
+      margin: 1rem 0;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #ccc;
+      transition: 0.3s;
+    }
+
+    .side-menu ul li:hover {
+      color: #fff;
+    }
+
+    /* --- Overlay oscuro --- */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      z-index: 1400;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    /* --- Modo oscuro --- */
+    .dark {
+      background: linear-gradient(180deg, #000, #101010);
+    }
+
+    /* --- Viewer imágenes/videos --- */
+    .viewer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 2000;
+    }
+
+    .viewer.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .viewer img, .viewer video {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 1rem; }
+      .card { width: 130px; height: 90px; }
+    }
+  </style>
 </head>
 <body>
-  <div class="bg-anim" aria-hidden="true"></div>
-
-  <div class="app" role="application" aria-label="SinFiltro app">
-    <header>
-      <div class="header-inner">
-        <div style="width:44px"></div>
-        <div class="brand" role="banner" aria-label="SinFiltro">
-          <div class="logo" id="logoBtn">SinFiltro</div>
-        </div>
-        <div class="top-actions" style="justify-self:end">
-          <button id="menuBtn" class="icon-btn" title="Menú" aria-label="Abrir menú">☰</button>
-          <button id="searchTopBtn" class="icon-btn small" title="Buscar" aria-label="Buscar">🔎</button>
-          <button id="topThemeBtn" class="icon-btn" title="Cambiar modo" aria-label="Cambiar modo">🌗</button>
-        </div>
-      </div>
-    </header>
-
-    <div id="overlay" class="overlay" tabindex="-1"></div>
-
-    <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
-      <div style="display:flex;align-items:center;gap:8px">
-        <strong>Cuenta</strong>
-        <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
-      </div>
-      <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes y tu contenido (demo).</p>
-      <nav style="display:flex;flex-direction:column;gap:8px">
-        <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
-        <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
-        <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
-        <button class="icon-btn panel-item" data-action="mine" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎬 Mis videos</button>
-        <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-        <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
-      </nav>
-    </aside>
-
-    <main class="scroll" id="scrollArea" tabindex="0">
-      <div class="content">
-
-        <section class="hero fade-up" aria-label="Presentación">
-          <h1 id="heroTitle">Descubre lo auténtico</h1>
-          <p id="heroSub" class="muted">Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-        </section>
-
-        <!-- Tendencias -->
-        <section class="section" aria-label="tendencias">
-          <div class="section-head"><h2>🔥 Tendencias</h2><div class="see-all" id="trendSeeAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
-            <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Recomendados -->
-        <section class="section" aria-label="recomendados">
-          <div class="section-head"><h2>🎯 Recomendados</h2><div class="see-all" id="recoSeeAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
-            <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Antes visto -->
-        <section class="section" aria-label="antes visto">
-          <div class="section-head"><h2>⏮ Antes visto</h2><div class="see-all" id="recentSeeAll">Ver todo</div></div>
-          <div class="h-stack">
-            <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
-            <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
-          </div>
-        </section>
-
-        <!-- Explorar: grid infinito -->
-        <section class="section" aria-label="explorar">
-          <div class="section-head"><h2>🔁 Explorar — Aleatorio</h2><div class="see-all" id="filterBtn">Filtrar</div></div>
-          <div id="gridFeed" class="grid" aria-live="polite"></div>
-        </section>
-
-        <div class="spacer" aria-hidden="true"></div>
-      </div>
-    </main>
-
-    <!-- FAB radial -->
-    <div id="radial" class="radial" aria-hidden="true">
-      <button id="optUpload" title="Subir foto/video">📤</button>
-      <button id="optPost" title="Crear publicación">✏️</button>
-      <button id="optShort" title="Crear short">🎬</button>
+  <header>
+    <span class="menu-btn">☰</span>
+    <h1 id="home-btn">Sin Filtro</h1>
+    <div>
+      <button class="search-btn">🔍</button>
+      <button class="theme-btn">🌙</button>
     </div>
-    <button id="fab" class="fab" aria-label="Crear">＋</button>
+  </header>
 
-    <!-- bottom nav -->
-    <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-      <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
-      <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
-      <div style="width:78px"></div>
-      <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-      <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
-    </nav>
+  <aside class="side-menu" id="sideMenu">
+    <ul>
+      <li>Inicio</li>
+      <li>Explorar</li>
+      <li>Subir contenido</li>
+      <li>Configuración</li>
+      <li>Salir</li>
+    </ul>
+  </aside>
+  <div class="overlay" id="overlay"></div>
 
-    <!-- Search modal -->
-    <div id="searchModal" class="modal" role="dialog" aria-hidden="true">
-      <h3>Buscar</h3>
-      <input id="searchInput" type="search" placeholder="Buscar contenido, usuarios o hashtags" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);outline:none">
-      <div style="margin-top:10px;color:var(--muted);font-size:13px">Resultados (demo)</div>
-      <div id="searchResults" style="margin-top:8px;display:flex;flex-direction:column;gap:8px"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px">
-        <button id="closeSearch" class="icon-btn">Cerrar</button>
-      </div>
-    </div>
+  <main id="content">
+    <section class="section">
+      <h2>Sección 1</h2>
+      <div class="scroll-row" id="row1"></div>
+    </section>
+    <section class="section">
+      <h2>Sección 2</h2>
+      <div class="scroll-row" id="row2"></div>
+    </section>
+    <div class="grid" id="grid"></div>
+    <div class="infinite-scroll">Cargando más contenido...</div>
+  </main>
 
-    <!-- Upload modal -->
-    <div id="uploadModal" class="modal" role="dialog" aria-hidden="true">
-      <h3>Subir contenido</h3>
-      <input id="fileInput" type="file" accept="image/*,video/*" style="width:100%;">
-      <input id="titleInput" type="text" placeholder="Título (opcional)" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);outline:none">
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-        <button id="uploadCancel" class="icon-btn">Cancelar</button>
-        <button id="uploadConfirm" class="icon-btn">Subir</button>
-      </div>
-    </div>
+  <div class="viewer" id="viewer"></div>
 
-    <!-- "Tus videos" mini modal -->
-    <div id="mineModal" class="modal" role="dialog" aria-hidden="true" style="max-width:420px">
-      <h3>Tus videos (demo)</h3>
-      <div id="mineGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px"></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:12px"><button id="closeMine" class="icon-btn">Cerrar</button></div>
-    </div>
+  <script>
+    const row1 = document.getElementById('row1');
+    const row2 = document.getElementById('row2');
+    const grid = document.getElementById('grid');
+    const themeBtn = document.querySelector('.theme-btn');
+    const body = document.body;
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('overlay');
+    const menuBtn = document.querySelector('.menu-btn');
+    const viewer = document.getElementById('viewer');
+    const homeBtn = document.getElementById('home-btn');
 
-    <!-- viewer immersive -->
-    <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-      <div class="card" style="max-width:920px">
-        <div id="viewerInner" style="text-align:center;color:#fff"></div>
-        <div class="controls">
-          <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-          <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-          <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-          <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
-        </div>
-      </div>
-    </div>
-  </div>
+    const items = Array.from({ length: 15 }, (_, i) => ({
+      type: Math.random() > 0.5 ? "img" : "video",
+      src: `https://picsum.photos/seed/${Math.random()}/400/200`
+    }));
 
-<script>
-/* ========== SinFiltro — Funcional (versión final móvil-prioritaria) ========== */
-/* Mantén exactamente el diseño. Solo se añade lógica JS. */
+    function createCard(item) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const media = document.createElement(item.type);
+      media.src = item.src;
+      if (item.type === 'video') media.controls = false;
+      card.appendChild(media);
 
-/* Helpers */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const rand = n => Math.floor(Math.random()*n);
-const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+      const btn = document.createElement('button');
+      btn.textContent = '▶';
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        openViewer(item);
+      };
+      card.appendChild(btn);
 
-/* DOM refs */
-const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), closePanel = $('#closePanel');
-const topThemeBtn = $('#topThemeBtn'), searchTopBtn = $('#searchTopBtn'), logoBtn = $('#logoBtn');
-const fab = $('#fab'), radial = $('#radial'), optUpload = $('#optUpload'), optPost = $('#optPost'), optShort = $('#optShort');
-const searchModal = $('#searchModal'), searchInput = $('#searchInput'), searchResults = $('#searchResults'), closeSearch = $('#closeSearch');
-const uploadModal = $('#uploadModal'), fileInput = $('#fileInput'), titleInput = $('#titleInput'), uploadConfirm = $('#uploadConfirm'), uploadCancel = $('#uploadCancel');
-const mineModal = $('#mineModal'), mineGrid = $('#mineGrid'), closeMine = $('#closeMine');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const scrollArea = $('#scrollArea');
-
-const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
-const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
-const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
-const gridFeed = $('#gridFeed');
-const navSearch = $('#navSearch'), navMe = $('#navMe');
-
-/* Data pools (demo) */
-let pool = Array.from({length:120}).map((_,i)=>({
-  id:'p'+i, src:mkImg(i), kind:(i%5===0)?'video':'image',
-  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: rand(9000), comments: rand(2000), views: (rand(900)+100)+'K'
-}));
-
-let trends = pool.slice(0,12);
-let reco = pool.slice(12,24);
-let recent = pool.slice(24,36);
-let grid = pool.slice(36,56);
-
-/* Touch & passive listener helpers */
-function on(el, ev, fn, opts){ 
-  // use pointerdown for immediate touch responsiveness on mobile when appropriate
-  const passiveEvents = ['scroll','touchmove','wheel'];
-  const usePassive = passiveEvents.includes(ev) ? {passive:true} : (opts || false);
-  el.addEventListener(ev, fn, usePassive);
-}
-
-/* Lazy loader (IntersectionObserver) */
-let imgObserver = null;
-function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            const img = e.target;
-            img.src = img.dataset.src;
-            img.onload = ()=> img.parentElement.classList.remove('skel');
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
+      card.onclick = () => openViewer(item);
+      return card;
     }
-    imgs.forEach(i=> imgObserver.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
-  }
-}
 
-/* Card builders */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-function makeSmallCard(item){
-  const d = document.createElement('div');
-  d.className = 'card-small fade-up skel';
-  d.tabIndex = 0;
-  d.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    ${item.likes>2000?'<div class="mini-badge">TOP</div>':''}
-    <div class="meta">
-      <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-      <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
-    </div>
-    ${ item.kind==='video' ? '<div class="play-ico" aria-hidden="true">▶</div>' : '' }
-  `;
-  d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
-  return d;
-}
-
-function makeGridCard(item){
-  const a = document.createElement('article');
-  a.className = 'card fade-up skel';
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-  a.addEventListener('click', ()=> openViewerByItem(item));
-  return a;
-}
-
-/* Render functions */
-function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=> (i%2===0?row1:row2).appendChild(makeSmallCard(it)));
-  // ensure minimum
-  [row1,row2].forEach(r=>{
-    while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    if(!r._inited){
-      r._inited = true;
-      on(r,'scroll', ()=> {
-        if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 220){
-          for(let k=0;k<4;k++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-          lazyObserve(r);
-        }
-      }, {passive:true});
+    function fillRows() {
+      items.forEach(item => {
+        row1.appendChild(createCard(item));
+        row2.appendChild(createCard(item));
+        grid.appendChild(createCard(item));
+      });
     }
-  });
-  lazyObserve();
-}
 
-function renderGridInitial(){
-  gridFeed.innerHTML = '';
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
-  lazyObserve(gridFeed);
-}
+    fillRows();
 
-/* Infinite vertical */
-let loadingGrid = false;
-on(scrollArea,'scroll', ()=>{
-  const feedSection = gridFeed;
-  if(!feedSection) return;
-  const rect = feedSection.getBoundingClientRect();
-  if(rect.top - window.innerHeight < 220 && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
-      lazyObserve(gridFeed); loadingGrid = false;
-    }, 600);
-  }
-}, {passive:true});
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
+        fillRows();
+      }
+    });
 
-/* Viewer */
-let activeList = [], currentIndex = 0;
-function openViewerByItem(item){
-  const lists = [trends,reco,recent,grid,pool];
-  activeList = [];
-  for(const L of lists){
-    const idx = L.findIndex(x=>x.id===item.id);
-    if(idx>=0){ activeList = L; currentIndex = idx; break; }
-  }
-  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
-  showViewer();
-}
-function showViewer(){
-  const it = activeList[currentIndex];
-  viewerInner.innerHTML = '';
-  if(it.kind === 'video'){
-    const wrap = document.createElement('div'); wrap.style.position='relative';
-    const poster = document.createElement('img'); poster.src = it.src; poster.alt = it.title; poster.style.maxWidth='100%';
-    const overlayPlay = document.createElement('div'); overlayPlay.className='play-ico'; overlayPlay.style.position='absolute'; overlayPlay.style.left='50%'; overlayPlay.style.top='50%'; overlayPlay.style.transform='translate(-50%,-50%)';
-    overlayPlay.addEventListener('click', ()=> simulatePlay(it));
-    wrap.appendChild(poster); wrap.appendChild(overlayPlay);
-    viewerInner.appendChild(wrap);
-    vvPlay.style.display='inline-flex';
-  } else {
-    const img = document.createElement('img'); img.src = it.src; img.alt = it.title; viewerInner.appendChild(img);
-    vvPlay.style.display='none';
-  }
-  viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
-}
-function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
-function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
+    themeBtn.onclick = () => {
+      body.classList.toggle('dark');
+      themeBtn.textContent = body.classList.contains('dark') ? '☀️' : '🌙';
+    };
 
-/* Panel open/close */
-function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
-function closePanelF(){ overlay.style.display='none'; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
-on(menuBtn,'pointerdown', (e)=> { e.preventDefault(); openPanel(); });
-on(closePanel,'pointerdown', (e)=> { e.preventDefault(); closePanelF(); });
+    menuBtn.onclick = () => {
+      sideMenu.classList.toggle('active');
+      overlay.classList.toggle('active');
+    };
 
-/* Overlay: click outside closes modals/panel */
-on(overlay,'pointerdown', (e)=> {
-  // closes all open modals/panel
-  closePanelF();
-  closeSearchModal();
-  closeUploadModal();
-  closeMineModal();
-});
+    overlay.onclick = () => {
+      sideMenu.classList.remove('active');
+      overlay.classList.remove('active');
+      closeViewer();
+    };
 
-/* Search modal */
-function openSearchModal(){ searchModal.classList.add('open'); searchModal.setAttribute('aria-hidden','false'); overlay.style.display='block'; setTimeout(()=> searchInput.focus(),120); }
-function closeSearchModal(){ searchModal.classList.remove('open'); searchModal.setAttribute('aria-hidden','true'); searchResults.innerHTML=''; searchInput.value=''; if(!panel.classList.contains('open')) overlay.style.display='none'; }
-on(searchTopBtn,'pointerdown', (e)=> { e.preventDefault(); openSearchModal(); });
-on(navSearch,'pointerdown', (e)=> { e.preventDefault(); openSearchModal(); });
-on(closeSearch,'pointerdown', (e)=> { e.preventDefault(); closeSearchModal(); });
+    function openViewer(item) {
+      viewer.innerHTML = '';
+      const media = document.createElement(item.type);
+      media.src = item.src;
+      if (item.type === 'video') media.controls = true;
+      viewer.appendChild(media);
+      viewer.classList.add('active');
+    }
 
-/* Search simulated */
-on(searchInput,'input', ()=> {
-  const q = searchInput.value.trim().toLowerCase();
-  searchResults.innerHTML = '';
-  if(!q) return;
-  const found = pool.filter(p=> p.title.toLowerCase().includes(q)).slice(0,6);
-  found.forEach(f=>{
-    const el = document.createElement('div');
-    el.style.display='flex'; el.style.gap='8px'; el.style.alignItems='center'; el.style.cursor='pointer';
-    el.innerHTML = `<img src="${f.src}" style="width:56px;height:40px;object-fit:cover;border-radius:6px"><div style="font-size:13px">${f.title}</div>`;
-    el.addEventListener('click', ()=> { openViewerByItem(f); closeSearchModal(); });
-    searchResults.appendChild(el);
-  });
-});
+    function closeViewer() {
+      viewer.classList.remove('active');
+    }
 
-/* Upload modal */
-function openUploadModal(){ uploadModal.classList.add('open'); uploadModal.setAttribute('aria-hidden','false'); overlay.style.display='block'; }
-function closeUploadModal(){ uploadModal.classList.remove('open'); uploadModal.setAttribute('aria-hidden','true'); fileInput.value=''; titleInput.value=''; if(!panel.classList.contains('open')) overlay.style.display='none'; }
-on(optUpload,'pointerdown', (e)=> { e.preventDefault(); openUploadModal(); });
-on($('#optUpload'),'pointerdown', (e)=> { e.preventDefault(); openUploadModal(); });
-on(uploadCancel,'pointerdown', (e)=> { e.preventDefault(); closeUploadModal(); });
-on(uploadConfirm,'pointerdown', (e)=> { e.preventDefault();
-  const file = fileInput.files[0];
-  const title = titleInput.value || 'Nuevo contenido';
-  const newItem = { id:'u'+Date.now(), src: mkImg(Date.now()%10000), kind: file && file.type && file.type.includes('video') ? 'video':'image', title, likes: 0, comments: 0, views:'0K' };
-  pool.unshift(newItem);
-  gridFeed.prepend(makeGridCard(newItem));
-  lazyObserve(gridFeed);
-  closeUploadModal();
-  const n = document.createElement('div'); n.textContent = 'Subida simulada ✓'; n.style.position='fixed'; n.style.left='50%'; n.style.transform='translateX(-50%)'; n.style.bottom='110px'; n.style.background='linear-gradient(90deg,var(--accent-cyan),var(--accent-violet))'; n.style.color='#001'; n.style.padding='8px 12px'; n.style.borderRadius='12px'; n.style.zIndex='300'; document.body.appendChild(n);
-  setTimeout(()=> n.remove(),1400);
-});
+    viewer.onclick = (e) => {
+      if (e.target === viewer) closeViewer();
+    };
 
-/* FAB */
-on(fab,'pointerdown',(e)=> { e.preventDefault(); radial.classList.toggle('show'); });
-on(optPost,'pointerdown',(e)=> { e.preventDefault(); alert('Crear publicación (demo)'); });
-on(optShort,'pointerdown',(e)=> { e.preventDefault(); alert('Crear short (demo)'); });
-
-/* Theme toggle */
-const THEME_KEY = 'sinfiltro.theme.v2';
-function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); topThemeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); topThemeBtn.textContent='🌗'; } }
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-applyTheme(theme);
-on(topThemeBtn,'pointerdown',(e)=> { e.preventDefault(); theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
-
-/* Logo -> home */
-on(logoBtn,'pointerdown',(e)=> { e.preventDefault(); scrollArea.scrollTo({top:0,behavior:'smooth'}); });
-
-/* Bottom nav */
-$$('.nav-item').forEach(el=> on(el,'pointerdown', (evt)=> {
-  evt.preventDefault();
-  $$('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
-  const t = el.dataset.tab;
-  if(t==='home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-  else if(t==='search') openSearchModal();
-  else if(t==='recent') { document.querySelector('[aria-label="antes visto"]').scrollIntoView({behavior:'smooth'}); }
-  else if(t==='me') openMineModal();
-}));
-
-/* "Tus videos" mini modal */
-function openMineModal(){
-  mineGrid.innerHTML = '';
-  // sample few thumbnails
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
-    const el = document.createElement('div');
-    el.style.width='100%'; el.style.height='0'; el.style.paddingBottom='66%'; el.style.backgroundImage = `url(${it.src})`;
-    el.style.backgroundSize='cover'; el.style.backgroundPosition='center'; el.style.borderRadius='8px'; el.style.cursor='pointer';
-    el.addEventListener('click', ()=> { openViewerByItem(it); closeMineModal(); });
-    mineGrid.appendChild(el);
-  }
-  mineModal.classList.add('open'); mineModal.setAttribute('aria-hidden','false'); overlay.style.display='block';
-}
-function closeMineModal(){ mineModal.classList.remove('open'); mineModal.setAttribute('aria-hidden','true'); if(!panel.classList.contains('open')) overlay.style.display='none'; }
-on(closeMine,'pointerdown', (e)=> { e.preventDefault(); closeMineModal(); });
-on(navMe,'pointerdown', (e)=> { e.preventDefault(); openMineModal(); });
-
-/* Viewer controls */
-on(closeViewer,'pointerdown', (e)=> { e.preventDefault(); closeViewerFunc(); });
-on(prevBtn,'pointerdown', (e)=> { e.preventDefault(); prevItem(); });
-on(nextBtn,'pointerdown', (e)=> { e.preventDefault(); nextItem(); });
-on(vvPlay,'pointerdown', (e)=> { e.preventDefault(); const it = activeList[currentIndex]; simulatePlay(it); });
-
-/* Accessibility: ESC closes */
-document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ closeViewerFunc(); closePanelF(); closeSearchModal(); closeUploadModal(); closeMineModal(); } });
-
-/* Click on panel items */
-$$('.panel-item').forEach(btn => {
-  on(btn,'pointerdown',(e)=> {
-    e.preventDefault();
-    const act = btn.dataset.action;
-    if(act === 'home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-    else if(act === 'trends') document.querySelector('[aria-label="tendencias"]').scrollIntoView({behavior:'smooth'});
-    else if(act === 'reco') document.querySelector('[aria-label="recomendados"]').scrollIntoView({behavior:'smooth'});
-    else if(act === 'mine') openMineModal();
-    else if(act === 'settings') alert('Ajustes (demo)');
-    else if(act === 'logout') alert('Cerrar sesión (demo)');
-    closePanelF();
-  });
-});
-
-/* Initial render */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  $$('.h-row').forEach(r=> {
-    while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-  });
-  lazyObserve();
-}
-document.addEventListener('DOMContentLoaded', renderAll);
-
-/* Ensure overlay shown only when needed */
-function ensureOverlayState(){
-  if(panel.classList.contains('open') || searchModal.classList.contains('open') || uploadModal.classList.contains('open') || mineModal.classList.contains('open')){
-    overlay.style.display = 'block';
-  } else {
-    overlay.style.display = 'none';
-  }
-}
-new MutationObserver(ensureOverlayState).observe(panel, {attributes:true,attributeFilter:['class']});
-new MutationObserver(ensureOverlayState).observe(searchModal, {attributes:true,attributeFilter:['class']});
-new MutationObserver(ensureOverlayState).observe(uploadModal, {attributes:true,attributeFilter:['class']});
-new MutationObserver(ensureOverlayState).observe(mineModal, {attributes:true,attributeFilter:['class']});
-
-/* Perf note: passive listeners used on scroll, lazy-loading images, minimal DOM changes */
-
-</script>
+    homeBtn.onclick = () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  </script>
 </body>
 </html>
