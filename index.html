@@ -3,51 +3,44 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil) — Final</title>
-<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, PWA-ready (demo)." />
+<title>SinFiltro — Premium (Móvil) — Final Funcional</title>
+<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, menú y viewer funcional." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-
 <style>
-  /* ==========================
-     VARIABLES / RESET
-     ========================== */
+  /* ---------------- Reset / variables ---------------- */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
-    --muted:#9fb0bf; --card-shadow: rgba(2,8,20,0.6);
-    --radius:12px; --fast:150ms; --mid:260ms;
+    --accent-1:#00d1ff; --accent-2:#8a6eff; --muted:#9fb0bf;
+    --card-shadow: rgba(2,8,20,0.6);
+    --radius:12px; --fast:150ms;
     --text:#eaf7ff;
   }
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
   body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
-
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   button{font:inherit}
   a{color:inherit;text-decoration:none}
 
-  /* ==========================
-     BACKGROUND ANIM
-     ========================== */
-  .bg-wrap{position:fixed;inset:0;z-index:-10;pointer-events:none}
+  /* ---------------- Background subtle ---------------- */
+  .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
   .bg-layer{position:absolute;inset:-5% -20% -5% -20%;background:
     radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
     filter:blur(22px) saturate(1.05);will-change:transform;transition:transform 6s linear}
 
-  /* ==========================
-     LAYOUT
-     ========================== */
+  /* ---------------- Layout / header ---------------- */
   .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02);z-index:140}
   .left-row{display:flex;align-items:center;gap:12px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast); -webkit-user-select:none; user-select:none}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
   .icon-btn:active{transform:scale(.96)}
   .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tag{font-size:11px;color:var(--muted)}
 
-  /* ==========================
-     SCROLL AREA
-     ========================== */
+  /* ---------------- Scroll area (single real scroller) ----------------
+     Important: we keep body/html overflow hidden and scroll only .scroll so
+     touch scroll anywhere in it will move vertically.
+  ------------------------------------------------- */
   .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
   .container{max-width:720px;margin:0 auto;padding:12px}
 
@@ -55,31 +48,22 @@
   .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-  /* section header */
   .section{margin-top:14px}
   .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* ==========================
-     HORIZONTAL - TWO ROWS (infinite to right)
-     ========================== */
+  /* ---------------- Horizontal two-row scrollers ---------------- */
   .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:6px}
   .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
-  .card-small.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
-  .card-small:hover img{transform:scale(1.04)}
-  .card-small .meta{position:relative;z-index:6}
+  .card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center}
+  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52)}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* ==========================
-     GRID - vertical infinite
-     ========================== */
+  /* ---------------- Grid vertical (infinite) ---------------- */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover;display:block}
@@ -87,35 +71,25 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* ==========================
-     FAB & bottom nav
-     ========================== */
+  /* ---------------- FAB & bottom nav ---------------- */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
   .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  /* ==========================
-     SIDE PANEL & OVERLAY
-     ========================== */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;-webkit-tap-highlight-color:transparent}
-  .panel{position:fixed;left:6px;top:10px;bottom:10px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
+  /* ---------------- Side panel & overlay ---------------- */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
+  .panel{position:fixed;left:6px;top:10px;bottom:10px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all 260ms ease}
   .panel.open{transform:translateX(0);opacity:1}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* ==========================
-     VIEWER
-     ========================== */
+  /* ---------------- Viewer ---------------- */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:12px}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img{width:100%;height:auto;display:block}
   .controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
 
-  /* micro anim */
-  .fade-up{animation:fadeUp .5s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-  /* responsive tweaks */
+  /* responsive */
   @media(max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
@@ -125,10 +99,10 @@
 </style>
 </head>
 <body>
-  <div class="bg-wrap"><div class="bg-layer" id="bgLayer"></div></div>
+  <div class="bg-wrap"><div id="bgLayer" class="bg-layer"></div></div>
 
   <div class="app" role="application" aria-label="SinFiltro App">
-    <header class="header" role="banner">
+    <header>
       <div class="left-row">
         <button id="menuBtn" class="icon-btn" aria-label="Abrir menú">☰</button>
         <div>
@@ -146,7 +120,7 @@
     <aside id="panel" class="panel" role="dialog" aria-hidden="true">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <strong>Cuenta & Panel</strong>
-        <button id="closePanel" class="panel-close panel-action" style="margin-left:auto" aria-label="Cerrar panel">✕</button>
+        <button id="closePanel" class="panel-close" style="margin-left:auto" aria-label="Cerrar panel">✕</button>
       </div>
       <p class="tag" style="margin:8px 0 12px 0">Acciones demo: vistas, monetización y ajustes.</p>
       <nav style="display:flex;flex-direction:column;gap:8px">
@@ -158,10 +132,10 @@
       </nav>
     </aside>
 
-    <main id="scrollArea" class="scroll" tabindex="0">
+    <main id="scrollArea" class="scroll" tabindex="0" role="main">
       <div class="container" id="mainContainer">
 
-        <section class="hero fade-up" aria-label="Presentación">
+        <section class="hero" aria-label="Presentación">
           <h1>Descubre lo auténtico</h1>
           <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
@@ -199,6 +173,7 @@
           <div id="gridFeed" class="grid" aria-live="polite"></div>
         </section>
 
+        <div style="height:120px"></div> <!-- espacio para nav/fab -->
       </div>
     </main>
 
@@ -212,7 +187,6 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
-    <!-- Viewer modal -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
       <div class="card" role="document">
         <div id="viewerInner"></div>
@@ -224,36 +198,32 @@
         </div>
       </div>
     </div>
-
   </div>
 
 <script>
-/* ====================================================
-   SinFiltro — Final funcional (todo en un solo index)
-   - scroll vertical infinito, horizontal infinite rows
-   - lazy load (IntersectionObserver)
-   - passive touch listeners for better mobile perf
-   - panel, search, theme toggle, viewer modal
-   - optimized append batching + throttling
-   ==================================================== */
+/* ============================
+   SinFiltro — Final funcional
+   - Single-file optimized for mobile
+   - Vertical scroll on .scroll (touch works anywhere)
+   - Horizontal rows (2 rows each) infinite right append
+   - Grid vertical infinite append
+   - Lazy image loading via IntersectionObserver
+   - Menu, search, viewer, theme, FAB working (demo)
+   ============================ */
 
-/* ---------------------------
-   Helpers & config
-   --------------------------- */
+/* ---------- Helpers ---------- */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-// Controls for performance
-const GRID_BATCH = 6;      // how many grid items to append per batch
-const ROW_BATCH = 4;       // how many cards to append on row end
+/* Performance params */
+const GRID_BATCH = 6;
+const ROW_BATCH = 4;
 const LAZY_ROOT_MARGIN = '300px';
+const POOL_SIZE = 240;
 
-// Storage keys
-const THEME_KEY = 'sinfiltro.theme.v3';
-
-// DOM refs
+/* DOM refs */
 const scrollArea = $('#scrollArea');
 const gridFeed = $('#gridFeed');
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
@@ -264,30 +234,23 @@ const viewer = $('#viewer'), viewerInner = $('#viewerInner') || document.getElem
 const themeBtn = $('#themeBtn'), searchBtn = $('#searchBtn');
 const fab = $('#fab');
 
-/* ---------------------------
-   Demo data pool (images+videos)
-   We'll keep a single pool and slice for sections
-   --------------------------- */
-const POOL_SIZE = 200;
+/* ---------- Data pool (images + some videos) ---------- */
 let pool = Array.from({length:POOL_SIZE}).map((_,i)=>({
   id: 'p'+i,
   src: mkImg(i),
-  kind: (i%5===0)?'video':'image',   // approximate distribution
+  kind: (i % 5 === 0) ? 'video' : 'image',
   title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
   likes: rand(9000),
   comments: rand(1500),
   views: (rand(900)+100) + 'K'
 }));
 
-// Partition for sections (simple deterministic slices)
 let trends = pool.slice(0,12);
 let reco = pool.slice(12,24);
 let recent = pool.slice(24,36);
-let grid = pool.slice(36,80); // initial grid
+let grid = pool.slice(36,80);
 
-/* ---------------------------
-   Lazy loading images (IntersectionObserver)
-   --------------------------- */
+/* ---------- Lazy loading (IntersectionObserver) ---------- */
 let imgObserver = null;
 function initLazyObserver(){
   if('IntersectionObserver' in window && !imgObserver){
@@ -296,28 +259,28 @@ function initLazyObserver(){
         if(e.isIntersecting){
           const img = e.target;
           img.src = img.dataset.src;
-          img.onload = ()=> img.parentElement.classList.remove('skel');
           img.removeAttribute('data-src');
+          img.onload = ()=> img.parentElement.classList.remove('skel');
           obs.unobserve(img);
         }
       });
-    }, {root: null, rootMargin: LAZY_ROOT_MARGIN, threshold: 0.05});
+    }, {root:null, rootMargin:LAZY_ROOT_MARGIN, threshold: 0.05});
   }
 }
 function lazyObserve(root=document){
   if(!imgObserver) initLazyObserver();
   const imgs = root.querySelectorAll('img[data-src]');
-  imgs.forEach(i => { try{ imgObserver.observe(i); }catch(e){} });
+  imgs.forEach(i => {
+    try{ imgObserver.observe(i); }catch(e){}
+  });
 }
 
-/* ---------------------------
-   Make elements (small horizontal cards and grid cards)
-   --------------------------- */
+/* ---------- Element creators ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
   const d = document.createElement('div');
-  d.className = 'card-small skel fade-up';
+  d.className = 'card-small skel';
   d.tabIndex = 0;
   d.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
@@ -331,13 +294,13 @@ function makeSmallCard(item){
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item);});
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
   return d;
 }
 
 function makeGridCard(item){
   const a = document.createElement('article');
-  a.className = 'card skel fade-up';
+  a.className = 'card skel';
   a.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
     <div class="body">
@@ -349,10 +312,7 @@ function makeGridCard(item){
   return a;
 }
 
-/* ---------------------------
-   Render functions
-   - renderTwoRows handles both rows and sets up infinite append on scrollRight
-   --------------------------- */
+/* ---------- Render two-rows with infinite-right behavior ---------- */
 function renderTwoRows(row1, row2, items){
   row1.innerHTML = ''; row2.innerHTML = '';
   items.forEach((it,i)=>{
@@ -360,24 +320,21 @@ function renderTwoRows(row1, row2, items){
     target.appendChild(makeSmallCard(it));
   });
 
-  // ensure some minimum count for smooth experience
-  [row1,row2].forEach(r=>{
+  [row1, row2].forEach(r=>{
+    // ensure minimal children
     while(r.children.length < 6){
       r.appendChild(makeSmallCard(pool[rand(pool.length)]));
     }
-
-    // add scroll listener to append when near end (throttled with flag)
+    // append when near right end (batch, light)
     let loading = false;
-    r.addEventListener('scroll', (ev)=> {
-      // passive listener; compute only when near end
+    r.addEventListener('scroll', (ev)=>{
       if(loading) return;
       if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 180){
         loading = true;
-        // batch append
         requestAnimationFrame(()=> {
           for(let i=0;i<ROW_BATCH;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
           lazyObserve(r);
-          setTimeout(()=> loading=false, 250);
+          setTimeout(()=> loading=false, 220);
         });
       }
     }, {passive:true});
@@ -386,41 +343,38 @@ function renderTwoRows(row1, row2, items){
   lazyObserve();
 }
 
+/* ---------- Grid initial & infinite vertical ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML = '';
   grid.forEach(it => gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
 
-/* ---------------------------
-   Vertical infinite grid loader (append when near bottom)
-   --------------------------- */
+/* vertical infinite append (fast & light) */
 let loadingGrid = false;
 scrollArea.addEventListener('scroll', throttle(()=> {
   // parallax background subtle
-  const bg = $('#bgLayer');
-  if(bg) bg.style.transform = `translateY(${Math.min(60, scrollArea.scrollTop/20)}px)`;
+  const bg = document.getElementById('bgLayer');
+  if(bg) bg.style.transform = `translateY(${Math.min(60, scrollArea.scrollTop / 20)}px)`;
 
-  // vertical infinite grid
+  // grid infinite
   const rect = gridFeed.getBoundingClientRect();
-  if(rect.top - window.innerHeight < 220 && !loadingGrid){
+  if(rect.top - window.innerHeight < 200 && !loadingGrid){
     loadingGrid = true;
     setTimeout(()=> {
       for(let i=0;i<GRID_BATCH;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
       lazyObserve(gridFeed);
       loadingGrid = false;
-    }, 550); // slight delay to simulate network & avoid blocking UI
+    }, 450);
   }
 }, 120), {passive:true});
 
-/* ---------------------------
-   Viewer modal (show image or simulated video poster)
-   --------------------------- */
+/* ---------- Viewer (image/video poster demo) ---------- */
 let activeList = [];
 let currentIndex = 0;
 
 function openViewerByItem(item){
-  // find which list contains it (priority: trends, reco, recent, grid, pool)
+  // find which array contains it
   const lists = [trends, reco, recent, grid, pool];
   for(const L of lists){
     const idx = L.findIndex(x=> x.id === item.id);
@@ -450,21 +404,17 @@ function prevItem(){ if(currentIndex > 0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
 function simulatePlay(it){ alert('Reproduciendo (demo): ' + it.title); }
 
-/* Viewer controls */
+/* viewer controls */
 $('#prevBtn').addEventListener('click', prevItem);
 $('#nextBtn').addEventListener('click', nextItem);
 $('#vvPlay').addEventListener('click', ()=> simulatePlay(activeList[currentIndex]));
 $('#closeViewer').addEventListener('click', closeViewerFunc);
+viewer.addEventListener('click', (e)=> { if(e.target === viewer) closeViewerFunc(); });
 
-// click outside viewer content to close
-viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewerFunc(); });
-
-// ESC closes viewer/panel
+/* ESC closes viewer/panel */
 document.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
 
-/* ---------------------------
-   Panel open/close (touch outside to dismiss)
-   --------------------------- */
+/* ---------- Panel open/close ---------- */
 function openPanel(){
   overlay.style.display = 'block';
   panel.classList.add('open');
@@ -480,10 +430,9 @@ closePanelBtn.addEventListener('click', closePanel);
 overlay.addEventListener('click', closePanel, {passive:true});
 logoutBtn.addEventListener('click', ()=> { alert('Cerrar sesión (demo)'); closePanel(); });
 
-/* ---------------------------
-   Theme toggle (persist)
-   --------------------------- */
-let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours()<19)?'light':'dark');
+/* ---------- Theme toggle (persist) ---------- */
+const THEME_KEY = 'sinfiltro.theme.v4';
+let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
 function applyTheme(t){
   if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent = '☀️'; }
   else { document.body.classList.remove('light'); themeBtn.textContent = '🌗'; }
@@ -492,40 +441,31 @@ function applyTheme(t){
 applyTheme(theme);
 themeBtn.addEventListener('click', ()=> { theme = (theme === 'dark') ? 'light' : 'dark'; applyTheme(theme); });
 
-/* ---------------------------
-   Search demo (simple overlay prompt)
-   --------------------------- */
+/* ---------- Search (demo) ---------- */
 searchBtn.addEventListener('click', ()=> {
   const q = prompt('Buscar (demo). Ingresa término:');
   if(q) alert('Demo: buscar "'+q+'". En producción debe filtrar feed/llamar API.');
 });
 
-/* ---------------------------
-   FAB (quick actions)
-   --------------------------- */
+/* ---------- FAB (demo) ---------- */
 fab.addEventListener('click', ()=> {
-  // simple radial mini-menu simulation: small quick options
   const r = confirm('Elegir: Aceptar = Subir (demo) | Cancelar = Crear post (demo)');
   if(r) alert('Subir (demo): requiere backend real');
   else alert('Crear post (demo)');
 });
 
-/* ---------------------------
-   Navigation items (demo)
-   --------------------------- */
+/* ---------- Nav items ---------- */
 $$('.nav-item').forEach(n => n.addEventListener('click', ()=> {
   $$('.nav-item').forEach(x=> x.classList.remove('active'));
   n.classList.add('active');
   const tab = n.dataset.tab;
   if(tab === 'home') scrollArea.scrollTo({top:0, behavior:'smooth'});
   if(tab === 'search'){ const q = prompt('Buscar (demo)'); if(q) alert('Buscar demo: '+q); }
-  if(tab === 'recent') { document.querySelector('.section[aria-label="Antes visto"]')?.scrollIntoView({behavior:'smooth'}); }
+  if(tab === 'recent') document.querySelector('.section[aria-label="Antes visto"]')?.scrollIntoView({behavior:'smooth'});
   if(tab === 'me') alert('Tus videos (demo)');
 }));
 
-/* ---------------------------
-   UTIL: throttle for scroll events
-   --------------------------- */
+/* ---------- Utility: throttle ---------- */
 function throttle(fn, wait=100){
   let last = 0, t;
   return function(...args){
@@ -535,15 +475,13 @@ function throttle(fn, wait=100){
   };
 }
 
-/* ---------------------------
-   INITIAL RENDER
-   --------------------------- */
+/* ---------- Init rendering ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  // seed small rows with extras for smooth experience
+  // seed rows further for smoothness
   $$('.h-row').forEach(r=>{
     while(r.children.length < 8){
       r.appendChild(makeSmallCard(pool[rand(pool.length)]));
@@ -553,23 +491,11 @@ function renderAll(){
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------------------------
-   PERFORMANCE NOTES / MOBILE TWEAKS
-   - Use passive listeners for touch/scroll to avoid blocking compositor.
-   - Batch DOM appends; avoid heavy synchronous loops on scroll.
-   - Use IntersectionObserver for lazy images.
-   - Avoid large box-shadows / expensive paints on many elements.
-   --------------------------- */
-
-/* Prevent accidental scroll locking from touch gestures (no preventDefault anywhere) */
-// ensure overlay doesn't block scrollArea when hidden
-overlay.style.touchAction = 'auto';
-
-// small safety: re-init lazy observer if necessary after major DOM changes
+/* ---------- small safety: re-init lazy if dom mutates ---------- */
 new MutationObserver((m)=>{
-  if(imgObserver) return;
-  initLazyObserver();
+  if(!imgObserver) initLazyObserver();
 }).observe(document.body, {childList:true, subtree:true});
 </script>
 </body>
 </html>
+```0
