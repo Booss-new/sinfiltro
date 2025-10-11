@@ -3,72 +3,71 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil) — Fix scroll</title>
-<meta name="description" content="SinFiltro — Demo móvil premium. Interfaz moderna, scroll infinito, visor, panel lateral y optimizaciones móviles." />
+<title>SinFiltro — Premium (Móvil) — Final</title>
+<meta name="description" content="SinFiltro — demo premium móvil. Feed, scroll infinito, secciones, lazy-load, PWA-ready (demo)." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
+  /* ==========================
+     VARIABLES / RESET
+     ========================== */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff;
-    --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.56);
-    --radius:12px; --fast:140ms; --mid:260ms; --text:#eaf7ff;
+    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
+    --muted:#9fb0bf; --card-shadow: rgba(2,8,20,0.6);
+    --radius:12px; --fast:150ms; --mid:260ms;
+    --text:#eaf7ff;
   }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  html,body{
-    height:100%;margin:0;
-    font-family:Inter,system-ui,Arial;
-    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-    color:var(--text);-webkit-font-smoothing:antialiased;
-  }
-  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#616d7a;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  button{font:inherit}
+  a{color:inherit;text-decoration:none}
 
-  /* background */
-  .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
-  .bg-layer{position:absolute;inset:-20% -10%;background:
-    radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+  /* ==========================
+     BACKGROUND ANIM
+     ========================== */
+  .bg-wrap{position:fixed;inset:0;z-index:-10;pointer-events:none}
+  .bg-layer{position:absolute;inset:-5% -20% -5% -20%;background:
+    radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-    filter:blur(26px) saturate(1.05);transition:transform 9s linear}
+    filter:blur(22px) saturate(1.05);will-change:transform;transition:transform 6s linear}
 
-  /* layout */
+  /* ==========================
+     LAYOUT
+     ========================== */
   .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .left-row{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
+  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  .left-row{display:flex;align-items:center;gap:12px}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast); -webkit-user-select:none; user-select:none}
   .icon-btn:active{transform:scale(.96)}
   .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tag{font-size:11px;color:var(--muted)}
 
-  /* IMPORTANT: allow the flex child to be scrollable on mobile */
-  .scroll{
-    flex:1;
-    min-height:0; /* <<--- CRITICAL FIX */
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    touch-action: pan-y; /* allow vertical pan */
-  }
+  /* ==========================
+     SCROLL AREA
+     ========================== */
+  .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+  .container{max-width:720px;margin:0 auto;padding:12px}
 
-  .container{max-width:720px;margin:0 auto;padding:12px;min-height:0}
-
-  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
+  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
   .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
+  /* section header */
   .section{margin-top:14px}
   .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* two-row horizontal scrollers */
-  .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
-  .h-row{
-    display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;
-    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
-    touch-action: pan-x; /* allow horizontal pan inside this row */
-    overscroll-behavior-x: contain; /* don't pass horizontal overscroll to parent */
-  }
+  /* ==========================
+     HORIZONTAL - TWO ROWS (infinite to right)
+     ========================== */
+  .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:6px}
+  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
+  .card-small{min-width:186px;flex:0 0 186px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
   .card-small.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
@@ -78,135 +77,134 @@
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* explore grid */
+  /* ==========================
+     GRID - vertical infinite
+     ========================== */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
+  .grid img{width:100%;height:150px;object-fit:cover;display:block}
   .grid .body{padding:8px;color:var(--text)}
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* fab & radial */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--fast)}
-  .radial.show{opacity:1;pointer-events:auto}
-  .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
-
-  /* bottom nav */
+  /* ==========================
+     FAB & bottom nav
+     ========================== */
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
   .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  /* panel & overlay (use classes .show => pointer-events active) */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;opacity:0;pointer-events:none;transition:opacity .18s}
-  .overlay.show{opacity:1;pointer-events:auto}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
+  /* ==========================
+     SIDE PANEL & OVERLAY
+     ========================== */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;-webkit-tap-highlight-color:transparent}
+  .panel{position:fixed;left:6px;top:10px;bottom:10px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
   .panel.open{transform:translateX(0);opacity:1}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* viewer */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  /* ==========================
+     VIEWER
+     ========================== */
+  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:12px}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:10px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .controls{display:flex;gap:8px;justify-content:center;margin-top:10px}
 
-  /* animations */
-  .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .pulse{animation:pulse 1.2s infinite}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+  /* micro anim */
+  .fade-up{animation:fadeUp .5s cubic-bezier(.2,.9,.2,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+  /* responsive tweaks */
   @media(max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
     .fab{width:64px;height:64px}
-    .radial{bottom:112px}
     .panel{width:92%;left:4%}
   }
 </style>
 </head>
 <body>
-  <div class="bg-wrap"><div id="bgLayer" class="bg-layer"></div></div>
+  <div class="bg-wrap"><div class="bg-layer" id="bgLayer"></div></div>
 
-  <div class="app" role="application" aria-label="SinFiltro">
+  <div class="app" role="application" aria-label="SinFiltro App">
     <header class="header" role="banner">
       <div class="left-row">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menu">☰</button>
+        <button id="menuBtn" class="icon-btn" aria-label="Abrir menú">☰</button>
         <div>
           <div class="logo">SinFiltro</div>
           <div class="tag">Tu espacio sin límites</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchBtn" class="icon-btn" aria-label="buscar">🔎</button>
-        <button id="themeBtn" class="icon-btn" aria-label="modo">🌗</button>
+        <button id="searchBtn" class="icon-btn" aria-label="Buscar">🔎</button>
+        <button id="themeBtn" class="icon-btn" aria-label="Cambiar tema">🌗</button>
       </div>
     </header>
 
-    <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
-
-    <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Panel de usuario">
-      <div style="display:flex;align-items:center;gap:8px">
-        <strong>Cuenta</strong>
-        <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
+    <aside id="overlay" class="overlay" tabindex="-1"></aside>
+    <aside id="panel" class="panel" role="dialog" aria-hidden="true">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <strong>Cuenta & Panel</strong>
+        <button id="closePanel" class="panel-close panel-action" style="margin-left:auto" aria-label="Cerrar panel">✕</button>
       </div>
-      <p class="tag" style="margin:8px 0 12px 0">Ajustes, monetización y tu contenido (demo).</p>
+      <p class="tag" style="margin:8px 0 12px 0">Acciones demo: vistas, monetización y ajustes.</p>
       <nav style="display:flex;flex-direction:column;gap:8px">
-        <button id="panelProfile" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
-        <button id="panelSettings" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-        <button id="panelMon" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
-        <button id="panelLogout" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+        <button class="icon-btn panel-action" style="width:100%;padding:12px;border-radius:10px;text-align:left">👤 Mi perfil</button>
+        <button class="icon-btn panel-action" style="width:100%;padding:12px;border-radius:10px;text-align:left">⚙️ Ajustes</button>
+        <button class="icon-btn panel-action" style="width:100%;padding:12px;border-radius:10px;text-align:left">💸 Monetización (demo)</button>
+        <button class="icon-btn panel-action" style="width:100%;padding:12px;border-radius:10px;text-align:left">📤 Exportar / CSV (demo)</button>
+        <button id="logoutBtn" class="icon-btn" style="width:100%;padding:12px;border-radius:10px;text-align:left">🚪 Cerrar sesión</button>
       </nav>
     </aside>
 
     <main id="scrollArea" class="scroll" tabindex="0">
-      <div class="container">
-        <section class="hero fade-up" aria-label="presentación">
+      <div class="container" id="mainContainer">
+
+        <section class="hero fade-up" aria-label="Presentación">
           <h1>Descubre lo auténtico</h1>
           <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
 
-        <section class="section" aria-label="tendencias">
-          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrend">Ver todo</div></div>
+        <!-- Tendencias -->
+        <section class="section" aria-label="Tendencias">
+          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrending">Ver todo</div></div>
           <div class="h-stack">
             <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
             <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
           </div>
         </section>
 
-        <section class="section" aria-label="recomendados">
+        <!-- Recomendados -->
+        <section class="section" aria-label="Recomendados">
           <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
           <div class="h-stack">
-            <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
-            <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
+            <div id="recoRow1" class="h-row" aria-label="reco fila 1"></div>
+            <div id="recoRow2" class="h-row" aria-label="reco fila 2"></div>
           </div>
         </section>
 
-        <section class="section" aria-label="antes visto">
+        <!-- Antes visto -->
+        <section class="section" aria-label="Antes visto">
           <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
           <div class="h-stack">
-            <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
-            <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
+            <div id="recentRow1" class="h-row" aria-label="recent fila 1"></div>
+            <div id="recentRow2" class="h-row" aria-label="recent fila 2"></div>
           </div>
         </section>
 
-        <section class="section" aria-label="explorar">
-          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="seeExplore">Filtrar</div></div>
+        <!-- Explorar: grid infinito -->
+        <section class="section" aria-label="Explorar">
+          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
           <div id="gridFeed" class="grid" aria-live="polite"></div>
         </section>
 
-        <div style="height:110px"></div>
       </div>
     </main>
 
-    <div id="radial" class="radial" aria-hidden="true">
-      <button id="optUpload" title="Subir foto/video">📤</button>
-      <button id="optPost" title="Crear publicación">✏️</button>
-      <button id="optShort" title="Crear short">🎬</button>
-    </div>
     <button id="fab" class="fab" aria-label="Crear">＋</button>
 
-    <nav class="bottom-nav" role="navigation" aria-label="navegación">
+    <nav class="bottom-nav" role="navigation">
       <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
       <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
       <div style="width:78px"></div>
@@ -214,14 +212,15 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
+    <!-- Viewer modal -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-      <div class="card">
+      <div class="card" role="document">
         <div id="viewerInner"></div>
         <div class="controls">
-          <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-          <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-          <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-          <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+          <button id="prevBtn" class="icon-btn" title="Anterior">⟨</button>
+          <button id="vvPlay" class="play-ico" title="Reproducir">▶</button>
+          <button id="nextBtn" class="icon-btn" title="Siguiente">⟩</button>
+          <button id="closeViewer" class="icon-btn" title="Cerrar">✕</button>
         </div>
       </div>
     </div>
@@ -229,148 +228,208 @@
   </div>
 
 <script>
-/* ---------- Helpers ---------- */
-const $ = s=>document.querySelector(s), $$ = s=>Array.from(document.querySelectorAll(s));
-const rand = n=>Math.floor(Math.random()*n);
+/* ====================================================
+   SinFiltro — Final funcional (todo en un solo index)
+   - scroll vertical infinito, horizontal infinite rows
+   - lazy load (IntersectionObserver)
+   - passive touch listeners for better mobile perf
+   - panel, search, theme toggle, viewer modal
+   - optimized append batching + throttling
+   ==================================================== */
+
+/* ---------------------------
+   Helpers & config
+   --------------------------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-/* ---------- Data pool ---------- */
-const pool = Array.from({length:120}).map((_,i)=>({
-  id:'p'+i, src: mkImg(i),
-  kind: (i % 5 === 0) ? 'video' : 'image',
-  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna'][i%5],
-  likes: Math.floor(Math.random()*8000),
-  comments: Math.floor(Math.random()*1200),
-  views: (Math.floor(Math.random()*900)+100)+'K'
-}));
+// Controls for performance
+const GRID_BATCH = 6;      // how many grid items to append per batch
+const ROW_BATCH = 4;       // how many cards to append on row end
+const LAZY_ROOT_MARGIN = '300px';
 
-let trends = pool.slice(0,12), reco = pool.slice(12,24), recent = pool.slice(24,36), grid = pool.slice(36,56);
+// Storage keys
+const THEME_KEY = 'sinfiltro.theme.v3';
 
-/* ---------- DOM refs ---------- */
+// DOM refs
+const scrollArea = $('#scrollArea');
+const gridFeed = $('#gridFeed');
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
-const gridFeed = $('#gridFeed');
+const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel'), logoutBtn = $('#logoutBtn');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner') || document.getElementById('viewerInner'), closeViewer = $('#closeViewer');
+const themeBtn = $('#themeBtn'), searchBtn = $('#searchBtn');
+const fab = $('#fab');
 
-const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), closePanelBtn = $('#closePanel');
-const fab = $('#fab'), radial = $('#radial');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const themeBtn = $('#themeBtn');
-const scrollArea = $('#scrollArea');
-const bgLayer = $('#bgLayer');
+/* ---------------------------
+   Demo data pool (images+videos)
+   We'll keep a single pool and slice for sections
+   --------------------------- */
+const POOL_SIZE = 200;
+let pool = Array.from({length:POOL_SIZE}).map((_,i)=>({
+  id: 'p'+i,
+  src: mkImg(i),
+  kind: (i%5===0)?'video':'image',   // approximate distribution
+  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: rand(9000),
+  comments: rand(1500),
+  views: (rand(900)+100) + 'K'
+}));
 
-let io = null;
+// Partition for sections (simple deterministic slices)
+let trends = pool.slice(0,12);
+let reco = pool.slice(12,24);
+let recent = pool.slice(24,36);
+let grid = pool.slice(36,80); // initial grid
 
-/* ---------- Lazy loading (IntersectionObserver) ---------- */
-function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!io){
-      io = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(en=>{
-          if(en.isIntersecting){
-            const img = en.target;
-            img.src = img.dataset.src;
-            img.onload = ()=> img.parentElement.classList.remove('skel');
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
-    }
-    imgs.forEach(i=> io.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+/* ---------------------------
+   Lazy loading images (IntersectionObserver)
+   --------------------------- */
+let imgObserver = null;
+function initLazyObserver(){
+  if('IntersectionObserver' in window && !imgObserver){
+    imgObserver = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          const img = e.target;
+          img.src = img.dataset.src;
+          img.onload = ()=> img.parentElement.classList.remove('skel');
+          img.removeAttribute('data-src');
+          obs.unobserve(img);
+        }
+      });
+    }, {root: null, rootMargin: LAZY_ROOT_MARGIN, threshold: 0.05});
   }
 }
+function lazyObserve(root=document){
+  if(!imgObserver) initLazyObserver();
+  const imgs = root.querySelectorAll('img[data-src]');
+  imgs.forEach(i => { try{ imgObserver.observe(i); }catch(e){} });
+}
 
-/* ---------- Card creators ---------- */
+/* ---------------------------
+   Make elements (small horizontal cards and grid cards)
+   --------------------------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
-  const d = document.createElement('div'); d.className='card-small skel fade-up'; d.tabIndex=0;
+  const d = document.createElement('div');
+  d.className = 'card-small skel fade-up';
+  d.tabIndex = 0;
   d.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    ${ item.likes > 2000 ? '<div class="mini-badge">TOP</div>' : '' }
+    ${item.likes>3000?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
-        <div style="font-weight:700">${ item.kind === 'video' ? 'Video' : 'Foto' }</div>
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
         <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind === 'video' ? '<div class="play-ico" aria-hidden="true">▶</div>' : '' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" title="Reproducir">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=>{ if(e.key === 'Enter') openViewerByItem(item); });
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item);});
   return d;
 }
 
 function makeGridCard(item){
-  const a = document.createElement('article'); a.className='card skel fade-up';
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  const a = document.createElement('article');
+  a.className = 'card skel fade-up';
+  a.innerHTML = `
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    <div class="body">
+      <div class="title">${escapeHtml(item.title)}</div>
+      <div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div>
+    </div>
+  `;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
-/* ---------- Render two-row scrollers with infinite append ---------- */
-function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=> {
-    const target = (i%2===0) ? row1 : row2;
+/* ---------------------------
+   Render functions
+   - renderTwoRows handles both rows and sets up infinite append on scrollRight
+   --------------------------- */
+function renderTwoRows(row1, row2, items){
+  row1.innerHTML = ''; row2.innerHTML = '';
+  items.forEach((it,i)=>{
+    const target = (i % 2 === 0) ? row1 : row2;
     target.appendChild(makeSmallCard(it));
   });
 
+  // ensure some minimum count for smooth experience
   [row1,row2].forEach(r=>{
-    while(r.children.length < 6) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    let ticking=false;
-    r.addEventListener('scroll', ()=>{
-      if(ticking) return;
-      // passive listener not required here but we don't call preventDefault; keep light
-      ticking = true;
-      requestAnimationFrame(()=>{
-        if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
-          for(let i=0;i<4;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    while(r.children.length < 6){
+      r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+
+    // add scroll listener to append when near end (throttled with flag)
+    let loading = false;
+    r.addEventListener('scroll', (ev)=> {
+      // passive listener; compute only when near end
+      if(loading) return;
+      if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 180){
+        loading = true;
+        // batch append
+        requestAnimationFrame(()=> {
+          for(let i=0;i<ROW_BATCH;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
           lazyObserve(r);
-        }
-        ticking = false;
-      });
+          setTimeout(()=> loading=false, 250);
+        });
+      }
     }, {passive:true});
   });
 
   lazyObserve();
 }
 
-/* ---------- Grid render + infinite vertical append ---------- */
-let loadingGrid=false;
 function renderGridInitial(){
-  gridFeed.innerHTML='';
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+  gridFeed.innerHTML = '';
+  grid.forEach(it => gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
-scrollArea.addEventListener('scroll', ()=>{
-  const gridRect = gridFeed.getBoundingClientRect();
-  if(gridRect.top < window.innerHeight && !loadingGrid){
+
+/* ---------------------------
+   Vertical infinite grid loader (append when near bottom)
+   --------------------------- */
+let loadingGrid = false;
+scrollArea.addEventListener('scroll', throttle(()=> {
+  // parallax background subtle
+  const bg = $('#bgLayer');
+  if(bg) bg.style.transform = `translateY(${Math.min(60, scrollArea.scrollTop/20)}px)`;
+
+  // vertical infinite grid
+  const rect = gridFeed.getBoundingClientRect();
+  if(rect.top - window.innerHeight < 220 && !loadingGrid){
     loadingGrid = true;
-    setTimeout(()=>{
-      for(let i=0;i<6;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
+    setTimeout(()=> {
+      for(let i=0;i<GRID_BATCH;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
       lazyObserve(gridFeed);
       loadingGrid = false;
-    }, 650);
+    }, 550); // slight delay to simulate network & avoid blocking UI
   }
-}, {passive:true});
+}, 120), {passive:true});
 
-/* ---------- Viewer ---------- */
-let activeList = [], currentIndex = 0;
+/* ---------------------------
+   Viewer modal (show image or simulated video poster)
+   --------------------------- */
+let activeList = [];
+let currentIndex = 0;
+
 function openViewerByItem(item){
-  const lists = [trends,reco,recent,grid,pool];
-  activeList = [];
+  // find which list contains it (priority: trends, reco, recent, grid, pool)
+  const lists = [trends, reco, recent, grid, pool];
   for(const L of lists){
-    const idx = L.findIndex(x=>x.id === item.id);
+    const idx = L.findIndex(x=> x.id === item.id);
     if(idx >= 0){ activeList = L; currentIndex = idx; break; }
   }
-  if(!activeList.length){ activeList = [item]; currentIndex = 0; }
+  if(activeList.length === 0){ activeList = [item]; currentIndex = 0; }
   showViewer();
 }
+
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
@@ -386,87 +445,131 @@ function showViewer(){
   }
   viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
 }
-function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
+function closeViewerFunc(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
+function prevItem(){ if(currentIndex > 0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
-function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
+function simulatePlay(it){ alert('Reproduciendo (demo): ' + it.title); }
 
-/* ---------- Panel open/close (use overlay.show and panel.open classes) ---------- */
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+/* Viewer controls */
+$('#prevBtn').addEventListener('click', prevItem);
+$('#nextBtn').addEventListener('click', nextItem);
+$('#vvPlay').addEventListener('click', ()=> simulatePlay(activeList[currentIndex]));
+$('#closeViewer').addEventListener('click', closeViewerFunc);
+
+// click outside viewer content to close
+viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewerFunc(); });
+
+// ESC closes viewer/panel
+document.addEventListener('keydown', (e)=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
+
+/* ---------------------------
+   Panel open/close (touch outside to dismiss)
+   --------------------------- */
+function openPanel(){
+  overlay.style.display = 'block';
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden','false');
+}
+function closePanel(){
+  overlay.style.display = 'none';
+  panel.classList.remove('open');
+  panel.setAttribute('aria-hidden','true');
+}
 menuBtn.addEventListener('click', openPanel);
 closePanelBtn.addEventListener('click', closePanel);
-overlay.addEventListener('click', closePanel);
+overlay.addEventListener('click', closePanel, {passive:true});
+logoutBtn.addEventListener('click', ()=> { alert('Cerrar sesión (demo)'); closePanel(); });
 
-/* ---------- FAB ---------- */
-fab.addEventListener('click', ()=> radial.classList.toggle('show'));
-$('#optUpload').addEventListener('click', ()=> alert('Subir demo (requiere backend)'));
-$('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
-$('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
-
-/* ---------- Theme ---------- */
-const THEME_KEY = 'sinfiltro.theme.v4';
-let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
-function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
+/* ---------------------------
+   Theme toggle (persist)
+   --------------------------- */
+let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours()<19)?'light':'dark');
+function applyTheme(t){
+  if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent = '☀️'; }
+  else { document.body.classList.remove('light'); themeBtn.textContent = '🌗'; }
+  localStorage.setItem(THEME_KEY, t);
+}
 applyTheme(theme);
-themeBtn.addEventListener('click', ()=> { theme = (theme==='dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+themeBtn.addEventListener('click', ()=> { theme = (theme === 'dark') ? 'light' : 'dark'; applyTheme(theme); });
 
-/* ---------- Bottom nav ---------- */
-$$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
-  $$('.nav-item').forEach(x=>x.classList.remove('active')); n.classList.add('active');
-  const t = n.dataset.tab;
-  if(t === 'home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-  if(t === 'search') alert('Buscar — demo');
-  if(t === 'recent') $('#recentRow1')?.scrollIntoView({behavior:'smooth'});
-  if(t === 'me') alert('Tus videos — demo');
+/* ---------------------------
+   Search demo (simple overlay prompt)
+   --------------------------- */
+searchBtn.addEventListener('click', ()=> {
+  const q = prompt('Buscar (demo). Ingresa término:');
+  if(q) alert('Demo: buscar "'+q+'". En producción debe filtrar feed/llamar API.');
+});
+
+/* ---------------------------
+   FAB (quick actions)
+   --------------------------- */
+fab.addEventListener('click', ()=> {
+  // simple radial mini-menu simulation: small quick options
+  const r = confirm('Elegir: Aceptar = Subir (demo) | Cancelar = Crear post (demo)');
+  if(r) alert('Subir (demo): requiere backend real');
+  else alert('Crear post (demo)');
+});
+
+/* ---------------------------
+   Navigation items (demo)
+   --------------------------- */
+$$('.nav-item').forEach(n => n.addEventListener('click', ()=> {
+  $$('.nav-item').forEach(x=> x.classList.remove('active'));
+  n.classList.add('active');
+  const tab = n.dataset.tab;
+  if(tab === 'home') scrollArea.scrollTo({top:0, behavior:'smooth'});
+  if(tab === 'search'){ const q = prompt('Buscar (demo)'); if(q) alert('Buscar demo: '+q); }
+  if(tab === 'recent') { document.querySelector('.section[aria-label="Antes visto"]')?.scrollIntoView({behavior:'smooth'}); }
+  if(tab === 'me') alert('Tus videos (demo)');
 }));
 
-/* ---------- small parallax ---------- */
-scrollArea.addEventListener('scroll', ()=> {
-  const s = scrollArea.scrollTop;
-  const t = Math.min(60, s/25);
-  bgLayer.style.transform = `translateY(${t}px)`;
-}, {passive:true});
+/* ---------------------------
+   UTIL: throttle for scroll events
+   --------------------------- */
+function throttle(fn, wait=100){
+  let last = 0, t;
+  return function(...args){
+    const now = Date.now();
+    if(now - last >= wait){ last = now; fn.apply(this, args); }
+    else { clearTimeout(t); t = setTimeout(()=> { last = Date.now(); fn.apply(this, args); }, wait - (now - last)); }
+  };
+}
 
-/* ---------- initial render ---------- */
+/* ---------------------------
+   INITIAL RENDER
+   --------------------------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
+  // seed small rows with extras for smooth experience
+  $$('.h-row').forEach(r=>{
+    while(r.children.length < 8){
+      r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+  });
   lazyObserve();
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- viewer controls ---------- */
-closeViewer.addEventListener('click', closeViewerFunc);
-prevBtn.addEventListener('click', prevItem);
-nextBtn.addEventListener('click', nextItem);
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
+/* ---------------------------
+   PERFORMANCE NOTES / MOBILE TWEAKS
+   - Use passive listeners for touch/scroll to avoid blocking compositor.
+   - Batch DOM appends; avoid heavy synchronous loops on scroll.
+   - Use IntersectionObserver for lazy images.
+   - Avoid large box-shadows / expensive paints on many elements.
+   --------------------------- */
 
-/* ---------- accessibility ---------- */
-document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
-// close viewer on outside tap
-viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+/* Prevent accidental scroll locking from touch gestures (no preventDefault anywhere) */
+// ensure overlay doesn't block scrollArea when hidden
+overlay.style.touchAction = 'auto';
 
-/* ---------- tiny service worker (same as before, optional) ---------- */
-if('serviceWorker' in navigator){
-  const swCode = `
-    const CACHE = 'sinfiltro-v1';
-    self.addEventListener('install', e=>{
-      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])).catch(()=>{}));
-    });
-    self.addEventListener('fetch', e=>{
-      e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)).catch(()=>fetch(e.request)));
-    });
-  `;
-  try{
-    const blob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
-  }catch(e){}
-}
+// small safety: re-init lazy observer if necessary after major DOM changes
+new MutationObserver((m)=>{
+  if(imgObserver) return;
+  initLazyObserver();
+}).observe(document.body, {childList:true, subtree:true});
 </script>
 </body>
 </html>
