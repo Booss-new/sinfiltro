@@ -1,69 +1,77 @@
 <!doctype html>
-<!-- index.html — SinFiltro (Móvil Premium) — Scroll táctil e infinito corregido -->
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — demo móvil premium. Interfaz tipo app, scroll táctil, carruseles horizontales dual-row, grid infinito y optimizaciones." />
+<meta name="description" content="SinFiltro Premium — demo móvil, vidrio, animaciones, scroll infinito, preview de video e imagen." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
 <style>
+  /* ---------- Variables / Reset ---------- */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
+    --glass: rgba(255,255,255,0.04);
     --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
-    --muted:#9fb0bf; --glass: rgba(255,255,255,0.04);
-    --card-shadow: rgba(2,8,20,0.56);
-    --radius:12px; --fast:140ms; --mid:260ms; --text:#eaf7ff;
+    --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.6);
+    --radius:12px; --fast:160ms; --mid:260ms;
+    --text:#eaf7ff;
+    --max-width:720px;
   }
+  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#6b7785;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  /* Base */
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased}
-  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#626f7b;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+  /* ---------- Loader ---------- */
+  #loader {
+    position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg, rgba(2,6,12,0.92), rgba(4,10,18,0.86));
+    color:#fff;flex-direction:column;gap:18px;
+  }
+  .loader-ring{width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--accent-1),var(--accent-2));filter:blur(6px);position:relative}
+  .loader-centre{width:54px;height:54px;border-radius:50%;background:linear-gradient(180deg,#001,#052033);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent-1)}
 
-  /* Background glow */
-  .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
-  .bg-layer{position:absolute;inset:-20% -10%;background:
+  /* ---------- Background parallax ---------- */
+  .bg-wrap{position:fixed;inset:0;z-index:-20;overflow:hidden;pointer-events:none}
+  .bg-layer{position:absolute;inset:-10% -20% -10% -20%;background:
     radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-    filter:blur(26px) saturate(1.05);transition:transform 10s linear}
+    filter:blur(26px) saturate(1.05);transform:translateZ(0);will-change:transform;transition:transform 8s linear}
 
-  /* Layout */
+  /* ---------- App layout ---------- */
   .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  header.header{position:sticky;top:0;z-index:120;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
   .left-row{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast),box-shadow var(--fast)}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast), box-shadow var(--fast)}
   .icon-btn:active{transform:scale(.96)}
   .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tag{font-size:11px;color:var(--muted)}
 
-  /* CRITICAL: make scroll container work on mobile */
-  .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;scroll-behavior:smooth}
-  .container{max-width:720px;margin:0 auto;padding:12px;min-height:0}
+  /* ---------- Scroll area (main) ---------- */
+  .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;scroll-behavior:smooth}
+  .container{max-width:var(--max-width);margin:0 auto;padding:12px}
 
-  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
+  /* ---------- Hero ---------- */
+  .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
   .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
+  /* ---------- Sections & two-row horizontal ---------- */
   .section{margin-top:14px}
-  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .title{font-weight:800;color:var(--accent-1);font-size:16px}
+  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* Two-row horizontal scroller - enable pan-x on these rows */
   .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
-  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain}
+  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:170px;flex:0 0 170px;height:110px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
-  .card-small.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.56);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
-  .card-small:hover img{transform:scale(1.04)}
+  .card-small{min-width:190px;flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;transform-origin:center;will-change:transform}
+  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* Grid (vertical infinite) */
+  /* ---------- Grid (vertical) ---------- */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
@@ -71,31 +79,36 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
+  /* ---------- FAB / radial ---------- */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--fast)}
   .radial.show{opacity:1;pointer-events:auto}
   .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
 
+  /* ---------- Bottom nav ---------- */
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
   .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;opacity:0;pointer-events:none;transition:opacity .18s}
-  .overlay.show{opacity:1;pointer-events:auto}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
+  /* ---------- Side panel & overlay ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none}
+  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
   .panel.open{transform:translateX(0);opacity:1}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
+  /* ---------- Viewer immersive ---------- */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img{width:100%;height:auto;display:block}
   .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
+  /* ---------- Animations ---------- */
   .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-  .pulse{animation:pulse 1.2s infinite}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+  /* ---------- Responsive tweaks ---------- */
   @media(max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
@@ -106,7 +119,13 @@
 </style>
 </head>
 <body>
-  <div class="bg-wrap"><div id="bgLayer" class="bg-layer"></div></div>
+  <!-- Loader -->
+  <div id="loader" aria-hidden="false">
+    <div class="loader-ring"><div class="loader-centre">SF</div></div>
+    <div style="color:var(--muted);font-size:14px">Cargando SinFiltro…</div>
+  </div>
+
+  <div class="bg-wrap"><div class="bg-layer" id="bgLayer"></div></div>
 
   <div class="app" role="application" aria-label="SinFiltro">
     <header class="header" role="banner">
@@ -123,59 +142,65 @@
       </div>
     </header>
 
-    <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
-
+    <!-- Side panel and overlay -->
+    <div id="overlay" class="overlay" tabindex="-1"></div>
     <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
       <div style="display:flex;align-items:center;gap:8px">
         <strong>Cuenta</strong>
         <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
       </div>
-      <p class="tag" style="margin:8px 0 12px 0">Ajustes, monetización y tu contenido (demo).</p>
+      <p class="tag" style="margin:8px 0 12px 0">Ajustes, monetización y tu contenido.</p>
       <nav style="display:flex;flex-direction:column;gap:8px">
-        <button id="panelProfile" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
-        <button id="panelSettings" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-        <button id="panelMon" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
-        <button id="panelLogout" class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi perfil</button>
+        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">💸 Monetización</button>
+        <button class="icon-btn" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
       </nav>
     </aside>
 
-    <main id="scrollArea" class="scroll" tabindex="0" role="main">
+    <!-- Search input (overlay) -->
+    <div id="searchOverlay" style="position:fixed;left:12px;right:12px;top:66px;z-index:160;display:none">
+      <input id="searchInput" placeholder="Buscar títulos..." style="width:100%;padding:10px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--text)" />
+    </div>
+
+    <!-- Main scrollable content -->
+    <main class="scroll" id="scrollArea" tabindex="0">
       <div class="container">
         <section class="hero fade-up" aria-label="presentación">
           <h1>Descubre lo auténtico</h1>
           <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
 
-        <!-- Tendencias -->
+        <!-- Tendencias (two rows horizontal) -->
         <section class="section" aria-label="tendencias">
-          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrend">Ver todo</div></div>
+          <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all">Ver todo</div></div>
           <div class="h-stack">
             <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
             <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
           </div>
         </section>
 
-        <!-- Recomendados -->
+        <!-- Recomendados (two rows horizontal) -->
         <section class="section" aria-label="recomendados">
-          <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
+          <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all">Ver todo</div></div>
           <div class="h-stack">
             <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
             <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
           </div>
         </section>
 
-        <!-- Antes visto -->
+        <!-- Antes visto (two rows horizontal) -->
         <section class="section" aria-label="antes visto">
-          <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
+          <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all">Ver todo</div></div>
           <div class="h-stack">
             <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
             <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
           </div>
         </section>
 
-        <!-- Explorar: grid infinito -->
+        <!-- Explorar (infinite vertical grid) -->
         <section class="section" aria-label="explorar">
-          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="seeExplore">Filtrar</div></div>
+          <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all">Filtrar</div></div>
           <div id="gridFeed" class="grid" aria-live="polite"></div>
         </section>
 
@@ -183,7 +208,7 @@
       </div>
     </main>
 
-    <!-- FAB radial -->
+    <!-- FAB and radial -->
     <div id="radial" class="radial" aria-hidden="true">
       <button id="optUpload" title="Subir foto/video">📤</button>
       <button id="optPost" title="Crear publicación">✏️</button>
@@ -191,7 +216,7 @@
     </div>
     <button id="fab" class="fab" aria-label="Crear">＋</button>
 
-    <!-- bottom nav -->
+    <!-- Bottom nav -->
     <nav class="bottom-nav" role="navigation" aria-label="navegación">
       <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
       <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
@@ -200,7 +225,7 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
-    <!-- viewer immersive -->
+    <!-- Viewer -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
       <div class="card">
         <div id="viewerInner"></div>
@@ -212,30 +237,30 @@
         </div>
       </div>
     </div>
-
   </div>
 
 <script>
-/* Helpers */
+/* =========================
+   SinFiltro Premium+ (MÓVIL) - Full single-file
+   - Scroll fixes for mobile (passive listeners)
+   - Lazy-loading + IntersectionObserver
+   - Horizontal rows infinite append on right
+   - Vertical grid infinite on scroll bottom
+   - Side panel, search overlay, theme toggle, loader
+   - All UI as demo (no backend)
+   ========================= */
+
+/* ---------- Helpers ---------- */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-/* Data pool (real images via picsum) */
-const pool = Array.from({length:200}).map((_,i)=>({
-  id: 'p'+i,
-  src: mkImg(i),
-  kind: (i % 6 === 0) ? 'video' : 'image',
-  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: Math.floor(Math.random()*12000),
-  comments: Math.floor(Math.random()*1200),
-  views: (Math.floor(Math.random()*900)+10)+'K'
-}));
+/* ---------- Elements ---------- */
+const loader = $('#loader');
+const scrollArea = $('#scrollArea');
+const bgLayer = $('#bgLayer');
 
-let trends = pool.slice(0,12), reco = pool.slice(12,24), recent = pool.slice(24,36), grid = pool.slice(36,56);
-
-/* DOM refs */
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
@@ -245,123 +270,121 @@ const menuBtn = $('#menuBtn'), panel = $('#panel'), overlay = $('#overlay'), clo
 const fab = $('#fab'), radial = $('#radial');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
 const themeBtn = $('#themeBtn');
-const scrollArea = $('#scrollArea');
-const bgLayer = $('#bgLayer');
+const searchBtn = $('#searchBtn'), searchOverlay = $('#searchOverlay'), searchInput = $('#searchInput');
 
-let io = null;
+let imgObserver = null;
+let activeList = [], currentIndex = 0;
 
-/* Lazy loading images */
+/* ---------- Data pool ---------- */
+let pool = Array.from({length:200}).map((_,i)=>({
+  id:'p'+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
+  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
+}));
+
+// Slices for sections (can be randomized)
+let trends = pool.slice(2,16);
+let reco = pool.slice(16,32);
+let recent = pool.slice(32,48);
+let grid = pool.slice(48,80);
+
+/* ---------- Utility: lazy load ---------- */
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
-    if(!io){
-      io = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(en=>{
-          if(en.isIntersecting){
-            const img = en.target;
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const img = e.target;
             img.src = img.dataset.src;
             img.onload = ()=> img.parentElement.classList.remove('skel');
             img.removeAttribute('data-src');
             obs.unobserve(img);
           }
         });
-      }, {rootMargin:'300px', threshold:0.05});
+      }, {root: document, rootMargin:'400px', threshold:0.05});
     }
-    imgs.forEach(i=> io.observe(i));
+    imgs.forEach(i=> imgObserver.observe(i));
   } else {
     imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-/* Create small card & grid card */
-function esc(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+/* ---------- Card creators ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.tabIndex = 0;
   d.innerHTML = `
-    <img data-src="${item.src}" alt="${esc(item.title)}">
-    ${ item.likes > 3000 ? '<div class="mini-badge">TOP</div>' : '' }
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    ${item.likes>2000?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
-        <div style="font-weight:700">${ item.kind === 'video' ? 'Video' : 'Foto' }</div>
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
         <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind === 'video' ? '<div class="play-ico" aria-hidden="true">▶</div>' : '' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key === 'Enter') openViewerByItem(item); });
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
   return d;
 }
 
 function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
-  a.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="body"><div class="title">${esc(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
-/* Horizontal dual-row render with infinite append */
+/* ---------- Render two-row horizontal with "infinite-like" appends ---------- */
 function renderTwoRows(row1,row2,items){
-  row1.innerHTML = ''; row2.innerHTML = '';
+  row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{
-    const target = (i%2 === 0) ? row1 : row2;
+    const target = (i%2===0)?row1:row2;
     target.appendChild(makeSmallCard(it));
   });
-
+  // ensure enough items for smooth UX
   [row1,row2].forEach(r=>{
-    // seed if short
-    while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    // append more when near end (throttled with RAF)
-    let ticking = false;
-    r.addEventListener('scroll', (ev) => {
-      if(ticking) return;
-      ticking = true;
-      requestAnimationFrame(()=>{
-        if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
-          for(let i=0;i<4;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-          lazyObserve(r);
-        }
-        ticking = false;
-      });
+    if(r.children.length < 8){
+      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+    // add scroll listener that appends more when near right
+    r.addEventListener('scroll', (ev)=>{
+      const el = ev.currentTarget;
+      if(el._loading) return;
+      if(el.scrollLeft + el.clientWidth >= el.scrollWidth - 160){
+        el._loading = true;
+        setTimeout(()=> {
+          for(let k=0;k<6;k++) el.appendChild(makeSmallCard(pool[rand(pool.length)]));
+          lazyObserve(el);
+          el._loading = false;
+        }, 350);
+      }
     }, {passive:true});
   });
-
   lazyObserve();
 }
 
-/* Vertical grid render + infinite vertical load */
-let loadingGrid = false;
+/* ---------- Render grid (vertical infinite) ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML = '';
   grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
-scrollArea.addEventListener('scroll', ()=>{
-  const gridRect = gridFeed.getBoundingClientRect();
-  if(gridRect.top < window.innerHeight && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=>{
-      for(let i=0;i<6;i++) gridFeed.appendChild(makeGridCard(pool[rand(pool.length)]));
-      lazyObserve(gridFeed);
-      loadingGrid = false;
-    }, 650);
-  }
-}, {passive:true});
 
-/* Viewer */
-let activeList = [], currentIndex = 0;
+/* ---------- Viewer (immersive) ---------- */
 function openViewerByItem(item){
+  // find in lists for prev/next behavior
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
-  for(const L of lists){
-    const idx = L.findIndex(x=>x.id === item.id);
-    if(idx >= 0){ activeList = L; currentIndex = idx; break; }
-  }
-  if(!activeList.length){ activeList = [item]; currentIndex = 0; }
+  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
+  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
   showViewer();
 }
 function showViewer(){
@@ -379,101 +402,136 @@ function showViewer(){
   }
   viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
 }
-function closeViewerFunc(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
+function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
+function nextItem(){ 
+  if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } 
+  else { 
+    // extend activeList with random items (infinite feel)
+    const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer();
+  }
+}
 function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
 
-/* Panel open/close (overlay) */
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+/* ---------- Side panel open/close (touch outside to close) ---------- */
+function openPanel(){ overlay.style.display='block'; panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
+function closePanel(){ overlay.style.display='none'; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', openPanel);
 closePanelBtn.addEventListener('click', closePanel);
 overlay.addEventListener('click', closePanel);
 
-/* FAB radial */
+/* ---------- FAB radial ---------- */
 fab.addEventListener('click', ()=> radial.classList.toggle('show'));
 $('#optUpload').addEventListener('click', ()=> alert('Subir demo - requiere backend'));
 $('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
 $('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* Theme toggle */
-const THEME_KEY = 'sinfiltro.theme.v6';
-let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
-function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent = '☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent = '🌗'; } }
+/* ---------- Theme toggle (persist) ---------- */
+const THEME_KEY = 'sinfiltro.theme.mobile';
+let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours()>=7 && new Date().getHours()<19)?'light':'dark');
+function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
 applyTheme(theme);
-themeBtn.addEventListener('click', ()=> { theme = (theme === 'dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* Bottom nav */
-$$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
-  $$('.nav-item').forEach(x=> x.classList.remove('active')); n.classList.add('active');
-  const t = n.dataset.tab;
-  if(t === 'home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-  if(t === 'search') showSearchDemo();
-  if(t === 'recent') document.getElementById('recentRow1')?.scrollIntoView({behavior:'smooth'});
-  if(t === 'me') alert('Tus videos — demo');
-}));
+/* ---------- Search overlay & filter ---------- */
+searchBtn.addEventListener('click', ()=> {
+  searchOverlay.style.display = (searchOverlay.style.display === 'block') ? 'none' : 'block';
+  if(searchOverlay.style.display==='block'){ searchInput.focus(); }
+});
+searchInput.addEventListener('input', (e)=>{
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){ renderAll(); return; }
+  // filter pool and show results in grid
+  const filtered = pool.filter(p => p.title.toLowerCase().includes(q)).slice(0,40);
+  gridFeed.innerHTML = '';
+  filtered.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+  lazyObserve(gridFeed);
+});
 
-/* Search demo */
-function showSearchDemo(){
-  const q = prompt('Buscar (demo): escribe palabra clave');
-  if(q) alert('Resultados demo para: '+q);
-}
-
-/* Lightweight parallax */
-scrollArea.addEventListener('scroll', ()=> {
+/* ---------- Vertical infinite scroll (main) ---------- */
+let loadingGrid = false;
+scrollArea.addEventListener('scroll', (ev) => {
+  // parallax bg
   const s = scrollArea.scrollTop;
-  const t = Math.min(60, s/25);
+  const t = Math.min(40, s/30);
   bgLayer.style.transform = `translateY(${t}px)`;
+
+  // infinite grid loader: when near bottom of scrollable content append more to grid
+  const scrollBottom = scrollArea.scrollTop + scrollArea.clientHeight;
+  const totalHeight = scrollArea.scrollHeight;
+  if(scrollBottom > totalHeight - 420 && !loadingGrid){
+    loadingGrid = true;
+    setTimeout(()=> {
+      for(let i=0;i<8;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
+      lazyObserve(gridFeed); loadingGrid = false;
+    }, 650);
+  }
 }, {passive:true});
 
-/* Initial render */
+/* ---------- Make horizontal rows draggable with touch (UX improvement)
+   We avoid interfering with vertical scroll by checking gesture direction.
+*/
+function enableBetterHorizontalScroll(row){
+  let startX=0, startY=0, isMoving=false;
+  row.addEventListener('touchstart', (e)=> {
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY; isMoving = true;
+  }, {passive:true});
+  row.addEventListener('touchmove', (e)=> {
+    if(!isMoving) return;
+    const t = e.touches[0];
+    const dx = Math.abs(t.clientX - startX), dy = Math.abs(t.clientY - startY);
+    // if horizontal gesture stronger, prevent vertical page scrolling while moving this row
+    if(dx > dy && dx > 6){
+      // allow horizontal scrolling on the element
+      e.stopPropagation(); // allow horizontal movement
+      // No preventDefault (passive), but stopPropagation helps Chrome treat it as horizontal
+    }
+  }, {passive:true});
+  // when row reaches near end, append more items (handled in renderTwoRows scroll listener)
+}
+
+/* ---------- Render everything ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  $$('.h-row').forEach(r => { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
+
+  // ensure horizontal drag UX helper is attached
+  $$('.h-row').forEach(r => enableBetterHorizontalScroll(r));
   lazyObserve();
 }
-document.addEventListener('DOMContentLoaded', renderAll);
 
-/* Viewer controls */
+/* ---------- Viewer controls ---------- */
 closeViewer.addEventListener('click', closeViewerFunc);
 prevBtn.addEventListener('click', prevItem);
 nextBtn.addEventListener('click', nextItem);
 vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
 
-/* Accessibility */
-document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
+/* ---------- Accessibility & gestures ---------- */
+// ESC closes viewer/panel
+document.addEventListener('keydown', e=> { if(e.key==='Escape'){ closeViewerFunc(); closePanel(); } });
+// tap outside viewer to close
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 
-/* Service Worker quick-register (inline blob) - optional cache */
-if('serviceWorker' in navigator){
-  try{
-    const swCode = `
-      const CACHE = 'sinfiltro-v1';
-      self.addEventListener('install', e=>{
-        e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])).catch(()=>{}));
-      });
-      self.addEventListener('fetch', e=>{
-        e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)).catch(()=>fetch(e.request)));
-      });
-    `;
-    const blob = new Blob([swCode], {type:'application/javascript'});
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
-  }catch(err){}
-}
+/* ---------- Initial load, hide loader ---------- */
+document.addEventListener('DOMContentLoaded', ()=> {
+  // mimic small load (assets lazy so small delay)
+  setTimeout(()=> {
+    renderAll();
+    loader.style.display = 'none';
+    loader.setAttribute('aria-hidden','true');
+  }, 650);
+});
 
-/* Notes:
-   - Key fixes for mobile scroll:
-     * .scroll has min-height:0 and touch-action:pan-y so the viewport vertical scroll works anywhere.
-     * .h-row has touch-action:pan-x so horizontal scrollers respond to finger swipes.
-     * event listeners for scroll set {passive:true} to avoid blocking.
-     * horizontal scrollers use requestAnimationFrame throttling for appends.
-   - Replace picsum with your CDN in production.
-*/
+/* ---------- Notes on performance ----------
+  - Images lazy-loaded with IntersectionObserver.
+  - Horizontal rows append incrementally (small batches) to keep DOM light.
+  - Scroll listeners are passive to not block UI thread.
+  - No external libraries used (smaller payload).
+  - For production: serve resized images via CDN + cache headers.
+--------------------------------------------*/
 </script>
 </body>
 </html>
-```0
