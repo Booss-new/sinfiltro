@@ -1,84 +1,73 @@
 <!doctype html>
+<!-- index.html — SinFiltro (Móvil Premium) — versión completa y optimizada -->
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil) — Fix scroll</title>
-<meta name="description" content="SinFiltro — Demo móvil premium. Interfaz moderna, scroll infinito, visor, panel lateral y optimizaciones móviles." />
+<title>SinFiltro — Premium (Móvil)</title>
+<meta name="description" content="SinFiltro — demo móvil premium. Interfaz tipo app, scroll táctil, carruseles horizontales, grid infinito y optimizaciones." />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-
 <style>
+  /* ================== VARIABLES ================== */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff;
-    --muted:#9fb0bf; --card-shadow:rgba(2,8,20,0.56);
+    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff57b7;
+    --muted:#9fb0bf; --glass: rgba(255,255,255,0.04);
+    --card-shadow: rgba(2,8,20,0.56);
     --radius:12px; --fast:140ms; --mid:260ms; --text:#eaf7ff;
   }
 
-  html,body{
-    height:100%;margin:0;
-    font-family:Inter,system-ui,Arial;
-    background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
-    color:var(--text);-webkit-font-smoothing:antialiased;
-  }
-  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#616d7a;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
+  /* ================== BASE ================== */
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased}
+  body.light{--bg-1:#f6f9ff;--bg-2:#eef6ff;--text:#071226;--muted:#626f7b;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
 
-  /* background */
+  /* ================== BACKGROUND GLOW ================== */
   .bg-wrap{position:fixed;inset:0;z-index:-20;pointer-events:none}
   .bg-layer{position:absolute;inset:-20% -10%;background:
     radial-gradient(600px 300px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);
-    filter:blur(26px) saturate(1.05);transition:transform 9s linear}
+    filter:blur(26px) saturate(1.05);transition:transform 10s linear}
 
-  /* layout */
+  /* ================== LAYOUT ================== */
   .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
   .header{position:sticky;top:0;z-index:140;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.02)}
   .left-row{display:flex;align-items:center;gap:10px}
-  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast)}
+  .icon-btn{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:var(--muted);cursor:pointer;transition:transform var(--fast),box-shadow var(--fast)}
   .icon-btn:active{transform:scale(.96)}
   .logo{font-family:Poppins,system-ui;font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .tag{font-size:11px;color:var(--muted)}
 
-  /* IMPORTANT: allow the flex child to be scrollable on mobile */
-  .scroll{
-    flex:1;
-    min-height:0; /* <<--- CRITICAL FIX */
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    touch-action: pan-y; /* allow vertical pan */
-  }
-
+  /* ================== SCROLL AREA (CRITICAL) ================== */
+  /* min-height:0 solves mobile flex scroll issues */
+  .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;scroll-behavior:smooth}
   .container{max-width:720px;margin:0 auto;padding:12px;min-height:0}
 
+  /* ================== HERO ================== */
   .hero{padding:12px;border-radius:14px;margin-top:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.004));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 40px var(--card-shadow)}
   .hero h1{margin:0;font-size:18px;color:var(--accent-2)}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
+  /* ================== SECTION HEADER ================== */
   .section{margin-top:14px}
-  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section .title{font-weight:800;color:var(--accent-1);font-size:16px}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .title{font-weight:800;color:var(--accent-1);font-size:16px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-  /* two-row horizontal scrollers */
+  /* ================== TWO-ROW HORIZONTAL SCROLL (per section) ================== */
   .h-stack{display:flex;flex-direction:column;gap:8px;padding-left:4px}
-  .h-row{
-    display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;
-    scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
-    touch-action: pan-x; /* allow horizontal pan inside this row */
-    overscroll-behavior-x: contain; /* don't pass horizontal overscroll to parent */
-  }
+  .h-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
+  .card-small{min-width:170px;flex:0 0 170px;height:110px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 30px var(--card-shadow);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;will-change:transform}
   .card-small.skel{background:linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 100%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.52);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
+  .card-small img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;filter:brightness(.56);transition:transform .9s cubic-bezier(.2,.9,.28,1)}
   .card-small:hover img{transform:scale(1.04)}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:700;font-size:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* explore grid */
+  /* ================== GRID (vertical infinite) ================== */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px var(--card-shadow);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
@@ -86,31 +75,31 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* fab & radial */
+  /* ================== FAB & RADIAL ================== */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   .radial{position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity var(--fast)}
   .radial.show{opacity:1;pointer-events:auto}
   .radial button{width:52px;height:52px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
 
-  /* bottom nav */
+  /* ================== BOTTOM NAV ================== */
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 10px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
   .nav-item.active{color:var(--accent-1);transform:translateY(-4px)}
 
-  /* panel & overlay (use classes .show => pointer-events active) */
+  /* ================== PANEL & OVERLAY ================== */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;opacity:0;pointer-events:none;transition:opacity .18s}
   .overlay.show{opacity:1;pointer-events:auto}
   .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:360px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px var(--card-shadow);transform:translateX(-12px);opacity:0;transition:all var(--mid) ease}
   .panel.open{transform:translateX(0);opacity:1}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* viewer */
+  /* ================== VIEWER ================== */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img{width:100%;height:auto;display:block}
   .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
-  /* animations */
+  /* ================== ANIMATIONS ================== */
   .fade-up{animation:fadeUp .58s cubic-bezier(.2,.9,.2,1) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   .pulse{animation:pulse 1.2s infinite}
@@ -131,7 +120,7 @@
   <div class="app" role="application" aria-label="SinFiltro">
     <header class="header" role="banner">
       <div class="left-row">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menu">☰</button>
+        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
         <div>
           <div class="logo">SinFiltro</div>
           <div class="tag">Tu espacio sin límites</div>
@@ -145,7 +134,7 @@
 
     <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
 
-    <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Panel de usuario">
+    <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
       <div style="display:flex;align-items:center;gap:8px">
         <strong>Cuenta</strong>
         <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
@@ -159,13 +148,14 @@
       </nav>
     </aside>
 
-    <main id="scrollArea" class="scroll" tabindex="0">
+    <main id="scrollArea" class="scroll" tabindex="0" role="main">
       <div class="container">
         <section class="hero fade-up" aria-label="presentación">
           <h1>Descubre lo auténtico</h1>
           <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
         </section>
 
+        <!-- Tendencias -->
         <section class="section" aria-label="tendencias">
           <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeTrend">Ver todo</div></div>
           <div class="h-stack">
@@ -174,6 +164,7 @@
           </div>
         </section>
 
+        <!-- Recomendados -->
         <section class="section" aria-label="recomendados">
           <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeReco">Ver todo</div></div>
           <div class="h-stack">
@@ -182,6 +173,7 @@
           </div>
         </section>
 
+        <!-- Antes visto -->
         <section class="section" aria-label="antes visto">
           <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeRecent">Ver todo</div></div>
           <div class="h-stack">
@@ -190,15 +182,17 @@
           </div>
         </section>
 
+        <!-- Explorar: grid infinito -->
         <section class="section" aria-label="explorar">
           <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="seeExplore">Filtrar</div></div>
           <div id="gridFeed" class="grid" aria-live="polite"></div>
         </section>
 
-        <div style="height:110px"></div>
+        <div style="height:120px"></div>
       </div>
     </main>
 
+    <!-- FAB radial -->
     <div id="radial" class="radial" aria-hidden="true">
       <button id="optUpload" title="Subir foto/video">📤</button>
       <button id="optPost" title="Crear publicación">✏️</button>
@@ -206,6 +200,7 @@
     </div>
     <button id="fab" class="fab" aria-label="Crear">＋</button>
 
+    <!-- bottom nav -->
     <nav class="bottom-nav" role="navigation" aria-label="navegación">
       <div id="navHome" class="nav-item active" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
       <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
@@ -214,6 +209,7 @@
       <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
     </nav>
 
+    <!-- viewer immersive -->
     <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
       <div class="card">
         <div id="viewerInner"></div>
@@ -229,19 +225,27 @@
   </div>
 
 <script>
+/* =========================
+   SinFiltro — versión final (front-end demo)
+   Incluye: optimizaciones móviles, lazy-load, scrollers horizontales dual-row,
+   grid infinito, menu lateral, viewer, theme, microinteractions.
+   ========================= */
+
 /* ---------- Helpers ---------- */
-const $ = s=>document.querySelector(s), $$ = s=>Array.from(document.querySelectorAll(s));
-const rand = n=>Math.floor(Math.random()*n);
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
-/* ---------- Data pool ---------- */
-const pool = Array.from({length:120}).map((_,i)=>({
-  id:'p'+i, src: mkImg(i),
-  kind: (i % 5 === 0) ? 'video' : 'image',
-  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna'][i%5],
-  likes: Math.floor(Math.random()*8000),
+/* ---------- Demo data pool (images + flagged videos) ---------- */
+const pool = Array.from({length:140}).map((_,i)=>({
+  id: 'p'+i,
+  src: mkImg(i),
+  kind: (i % 6 === 0) ? 'video' : 'image',
+  title: ['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: Math.floor(Math.random()*12000),
   comments: Math.floor(Math.random()*1200),
-  views: (Math.floor(Math.random()*900)+100)+'K'
+  views: (Math.floor(Math.random()*900)+10)+'K'
 }));
 
 let trends = pool.slice(0,12), reco = pool.slice(12,24), recent = pool.slice(24,36), grid = pool.slice(36,56);
@@ -284,14 +288,16 @@ function lazyObserve(root=document){
   }
 }
 
-/* ---------- Card creators ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+/* ---------- Create cards (small + grid) ---------- */
+function esc(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
-  const d = document.createElement('div'); d.className='card-small skel fade-up'; d.tabIndex=0;
+  const d = document.createElement('div');
+  d.className = 'card-small skel fade-up';
+  d.tabIndex = 0;
   d.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    ${ item.likes > 2000 ? '<div class="mini-badge">TOP</div>' : '' }
+    <img data-src="${item.src}" alt="${esc(item.title)}">
+    ${ item.likes > 3000 ? '<div class="mini-badge">TOP</div>' : '' }
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
         <div style="font-weight:700">${ item.kind === 'video' ? 'Video' : 'Foto' }</div>
@@ -301,31 +307,33 @@ function makeSmallCard(item){
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=>{ if(e.key === 'Enter') openViewerByItem(item); });
+  d.addEventListener('keypress', e=> { if(e.key === 'Enter') openViewerByItem(item); });
   return d;
 }
 
 function makeGridCard(item){
-  const a = document.createElement('article'); a.className='card skel fade-up';
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  const a = document.createElement('article');
+  a.className = 'card skel fade-up';
+  a.innerHTML = `<img data-src="${item.src}" alt="${esc(item.title)}"><div class="body"><div class="title">${esc(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
-/* ---------- Render two-row scrollers with infinite append ---------- */
+/* ---------- Render two-rows with infinite horizontal append ---------- */
 function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=> {
-    const target = (i%2===0) ? row1 : row2;
+  row1.innerHTML = ''; row2.innerHTML = '';
+  items.forEach((it,i)=>{
+    const target = (i%2 === 0) ? row1 : row2;
     target.appendChild(makeSmallCard(it));
   });
 
   [row1,row2].forEach(r=>{
-    while(r.children.length < 6) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    let ticking=false;
-    r.addEventListener('scroll', ()=>{
+    // seed
+    while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    // efficient append when reaching end (throttled via RAF)
+    let ticking = false;
+    r.addEventListener('scroll', (ev) => {
       if(ticking) return;
-      // passive listener not required here but we don't call preventDefault; keep light
       ticking = true;
       requestAnimationFrame(()=>{
         if(r.scrollLeft + r.clientWidth >= r.scrollWidth - 160){
@@ -340,10 +348,10 @@ function renderTwoRows(row1,row2,items){
   lazyObserve();
 }
 
-/* ---------- Grid render + infinite vertical append ---------- */
-let loadingGrid=false;
+/* ---------- Grid render + vertical infinite load ---------- */
+let loadingGrid = false;
 function renderGridInitial(){
-  gridFeed.innerHTML='';
+  gridFeed.innerHTML = '';
   grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
@@ -359,7 +367,7 @@ scrollArea.addEventListener('scroll', ()=>{
   }
 }, {passive:true});
 
-/* ---------- Viewer ---------- */
+/* ---------- Viewer (immersive) ---------- */
 let activeList = [], currentIndex = 0;
 function openViewerByItem(item){
   const lists = [trends,reco,recent,grid,pool];
@@ -386,87 +394,102 @@ function showViewer(){
   }
   viewer.style.display = 'flex'; viewer.setAttribute('aria-hidden','false');
 }
-function closeViewerFunc(){ viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); }
+function closeViewerFunc(){ viewer.style.display = 'none'; viewer.setAttribute('aria-hidden','true'); }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { activeList.push(pool[rand(pool.length)]); currentIndex++; showViewer(); } }
 function simulatePlay(it){ alert('Reproduciendo demo: '+it.title); }
 
-/* ---------- Panel open/close (use overlay.show and panel.open classes) ---------- */
+/* ---------- Panel open/close (overlay.show & panel.open) ---------- */
 function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
 function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', openPanel);
 closePanelBtn.addEventListener('click', closePanel);
 overlay.addEventListener('click', closePanel);
 
-/* ---------- FAB ---------- */
+/* ---------- FAB radial ---------- */
 fab.addEventListener('click', ()=> radial.classList.toggle('show'));
-$('#optUpload').addEventListener('click', ()=> alert('Subir demo (requiere backend)'));
+$('#optUpload').addEventListener('click', ()=> alert('Subir demo - requiere backend'));
 $('#optPost').addEventListener('click', ()=> alert('Crear publicación (demo)'));
 $('#optShort').addEventListener('click', ()=> alert('Crear short (demo)'));
 
-/* ---------- Theme ---------- */
-const THEME_KEY = 'sinfiltro.theme.v4';
+/* ---------- Theme toggle (persist) ---------- */
+const THEME_KEY = 'sinfiltro.theme.v5';
 let theme = localStorage.getItem(THEME_KEY) || ((new Date().getHours() >= 7 && new Date().getHours() < 19) ? 'light' : 'dark');
-function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
+function applyTheme(t){ if(t === 'light'){ document.body.classList.add('light'); themeBtn.textContent = '☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent = '🌗'; } }
 applyTheme(theme);
-themeBtn.addEventListener('click', ()=> { theme = (theme==='dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+themeBtn.addEventListener('click', ()=> { theme = (theme === 'dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
 /* ---------- Bottom nav ---------- */
 $$('.nav-item').forEach(n=> n.addEventListener('click', ()=>{
-  $$('.nav-item').forEach(x=>x.classList.remove('active')); n.classList.add('active');
+  $$('.nav-item').forEach(x=> x.classList.remove('active')); n.classList.add('active');
   const t = n.dataset.tab;
   if(t === 'home') scrollArea.scrollTo({top:0,behavior:'smooth'});
-  if(t === 'search') alert('Buscar — demo');
-  if(t === 'recent') $('#recentRow1')?.scrollIntoView({behavior:'smooth'});
+  if(t === 'search') showSearchDemo();
+  if(t === 'recent') { document.getElementById('recentRow1')?.scrollIntoView({behavior:'smooth'}); }
   if(t === 'me') alert('Tus videos — demo');
 }));
 
-/* ---------- small parallax ---------- */
+/* ---------- Search overlay demo (simple) ---------- */
+function showSearchDemo(){
+  const q = prompt('Buscar (demo): escribe palabra clave');
+  if(q) alert('Resultados demo para: '+q);
+}
+
+/* ---------- Tiny parallax for bg (lightweight) ---------- */
 scrollArea.addEventListener('scroll', ()=> {
   const s = scrollArea.scrollTop;
   const t = Math.min(60, s/25);
   bgLayer.style.transform = `translateY(${t}px)`;
 }, {passive:true});
 
-/* ---------- initial render ---------- */
+/* ---------- Initial render ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  $$('.h-row').forEach(r=> { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
+  // seed each h-row a bit more for smooth scroll
+  $$('.h-row').forEach(r => { while(r.children.length < 8) r.appendChild(makeSmallCard(pool[rand(pool.length)])); });
   lazyObserve();
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- viewer controls ---------- */
+/* ---------- Viewer controls ---------- */
 closeViewer.addEventListener('click', closeViewerFunc);
 prevBtn.addEventListener('click', prevItem);
 nextBtn.addEventListener('click', nextItem);
 vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; simulatePlay(it); });
 
-/* ---------- accessibility ---------- */
+/* ---------- Accessibility & gestures ---------- */
 document.addEventListener('keydown', e=> { if(e.key === 'Escape'){ closeViewerFunc(); closePanel(); } });
-// close viewer on outside tap
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 
-/* ---------- tiny service worker (same as before, optional) ---------- */
+/* ---------- Service Worker quick-register (inline blob) ---------- */
 if('serviceWorker' in navigator){
-  const swCode = `
-    const CACHE = 'sinfiltro-v1';
-    self.addEventListener('install', e=>{
-      e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])).catch(()=>{}));
-    });
-    self.addEventListener('fetch', e=>{
-      e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)).catch(()=>fetch(e.request)));
-    });
-  `;
   try{
+    const swCode = `
+      const CACHE = 'sinfiltro-v1';
+      self.addEventListener('install', e=>{
+        e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/'])).catch(()=>{}));
+      });
+      self.addEventListener('fetch', e=>{
+        e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request)).catch(()=>fetch(e.request)));
+      });
+    `;
     const blob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{/* ignore */});
-  }catch(e){}
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+  }catch(err){}
 }
+
+/* ---------- Performance notes ----------
+   - IntersectionObserver lazy-load
+   - Passive listeners for scroll to avoid blocking main thread
+   - RAF throttling when appending items
+   - Minimal DOM operations during scroll
+   - No external JS libraries
+   - Replace picsum with your CDN for production
+------------------------------------------------- */
 </script>
 </body>
 </html>
+```0
