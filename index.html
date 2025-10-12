@@ -4,9 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral." />
+<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
+  /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
     --bg-1:#05060a; --bg-2:#071226;
     --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
@@ -18,12 +19,14 @@
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
   body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
 
+  /* ================= keep UI identical to approved design ================= */
   .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
     radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
   @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
 
-  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:80;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  /* Top header */
+  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
   .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
   .left-ctrl{display:flex;align-items:center;gap:12px}
   .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
@@ -31,18 +34,22 @@
   .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
   .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
 
-  main{padding-top:86px;padding-bottom:110px;max-width:720px;margin:0 auto}
+  /* Main content uses native body scrolling (fixes mobile touch) */
+  main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
   .container{padding:12px}
 
+  /* Hero */
   .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
   .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
+  /* Section */
   .section{margin-top:16px}
   .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
+  /* Horizontal two-row scrollers (kept visuals) */
   .h-stack{display:flex;flex-direction:column;gap:10px}
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
@@ -53,6 +60,7 @@
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
+  /* Grid (vertical infinite) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
@@ -60,22 +68,38 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
+  /* FAB + bottom nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+  .radials{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity .18s}
+  .radials.show{opacity:1;pointer-events:auto}
+  .bubble{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:none}
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none}
-  .overlay.show{display:block;pointer-events:auto}
+  /* Panel & overlay (menu lateral) */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
+  .overlay.show{display:block;pointer-events:auto;opacity:1}
   .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
   .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
+  /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
   .viewer img,.viewer video{width:100%;height:auto;display:block}
   .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 
+  /* Search modal & MyVideos modal */
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
+  .modal.show{display:block}
+  .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
+  .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .mini-thumb img{width:100%;height:100%;object-fit:cover}
+  .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
+
+  /* Small screens */
   @media (max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
@@ -83,19 +107,14 @@
     .panel{width:92%;left:4%}
   }
 
+  /* fallback when backdrop-filter not supported */
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .panel, header { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
+    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
   }
 
+  /* animation */
   .fade-up{animation:fadeUp .48s cubic-bezier(.2,.9,.2,1) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-  /* demo modal styles (search / mini-grid) - glassy but matching design */
-  .modal-demo{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:520px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(10px);border-radius:12px;padding:12px;z-index:230;box-shadow:0 30px 80px rgba(0,0,0,0.6);}
-  .modal-demo header{display:flex;align-items:center;gap:8px}
-  .modal-demo .close-modal{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:8px;cursor:pointer}
-  .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-  .mini-grid .mini{height:64px;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
@@ -114,13 +133,14 @@
     </div>
   </header>
 
+  <!-- overlay + panel -->
   <div id="overlay" class="overlay" aria-hidden="true"></div>
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
       <strong>Cuenta</strong>
       <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
     </div>
-    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, monetización y tu contenido.</p>
+    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
     <nav style="display:flex;flex-direction:column;gap:8px">
       <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
       <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
@@ -131,6 +151,7 @@
     </nav>
   </aside>
 
+  <!-- main content uses body scroll -->
   <main>
     <div class="container">
       <section class="hero fade-up" aria-label="presentación">
@@ -138,6 +159,7 @@
         <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
+      <!-- Tendencias -->
       <section class="section fade-up" aria-label="tendencias">
         <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
         <div class="h-stack">
@@ -146,6 +168,7 @@
         </div>
       </section>
 
+      <!-- Recomendados -->
       <section class="section fade-up" aria-label="recomendados">
         <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
         <div class="h-stack">
@@ -154,6 +177,7 @@
         </div>
       </section>
 
+      <!-- Antes visto -->
       <section class="section fade-up" aria-label="antes visto">
         <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
         <div class="h-stack">
@@ -162,6 +186,7 @@
         </div>
       </section>
 
+      <!-- Explorar grid -->
       <section class="section fade-up" aria-label="explorar">
         <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
@@ -169,7 +194,8 @@
     </div>
   </main>
 
-  <div id="radial" style="position:fixed;left:50%;transform:translateX(-50%);bottom:132px;display:flex;gap:10px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity .18s"></div>
+  <!-- FAB + radial bubbles -->
+  <div id="radials" class="radials" aria-hidden="true"></div>
   <button id="fab" class="fab" aria-label="Crear">＋</button>
 
   <nav class="bottom-nav" role="navigation" aria-label="navegación">
@@ -180,6 +206,7 @@
     <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
   </nav>
 
+  <!-- viewer modal -->
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
     <div class="card" style="position:relative;">
       <div id="viewerInner"></div>
@@ -192,24 +219,36 @@
     </div>
   </div>
 
-  <!-- demo modals (hidden initially) -->
-  <div id="searchModal" class="modal-demo" style="display:none;z-index:240;">
-    <header><strong>Buscar</strong><button class="close-modal" id="closeSearch">✕</button></header>
-    <div style="margin-top:8px"><input id="searchInput" placeholder="Buscar (demo)..." style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)"></div>
-    <div class="mini-grid" id="searchResults"></div>
+  <!-- Search modal (miniatures) -->
+  <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
+    <div class="head">
+      <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
+      <button id="closeSearch" class="icon-btn">✕</button>
+    </div>
+    <div id="searchMini" class="grid-mini"></div>
   </div>
 
-  <div id="miniMyVideos" class="modal-demo" style="display:none;z-index:240;">
-    <header><strong>Tus videos (demo)</strong><button class="close-modal" id="closeMy">✕</button></header>
-    <div class="mini-grid" id="myVideosGrid"></div>
+  <!-- My videos modal (grid preview) -->
+  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
+    <div class="head" style="justify-content:space-between">
+      <strong>Tus videos (demo)</strong>
+      <button id="closeMy" class="icon-btn">✕</button>
+    </div>
+    <div id="myGrid" class="grid-mini"></div>
   </div>
 
 <script>
 /* =========================
-   SinFiltro — mejoras funcionales (móvil)
-   - Mantener DISEÑO aprobado (consigna)
-   - Arreglos: scroll infinito lateral + demos para botones
+   SinFiltro — mejoras funcionales (mantener diseño)
+   - FAB burbujas funcionales
+   - Buscador con miniaturas + abrir en viewer
+   - Tus videos mini-grid
+   - Fix theme toggle (fluido)
+   - Ensure overlays do not block touch when hidden
+   - Keep existing optimizations (lazy, drag-to-scroll)
    ========================= */
+
+/* Helpers */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
@@ -222,25 +261,27 @@ const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const fab = $('#fab'), radial = $('#radial');
+const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
 const searchTop = $('#searchTop');
-const navSearch = $('#navSearch'), navMe = $('#navMe');
+const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
+const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
 
-/* Demo data */
-let pool = Array.from({length:80}).map((_,i)=>({
+/* Data pool (demo) */
+let pool = Array.from({length:160}).map((_,i)=>({
   id:'p'+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
   title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
   likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
 }));
+
 let trends = pool.slice(0,12);
 let reco = pool.slice(12,24);
 let recent = pool.slice(24,36);
-let grid = pool.slice(36,52);
+let grid = pool.slice(36,72);
 
-/* Lazy load */
-let imgObserver=null;
+/* ---------- Lazy loading images (IntersectionObserver) ---------- */
+let imgObserver = null;
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
@@ -263,13 +304,13 @@ function lazyObserve(root=document){
   }
 }
 
-/* Card creators (unchanged visuals) */
+/* ---------- Create card elements (keeps meta layout) ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
-  d.dataset.id = item.id;
   d.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
@@ -285,6 +326,7 @@ function makeSmallCard(item){
   d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
   return d;
 }
+
 function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
@@ -293,172 +335,224 @@ function makeGridCard(item){
   return a;
 }
 
-/* Drag-to-scroll & infinite append for horizontal rows */
-function enableDragScroll(el){
-  if(el.__dragEnabled) return;
-  el.__dragEnabled = true;
-  let startX=0, scrollLeft=0, isDown=false;
-  el.addEventListener('touchstart', e=>{ isDown=true; startX = e.touches[0].pageX - el.offsetLeft; scrollLeft = el.scrollLeft; }, {passive:true});
-  el.addEventListener('touchmove', e=>{ if(!isDown) return; const x = e.touches[0].pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-  el.addEventListener('touchend', ()=> isDown=false, {passive:true});
-
-  let mouseDown=false;
-  el.addEventListener('pointerdown', (e)=>{ mouseDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && e.pointerId && el.setPointerCapture(e.pointerId); }, {passive:true});
-  el.addEventListener('pointermove', (e)=>{ if(!mouseDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-  el.addEventListener('pointerup', (e)=>{ mouseDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(_){} }, {passive:true});
-
-  // infinite append when near end (debounced)
-  let timeout = null;
-  el.addEventListener('scroll', ()=>{
-    if(timeout) clearTimeout(timeout);
-    timeout = setTimeout(()=>{
-      if(el.scrollLeft + el.clientWidth >= el.scrollWidth - 180){
-        // append 4 new items
-        for(let i=0;i<4;i++){
-          el.appendChild(makeSmallCard(pool[rand(pool.length)]));
-        }
-        lazyObserve(el);
-      }
-    }, 120);
-  }, {passive:true});
-}
-
-/* Render rows + grid */
+/* ---------- Render two rows with drag support ---------- */
 function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=>{ const target=(i%2===0)?row1:row2; target.appendChild(makeSmallCard(it)); });
+  items.forEach((it,i)=>{
+    const target = (i%2===0)?row1:row2;
+    target.appendChild(makeSmallCard(it));
+  });
+  // ensure rows have enough children
   [row1,row2].forEach(r=>{
-    if(r.children.length < 6){ for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)])); }
+    if(r.children.length < 6){
+      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+    // attach drag-to-scroll for better horizontal experience on mobile
     enableDragScroll(r);
   });
   lazyObserve();
 }
+
+/* ---------- Grid render ---------- */
 function renderGridInitial(){
-  gridFeed.innerHTML='';
+  gridFeed.innerHTML = '';
   grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
 
-/* Viewer modal */
+/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
+function enableDragScroll(el){
+  if(el.__dragEnabled) return;
+  el.__dragEnabled = true;
+  let startX = 0, scrollLeft = 0;
+  let isTouch = false;
+  el.addEventListener('touchstart', e=>{
+    isTouch = true;
+    startX = e.touches[0].pageX - el.offsetLeft;
+    scrollLeft = el.scrollLeft;
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(!isTouch) return;
+    const x = e.touches[0].pageX - el.offsetLeft;
+    const walk = (x - startX) * 1;
+    el.scrollLeft = scrollLeft - walk;
+  }, {passive:true});
+  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
+
+  // pointer events for desktops/mice
+  let isDown=false;
+  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
+  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
+  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
+}
+
+/* ---------- Viewer modal (touch outside to close) ---------- */
 let activeList=[], currentIndex=0;
 function openViewerByItem(item){
+  // find list and index
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
-  if(activeList.length===0){ activeList=[item]; currentIndex=0; }
+  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
   showViewer();
 }
 function showViewer(){
   const it = activeList[currentIndex];
-  viewerInner.innerHTML='';
-  if(it.kind==='video'){
+  viewerInner.innerHTML = '';
+  if(!it) return;
+  if(it.kind === 'video'){
     const video = document.createElement('video');
-    video.src = it.src; video.controls=true; video.style.maxHeight='70vh';
+    video.src = it.src;
+    video.controls = true;
+    video.autoplay = false;
+    video.style.maxHeight = '70vh';
     viewerInner.appendChild(video);
   } else {
-    const img = document.createElement('img'); img.src = it.src; img.alt = it.title;
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
     viewerInner.appendChild(img);
   }
+  // show viewer
   viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+  // ensure background overlay doesn't block scroll in viewer inner
+  document.body.style.overflow = 'hidden';
 }
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; }
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
-vvPlay.addEventListener('click', ()=> { const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); }});
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
+
 closeViewer.addEventListener('click', closeViewerFunc);
-/* touch outside to close viewer */
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 
-/* Panel open/close (overlay not blocking when hidden) */
+/* ---------- Panel open/close ---------- */
 function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
 function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
 closePanelBtn.addEventListener('click', closePanel);
-overlay.addEventListener('click', closePanel);
 
-/* panel demo actions */
+// panel actions
 $$('.panel-item').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click', (e)=>{
     const action = btn.dataset.action;
     closePanel();
-    if(action === 'home') window.scrollTo({top:0,behavior:'smooth'});
-    if(action === 'trends') document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'});
-    if(action === 'reco') document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'});
-    if(action === 'my') openMyVideosDemo();
-    if(action === 'settings') alert('Demo: Ajustes');
-    if(action === 'logout') alert('Demo: Cerrar sesión');
+    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
+    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'my'){ openMyModal(); }
+    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
+    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
   });
 });
 
-/* FAB radial */
+/* ---------- FAB radial (bubbles) ---------- */
 fab.addEventListener('click', ()=>{
-  if(radial.style.opacity === '1'){ radial.style.opacity='0'; radial.style.pointerEvents='none'; radial.innerHTML=''; }
-  else { radial.style.opacity='1'; radial.style.pointerEvents='auto'; radial.innerHTML = '<button aria-label=\"Subir\">📤</button><button aria-label=\"Crear\">✏️</button><button aria-label=\"Short\">🎬</button>'; }
+  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
+  else {
+    radials.classList.add('show');
+    radials.innerHTML = '';
+    // create bubbles - upload, create post, short
+    const b1 = document.createElement('button'); b1.className='bubble'; b1.innerHTML='📤'; b1.title='Subir'; b1.onclick = ()=> { alert('Demo: Subir archivo (demo)'); radials.classList.remove('show'); };
+    const b2 = document.createElement('button'); b2.className='bubble'; b2.innerHTML='🖼️'; b2.title='Galería'; b2.onclick = ()=> { alert('Demo: Crear publicación (demo)'); radials.classList.remove('show'); };
+    const b3 = document.createElement('button'); b3.className='bubble'; b3.innerHTML='🎬'; b3.title='Short'; b3.onclick = ()=> { alert('Demo: Crear short (demo)'); radials.classList.remove('show'); };
+    radials.appendChild(b1); radials.appendChild(b2); radials.appendChild(b3);
+  }
 });
 
-/* Theme toggle */
+/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
 const THEME_KEY = 'sinfiltro.theme.v3';
 let theme = localStorage.getItem(THEME_KEY) || 'dark';
-function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; } else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; } }
+function applyTheme(t){
+  // Use rAF to avoid sync layout thrashing
+  requestAnimationFrame(()=>{
+    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
+    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
+  });
+}
 applyTheme(theme);
-themeToggle.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
+themeToggle.addEventListener('click', ()=> {
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
 
-/* Brand click -> home */
+/* brand click -> home */
 brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navSearch').addEventListener('click', ()=> openSearchModal());
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#navMe').addEventListener('click', ()=> openMyModal());
 
-/* Search demo modal */
-const searchModal = $('#searchModal'), closeSearch = $('#closeSearch'), searchResults = $('#searchResults'), searchInput = $('#searchInput');
-function openSearchDemo(){
-  searchResults.innerHTML='';
-  // fill demo mini results
-  for(let i=0;i<6;i++){
-    const div=document.createElement('div'); div.className='mini'; div.textContent='Resultado '+(i+1);
-    searchResults.appendChild(div);
-  }
-  searchModal.style.display='block';
+/* Top search demo */
+searchTop.addEventListener('click', ()=> openSearchModal());
+
+/* ---------- Search modal (miniatures) ---------- */
+function openSearchModal(){
+  populateSearchMini();
+  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
+  // lock background scroll lightly
+  document.body.style.overflow = 'hidden';
 }
-function closeSearchDemo(){ searchModal.style.display='none'; }
-searchTop.addEventListener('click', openSearchDemo);
-navSearch.addEventListener('click', openSearchDemo);
-closeSearch.addEventListener('click', closeSearchDemo);
-searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchDemo(); });
+function closeSearchModal(){
+  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
+  searchMini.innerHTML = '';
+  document.body.style.overflow = '';
+}
+closeSearch.addEventListener('click', closeSearchModal);
+searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
 
-/* Mini "Tus videos" demo modal */
-const miniMy = $('#miniMyVideos'), closeMy = $('#closeMy'), myGrid = $('#myVideosGrid');
-function openMyVideosDemo(){
-  myGrid.innerHTML='';
+function populateSearchMini(q){
+  searchMini.innerHTML = '';
+  // generate 12 thumbnails demo
+  for(let i=0;i<12;i++){
+    const item = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
+    searchMini.appendChild(d);
+  }
+}
+
+/* ---------- My videos modal (grid preview) ---------- */
+function openMyModal(){
+  myGrid.innerHTML = '';
+  // demo: fill with 9 random items (mix images & videos)
   for(let i=0;i<9;i++){
-    const d=document.createElement('div'); d.className='mini'; d.textContent=(i%3===0)?'Video':'Foto';
+    const it = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
     myGrid.appendChild(d);
   }
-  miniMy.style.display='block';
+  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
 }
-function closeMyDemo(){ miniMy.style.display='none'; }
-navMe.addEventListener('click', ()=> openMyVideosDemo());
-closeMy.addEventListener('click', closeMyDemo);
-miniMy.addEventListener('click', e=> { if(e.target === miniMy) closeMyDemo(); });
+function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
+closeMy.addEventListener('click', closeMyModal);
+myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
 
-/* Infinite vertical grid load (debounced) */
+/* ---------- Infinite vertical load (grid) ---------- */
 let loadingGrid=false;
 window.addEventListener('scroll', ()=>{
+  // when approaching bottom, append grid items
   if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
     loadingGrid = true;
     setTimeout(()=> {
       for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
       lazyObserve(gridFeed); loadingGrid=false;
-    }, 600);
+    }, 700);
   }
-}, {passive:true});
+});
 
-/* initial render */
+/* ---------- Render initial content ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
   renderTwoRows(recoRow1, recoRow2, reco);
   renderTwoRows(recentRow1, recentRow2, recent);
   renderGridInitial();
-  // seed rows
+  // seed rows for smoothness
   $$('.h-row').forEach(r=> {
     if(r.children.length < 8){
       for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
@@ -468,13 +562,15 @@ function renderAll(){
 }
 document.addEventListener('DOMContentLoaded', renderAll);
 
-/* accessibility & close handlers */
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchDemo(); closeMyDemo(); } });
-/* ensure overlays do not block touches when hidden (already handled by CSS pointer-events) */
+/* ---------- Accessibility & shortcuts ---------- */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchModal(); closeMyModal(); } });
 
-/* Small helper to keep UI responsive: remove heavy ops from scroll handlers (we used debounce) */
+/* ---------- Ensure overlay hidden doesn't block touch ----------
+   overlay and panel pointer-events are toggled via classes.
+   Also ensure we don't leave body overflow hidden accidentally.
+----------------------------------------------------------------- */
 
-/* Fin */
+/* End of script */
 </script>
 </body>
 </html>
