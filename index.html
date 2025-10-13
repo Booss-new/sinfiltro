@@ -1,471 +1,525 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SinFiltro — Fase1 (Conducción móvil)</title>
-  <meta name="description" content="Demo: física vehicular, controles táctiles, optimizado móvil (fase1) — SinFiltro" />
-  <!-- Three.js + cannon-es desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
-  <script type="module">
-    // cannon-es via ESM import (CDN)
-    import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
-    window.CANNON = CANNON; // expose to non-module code below
-  </script>
-
-  <style>
-    /* Minimal neutral UI: mantén tu look aplicando tu CSS encima si lo deseas */
-    html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden;-webkit-tap-highlight-color:transparent}
-    #app{position:fixed;inset:0;display:flex;flex-direction:column}
-    canvas{display:block;width:100%;height:100%}
-
-    /* overlay controls */
-    .ui-top{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:30;pointer-events:auto}
-    .btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--text,#eaf7ff);backdrop-filter:blur(6px)}
-    .brand{font-weight:700}
-    /* joystick areas */
-    .touch-left, .touch-right{position:fixed;bottom:18px;height:36vh;width:46%;z-index:25;pointer-events:auto}
-    .touch-left{left:4%}
-    .touch-right{right:4%;display:flex;justify-content:flex-end}
-    /* small indicators */
-    .indicator{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:25;color:#9fb0bf;font-size:13px;pointer-events:none}
-
-    /* visual joystick (simple) */
-    .joystick-base{width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;touch-action:none}
-    .joystick-stick{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);box-shadow:0 8px 24px rgba(0,0,0,0.6);transform:translate(0,0)}
-    .controls-mini{display:flex;gap:8px}
-    .small-btn{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
-
-    /* viewer / debug area */
-    .debug{position:fixed;top:72px;right:12px;background:rgba(0,0,0,0.45);padding:8px;border-radius:8px;color:#9fb0bf;font-size:12px;z-index:40}
-    @media (min-width:900px){ .touch-left,.touch-right{display:none} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Arena (demo 3D)</title>
+<meta name="description" content="Demo 3D: combate de carros. Optimizado móvil - Three.js" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#06070a; --muted:#9fb0bf; --accent:#00d1ff; --vio:#8a6eff;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a,#091225);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf7ff; -webkit-font-smoothing:antialiased;}
+  /* HEADER (kept style like SinFiltro) */
+  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:8px;z-index:120;background:rgba(255,255,255,0.02);backdrop-filter:blur(8px)}
+  .header-inner{width:100%;max-width:980px;display:flex;justify-content:space-between;align-items:center;padding:6px 12px}
+  .logo{font-family:Poppins, sans-serif;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
+  /* Game area full screen under header */
+  #game-wrap{position:fixed;inset:66px 0 90px 0;background:transparent;display:block;overflow:hidden}
+  /* bottom controls / nav */
+  .bottom-ui{position:fixed;left:0;right:0;bottom:10px;height:84px;display:flex;align-items:center;justify-content:center;z-index:140;pointer-events:none}
+  .controls{width:100%;max-width:980px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;pointer-events:auto}
+  .joystick{width:120px;height:120px;border-radius:999px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;position:relative}
+  .thumb{width:56px;height:56px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--vio));box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+  .action-btn{width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--vio));display:flex;align-items:center;justify-content:center;box-shadow:0 18px 40px rgba(0,0,0,0.6);cursor:pointer}
+  /* HUD */
+  .hud{position:fixed;top:86px;right:18px;z-index:160;pointer-events:none}
+  .panel{background:rgba(0,0,0,0.45);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);pointer-events:auto;color:var(--muted)}
+  /* mode selector */
+  .mode-bar{position:fixed;top:86px;left:18px;z-index:160;pointer-events:auto}
+  .mode-bar button{margin-bottom:8px;padding:8px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--vio));color:#001;font-weight:700;cursor:pointer}
+  /* small messages */
+  .msg{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);padding:8px 12px;background:rgba(0,0,0,0.55);border-radius:8px;border:1px solid rgba(255,255,255,0.03);color:var(--muted);z-index:150;pointer-events:none}
+  /* small friendly styling */
+  button:active{transform:scale(.98)}
+  /* responsive tweak */
+  @media (max-width:420px){
+    .joystick{width:100px;height:100px}
+    .thumb{width:48px;height:48px}
+    .action-btn{width:58px;height:58px}
+  }
+</style>
 </head>
 <body>
-  <div id="app">
-    <div class="ui-top">
-      <div style="display:flex;gap:8px;align-items:center">
-        <div class="btn brand" id="brandBtn">SinFiltro</div>
-        <div class="btn" id="menuBtn">☰</div>
+  <header>
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="backMenu" style="background:transparent;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">☰</button>
+        <div class="logo">SinFiltro - Arena (demo)</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <div class="btn" id="searchBtn">🔎</div>
-        <div class="btn" id="modeBtn">🌗</div>
+        <button id="toggleMode" title="Play/Pause" style="background:rgba(255,255,255,0.02);border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">▶</button>
+        <button id="resetBtn" title="Reset" style="background:rgba(255,255,255,0.02);border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">⟲</button>
       </div>
     </div>
+  </header>
 
-    <!-- touch areas (left = steer, right = accel/brake + quick actions) -->
-    <div class="touch-left" id="touchLeft" aria-hidden="false" style="pointer-events:auto">
-      <div style="margin-left:12px;touch-action:none">
-        <div class="joystick-base" id="joyBaseLeft">
-          <div class="joystick-stick" id="joyStickLeft"></div>
-        </div>
-      </div>
-    </div>
+  <div id="game-wrap"></div>
 
-    <div class="touch-right" id="touchRight" aria-hidden="false" style="pointer-events:auto">
-      <div style="display:flex;align-items:flex-end;gap:12px;touch-action:none;margin-right:12px">
-        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
-          <div class="joystick-base" id="joyBaseRight" style="width:74px;height:74px">
-            <div class="joystick-stick" id="joyStickRight" style="width:34px;height:34px"></div>
-          </div>
-          <div class="controls-mini">
-            <div class="small-btn" id="handBrake">⛓</div>
-            <div class="small-btn" id="toggleView">👁</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="indicator" id="fps">FPS: -- • Speed: 0</div>
-    <div class="debug" id="debug">Cargando física...</div>
-    <!-- THREE canvas will be inserted by script -->
+  <div class="mode-bar">
+    <button id="modeArena">Arena (Combate)</button>
+    <button id="modeCity">Ciudad Libre</button>
   </div>
 
+  <div class="hud">
+    <div class="panel" id="infoPanel">FPS: -- • Speed: 0.0</div>
+  </div>
+
+  <div id="msg" class="msg" style="display:none"></div>
+
+  <div class="bottom-ui">
+    <div class="controls">
+      <div class="joystick" id="joyBase" aria-hidden="false">
+        <div class="thumb" id="joyThumb" style="transform:translate(0px,0px)"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="action-btn" id="fireBtn" title="Disparar">🔫</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+
 <script>
-/* =============================
-   SinFiltro — Fase1 Juego (Core)
-   - Three.js renderer + cannon-es physics
-   - Mobile optimized (pixelRatio clamp)
-   - Touch joysticks (steer + throttle)
-   - Overlays non-blocking when hidden
-   Params: Ajusta variables en la parte superior de este script.
-   ============================= */
+/*
+  SinFiltro Arena demo (single-file)
+  - Three.js scene (boxes)
+  - Procedural city grid: streets, buildings, posts (created on-the-fly)
+  - Simple car physics (kinematic approx), joystick controls for mobile
+  - Arena vs City mode toggle
+  - Optimized: only nearby chunks active (simple pool/culling)
+  - Touch-friendly; header and UI don't block game touches
+*/
 
-(async function(){
-  // ================= PARAMETERS (ajustables) =================
-  const PARAMS = {
-    PIXEL_RATIO_MAX: 1.6,        // clamp for mobile perf
-    PHYSICS_STEP: 1/60,
-    MAX_FORWARD_FORCE: 420,      // torque-ish drive force
-    MAX_STEER_ANGLE: 0.5,        // radians
-    BRAKE_FORCE: 150,
-    MASS: 1200,
-    WHEEL_RADIUS: 0.28
-  };
+/* ----------------- Config & Globals ----------------- */
+const WRAP = document.getElementById('game-wrap');
+let WIDTH = window.innerWidth, HEIGHT = Math.max(window.innerHeight - 156, 340);
+WRAP.style.height = HEIGHT + 'px';
 
-  // =============== UTILS ===============
-  const $ = s => document.querySelector(s);
-  const clamp = (v,a,b)=> Math.max(a, Math.min(b,v));
-  const now = ()=> (performance || Date).now();
+let scene, camera, renderer;
+let player, playerMesh;
+let enemies = [];
+let bullets = [];
+let chunks = {}; // keyed by "cx_cy"
+const CHUNK_SIZE = 60; // meters per chunk
+const VISIBLE_RADIUS = 2; // chunks each side
+let lastTime = performance.now();
+let running = true;
+let fpsCounter = { frames:0, last: performance.now() };
 
-  // =============== Basic scene setup ===============
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x05060a);
+/* Controls state */
+let input = { throttle:0, steer:0, fire:false };
+let joyBase = document.getElementById('joyBase'), joyThumb = document.getElementById('joyThumb');
+let joyRect = null, dragging=false, origin={x:0,y:0}, maxJoy=38;
+let fireBtn = document.getElementById('fireBtn');
 
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 2000);
-  camera.position.set(0, 3.2, -6);
+/* UI */
+const infoPanel = document.getElementById('infoPanel'); const modeArena = document.getElementById('modeArena');
+const modeCity = document.getElementById('modeCity'); const msg = document.getElementById('msg');
+let gameMode = 'arena'; // or 'city'
+
+/* Utility */
+const rand = n => Math.floor(Math.random()*n);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ----------------- INIT Three ----------------- */
+function initThree(){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x06070a, 0.0025);
+
+  camera = new THREE.PerspectiveCamera(60, WIDTH/HEIGHT, 0.1, 2000);
+  camera.position.set(0, 8, -12);
   camera.lookAt(0,0,0);
 
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  // clamp pixel ratio for mobile
-  const dpr = Math.min(window.devicePixelRatio || 1, PARAMS.PIXEL_RATIO_MAX);
-  renderer.setPixelRatio(dpr);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.domElement.style.touchAction = 'none'; // prevent default gestures
-  document.getElementById('app').appendChild(renderer.domElement);
+  renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(window.devicePixelRatio ? Math.min(window.devicePixelRatio, 1.5) : 1);
+  renderer.setSize(WIDTH, HEIGHT);
+  WRAP.appendChild(renderer.domElement);
 
-  // lights
-  const hemi = new THREE.HemisphereLight(0xffffff,0x222244, 0.8);
-  scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-  dir.position.set(5,10,5);
+  // ambient + directional (cheap)
+  const amb = new THREE.AmbientLight(0xffffff, 0.45);
+  scene.add(amb);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.55);
+  dir.position.set(-10, 30, 10);
   scene.add(dir);
 
   // ground
-  const groundGeo = new THREE.PlaneGeometry(400, 400);
-  const groundMat = new THREE.MeshStandardMaterial({color:0x081026, roughness:0.9, metalness:0.05});
-  const ground = new THREE.Mesh(groundGeo, groundMat);
+  const gmat = new THREE.MeshStandardMaterial({color:0x0b0e12, roughness:0.9});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000), gmat);
   ground.rotation.x = -Math.PI/2;
   scene.add(ground);
+}
 
-  // ================= physics (cannon-es loaded earlier via module) =================
-  // Wait until CANNON is available (imported earlier)
-  function waitForCannon(){ return new Promise((res,rej)=>{
-    const max = 2000; let t=0;
-    (function check(){
-      if(window.CANNON) return res(window.CANNON);
-      t+=50; if(t>max) return rej('cannon not loaded');
-      setTimeout(check,50);
-    })();
-  })}
+/* ----------------- Player (simple kinematic car) ----------------- */
+function createPlayer(){
+  const geom = new THREE.BoxGeometry(3.6,1.2,5);
+  const mat = new THREE.MeshStandardMaterial({color:0xbb2a2a, metalness:0.2, roughness:0.6});
+  playerMesh = new THREE.Mesh(geom, mat);
+  playerMesh.castShadow = true;
+  playerMesh.position.set(0,0.8,0);
+  scene.add(playerMesh);
 
-  const CANNON = await waitForCannon();
-  const world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
-  world.broadphase = new CANNON.SAPBroadphase(world);
-  world.defaultContactMaterial.friction = 0.3;
-
-  // ground body
-  const groundBody = new CANNON.Body({ mass:0, shape:new CANNON.Plane(), material: new CANNON.Material() });
-  groundBody.quaternion.setFromEuler(-Math.PI/2,0,0);
-  world.addBody(groundBody);
-
-  // simple vehicle using raycast vehicle
-  const chassisShape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2.0));
-  const chassisBody = new CANNON.Body({ mass: PARAMS.MASS });
-  chassisBody.addShape(chassisShape);
-  chassisBody.position.set(0, 1.2, 0);
-  chassisBody.quaternion.setFromEuler(0,0,0);
-  world.addBody(chassisBody);
-
-  // visual chassis
-  const chassisMesh = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2,0.9,4.0),
-    new THREE.MeshStandardMaterial({color:0x123144, metalness:0.4, roughness:0.35})
-  );
-  chassisMesh.castShadow = true;
-  scene.add(chassisMesh);
-
-  // Wheel info for raycast vehicle
-  const options = {
-    radius: PARAMS.WHEEL_RADIUS,
-    directionLocal: new CANNON.Vec3(0,-1,0),
-    axleLocal: new CANNON.Vec3(-1,0,0),
-    chassisConnectionPointLocal: new CANNON.Vec3(),
-    maxSuspensionForce: 100000,
-    suspensionRestLength: 0.3,
-    suspensionStiffness: 30,
-    suspensionDamping: 4.3,
-    frictionSlip: 2,
-    rollInfluence: 0.01
+  player = {
+    pos:new THREE.Vector3(0,0,0),
+    vel:new THREE.Vector3(0,0,0),
+    rotY:0, // radians
+    mass:1200,
+    accel:40, // acceleration
+    maxSpeed:36, // meters/sec
+    steerAngle:0,
+    mesh:playerMesh
   };
+}
 
-  const vehicle = new CANNON.RaycastVehicle({
-    chassisBody: chassisBody,
-    indexRightAxis: 0, // x
-    indexUpAxis: 1, // y
-    indexForwardAxis: 2 // z
+/* ----------------- Chunk generation (streets + buildings + posts) ----------------- */
+function ensureChunksAround(px, pz){
+  const cx = Math.floor(px / CHUNK_SIZE);
+  const cz = Math.floor(pz / CHUNK_SIZE);
+  for(let dx=-VISIBLE_RADIUS; dx<=VISIBLE_RADIUS; dx++){
+    for(let dz=-VISIBLE_RADIUS; dz<=VISIBLE_RADIUS; dz++){
+      const key = (cx+dx)+'_'+(cz+dz);
+      if(!chunks[key]) createChunk(cx+dx, cz+dz);
+      chunks[key].lastUsed = performance.now();
+    }
+  }
+  // prune far chunks
+  Object.keys(chunks).forEach(k=>{
+    const [kx, kz] = k.split('_').map(Number);
+    if(Math.abs(kx-cx)>VISIBLE_RADIUS+1 || Math.abs(kz-cz)>VISIBLE_RADIUS+1){
+      // dispose
+      chunks[k].objects.forEach(o=> scene.remove(o));
+      delete chunks[k];
+    }
   });
+}
 
-  // positions for four wheels
-  const wheelPositions = [
-    new CANNON.Vec3(-1.0, 0,  1.6),
-    new CANNON.Vec3( 1.0, 0,  1.6),
-    new CANNON.Vec3(-1.0, 0, -1.6),
-    new CANNON.Vec3( 1.0, 0, -1.6)
-  ];
+function createChunk(cx, cz){
+  const baseX = cx * CHUNK_SIZE;
+  const baseZ = cz * CHUNK_SIZE;
+  const group = {objects:[], key:cx+'_'+cz, lastUsed:performance.now()};
+  // simple pattern: roads every chunk center: create sidewalks/streets and buildings edges
+  const roadWidth = 8;
+  // road plane
+  const roadMat = new THREE.MeshStandardMaterial({color:0x141822, roughness:0.9});
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), roadMat);
+  road.rotation.x = -Math.PI/2;
+  road.position.set(baseX + CHUNK_SIZE/2, 0.01, baseZ + CHUNK_SIZE/2);
+  group.objects.push(road);
+  scene.add(road);
 
-  wheelPositions.forEach((pos)=>{
-    const opt = Object.assign({}, options);
-    opt.chassisConnectionPointLocal.set(pos.x, pos.y, pos.z);
-    vehicle.addWheel(opt);
-  });
-
-  vehicle.addToWorld(world);
-
-  // wheel visuals (simple)
-  const wheelMeshes = [];
-  vehicle.wheelInfos.forEach((w)=>{
-    const geo = new THREE.CylinderGeometry(PARAMS.WHEEL_RADIUS, PARAMS.WHEEL_RADIUS, 0.36, 16);
-    geo.rotateZ(Math.PI/2);
-    const mat = new THREE.MeshStandardMaterial({color:0x0f1720, metalness:0.2, roughness:0.5});
-    const m = new THREE.Mesh(geo, mat);
-    m.castShadow = true;
-    scene.add(m);
-    wheelMeshes.push(m);
-  });
-
-  // add some obstacles (for demo)
-  for(let i=0;i<8;i++){
-    const b = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.8), new THREE.MeshStandardMaterial({color:0x223344}));
-    b.position.set((Math.random()-0.5)*40,0.4,(Math.random()-0.5)*80);
-    scene.add(b);
-    const cb = new CANNON.Body({mass:0});
-    cb.addShape(new CANNON.Box(new CANNON.Vec3(0.4,0.4,0.4)));
-    cb.position.copy(b.position);
-    world.addBody(cb);
+  // buildings count random
+  const bcount = 6 + rand(6);
+  for(let i=0;i<bcount;i++){
+    const bw = 8 + rand(24);
+    const bd = 8 + rand(24);
+    const bh = 6 + rand(26);
+    const bx = baseX + 8 + rand(CHUNK_SIZE - 24);
+    const bz = baseZ + 8 + rand(CHUNK_SIZE - 24);
+    const bgeo = new THREE.BoxGeometry(bw, bh, bd);
+    const bmat = new THREE.MeshStandardMaterial({color: 0x151a22, roughness:0.95});
+    const bmesh = new THREE.Mesh(bgeo, bmat);
+    bmesh.position.set(bx, bh/2, bz);
+    group.objects.push(bmesh);
+    scene.add(bmesh);
   }
 
-  // ======= controls state =======
-  let steer = 0;     // -1..1
-  let throttle = 0;  // -1..1 (forward positive)
-  let brake = 0;     // 0..1
+  // street lights on edges
+  const postMat = new THREE.MeshStandardMaterial({color:0xffd79a, emissive:0x333333, emissiveIntensity:0.2});
+  const postGeo = new THREE.CylinderGeometry(0.12,0.12,4,6);
+  for(let p=0;p<6;p++){
+    const pxp = baseX + 6 + rand(CHUNK_SIZE-12);
+    const pzp = baseZ + 6 + rand(CHUNK_SIZE-12);
+    const post = new THREE.Mesh(postGeo, postMat);
+    post.position.set(pxp, 2, pzp);
+    group.objects.push(post);
+    scene.add(post);
+  }
 
-  // ======= joystick implementation (lightweight) =======
-  function makeJoystick(baseEl, stickEl, options){
-    // options: onMove(dx,dy), maxRadius
-    let active = false, identifier = null;
-    let startX=0, startY=0;
-    const maxR = options.maxRadius || 44;
+  // occasionally spawn NPC car in chunk (for arena)
+  if(gameMode === 'arena' && Math.random() > 0.6){
+    const npc = spawnEnemy(baseX + CHUNK_SIZE/2 + (Math.random()-0.5)*20, baseZ + CHUNK_SIZE/2 + (Math.random()-0.5)*20);
+    group.objects.push(npc.mesh);
+  }
 
-    function setStick(x,y){
-      stickEl.style.transform = `translate(${x}px, ${y}px)`;
+  chunks[group.key] = group;
+}
+
+/* ----------------- Enemies (simple steering) ----------------- */
+function spawnEnemy(x,z){
+  const geo = new THREE.BoxGeometry(3.4,1.2,5);
+  const mat = new THREE.MeshStandardMaterial({color:0x2a7bbb, metalness:0.1, roughness:0.6});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x,0.8,z);
+  scene.add(mesh);
+  const enemy = {
+    id: 'e'+Date.now()+Math.random(),
+    mesh, pos:mesh.position.clone(),
+    vel:new THREE.Vector3(), rotY:0,
+    speed: 6 + Math.random()*8,
+    health: 100,
+    lastShot:0
+  };
+  enemies.push(enemy);
+  return enemy;
+}
+
+/* ----------------- Bullets (simple ray-like) ----------------- */
+function spawnBullet(origin, dir, owner){
+  const bgeo = new THREE.SphereGeometry(0.15,8,6);
+  const bmat = new THREE.MeshStandardMaterial({color:0xffcf3b, emissive:0xffa64d});
+  const bm = new THREE.Mesh(bgeo, bmat);
+  bm.position.copy(origin);
+  scene.add(bm);
+  bullets.push({mesh:bm, pos:bm.position.clone(), dir:dir.clone().normalize(), speed:80, life:2.6, owner});
+}
+
+/* ----------------- Input: Joystick (touch-friendly) ----------------- */
+function setupJoystick(){
+  function recalc(){
+    joyRect = joyBase.getBoundingClientRect();
+    origin.x = joyRect.left + joyRect.width/2;
+    origin.y = joyRect.top + joyRect.height/2;
+  }
+  recalc();
+  window.addEventListener('resize', recalc);
+  // touch
+  const pointerStart = (clientX, clientY) => {
+    dragging = true;
+    recalc();
+    moveThumb(clientX, clientY);
+  };
+  const pointerMove = (clientX, clientY) => {
+    if(!dragging) return;
+    moveThumb(clientX, clientY);
+  };
+  const pointerEnd = () => {
+    dragging = false;
+    joyThumb.style.transform = 'translate(0px,0px)';
+    input.throttle = 0; input.steer = 0;
+  };
+  function moveThumb(cx, cy){
+    const dx = cx - origin.x;
+    const dy = cy - origin.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const nx = dx / (dist || 1);
+    const ny = dy / (dist || 1);
+    const limited = Math.min(dist, maxJoy);
+    const tx = nx * limited; const ty = ny * limited;
+    joyThumb.style.transform = `translate(${tx}px,${ty}px)`;
+    // map to forward/back & steer: vertical -> throttle, horizontal -> steer
+    input.throttle = clamp(-ty/maxJoy, -1, 1); // note: screen up = negative
+    input.steer = clamp(tx/maxJoy, -1, 1);
+  }
+
+  // pointer events for cross-device
+  joyBase.addEventListener('pointerdown', e=> { joyBase.setPointerCapture(e.pointerId); pointerStart(e.clientX, e.clientY); });
+  joyBase.addEventListener('pointermove', e=> { pointerMove(e.clientX, e.clientY); });
+  joyBase.addEventListener('pointerup', e=> { joyBase.releasePointerCapture && joyBase.releasePointerCapture(e.pointerId); pointerEnd(); });
+  joyBase.addEventListener('pointercancel', pointerEnd);
+
+  // also support mouse for desktop
+  joyBase.addEventListener('mousedown', e=> { pointerStart(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e=> { pointerMove(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', pointerEnd);
+
+  /* fire button */
+  fireBtn.addEventListener('pointerdown', ()=> { input.fire=true; setTimeout(()=> input.fire=false, 140); });
+}
+
+/* ----------------- Physics update (kinematic style) ----------------- */
+function updatePlayer(dt){
+  // simple car model: forward is -Z
+  const forward = new THREE.Vector3(Math.sin(player.rotY), 0, Math.cos(player.rotY)).multiplyScalar(1);
+  // update steer and throttle
+  const throttle = input.throttle; // -1..1 (backwards/forwards)
+  // accelerate along forward
+  const accel = throttle * player.accel;
+  player.vel.add(forward.clone().multiplyScalar(accel * dt));
+  // limit speed
+  const lateralFriction = 1.6;
+  player.vel.multiplyScalar(Math.max(0, 1 - lateralFriction * dt * 0.2));
+  const speed = player.vel.length();
+  if(speed > player.maxSpeed) player.vel.setLength(player.maxSpeed);
+
+  // steering rotates the car proportional to steering and speed
+  const steerPower = input.steer * 2.2;
+  player.rotY += steerPower * dt * (0.6 + speed*0.02);
+
+  // integrate position
+  player.pos.add(player.vel.clone().multiplyScalar(dt));
+  // apply to mesh
+  player.mesh.position.copy(player.pos);
+  player.mesh.rotation.y = -player.rotY; // invert for Three coordinate
+}
+
+/* ----------------- Enemies update (simple AI) ----------------- */
+function updateEnemies(dt){
+  enemies.forEach((e, idx) => {
+    // basic behavior: move towards player if in arena
+    const toPlayer = player.pos.clone().sub(e.pos);
+    const dist = toPlayer.length();
+    if(dist > 0.01){
+      toPlayer.normalize();
+      e.vel.lerp(toPlayer.multiplyScalar(e.speed), 0.03);
+      e.pos.add(e.vel.clone().multiplyScalar(dt));
+      e.mesh.position.copy(e.pos);
+      e.rotY = Math.atan2(e.vel.x, e.vel.z);
+      e.mesh.rotation.y = -e.rotY;
     }
+    // occasionally shoot towards player
+    e.lastShot = (e.lastShot || 0) + dt;
+    if(e.lastShot > 2.0 && dist < 80){
+      e.lastShot = 0;
+      const origin = e.pos.clone().add(new THREE.Vector3(0,0.9,0));
+      const dir = player.pos.clone().sub(e.pos).normalize();
+      spawnBullet(origin, dir, e.id);
+    }
+    // remove dead
+    if(e.health <= 0){
+      scene.remove(e.mesh);
+      enemies.splice(idx,1);
+    }
+  });
+}
 
-    baseEl.addEventListener('touchstart', (e)=> {
-      e.preventDefault();
-      const t = e.changedTouches[0];
-      active = true; identifier = t.identifier;
-      startX = t.clientX; startY = t.clientY;
-      setStick(0,0);
-    }, {passive:false});
-
-    baseEl.addEventListener('touchmove', (e)=>{
-      if(!active) return;
-      for(const t of e.changedTouches){
-        if(t.identifier===identifier){
-          const dx = t.clientX - startX;
-          const dy = t.clientY - startY;
-          const dist = Math.sqrt(dx*dx+dy*dy);
-          const ratio = Math.min(1, dist / maxR);
-          const nx = dx * ratio / (dist||1) * Math.min(dist, maxR);
-          const ny = dy * ratio / (dist||1) * Math.min(dist, maxR);
-          setStick(nx, ny);
-          options.onMove(nx / maxR, ny / maxR);
-        }
+/* ----------------- Bullets update (collision with player/enemies) ----------------- */
+function updateBullets(dt){
+  for(let i=bullets.length-1;i>=0;i--){
+    const b = bullets[i];
+    b.pos.add(b.dir.clone().multiplyScalar(b.speed * dt));
+    b.mesh.position.copy(b.pos);
+    b.life -= dt;
+    // collision with player (skip owner)
+    if(b.owner !== 'player'){
+      if(b.pos.distanceTo(player.pos) < 2.2){
+        // hit player
+        showMsg('Has sido alcanzado!');
+        // small knockback
+        player.vel.add(b.dir.clone().multiplyScalar(-12));
+        b.life = 0;
       }
-    }, {passive:false});
-
-    baseEl.addEventListener('touchend', (e)=>{
-      for(const t of e.changedTouches){
-        if(t.identifier===identifier){
-          active=false; identifier=null; setStick(0,0);
-          options.onEnd && options.onEnd();
-        }
-      }
-    }, {passive:false});
-
-    // mouse fallback for desktop testing
-    let mouseDown=false;
-    baseEl.addEventListener('pointerdown', (e)=>{ mouseDown=true; startX=e.clientX; startY=e.clientY; setStick(0,0); });
-    baseEl.addEventListener('pointermove', (e)=>{ if(!mouseDown) return; const dx = e.clientX-startX, dy = e.clientY-startY; const dist=Math.sqrt(dx*dx+dy*dy); const nx=dx/Math.max(dist,1)*Math.min(dist,maxR); const ny=dy/Math.max(dist,1)*Math.min(dist,maxR); setStick(nx,ny); options.onMove(nx/maxR, ny/maxR); }, {passive:true});
-    baseEl.addEventListener('pointerup', (e)=>{ mouseDown=false; setStick(0,0); options.onEnd && options.onEnd(); });
-  }
-
-  // wire joysticks
-  const joyBaseLeft = $('#joyBaseLeft'), joyStickLeft = $('#joyStickLeft');
-  const joyBaseRight = $('#joyBaseRight'), joyStickRight = $('#joyStickRight');
-
-  makeJoystick(joyBaseLeft, joyStickLeft, {
-    maxRadius: 44,
-    onMove: (nx,ny)=> {
-      // left joystick: nx -> steer, up/down ignored
-      steer = clamp(nx, -1, 1); // left negative
-    },
-    onEnd: ()=> { steer = 0; }
-  });
-
-  makeJoystick(joyBaseRight, joyStickRight, {
-    maxRadius: 34,
-    onMove: (nx,ny)=> {
-      // right joystick: ny negative = forward (finger swipe up means negative dy if base center)
-      // we invert y so upward finger = forward positive
-      throttle = clamp(-ny, -1, 1);
-    },
-    onEnd: ()=> { throttle = 0; }
-  });
-
-  // handbrake and view toggle
-  $('#handBrake').addEventListener('click', ()=> { brake = brake>0?0:1; $('#handBrake').textContent = brake? '⛓' : '⛓'; });
-  let chase = true;
-  $('#toggleView').addEventListener('click', ()=> { chase = !chase; $('#toggleView').textContent = chase? '👁' : '👁'; });
-
-  // keyboard support (desktop)
-  const keys = {};
-  window.addEventListener('keydown', (e)=> { keys[e.key.toLowerCase()] = true; });
-  window.addEventListener('keyup', (e)=> { keys[e.key.toLowerCase()] = false; });
-
-  // ============ physics update loop ============
-  let lastTime = performance.now()/1000;
-  let accumulator = 0;
-  const maxSubSteps = 3;
-
-  function physicsStep(dt){
-    // apply engine force to rear wheels (wheels 2 & 3)
-    const engineForce = PARAMS.MAX_FORWARD_FORCE * throttle;
-    const brakeForce = PARAMS.BRAKE_FORCE * brake;
-
-    // simple steering: rotate chassis quaternion small amount proportional to steer and speed
-    // but better: set wheel steering on front wheels
-    const steerAngle = PARAMS.MAX_STEER_ANGLE * steer;
-
-    // apply to vehicle wheelInfos directly
-    vehicle.setSteeringValue(steerAngle, 0);
-    vehicle.setSteeringValue(steerAngle, 1);
-
-    // engine/brake on rear wheels
-    vehicle.applyEngineForce(-engineForce, 2);
-    vehicle.applyEngineForce(-engineForce, 3);
-
-    // braking: set brake force on all wheels
-    vehicle.setBrake(brakeForce, 0);
-    vehicle.setBrake(brakeForce, 1);
-    vehicle.setBrake(brakeForce, 2);
-    vehicle.setBrake(brakeForce, 3);
-
-    world.step(PARAMS.PHYSICS_STEP);
-  }
-
-  // ============ animation & sync visuals ============
-  const statsIndicator = $('#fps');
-  const debugEl = $('#debug');
-  let lastFpsTime = performance.now(), frames=0;
-
-  function animate(){
-    requestAnimationFrame(animate);
-    const t = performance.now()/1000;
-    let dt = t - lastTime;
-    lastTime = t;
-    // clamp large dt
-    dt = Math.min(0.05, dt);
-    accumulator += dt;
-
-    // limit substeps adaptively
-    let substeps = 0;
-    while(accumulator >= PARAMS.PHYSICS_STEP && substeps < maxSubSteps){
-      physicsStep(PARAMS.PHYSICS_STEP);
-      accumulator -= PARAMS.PHYSICS_STEP;
-      substeps++;
-    }
-
-    // Sync visuals: chassis
-    chassisMesh.position.copy(chassisBody.position);
-    chassisMesh.quaternion.copy(chassisBody.quaternion);
-
-    // wheels
-    for(let i=0;i<vehicle.wheelInfos.length;i++){
-      vehicle.updateWheelTransform(i);
-      const t = vehicle.wheelInfos[i].worldTransform;
-      const pos = t.position;
-      const quat = t.quaternion;
-      wheelMeshes[i].position.set(pos.x, pos.y, pos.z);
-      wheelMeshes[i].quaternion.set(quat.x, quat.y, quat.z, quat.w);
-    }
-
-    // camera follow
-    if(chase){
-      const carPos = chassisMesh.position;
-      const carQuaternion = chassisMesh.quaternion;
-      const forward = new THREE.Vector3(0,0,1).applyQuaternion(carQuaternion).normalize();
-      const camTarget = new THREE.Vector3().copy(carPos).add(new THREE.Vector3(0,1.6,0));
-      const camPos = new THREE.Vector3().copy(carPos).add(forward.clone().multiplyScalar(-6)).add(new THREE.Vector3(0,2,0));
-      camera.position.lerp(camPos, 0.08);
-      camera.lookAt(camTarget);
     } else {
-      // free camera slight orbit (desktop)
-      camera.position.lerp(new THREE.Vector3(0,8,-12), 0.02);
-      camera.lookAt(0,0,0);
+      // hits enemies
+      for(const e of enemies){
+        if(b.pos.distanceTo(e.pos) < 2.2){
+          e.health -= 40;
+          // explosion effect (tiny)
+          b.life = 0;
+        }
+      }
     }
+    if(b.life <= 0) { scene.remove(b.mesh); bullets.splice(i,1); }
+  }
+}
 
-    renderer.render(scene, camera);
+/* ----------------- Camera follow ----------------- */
+function updateCamera(){
+  const desired = player.pos.clone().add(new THREE.Vector3(0,6,-10).applyAxisAngle(new THREE.Vector3(0,1,0), -player.rotY));
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(player.pos.x, player.pos.y+1.2, player.pos.z);
+}
 
-    // fps indicator
-    frames++;
-    const nowMs = performance.now();
-    if(nowMs - lastFpsTime >= 500){
-      const fps = Math.round(frames*1000/(nowMs-lastFpsTime));
-      frames=0; lastFpsTime = nowMs;
-      const speed = (chassisBody.velocity.length()).toFixed(1);
-      statsIndicator.textContent = `FPS: ${fps} • Speed: ${speed}`;
-      debugEl.textContent = `Throttle:${throttle.toFixed(2)} Steer:${steer.toFixed(2)} Brake:${brake} Mass:${PARAMS.MASS}`;
-    }
+/* ----------------- Main loop ----------------- */
+function animate(){
+  if(!running) return;
+  const now = performance.now();
+  const dt = Math.min(0.06, (now - lastTime)/1000);
+  lastTime = now;
 
-  } // animate
+  // update FPS
+  fpsCounter.frames++;
+  if(now - fpsCounter.last > 1000){
+    const fps = Math.round((fpsCounter.frames*1000)/(now-fpsCounter.last));
+    fpsCounter.frames = 0; fpsCounter.last = now;
+    infoPanel.textContent = `FPS: ${fps} • Speed: ${player.vel.length().toFixed(1)}`;
+  }
 
-  // kickstart
-  lastTime = performance.now()/1000;
+  // game updates
+  updatePlayer(dt);
+  updateEnemies(dt);
+  updateBullets(dt);
+
+  // spawn bullet if requested
+  if(input.fire){
+    input.fire = false;
+    const origin = player.pos.clone().add(new THREE.Vector3(0,1.0,0));
+    const dir = new THREE.Vector3(Math.sin(player.rotY), 0, Math.cos(player.rotY));
+    spawnBullet(origin.add(dir.clone().multiplyScalar(3)), dir, 'player');
+  }
+
+  // ensure chunks near player
+  ensureChunksAround(player.pos.x, player.pos.z);
+
+  // update camera & render
+  updateCamera();
+  renderer.render(scene, camera);
+
+  requestAnimationFrame(animate);
+}
+
+/* ----------------- Mode & UI handlers ----------------- */
+document.getElementById('modeArena').addEventListener('click', ()=> { gameMode='arena'; resetWorld(); showMsg('Modo Arena'); });
+document.getElementById('modeCity').addEventListener('click', ()=> { gameMode='city'; resetWorld(); showMsg('Modo Ciudad Libre'); });
+
+document.getElementById('toggleMode').addEventListener('click', ()=> { running = !running; if(running) { lastTime = performance.now(); animate(); showMsg('Reanudado'); } else showMsg('Pausado'); });
+document.getElementById('resetBtn').addEventListener('click', ()=> { resetWorld(); showMsg('Reiniciado'); });
+
+function showMsg(t){
+  msg.textContent = t; msg.style.display='block';
+  setTimeout(()=> msg.style.display='none', 1800);
+}
+
+/* ----------------- Reset world / init ----------------- */
+function resetWorld(){
+  // clear chunks/enemies/bullets
+  Object.values(chunks).forEach(c=> c.objects.forEach(o=> scene.remove(o)));
+  chunks = {};
+  enemies.forEach(e=> scene.remove(e.mesh)); enemies=[];
+  bullets.forEach(b=> scene.remove(b.mesh)); bullets=[];
+  // reposition player
+  player.pos.set(0,0,0); player.vel.set(0,0,0); player.rotY = 0; player.mesh.position.copy(player.pos); player.mesh.rotation.set(0,0,0);
+  // seed chunks
+  ensureChunksAround(0,0);
+  // if arena spawn some enemies
+  if(gameMode === 'arena'){
+    for(let i=0;i<6;i++) spawnEnemy((Math.random()-0.5)*CHUNK_SIZE*2, (Math.random()-0.5)*CHUNK_SIZE*2);
+  }
+}
+
+/* ----------------- Resize handler ----------------- */
+function onResize(){
+  WIDTH = window.innerWidth; HEIGHT = Math.max(window.innerHeight - 156, 340);
+  WRAP.style.height = HEIGHT + 'px';
+  camera.aspect = WIDTH/HEIGHT; camera.updateProjectionMatrix();
+  renderer.setSize(WIDTH, HEIGHT);
+}
+window.addEventListener('resize', onResize);
+
+/* ----------------- Boot sequence ----------------- */
+function boot(){
+  initThree();
+  createPlayer();
+  setupJoystick();
+  // initial chunks
+  ensureChunksAround(0,0);
+  // spawn a few enemies if arena
+  if(gameMode === 'arena') { for(let i=0;i<5;i++) spawnEnemy((Math.random()-0.5)*CHUNK_SIZE*2, (Math.random()-0.5)*CHUNK_SIZE*2); }
+  lastTime = performance.now();
   animate();
+}
+boot();
 
-  // resize handling
-  window.addEventListener('resize', ()=> {
-    camera.aspect = window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+/* ----------------- Small optimizations & gestures ----------------- */
+/* Avoid UI blocking touch: ensure renderer canvas gets pointer events */
+renderer.domElement.style.touchAction = 'none';
+renderer.domElement.addEventListener('pointerdown', e=> { /* allow canvas interaction if needed */ });
 
-  // ============ UI interactions (demo menus) ============
-  // menu / search / brand
-  $('#menuBtn').addEventListener('click', ()=>{
-    // simple demo: show a toast / or open your panel
-    alert('Demo: abrir menú lateral (integra tu panel real aquí).');
-  });
-  $('#searchBtn').addEventListener('click', ()=> {
-    // open a demo search overlay (you can replace with real input)
-    const q = prompt('Buscar (demo): escribe término');
-    if(q) alert('Demo: buscar -> ' + q);
-  });
-  $('#brandBtn').addEventListener('click', ()=> { window.scrollTo({top:0,behavior:'smooth'}); });
+/* Prevent pull-to-refresh overscroll on some Android browsers */
+document.addEventListener('touchmove', function(e){ /* allow normal scroll when not touching joystick */ }, {passive:false});
 
-  // mode toggle (dark/light) — adjust css variable quickly
-  $('#modeBtn').addEventListener('click', ()=>{
-    const b = document.body;
-    if(b.classList.contains('light')){ b.classList.remove('light'); $('#modeBtn').textContent='🌗'; }
-    else { b.classList.add('light'); $('#modeBtn').textContent='☀️'; }
-  });
-
-  // ensure overlays don't block touch when hidden: pointer-events handled by CSS classes above
-  // touch areas already have pointer-events enabled.
-
-  // ============ cleanup hint ============
-  window._sinfiltro_cleanup = ()=> {
-    renderer.forceContextLoss();
-    renderer.domElement = null;
-  };
-
-  // final log
-  console.log('SinFiltro Fase1 core loaded — prueba en móvil: usa joystick izquierdo para dirigir y joystick derecho para acelerar.');
-
-})();
 </script>
 </body>
 </html>
