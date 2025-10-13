@@ -1,55 +1,50 @@
+<!-- index.html - SinFiltro: Vehículos 3D con calles reales (Jardines de Morelos) -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro - Arena Vehicular (Calles)</title>
-<meta name="description" content="Demo móvil: vehículo, joystick, mapa de calles optimizado para móvil.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<title>SinFiltro - Arena Vehicular (MVP con Mapa Real)</title>
 <style>
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a,#071226);color:#eaf7ff;font-family:Inter,system-ui,Arial, sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
-  #canvasHolder{width:100%;height:100%;display:block;touch-action:none}
-  /* overlay UI (keeps same approved style) */
-  .topBar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;z-index:60}
-  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden}
+  #overlayUI{position:fixed;inset:0;pointer-events:none}
+  #canvasHolder{width:100%;height:100%}
+  .joy{position:fixed;left:18px;bottom:18px;width:110px;height:110px;border-radius:60px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:30}
+  .stick{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08);transform:translate(0,0)}
+  .btnFire{position:fixed;right:20px;bottom:34px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);color:#001;font-weight:700;font-size:28px;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:30;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+  .topBar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;z-index:40}
+  .logo{font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02)}
   .miniBtns{display:flex;gap:8px}
-  .icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
-  /* joystick */
-  .joy{position:fixed;left:18px;bottom:18px;width:96px;height:96px;border-radius:60px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:60}
-  .stick{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.06);transform:translate(0,0)}
-  /* fire button */
-  .btnFire{position:fixed;right:18px;bottom:34px;width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,#00d1ff,#8a6eff);color:#001;font-weight:700;font-size:22px;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,0.5);cursor:pointer}
-  /* viewer modal */
-  #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:80}
-  #viewer img{max-width:92%;height:auto;border-radius:12px}
-  #viewer button{margin-top:12px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.06);border:none;color:#eaf7ff}
-  /* responsive small tweaks */
-  @media(max-width:420px){ .joy{width:88px;height:88px} .stick{width:40px;height:40px} .btnFire{width:58px;height:58px} .logo{font-size:15px} }
+  .icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:50}
+  #viewer img{max-width:90%;height:auto;border-radius:12px}
+  @media(max-width:420px){.joy{width:96px;height:96px}.stick{width:42px;height:42px}.btnFire{width:64px;height:64px}}
 </style>
 </head>
 <body>
-  <div id="canvasHolder" aria-hidden="false"></div>
+  <div id="canvasHolder"></div>
 
-  <!-- UI overlay (unchanged look) -->
-  <div class="topBar">
-    <div class="logo" id="brandBtn">SinFiltro — Calles (demo)</div>
-    <div class="miniBtns">
-      <div class="icon" id="btnMenu">☰</div>
-      <div class="icon" id="btnStart">▶</div>
+  <!-- UI -->
+  <div id="overlayUI">
+    <div class="topBar">
+      <div class="logo">SinFiltro - Arena</div>
+      <div class="miniBtns">
+        <div class="icon" id="btnMenu">☰</div>
+        <div class="icon" id="btnStart">▶</div>
+      </div>
     </div>
-  </div>
 
-  <div class="joy" id="joy" aria-label="Joystick">
-    <div class="stick" id="stick" aria-hidden="true"></div>
-  </div>
+    <div class="joy" id="joy">
+      <div class="stick" id="stick"></div>
+    </div>
 
-  <div class="btnFire" id="btnFire" aria-label="Disparar">🔫</div>
+    <div class="btnFire" id="btnFire">🔫</div>
+  </div>
 
   <div id="viewer" role="dialog" aria-hidden="true">
     <div style="text-align:center">
-      <img id="viewerImg" src="" alt="preview">
-      <br>
-      <button id="closeViewer">Cerrar</button>
+      <img id="viewerImg" src="" alt="preview"><br><br>
+      <button id="closeViewer" style="padding:8px 12px;border-radius:8px">Cerrar</button>
     </div>
   </div>
 
@@ -57,321 +52,144 @@
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
   <script>
   (function(){
-    // ---------- Setup renderer, scene, camera ----------
     const holder = document.getElementById('canvasHolder');
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x071226, 0.0012);
-
-    const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
+    scene.fog = new THREE.FogExp2(0x05060a, 0.002);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.domElement.style.touchAction = 'none'; // avoid default touch gestures
     holder.appendChild(renderer.domElement);
 
-    const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 3000);
-    camera.position.set(0,7,12);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+    camera.position.set(0,6,10);
 
-    // lighting
     const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(10,20,10); scene.add(dir);
+    dir.position.set(5,10,7); scene.add(dir);
     scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-    // ---------- Ground & road system ----------
-    // Create a repeating canvas texture for road with lane marks (cheap & small)
-    function createRoadTexture(){
-      const w = 512, h = 128;
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      const ctx = c.getContext('2d');
-      // base dark asphalt
-      ctx.fillStyle = '#0b1220'; ctx.fillRect(0,0,w,h);
-      // subtle noise - lines
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
-      for(let i=0;i<120;i++){
-        ctx.fillRect(Math.random()*w, Math.random()*h, 1, 1);
-      }
-      // center dashed line
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-      ctx.lineWidth = 6;
-      ctx.setLineDash([28,28]);
-      ctx.beginPath();
-      ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
-      return new THREE.CanvasTexture(c);
-    }
-    const roadTex = createRoadTexture();
-    roadTex.wrapS = roadTex.wrapT = THREE.RepeatWrapping;
-    roadTex.repeat.set(1,1);
+    const gmat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.1, roughness:0.9});
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), gmat);
+    ground.rotation.x = -Math.PI/2; scene.add(ground);
 
-    // Ground base (grass / sidewalks)
-    const groundMat = new THREE.MeshStandardMaterial({color:0x071226, roughness:1, metalness:0});
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), groundMat);
-    ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
-
-    // Build a street grid resembling a small neighborhood layout:
-    // We'll create a set of road segments (long thin boxes) arranged in a grid.
-    const roads = [];
-    const roadMat = new THREE.MeshStandardMaterial({map: roadTex, metalness:0.1, roughness:0.9});
-
-    // Configurable grid size (in blocks)
-    const blocksX = 5; // number of vertical streets
-    const blocksZ = 6; // number of horizontal streets
-    const blockSize = 20; // meters per block
-    const roadWidth = 6;
-
-    // create main vertical roads
-    for(let xi = -Math.floor(blocksX/2); xi <= Math.floor(blocksX/2); xi++){
-      const x = xi * blockSize;
-      const geo = new THREE.BoxGeometry(roadWidth, 0.02, blockSize * (blocksZ + 1));
-      const m = new THREE.Mesh(geo, roadMat);
-      m.position.set(x, 0.01, 0);
-      scene.add(m);
-      roads.push({mesh:m, aabb: new THREE.Box3().setFromObject(m)});
-    }
-    // create horizontal roads
-    for(let zi = -Math.floor(blocksZ/2); zi <= Math.floor(blocksZ/2); zi++){
-      const z = zi * blockSize;
-      const geo = new THREE.BoxGeometry(blockSize * (blocksX + 1), 0.02, roadWidth);
-      const m = new THREE.Mesh(geo, roadMat);
-      m.position.set(0, 0.01, z);
-      scene.add(m);
-      roads.push({mesh:m, aabb: new THREE.Box3().setFromObject(m)});
-    }
-
-    // Add sidewalks / curbs (simple)
-    const curbMat = new THREE.MeshStandardMaterial({color:0x0f1720});
-    for(const r of roads){
-      const rim = new THREE.Mesh(new THREE.BoxGeometry(r.mesh.geometry.parameters.width + 6, 0.05, r.mesh.geometry.parameters.depth + 6), curbMat);
-      rim.position.set(r.mesh.position.x, 0.025, r.mesh.position.z);
-      rim.material.transparent = true; rim.material.opacity = 0.65;
-      scene.add(rim);
-    }
-
-    // ---------- Buildings (low poly blocks) ----------
-    const buildingMat = new THREE.MeshStandardMaterial({color:0x10222b, metalness:0.05, roughness:0.9});
-    const buildingColors = [0x13232f, 0x1b2d36, 0x0d1720];
-    for(let i=0;i<80;i++){
-      const w = 6 + Math.random()*12;
-      const h = 4 + Math.random()*20;
-      const d = 6 + Math.random()*12;
-      const geom = new THREE.BoxGeometry(w, h, d);
-      const mat = new THREE.MeshStandardMaterial({color: buildingColors[i%buildingColors.length], metalness:0.02, roughness:0.95});
-      const b = new THREE.Mesh(geom, mat);
-      // place buildings along blocks (avoid being on road center)
-      const signX = Math.random() > 0.5 ? 1 : -1;
-      const signZ = Math.random() > 0.5 ? 1 : -1;
-      const gridX = (Math.floor(Math.random()*blocksX) - Math.floor(blocksX/2)) * blockSize + signX*(roadWidth/2 + w/2 + 2 + Math.random()*8);
-      const gridZ = (Math.floor(Math.random()*blocksZ) - Math.floor(blocksZ/2)) * blockSize + signZ*(roadWidth/2 + d/2 + 2 + Math.random()*8);
-      b.position.set(gridX, h/2, gridZ);
-      b.castShadow = false; b.receiveShadow = false;
-      scene.add(b);
-    }
-
-    // Build a set of road AABBs for collision tests (update after building)
-    const roadBoxes = [];
-    roads.forEach(r => {
-      const box = new THREE.Box3().setFromObject(r.mesh);
-      roadBoxes.push(box);
-    });
-
-    // ---------- Player car (low-poly) ----------
+    // VEHÍCULO DEL JUGADOR
     const car = new THREE.Group();
-    const bodyMat = new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.4, roughness:0.6});
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), bodyMat); body.position.y = 0.7; car.add(body);
-    const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,10);
-    const wheelMat = new THREE.MeshStandardMaterial({color:0x0b0b0b});
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555}));
+    body.position.y = 0.7; car.add(body);
+    const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+    const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
     for(let i=0;i<4;i++){
-      const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2; w.position.y = 0.25;
+      const w = new THREE.Mesh(wheelGeo, wheelMat);
+      w.rotation.z = Math.PI/2; w.position.y = 0.25;
       w.position.x = (i%2===0)?-1:1; w.position.z = (i<2)?1.2:-1.2; car.add(w);
     }
-    car.position.set(0,0.01,0); scene.add(car);
+    scene.add(car);
 
-    // ---------- Simple second car (bot) ----------
+    // ENEMIGO DEMO
     const bot = car.clone();
-    bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff, metalness:0.3});
-    bot.position.set(30,0.01,-8);
-    scene.add(bot);
+    bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff});
+    bot.position.set(8,0,-6); scene.add(bot);
 
-    // ---------- Camera follow ----------
-    const camOffset = new THREE.Vector3(0,5,10);
-
-    // ---------- Bullet management ----------
+    const state = {forward:0, turn:0, speed:0, maxSpeed:0.8, rotSpeed:0.04};
+    const camOffset = new THREE.Vector3(0,4,10);
+    let lastTime = performance.now();
     const bullets = [];
+
     function spawnBullet(origin, dir){
       const g = new THREE.SphereGeometry(0.12,8,8);
-      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77});
       const b = new THREE.Mesh(g,m);
-      b.position.copy(origin);
-      b.userData.dir = dir.clone();
-      b.userData.speed = 2.8;
-      scene.add(b);
-      bullets.push(b);
+      b.position.copy(origin); b.userData.dir = dir.clone(); b.userData.speed = 2.2;
+      scene.add(b); bullets.push(b);
     }
 
-    // ---------- Movement / physics state ----------
-    const state = {forward:0, turn:0, speed:0, maxSpeed:1.0, rotSpeed:0.035};
-    let lastTime = performance.now();
-
-    // ---------- Joystick handling (robust for mobile) ----------
+    // JOYSTICK
     const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-    let touchId = null, baseX=0, baseY=0;
-    let stick = {x:0,y:0};
-    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+    let stick={x:0,y:0}, touchId=null, baseX=0, baseY=0;
+    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform=`translate(0,0)`; }
+    joy.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touchId=t.identifier;baseX=t.clientX;baseY=t.clientY;},{passive:true});
+    joy.addEventListener('touchmove',e=>{
+      for(const t of e.changedTouches){if(t.identifier===touchId){
+        const dx=t.clientX-baseX, dy=t.clientY-baseY, max=36;
+        stick.x=Math.max(-1,Math.min(1,dx/max)); stick.y=Math.max(-1,Math.min(1,-dy/max));
+        stickEl.style.transform=`translate(${stick.x*28}px,${-stick.y*28}px)`;
+      }}},{passive:true});
+    joy.addEventListener('touchend',()=>{resetStick();},{passive:true});
 
-    // use pointer events (works for mobile & desktop)
-    let dragging = false;
-    joy.addEventListener('pointerdown', (e) => {
-      joy.setPointerCapture(e.pointerId);
-      dragging = true;
-      baseX = e.clientX; baseY = e.clientY;
-    }, {passive:false});
-    joy.addEventListener('pointermove', (e) => {
-      if(!dragging) return;
-      const dx = e.clientX - baseX;
-      const dy = e.clientY - baseY;
-      const max = 40;
-      const nx = Math.max(-1, Math.min(1, dx/max));
-      const ny = Math.max(-1, Math.min(1, dy/max));
-      stick.x = nx; stick.y = -ny;
-      stickEl.style.transform = `translate(${nx*30}px,${-ny*30}px)`;
-    }, {passive:false});
-    joy.addEventListener('pointerup', (e) => { joy.releasePointerCapture && joy.releasePointerCapture(e.pointerId); dragging=false; resetStick(); }, {passive:false});
-    // Also support touchstart/move/end fallback
-    joy.addEventListener('touchstart', (e)=>{ e.preventDefault(); const t=e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-    joy.addEventListener('touchmove', (e)=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=40; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*30}px,${-ny*30}px)`; } } }, {passive:false});
-    joy.addEventListener('touchend', (e)=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
-
-    // ---------- Fire button ----------
-    const fireBtn = document.getElementById('btnFire');
-    fireBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); doFire(); }, {passive:false});
-    function doFire(){
-      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+    document.getElementById('btnFire').addEventListener('click',()=>{
+      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
       const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
       spawnBullet(origin, dir);
-    }
+    });
 
-    // ---------- Simple collision / keep-on-road logic ----------
-    // We'll prevent the car from going too far from any road box center:
-    function isOnRoad(pos){
-      for(const rb of roadBoxes){
-        if(rb.containsPoint(pos)) return true;
-      }
-      return false;
-    }
-    // fallback to keep car close to nearest road if off-road:
-    function clampToRoad(pos){
-      // find closest road box center
-      let best = null, bestDist = Infinity;
-      for(const rb of roadBoxes){
-        const center = rb.getCenter(new THREE.Vector3());
-        const d = center.distanceTo(pos);
-        if(d < bestDist){ bestDist = d; best = center; }
-      }
-      if(best){
-        // move car slightly toward best center
-        pos.lerp(best, 0.25);
-      }
-      return pos;
-    }
-
-    // ---------- Resize ----------
-    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
-
-    // ---------- Main loop ----------
+    // LOOP PRINCIPAL
     function animate(){
-      const now = performance.now();
-      const dt = Math.min(50, now - lastTime) / 16.666;
-      lastTime = now;
+      const now=performance.now(), dt=Math.min(50,now-lastTime)/16.666; lastTime=now;
+      state.forward=stick.y; state.turn=stick.x;
+      if(state.forward>0.05) state.speed+=0.02*state.forward*dt;
+      else if(state.forward<-0.05) state.speed-=0.03*(-state.forward)*dt;
+      else state.speed*=0.98;
+      state.speed=Math.max(-state.maxSpeed,Math.min(state.maxSpeed,state.speed));
+      car.rotation.y += -state.turn*state.rotSpeed*(0.9+Math.abs(state.speed))*dt;
+      const forward=new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+      car.position.add(forward.multiplyScalar(state.speed*dt*0.8));
+      const camTarget=car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+      camera.position.lerp(camTarget,0.12); camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.5,0)));
 
-      // update state from stick
-      state.forward = Math.max(-1, Math.min(1, stick.y));
-      state.turn = Math.max(-1, Math.min(1, stick.x));
-
-      // accelerate/brake
-      if(state.forward > 0.06) state.speed += 0.025 * state.forward * dt;
-      else if(state.forward < -0.06) state.speed -= 0.035 * (-state.forward) * dt;
-      else state.speed *= 0.96;
-
-      state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
-
-      // rotate
-      car.rotation.y += -state.turn * state.rotSpeed * (0.8 + Math.abs(state.speed)) * dt;
-
-      // move
-      const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-      const moveDelta = forwardVec.clone().multiplyScalar(state.speed * dt * 0.9);
-      const nextPos = car.position.clone().add(moveDelta);
-
-      // check road membership; if off-road, gently clamp back
-      if(!isOnRoad(nextPos)){
-        // gentle clamp toward nearest road to avoid getting stuck
-        const clamped = clampToRoad(nextPos);
-        car.position.lerp(clamped, 0.35);
-        // reduce speed
-        state.speed *= 0.82;
-      } else {
-        car.position.copy(nextPos);
-      }
-
-      // camera follow
-      const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
-      camera.position.lerp(desired, 0.14);
-      camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.5,0)));
-
-      // simple bot motion (patrol)
-      bot.position.x += Math.sin(now*0.001)*0.005 * 10 * dt * Math.sign(Math.cos(now*0.001));
-      bot.position.z += Math.cos(now*0.001)*0.005 * 10 * dt;
-      bot.lookAt(car.position);
-
-      // bullets update
-      for(let i=bullets.length-1;i>=0;i--){
-        const b = bullets[i];
-        b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
-        if(b.position.distanceTo(bot.position) < 1.4){
-          // hit
-          scene.remove(b); bullets.splice(i,1);
-          const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522, color:0x111111}));
-          hit.position.copy(bot.position);
-          scene.add(hit);
-          setTimeout(()=> scene.remove(hit), 600);
-          continue;
-        }
-        if(b.position.length() > 2000){ scene.remove(b); bullets.splice(i,1); }
-      }
-
-      renderer.render(scene, camera);
+      renderer.render(scene,camera);
       requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    animate();
 
-    // ---------- Small UI actions (menus / viewer) ----------
-    document.getElementById('btnMenu').addEventListener('click', ()=> alert('Menú demo: Ajustes, Perfil, Monetización (placeholders)'));
-    document.getElementById('btnStart').addEventListener('click', ()=> alert('Iniciar demo: modo de prueba (sin enemigos)'));
+    // MAPA REAL: CALLES DE JARDINES DE MORELOS
+    (async function loadOSM(){
+      const NOMINATIM_QUERY='Jardines de Morelos, Ecatepec de Morelos, México';
+      const OVERPASS_URL='https://overpass-api.de/api/interpreter';
+      function lonLatToMeters(lon,lat,refLat){
+        const latMeters=lat*111320;
+        const lonMeters=lon*(111320*Math.cos(refLat*Math.PI/180));
+        return [lonMeters,latMeters];
+      }
+      try{
+        const nomData=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(NOMINATIM_QUERY)}&limit=1`);
+        const nom=await nomData.json(); if(!nom.length) return;
+        const [south,north,west,east]=nom[0].boundingbox.map(parseFloat);
+        const q=`[out:json][timeout:25];(way["highway"](${south},${west},${north},${east}););(._;>;);out body;`;
+        const res=await fetch(OVERPASS_URL,{method:'POST',body:q,headers:{'Content-Type':'text/plain'}});
+        const json=await res.json();
+        const nodes=new Map(); const ways=[];
+        for(const el of json.elements){if(el.type==='node')nodes.set(el.id,[el.lon,el.lat]);}
+        for(const el of json.elements){if(el.type==='way'){const pts=(el.nodes||[]).map(id=>nodes.get(id)).filter(Boolean);if(pts.length>1)ways.push(pts);}}
+        const refLat=(north+south)/2, centerLon=(west+east)/2, centerLat=(north+south)/2;
+        const [cx,cy]=lonLatToMeters(centerLon,centerLat,refLat);
+        const roads=new THREE.Group();
+        const mat=new THREE.LineBasicMaterial({color:0x33aaff,transparent:true,opacity:0.9});
+        for(const pts of ways){
+          const pos=new Float32Array(pts.length*3);
+          pts.forEach((p,i)=>{
+            const [mx,my]=lonLatToMeters(p[0],p[1],refLat);
+            pos[i*3]=mx-cx; pos[i*3+1]=0.02; pos[i*3+2]=-(my-cy);
+          });
+          const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+          const line=new THREE.Line(geo,mat); roads.add(line);
+        }
+        roads.scale.set(0.6,0.6,0.6);
+        scene.add(roads);
+        console.log('Calles cargadas:',ways.length);
+      }catch(e){console.error(e);}
+    })();
 
-    // viewer open on brand click
-    const viewer = document.getElementById('viewer'), viewerImg = document.getElementById('viewerImg'), closeViewer = document.getElementById('closeViewer');
-    document.getElementById('brandBtn').addEventListener('click', ()=> {
-      viewerImg.src = 'https://picsum.photos/900/420?random=' + Math.floor(Math.random()*1000);
-      viewer.style.display='flex'; viewer.setAttribute('aria-hidden','false');
+    window.addEventListener('resize',()=>{
+      renderer.setSize(window.innerWidth,window.innerHeight);
+      camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
     });
-    closeViewer.addEventListener('click', ()=> { viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); });
 
-    // ---------- Accessibility / keyboard (for desktop testing) ----------
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'w' || e.key === 'ArrowUp') stick.y = 1;
-      if(e.key === 's' || e.key === 'ArrowDown') stick.y = -1;
-      if(e.key === 'a' || e.key === 'ArrowLeft') stick.x = -1;
-      if(e.key === 'd' || e.key === 'ArrowRight') stick.x = 1;
-      if(e.key === ' ') doFire();
-      if(e.key === 'Escape') viewer.style.display='none';
-    });
-    document.addEventListener('keyup',(e)=>{ if(['w','s','a','d','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){ resetStick(); } });
-
-    // ---------- Minor perf hints ----------
-    // renderer.setPixelRatio clamped earlier; keep geometry counts low.
-    // If deseas texturas reales, puedo integrar versiones con mipmaps / CDN pero impactará mobile.
-
-    // ---------- End IIFE ----------
+    // UI
+    document.getElementById('btnMenu').addEventListener('click',()=>alert('Menú en desarrollo'));
+    document.getElementById('btnStart').addEventListener('click',()=>alert('Iniciando partida...'));
+    const viewer=document.getElementById('viewer');
+    document.querySelector('.logo').addEventListener('click',()=>{viewer.style.display='flex';});
+    document.getElementById('closeViewer').addEventListener('click',()=>viewer.style.display='none');
   })();
   </script>
 </body>
