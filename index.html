@@ -3,480 +3,573 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
-<title>Car-Combat Prototype — SinFiltro Labs</title>
-<meta name="description" content="Prototipo juego combate de carros - Three.js + Cannon-es. Controles táctiles, IA enemiga, disparos." />
+<title>SinFiltro — Car Arena (Prototipo)</title>
+<meta name="description" content="Prototipo de arena de combate de vehículos. Controles táctiles, menú, selector de vehículos, HUD, IA básica." />
 <style>
-  html,body{height:100%;margin:0;background:#0b0f16;overflow:hidden;font-family:Inter,Arial,Helvetica,sans-serif}
-  #container{width:100%;height:100%;touch-action:none;position:relative}
+  :root{
+    --bg-1:#05060a; --bg-2:#071226;
+    --accent-1:#00d1ff; --accent-2:#8a6eff; --muted:#9fb0bf; --glass:rgba(255,255,255,0.04);
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));font-family:Inter,system-ui,Arial;color:#eaf7ff;overflow:hidden;-webkit-font-smoothing:antialiased}
+  #app{position:relative;width:100%;height:100%;touch-action:none}
+  canvas{display:block}
+
+  /* Top UI */
+  header{position:absolute;left:12px;right:12px;top:12px;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .logo{font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;color:transparent}
+  .top-buttons{display:flex;gap:8px}
+  .icon-btn{background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
+
+  /* Panels */
+  .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:80;display:none}
+  .panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:90;width:92%;max-width:760px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.008));border-radius:14px;padding:14px;box-shadow:0 30px 80px rgba(0,0,0,0.7);display:none}
+  .panel.show,.panel-overlay.show{display:block}
+  .panel h2{margin:0 0 8px 0}
+  .panel .row{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* Vehicle cards */
+  .vehicle-card{flex:1;min-width:140px;background:rgba(255,255,255,0.02);border-radius:10px;padding:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .vehicle-card.selected{outline:3px solid rgba(0,209,255,0.12);box-shadow:0 12px 40px rgba(0,0,0,0.6)}
+
+  /* Start screen */
+  #startScreen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:70}
+  #startBox{width:88%;max-width:420px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:18px;border-radius:14px;text-align:center}
+  #startBox h1{margin:0 0 6px 0;font-size:20px}
+  #startBox p{color:var(--muted);font-size:13px}
+  #startBtn{margin-top:12px;padding:12px 18px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#001;font-weight:800;font-size:16px;cursor:pointer}
+
   /* HUD */
-  #hud{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;z-index:20}
-  .label{background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);padding:8px 12px;border-radius:10px;color:#eaf7ff;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.6)}
-  #score{min-width:120px;text-align:center}
-  /* Buttons bottom */
-  #controls{position:absolute;left:0;right:0;bottom:12px;display:flex;justify-content:space-between;padding:0 12px;z-index:30;pointer-events:none}
-  .left-controls,.right-controls{display:flex;gap:12px;pointer-events:auto}
-  .btn{width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,#00d1ff,#8a6eff);display:flex;align-items:center;justify-content:center;color:#001;font-weight:800;font-size:20px;box-shadow:0 12px 30px rgba(0,0,0,0.6);touch-action:manipulation}
-  .small-btn{width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:#eaf7ff;font-weight:700}
-  #fireBtn{background:linear-gradient(135deg,#ff6aa3,#ffb86b)}
-  /* Center bottom action (big) */
-  #centerAction{position:fixed;left:50%;transform:translateX(-50%);bottom:86px;z-index:29;pointer-events:auto}
-  /* Simple overlays and messages */
-  #message{position:absolute;left:50%;transform:translateX(-50%);top:60px;background:linear-gradient(90deg,#001,rgba(255,255,255,0.02));padding:8px 14px;border-radius:999px;color:#eaf7ff;font-weight:700;z-index:25}
-  /* Simple start panel */
-  #startPanel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:20px;border-radius:16px;color:#eaf7ff;z-index:50;box-shadow:0 30px 80px rgba(0,0,0,0.7);text-align:center}
-  #startPanel button{margin-top:12px;padding:12px 18px;border-radius:12px;border:none;background:linear-gradient(90deg,#00d1ff,#8a6eff);color:#001;font-weight:800;font-size:16px}
-  /* Mobile friendly tweaks */
-  @media(max-width:420px){ .btn{width:58px;height:58px;font-size:18px} .small-btn{width:44px;height:44px} #startPanel{width:86%;} }
+  #hud{position:absolute;left:12px;bottom:86px;z-index:60;display:flex;gap:10px;align-items:center}
+  .hud-item{background:rgba(0,0,0,0.45);padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+  #centerAction{position:absolute;left:50%;transform:translateX(-50%);bottom:92px;z-index:60}
+
+  /* Controls area */
+  #controls{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;z-index:60;pointer-events:none}
+  .controls-left,.controls-right{display:flex;gap:12px;pointer-events:auto}
+  .btn{width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:800;font-size:20px;box-shadow:0 12px 40px rgba(0,0,0,0.6);touch-action:manipulation}
+  .small{width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .joystick{width:110px;height:110px;border-radius:999px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;padding:10px}
+  .mini{font-size:12px;color:var(--muted)}
+
+  /* Message */
+  #msg{position:absolute;right:12px;top:86px;z-index:60;background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(255,255,255,0.01));padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  /* Responsive tweaks */
+  @media(max-width:420px){ .btn{width:56px;height:56px;font-size:18px} .joystick{width:94px;height:94px} .vehicle-card{min-width:120px} #startBox{width:92%} }
 </style>
 </head>
 <body>
-  <div id="container"></div>
+  <div id="app">
+    <!-- Three.js canvas will be appended here -->
+    <header>
+      <div style="display:flex;gap:12px;align-items:center">
+        <button id="menuBtn" class="icon-btn">☰</button>
+        <button id="homeBtn" class="logo">SinFiltro</button>
+      </div>
+      <div class="top-buttons">
+        <button id="vehicleBtn" class="icon-btn">🚗</button>
+        <button id="settingsBtn" class="icon-btn">⚙️</button>
+      </div>
+    </header>
 
-  <!-- HUD -->
-  <div id="hud">
-    <div class="label" id="healthLabel">Vida: 100</div>
-    <div class="label" id="score">Enemigos: 0</div>
-  </div>
-
-  <!-- Message -->
-  <div id="message">Prototipo: Combate de carros — SinFiltro</div>
-
-  <!-- Controls -->
-  <div id="controls">
-    <div class="left-controls">
-      <div id="leftBtn" class="btn">◀</div>
-      <div id="rightBtn" class="btn">▶</div>
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <div id="startBox">
+        <h1>SinFiltro — Car Arena</h1>
+        <p>Prototipo: conduce, dispara y enfréntate a bots. Controles tactiles y teclado.</p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+          <button id="startBtn">Iniciar partida</button>
+        </div>
+        <div style="margin-top:12px"><small class="mini">Selecciona vehículo antes de iniciar (botón 🚗)</small></div>
+      </div>
     </div>
+
+    <!-- Panel overlay -->
+    <div id="panelOverlay" class="panel-overlay"></div>
+
+    <!-- Vehicle selection panel -->
+    <div id="vehiclePanel" class="panel" role="dialog" aria-hidden="true">
+      <h2>Elige tu vehículo</h2>
+      <div class="row" id="vehicleList"></div>
+      <div style="display:flex;justify-content:center;margin-top:12px">
+        <button id="chooseVehicleBtn" class="icon-btn">Usar seleccionado</button>
+      </div>
+    </div>
+
+    <!-- Settings panel (demo) -->
+    <div id="settingsPanel" class="panel" role="dialog" aria-hidden="true">
+      <h2>Ajustes (demo)</h2>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <label><input type="checkbox" id="toggleParticles" checked> Efectos (ligeros)</label>
+        <label><input type="checkbox" id="toggleShadows" checked> Sombras</label>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:12px">
+        <button id="closeSettings" class="icon-btn">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-item" id="health">Vida: 100</div>
+      <div class="hud-item" id="ammo">Mun: 10</div>
+      <div class="hud-item" id="kills">Kills: 0</div>
+    </div>
+
+    <div id="msg">Puntos: 0</div>
+
+    <!-- Controls -->
+    <div id="controls">
+      <div class="controls-left">
+        <div id="leftBtn" class="btn">◀</div>
+        <div id="rightBtn" class="btn">▶</div>
+      </div>
+
+      <div class="controls-right">
+        <div id="brakeBtn" class="small">⭘</div>
+        <div id="fireBtn" class="btn">⚡</div>
+      </div>
+    </div>
+
     <div id="centerAction">
       <div id="accelBtn" class="btn">▲</div>
     </div>
-    <div class="right-controls">
-      <div id="brakeBtn" class="small-btn">▼</div>
-      <div id="fireBtn" class="btn">⚡</div>
-    </div>
-  </div>
 
-  <!-- Start panel -->
-  <div id="startPanel">
-    <h2>SinFiltro — Arena (Demo)</h2>
-    <p style="color:#9fb0bf">Controles táctiles: mover, acelerar, frenar y disparar. Compatible con escritorio.</p>
-    <button id="startBtn">Iniciar</button>
+    <!-- Viewer - overlay for full vehicle view / pause -->
+    <div id="viewerPanel" class="panel" role="dialog" aria-hidden="true" style="width:88%;max-width:420px">
+      <h2>Vista del vehículo</h2>
+      <div id="viewerContent" style="height:160px;background:rgba(255,255,255,0.02);border-radius:8px;margin-top:8px"></div>
+      <div style="display:flex;justify-content:center;margin-top:12px">
+        <button id="closeViewerPanel" class="icon-btn">Cerrar</button>
+      </div>
+    </div>
+
   </div>
 
 <script type="module">
-/*
-  Prototipo: combate de carros
-  - Three.js render
-  - cannon-es para física
-  - controles táctiles y teclado
-  - proyectiles, colisiones, IA enemiga básica
+/* Single-file prototype: Three.js + cannon-es via CDN
+   Features:
+   - Menu & panels that open/close
+   - Vehicle selector (demo vehicles)
+   - Driving with simple physics (Cannon)
+   - Touch and keyboard controls
+   - Projectiles + basic enemy bots
+   - All buttons wired (no dead UI)
 */
 
-/* Imports (CDN modules) */
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js';
 import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.module.js';
 
-const container = document.getElementById('container');
-const startPanel = document.getElementById('startPanel');
+// ---------- DOM refs ----------
+const app = document.getElementById('app');
+const startScreen = document.getElementById('startScreen');
 const startBtn = document.getElementById('startBtn');
-const healthLabel = document.getElementById('healthLabel');
-const scoreLabel = document.getElementById('score');
-const message = document.getElementById('message');
+const menuBtn = document.getElementById('menuBtn');
+const vehicleBtn = document.getElementById('vehicleBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const panelOverlay = document.getElementById('panelOverlay');
+const vehiclePanel = document.getElementById('vehiclePanel');
+const settingsPanel = document.getElementById('settingsPanel');
+const vehicleList = document.getElementById('vehicleList');
+const chooseVehicleBtn = document.getElementById('chooseVehicleBtn');
+const closeSettings = document.getElementById('closeSettings');
+const toggleParticles = document.getElementById('toggleParticles');
+const toggleShadows = document.getElementById('toggleShadows');
+const viewerPanel = document.getElementById('viewerPanel');
+const viewerContent = document.getElementById('viewerContent');
+const closeViewerPanel = document.getElementById('closeViewerPanel');
 
-let scene, camera, renderer, world, clock;
+const leftBtn = document.getElementById('leftBtn');
+const rightBtn = document.getElementById('rightBtn');
+const accelBtn = document.getElementById('accelBtn');
+const brakeBtn = document.getElementById('brakeBtn');
+const fireBtn = document.getElementById('fireBtn');
+
+const healthEl = document.getElementById('health');
+const ammoEl = document.getElementById('ammo');
+const killsEl = document.getElementById('kills');
+const msgEl = document.getElementById('msg');
+
+// ---------- Global vars ----------
+let renderer, scene, camera, clock, controls;
+let world;
 let player = null;
 let enemies = [];
 let projectiles = [];
-let lastSpawn = 0;
-let enemyCount = 0;
+let vehicles = []; // available vehicles (demo)
+let selectedVehicleIndex = 0;
 let running = false;
+let lastEnemySpawn = 0;
+let score = 0;
 
-/* SETTINGS */
-const ARENA_SIZE = 80; // arena half-size
-const MAX_ENEMIES = 6;
+// Input
+const input = { left:false, right:false, accel:false, brake:false, fire:false };
 
-/* Init Three + Cannon */
-function initThreeCannon(){
-  // Scene
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x071226);
+// ---------- Init UI panels ----------
+function openPanel(panel){
+  panelOverlay.classList.add('show');
+  panel.classList.add('show');
+  panel.setAttribute('aria-hidden','false');
+}
+function closeAllPanels(){
+  panelOverlay.classList.remove('show');
+  document.querySelectorAll('.panel.show').forEach(p=>{ p.classList.remove('show'); p.setAttribute('aria-hidden','true'); });
+}
+panelOverlay.addEventListener('click', closeAllPanels);
+menuBtn.addEventListener('click', ()=> openPanel(settingsPanel));
+vehicleBtn.addEventListener('click', ()=> openPanel(vehiclePanel));
+settingsBtn.addEventListener('click', ()=> openPanel(settingsPanel));
+closeSettings.addEventListener('click', closeAllPanels);
+closeViewerPanel.addEventListener('click', closeAllPanels);
 
-  // Camera
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 500);
-  camera.position.set(0, 22, 28);
+// ---------- Demo vehicles definitions (simple parameter sets) ----------
+vehicles = [
+  { id:'classic', name:'Clásico', color:0x00d1ff, mass:120, topSpeed:14, accel:0.6 },
+  { id:'muscle', name:'Muscle', color:0xff6a6a, mass:150, topSpeed:12, accel:0.5 },
+  { id:'sport', name:'Sport', color:0x8a6eff, mass:100, topSpeed:18, accel:0.8 },
+];
 
+// Populate vehicle panel
+function renderVehicleList(){
+  vehicleList.innerHTML = '';
+  vehicles.forEach((v,i)=>{
+    const div = document.createElement('div');
+    div.className = 'vehicle-card' + (i===selectedVehicleIndex ? ' selected' : '');
+    div.innerHTML = `<strong>${v.name}</strong><div style="height:80px;margin-top:8px;background:linear-gradient(180deg,rgba(0,0,0,0.1),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;border-radius:8px">Vista</div><div style="margin-top:8px;font-size:12px;color:${i===selectedVehicleIndex?'#00d1ff':'var(--muted)'}">Vel ${v.topSpeed} • ${v.accel} accel</div>`;
+    div.addEventListener('click', ()=>{ selectedVehicleIndex = i; renderVehicleList(); showVehiclePreview(i); });
+    vehicleList.appendChild(div);
+  });
+}
+function showVehiclePreview(i){
+  viewerContent.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)"><strong>${vehicles[i].name} — preview</strong></div>`;
+  openPanel(viewerPanel);
+}
+chooseVehicleBtn.addEventListener('click', ()=>{ closeAllPanels(); });
+
+// ---------- Init Three + Cannon ----------
+function initEngine(){
   // Renderer
   renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  container.appendChild(renderer.domElement);
+  renderer.shadowMap.enabled = true;
+  document.getElementById('app').prepend(renderer.domElement);
 
-  // Light
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x111122, 0.6);
-  scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-  dir.position.set(5,10,7);
-  scene.add(dir);
+  // Scene & camera
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x06111a, 0.002);
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 500);
+  camera.position.set(0, 18, 28);
 
-  // Ground visual
-  const gGeom = new THREE.PlaneGeometry(ARENA_SIZE*2, ARENA_SIZE*2, 1,1);
-  const gMat = new THREE.MeshStandardMaterial({color:0x071026, metalness:0.1, roughness:0.9});
-  const ground = new THREE.Mesh(gGeom, gMat);
-  ground.rotation.x = -Math.PI/2;
+  // Lights
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x111122, 0.6); scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(8,20,10); dir.castShadow=true; scene.add(dir);
+
+  // Ground
+  const groundMat = new THREE.MeshStandardMaterial({color:0x071226, roughness:0.9});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(400,400), groundMat);
+  ground.rotation.x = -Math.PI/2; ground.receiveShadow = true;
   scene.add(ground);
 
-  // Simple arena boundary visuals
-  const wallMat = new THREE.MeshStandardMaterial({color:0x071226, metalness:0.2, roughness:0.8});
-  for(let i=0;i<4;i++){
-    const w = new THREE.Mesh(new THREE.BoxGeometry(ARENA_SIZE*2,4,1), wallMat);
-    if(i%2===0){ w.scale.set(1,1,1); w.position.set(0,2,(i===0? -ARENA_SIZE: ARENA_SIZE)); }
-    else { w.rotation.y = Math.PI/2; w.position.set((i===1? -ARENA_SIZE: ARENA_SIZE),2,0); }
-    scene.add(w);
+  // simple city blocks as obstacles
+  const boxMat = new THREE.MeshStandardMaterial({color:0x081824});
+  for(let i=-3;i<=3;i++){
+    for(let j=-3;j<=3;j++){
+      if(Math.random() < 0.25) continue;
+      const b = new THREE.Mesh(new THREE.BoxGeometry( (2+Math.random()*4), (2+Math.random()*6), (2+Math.random()*4) ), boxMat);
+      b.position.set(i*18 + (Math.random()*6-3), (b.geometry.parameters.height/2), j*18 + (Math.random()*6-3));
+      b.castShadow = true;
+      b.receiveShadow = true;
+      scene.add(b);
+    }
   }
 
-  // Cannon world
-  world = new CANNON.World({gravity: new CANNON.Vec3(0,-9.82,0)});
+  // Physics world
+  world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
   world.broadphase = new CANNON.SAPBroadphase(world);
   world.solver.iterations = 6;
-
-  // ground physics
-  const groundBody = new CANNON.Body({mass:0, shape: new CANNON.Plane(), material: new CANNON.Material()});
+  // ground plane
+  const groundBody = new CANNON.Body({ mass:0, shape: new CANNON.Plane() });
   groundBody.quaternion.setFromEuler(-Math.PI/2,0,0);
   world.addBody(groundBody);
 
   clock = new THREE.Clock();
   window.addEventListener('resize', onResize);
+
+  // minimal orbit controls for debugging on desktop (disabled on mobile by default)
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enabled = false;
 }
 
-/* Player creation */
-function createPlayer(){
-  // visual
-  const carGroup = new THREE.Group();
-  const bodyGeom = new THREE.BoxGeometry(2.2,0.9,4);
-  const bodyMat = new THREE.MeshStandardMaterial({color:0x00d1ff, metalness:0.4, roughness:0.3});
-  const bodyMesh = new THREE.Mesh(bodyGeom, bodyMat);
-  bodyMesh.position.y = 0.7;
-  carGroup.add(bodyMesh);
+// ---------- Player creation ----------
+function createPlayerVehicle(cfg){
+  // Visual
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.9,4), new THREE.MeshStandardMaterial({color:cfg.color, metalness:0.3, roughness:0.4}));
+  body.position.y = 0.7;
+  group.add(body);
+  // roof
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.5,1.8), new THREE.MeshStandardMaterial({color:0x001122}));
+  roof.position.set(0,1.05,-0.2);
+  group.add(roof);
 
-  // turret (visual)
-  const turret = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.3,1.2), new THREE.MeshStandardMaterial({color:0xffdd57}));
-  turret.position.set(0,1.05,0.6);
-  carGroup.add(turret);
+  scene.add(group);
 
-  scene.add(carGroup);
-
-  // physics body
+  // Physics
   const shape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2));
-  const body = new CANNON.Body({mass: 120, shape, position: new CANNON.Vec3(0,1,0), linearDamping:0.4, angularDamping:0.8});
-  world.addBody(body);
+  const bodyPhys = new CANNON.Body({ mass: cfg.mass, shape, position: new CANNON.Vec3(0,1,0), linearDamping:0.4, angularDamping:0.9 });
+  world.addBody(bodyPhys);
 
-  player = { mesh: carGroup, body, turret, health: 100, speed: 0, maxSpeed: 14 };
+  return { group, bodyPhys, cfg, health:100, _fireCooldown:0, kills:0 };
 }
 
-/* Enemy spawning */
-function spawnEnemy(){
-  if(enemies.length >= MAX_ENEMIES) return;
-  const i = Math.floor(Math.random()*poolModels.length);
-  const x = (Math.random()*2-1) * (ARENA_SIZE-8);
-  const z = (Math.random()*2-1) * (ARENA_SIZE-8);
-
-  // visual
-  const mat = new THREE.MeshStandardMaterial({color:0xff6a6a, metalness:0.3, roughness:0.5});
-  const m = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.9,4), mat);
-  m.position.set(x,0.7,z);
-  scene.add(m);
-
-  // physics
-  const shape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2));
-  const body = new CANNON.Body({mass:100, shape, position: new CANNON.Vec3(x,1,z), linearDamping:0.6});
-  world.addBody(body);
-
-  const enemy = { mesh:m, body, health: 60, cooldown: 0 };
-  enemies.push(enemy);
-  enemyCount++;
-  scoreLabel.textContent = `Enemigos: ${enemyCount}`;
-}
-
-/* Basic poolModels placeholder (unused but left for extension) */
-const poolModels = [0,1,2,3,4];
-
-/* Projectile creation */
-function shootProjectile(fromPos, dir, speed=40, owner='player'){
-  // visual
-  const sph = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,8), new THREE.MeshStandardMaterial({color: owner==='player' ? 0xffdd57 : 0xff8a8a}));
-  sph.position.copy(fromPos);
-  scene.add(sph);
-
-  // physics
-  const shape = new CANNON.Sphere(0.18);
-  const body = new CANNON.Body({mass:1, shape, position: new CANNON.Vec3(fromPos.x,fromPos.y,fromPos.z), linearDamping:0});
-  body.collisionFilterGroup = 1;
-  body.collisionFilterMask = 1;
-  body.velocity.set(dir.x*speed, dir.y*speed, dir.z*speed);
-  world.addBody(body);
-
-  projectiles.push({mesh:sph, body, owner, ttl: 4});
-}
-
-/* Input handling */
-const input = { left:false, right:false, accel:false, brake:false, fire:false };
-function bindControls(){
-  // Touch buttons
-  const leftBtn = document.getElementById('leftBtn');
-  const rightBtn = document.getElementById('rightBtn');
-  const accelBtn = document.getElementById('accelBtn');
-  const brakeBtn = document.getElementById('brakeBtn');
-  const fireBtn = document.getElementById('fireBtn');
-
+// ---------- Input binding ----------
+function bindUI(){
   function addTouch(el, prop){
-    el.addEventListener('touchstart', e=>{ e.preventDefault(); input[prop]=true; }, {passive:false});
-    el.addEventListener('touchend', e=>{ e.preventDefault(); input[prop]=false; }, {passive:false});
+    el.addEventListener('touchstart', e=>{ e.preventDefault(); input[prop] = true; }, {passive:false});
+    el.addEventListener('touchend', e=>{ e.preventDefault(); input[prop] = false; }, {passive:false});
     el.addEventListener('mousedown', e=>{ input[prop]=true; });
     el.addEventListener('mouseup', e=>{ input[prop]=false; });
     el.addEventListener('mouseleave', e=>{ input[prop]=false; });
   }
-  addTouch(leftBtn, 'left');
-  addTouch(rightBtn, 'right');
-  addTouch(accelBtn, 'accel');
-  addTouch(brakeBtn, 'brake');
+  addTouch(leftBtn, 'left'); addTouch(rightBtn, 'right');
+  addTouch(accelBtn, 'accel'); addTouch(brakeBtn, 'brake');
   addTouch(fireBtn, 'fire');
 
-  // Keyboard for desktop
   window.addEventListener('keydown', e=>{
-    if(e.key === 'a' || e.key === 'ArrowLeft') input.left = true;
-    if(e.key === 'd' || e.key === 'ArrowRight') input.right = true;
-    if(e.key === 'w' || e.key === 'ArrowUp') input.accel = true;
-    if(e.key === 's' || e.key === 'ArrowDown') input.brake = true;
-    if(e.key === ' ') input.fire = true;
+    if(e.key==='a' || e.key==='ArrowLeft') input.left=true;
+    if(e.key==='d' || e.key==='ArrowRight') input.right=true;
+    if(e.key==='w' || e.key==='ArrowUp') input.accel=true;
+    if(e.key==='s' || e.key==='ArrowDown') input.brake=true;
+    if(e.key===' ' ) input.fire=true;
   });
   window.addEventListener('keyup', e=>{
-    if(e.key === 'a' || e.key === 'ArrowLeft') input.left = false;
-    if(e.key === 'd' || e.key === 'ArrowRight') input.right = false;
-    if(e.key === 'w' || e.key === 'ArrowUp') input.accel = false;
-    if(e.key === 's' || e.key === 'ArrowDown') input.brake = false;
-    if(e.key === ' ') input.fire = false;
+    if(e.key==='a' || e.key==='ArrowLeft') input.left=false;
+    if(e.key==='d' || e.key==='ArrowRight') input.right=false;
+    if(e.key==='w' || e.key==='ArrowUp') input.accel=false;
+    if(e.key==='s' || e.key==='ArrowDown') input.brake=false;
+    if(e.key===' ' ) input.fire=false;
   });
 }
 
-/* Simple AI: seek player and shoot sometimes */
-function updateEnemies(dt){
-  enemies.forEach((en, idx)=>{
-    if(!player) return;
-    en.cooldown -= dt;
-    // vector to player
-    const target = new CANNON.Vec3(player.body.position.x, 0, player.body.position.z);
-    const toPlayer = target.vsub(en.body.position);
-    const dist = toPlayer.length();
-    // normalize
-    const dir = toPlayer.scale(1/dist || 0);
+// ---------- Projectiles ----------
+function spawnProjectile(posVec3, dirVec3, owner='player'){
+  // visual
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,8), new THREE.MeshStandardMaterial({color: owner==='player' ? 0xffdd57 : 0xff6a6a}));
+  mesh.position.copy(posVec3);
+  scene.add(mesh);
+  // phys
+  const shape = new CANNON.Sphere(0.18);
+  const body = new CANNON.Body({ mass:0.6, shape });
+  body.position.set(posVec3.x, posVec3.y, posVec3.z);
+  body.velocity.set(dirVec3.x*40, dirVec3.y*40, dirVec3.z*40);
+  world.addBody(body);
 
-    // apply force towards player (simple)
-    const speed = 6;
-    en.body.velocity.x = dir.x * speed;
-    en.body.velocity.z = dir.z * speed;
-
-    // occasionally shoot when in range
-    if(dist < 25 && en.cooldown <= 0){
-      en.cooldown = 1.2 + Math.random()*1.2;
-      const pos = new THREE.Vector3(en.body.position.x, en.body.position.y + 0.6, en.body.position.z);
-      const dir3 = new THREE.Vector3(dir.x, 0, dir.z);
-      shootProjectile(pos, dir3, 28, 'enemy');
-    }
-
-    // if health <= 0, remove
-    if(en.health <= 0){
-      // explosion effect (simple)
-      scene.remove(en.mesh);
-      world.removeBody(en.body);
-      enemies.splice(idx,1);
-      enemyCount--;
-      scoreLabel.textContent = `Enemigos: ${Math.max(enemyCount,0)}`;
-    }
-  });
+  projectiles.push({mesh, body, owner, ttl:4});
 }
 
-/* Collision handling: projectiles hitting cars */
-function handleCollisions(){
-  // naive check: iterate projectiles vs enemies and player
-  projectiles.forEach((p, pi)=>{
-    // TTL and bounds check
-    p.ttl -= clock.getDelta();
-    if(p.ttl <= 0){
-      scene.remove(p.mesh);
-      world.removeBody(p.body);
-      projectiles.splice(pi,1);
-      return;
-    }
-    // keep mesh synced
-    p.mesh.position.copy(p.body.position);
-
-    // player hit by enemy projectile
-    if(p.owner === 'enemy' && player){
-      const d = p.body.position.distanceTo(player.body.position);
-      if(d < 2.2){
-        // damage
-        player.health -= 8;
-        player.body.velocity.scale(0.9, player.body.velocity);
-        updateHealthUI();
-        // remove projectile
-        scene.remove(p.mesh);
-        world.removeBody(p.body);
-        projectiles.splice(pi,1);
-        // check player death
-        if(player.health <= 0){
-          gameOver();
-        }
-        return;
-      }
-    }
-
-    // enemy hit by player projectile
-    if(p.owner === 'player'){
-      enemies.forEach((en, ei)=>{
-        const d = p.body.position.distanceTo(en.body.position);
-        if(d < 2.2){
-          en.health -= 18;
-          // recoil
-          en.body.applyImpulse(new CANNON.Vec3((p.body.velocity.x||0)*0.4,0,(p.body.velocity.z||0)*0.4), en.body.position);
-          // remove projectile
-          scene.remove(p.mesh);
-          world.removeBody(p.body);
-          projectiles.splice(pi,1);
-          // maybe spawn small reward
-        }
-      });
-    }
-  });
+// ---------- Enemies (bots) ----------
+function spawnEnemyBot(){
+  const x = (Math.random()*2-1) * 50;
+  const z = (Math.random()*2-1) * 50;
+  const mat = new THREE.MeshStandardMaterial({color:0xff6a6a});
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.9,4), mat);
+  mesh.position.set(x,0.7,z);
+  scene.add(mesh);
+  const shape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2));
+  const body = new CANNON.Body({ mass:100, shape, position: new CANNON.Vec3(x,1,z), linearDamping:0.6 });
+  world.addBody(body);
+  enemies.push({mesh, body, health:60, cooldown: Math.random()*2 });
 }
 
-/* Game step: physics + render */
-function animate(){
-  if(!running) return;
-  const dt = Math.min(0.03, clock.getDelta());
+// ---------- Collision & update loop ----------
+function update(dt){
+  if(!player) return;
+  // Player controls -> apply forces
+  const p = player;
+  const forward = new CANNON.Vec3(0,0,-1);
+  const q = p.bodyPhys.quaternion;
+  const worldF = q.vmult(forward);
 
-  // Player controls
-  if(player){
-    // rotation
-    const turnSpeed = 2.8;
-    if(input.left) player.body.angularVelocity.y = 1.4;
-    if(input.right) player.body.angularVelocity.y = -1.4;
-    if(!input.left && !input.right) player.body.angularVelocity.y = 0;
+  // steering: apply small angular velocity based on left/right
+  if(input.left) p.bodyPhys.angularVelocity.set(0, 1.5, 0);
+  else if(input.right) p.bodyPhys.angularVelocity.set(0, -1.5, 0);
+  else p.bodyPhys.angularVelocity.set(0, 0, 0);
 
-    // forward/back
-    const forward = new CANNON.Vec3(0,0,-1);
-    const quat = player.body.quaternion;
-    const worldForward = quat.vmult(forward);
-
-    if(input.accel){
-      // apply forward impulse
-      player.body.velocity.x += worldForward.x * 0.6;
-      player.body.velocity.z += worldForward.z * 0.6;
-      // clamp speed
-      const vx = player.body.velocity.x, vz = player.body.velocity.z;
-      const sp = Math.sqrt(vx*vx + vz*vz);
-      const max = player.maxSpeed;
-      if(sp > max){
-        player.body.velocity.scale(max/sp, player.body.velocity);
-      }
-    }
-    if(input.brake){
-      player.body.velocity.scale(0.88, player.body.velocity);
-    }
-    // fire (with cooldown)
-    if(input.fire){
-      if(!player._fireCooldown || player._fireCooldown <= 0){
-        player._fireCooldown = 0.45;
-        const pos = new THREE.Vector3(player.body.position.x, player.body.position.y + 0.6, player.body.position.z);
-        // compute forward
-        const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(new THREE.Quaternion(player.body.quaternion.x, player.body.quaternion.y, player.body.quaternion.z, player.body.quaternion.w));
-        shootProjectile(pos, forwardVec, 45, 'player');
-      }
-    }
-    if(player._fireCooldown) player._fireCooldown -= dt;
-
-    // sync mesh with physics
-    player.mesh.position.copy(player.body.position);
-    player.mesh.quaternion.copy(player.body.quaternion);
-
-    // camera follow (smooth)
-    const camTarget = new THREE.Vector3(player.body.position.x, player.body.position.y, player.body.position.z);
-    const desiredCamPos = camTarget.clone().add(new THREE.Vector3(0, 10, 18).applyQuaternion(player.mesh.quaternion));
-    camera.position.lerp(desiredCamPos, 0.12);
-    camera.lookAt(camTarget);
+  if(input.accel){
+    p.bodyPhys.velocity.x += worldF.x * p.cfg.accel;
+    p.bodyPhys.velocity.z += worldF.z * p.cfg.accel;
+    // clamp
+    const vx = p.bodyPhys.velocity.x, vz = p.bodyPhys.velocity.z;
+    const sp = Math.sqrt(vx*vx + vz*vz);
+    if(sp > p.cfg.topSpeed) p.bodyPhys.velocity.scale(p.cfg.topSpeed/sp, p.bodyPhys.velocity);
+  }
+  if(input.brake){
+    p.bodyPhys.velocity.scale(0.9, p.bodyPhys.velocity);
   }
 
-  // update physics
-  world.fixedStep();
+  // firing
+  if(input.fire && (!p._fireCooldown || p._fireCooldown <= 0 )){
+    p._fireCooldown = 0.45;
+    const pos = new THREE.Vector3(p.bodyPhys.position.x, p.bodyPhys.position.y+0.6, p.bodyPhys.position.z);
+    const fw = new THREE.Vector3(0,0,-1);
+    const quat = new THREE.Quaternion(p.bodyPhys.quaternion.x, p.bodyPhys.quaternion.y, p.bodyPhys.quaternion.z, p.bodyPhys.quaternion.w);
+    fw.applyQuaternion(quat);
+    spawnProjectile(pos, fw, 'player');
+    // reduce ammo (demo)
+    p._ammo = Math.max(0, (p._ammo||10)-1);
+    ammoEl.textContent = `Mun: ${p._ammo}`;
+  }
+  if(p._fireCooldown) p._fireCooldown -= dt;
 
-  // update enemies simple AI and sync visuals
-  updateEnemies(dt);
-  enemies.forEach(e => {
+  // sync player visual to physics
+  p.group.position.copy(p.bodyPhys.position);
+  p.group.quaternion.copy(p.bodyPhys.quaternion);
+
+  // camera follow
+  const target = new THREE.Vector3(p.bodyPhys.position.x, p.bodyPhys.position.y, p.bodyPhys.position.z);
+  const desiredPos = target.clone().add(new THREE.Vector3(0, 12, 22).applyQuaternion(p.group.quaternion));
+  camera.position.lerp(desiredPos, 0.12);
+  camera.lookAt(target);
+
+  // enemies logic
+  enemies.forEach((e, idx)=>{
+    // simple seek
+    const toPlayer = new CANNON.Vec3(player.bodyPhys.position.x - e.body.position.x, 0, player.bodyPhys.position.z - e.body.position.z);
+    const dist = toPlayer.length();
+    const dir = toPlayer.scale(1/(dist||1));
+    e.body.velocity.x = dir.x * 6;
+    e.body.velocity.z = dir.z * 6;
+    // attempt shot
+    e.cooldown -= dt;
+    if(e.cooldown <= 0 && dist < 30){
+      e.cooldown = 1.2 + Math.random()*1.2;
+      const pos = new THREE.Vector3(e.body.position.x, e.body.position.y + 0.6, e.body.position.z);
+      const dir3 = new THREE.Vector3(dir.x, 0, dir.z);
+      spawnProjectile(pos, dir3, 'enemy');
+    }
     e.mesh.position.copy(e.body.position);
     e.mesh.quaternion.copy(e.body.quaternion);
+    // death
+    if(e.health <= 0){
+      scene.remove(e.mesh);
+      world.removeBody(e.body);
+      enemies.splice(idx,1);
+      score += 1;
+      updateHUD();
+    }
   });
 
-  // update projectiles collisions and TTL
-  handleCollisions();
-
-  // physics world step
-  world.step(1/60, dt, 3);
-
-  // render
-  renderer.render(scene, camera);
-
-  // schedule next
-  requestAnimationFrame(animate);
-}
-
-/* Utilities */
-function updateHealthUI(){
-  healthLabel.textContent = `Vida: ${Math.max(0, Math.round(player.health))}`;
-}
-
-/* Spawn loop */
-function spawnLoop(){
-  if(!running) return;
-  const now = performance.now()/1000;
-  if(enemies.length < MAX_ENEMIES && now - lastSpawn > 2.2){
-    spawnEnemy();
-    lastSpawn = now;
+  // projectiles update & simple collisions
+  for(let i=projectiles.length-1;i>=0;i--){
+    const pr = projectiles[i];
+    pr.ttl -= dt;
+    pr.mesh.position.copy(pr.body.position);
+    // check against enemies if owner player
+    if(pr.owner === 'player'){
+      for(let j=0;j<enemies.length;j++){
+        const en = enemies[j];
+        const d = pr.body.position.distanceTo(en.body.position);
+        if(d < 2.2){
+          en.health -= 18;
+          // remove projectile
+          scene.remove(pr.mesh); world.removeBody(pr.body); projectiles.splice(i,1);
+          break;
+        }
+      }
+    }
+    if(pr.owner === 'enemy'){
+      const d = pr.body.position.distanceTo(player.bodyPhys.position);
+      if(d < 2.2){
+        player.health -= 10;
+        updateHUD();
+        scene.remove(pr.mesh); world.removeBody(pr.body); projectiles.splice(i,1);
+        if(player.health <= 0){ gameOver(); return; }
+      }
+    }
+    if(pr && pr.ttl <= 0){
+      scene.remove(pr.mesh); try{ world.removeBody(pr.body) }catch(e){}; projectiles.splice(i,1);
+    }
   }
-  setTimeout(spawnLoop, 1000);
+
+  // spawn enemies periodically
+  lastEnemySpawn += dt;
+  if(lastEnemySpawn > 3 && enemies.length < 6){
+    lastEnemySpawn = 0;
+    spawnEnemyBot();
+  }
+
+  // step physics
+  world.step(1/60, dt, 3);
 }
 
-/* Game over */
+// ---------- Render loop ----------
+function renderLoop(){
+  if(!running) return;
+  const dt = Math.min(0.04, clock.getDelta());
+  update(dt);
+  renderer.render(scene, camera);
+  requestAnimationFrame(renderLoop);
+}
+
+// ---------- Start / Game over ----------
+function updateHUD(){
+  healthEl.textContent = `Vida: ${Math.max(0, Math.round(player.health||0))}`;
+  killsEl.textContent = `Kills: ${score}`;
+  ammoEl.textContent = `Mun: ${player._ammo||0}`;
+  msgEl.textContent = `Puntos: ${score}`;
+}
 function gameOver(){
   running = false;
-  message.textContent = 'Has sido destruido — Reinicia para intentar otra vez';
-  startPanel.style.display = 'block';
+  startScreen.style.display = 'flex';
+  msgEl.textContent = '¡Derrotado! Reinicia para volver a jugar.';
 }
 
-/* Start game */
+// ---------- Start game flow ----------
 function startGame(){
-  if(running) return;
-  // setup scene and player if not exists
-  if(!scene) initThreeCannon();
-  if(!player) createPlayer();
-  // reset variables
-  player.health = 100;
-  updateHealthUI();
-  enemyCount = enemies.length = 0;
-  projectiles.forEach(p => { scene.remove(p.mesh); try{ world.removeBody(p.body) }catch(e){} });
-  projectiles = [];
-  // spawn few enemies
-  for(let i=0;i<3;i++) spawnEnemy();
+  // hide start
+  startScreen.style.display = 'none';
+  if(!scene) initEngineAndWorld();
+  if(player){ // reset existing
+    // remove existing player physics and mesh then recreate
+    scene.remove(player.group);
+    try{ world.removeBody(player.bodyPhys) }catch(e){}
+    player = null;
+  }
+  // create player using selected vehicle
+  const cfg = vehicles[selectedVehicleIndex];
+  player = createPlayerVehicle(cfg);
+  player._ammo = 10; player.health = 100;
+  updateHUD();
+
+  // spawn a few enemies
+  enemies.forEach(e=> { scene.remove(e.mesh); try{ world.removeBody(e.body) }catch(e){} });
+  enemies = [];
+  for(let i=0;i<2;i++) spawnEnemyBot();
+  score = 0; lastEnemySpawn = 0;
+
   running = true;
   clock.start();
-  startPanel.style.display = 'none';
-  message.textContent = 'En juego — ¡Buena suerte!';
-  // start loops
-  animate();
-  spawnLoop();
+  requestAnimationFrame(renderLoop);
 }
 
-/* Resize */
+// ---------- Initialize engine and bindings ----------
+function initEngineAndWorld(){
+  initEngine();
+  bindUI();
+  clock = new THREE.Clock();
+  renderer.setClearColor(0x071226);
+  // initial camera position
+  camera.position.set(0,14,26);
+}
+
+// ---------- Event bindings ----------
+startBtn.addEventListener('click', ()=> startGame());
+chooseVehicleBtn.addEventListener('click', ()=> { closeAllPanels(); });
+document.getElementById('homeBtn').addEventListener('click', ()=> { window.scrollTo({top:0,behavior:'smooth'}); startScreen.style.display='flex'; running=false; });
+
+renderVehicleList();
+
+// ---------- Resize handler ----------
 function onResize(){
   if(!renderer) return;
   camera.aspect = window.innerWidth/window.innerHeight;
@@ -484,26 +577,82 @@ function onResize(){
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-/* Bind UI for start */
-startBtn.addEventListener('click', () => { startGame(); });
+// ---------- Minimal initEngine (Three + Cannon) ----------
+function initEngine(){
+  // renderer
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = toggleShadows.checked;
+  document.getElementById('app').prepend(renderer.domElement);
 
-/* Bind simple UI controls (menu, etc) - demo placeholders */
-document.getElementById('leftBtn').addEventListener('contextmenu', e=> e.preventDefault());
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x071226);
 
-/* Bind controls and keyboard */
-bindControls();
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 15, 28);
 
-/* Safety: stop when tab hidden to save battery */
-document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden) { running = false; }
-});
+  // lights
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x111122, 0.6); scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(8,20,10); dir.castShadow=true; scene.add(dir);
 
-/* Tell user to tap start on mobile */
-message.textContent = 'Pulsa "Iniciar" para comenzar (recomendado Chrome móvil).';
+  // ground visual
+  const groundGeo = new THREE.PlaneGeometry(400,400);
+  const groundMat = new THREE.MeshStandardMaterial({color:0x081422});
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.receiveShadow = true;
+  ground.rotation.x = -Math.PI/2; scene.add(ground);
 
-/* Expose for debugging (optional) */
-window.__sf_game = { startGame, scene, world };
+  // physics
+  world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
+  world.broadphase = new CANNON.SAPBroadphase(world);
+  world.solver.iterations = 6;
+  const groundBody = new CANNON.Body({ mass:0, shape: new CANNON.Plane() });
+  groundBody.quaternion.setFromEuler(-Math.PI/2,0,0); world.addBody(groundBody);
 
+  // small skybox-ish effect: fog + ambient done above
+  clock = new THREE.Clock();
+
+  // bind UI now
+  bindUI();
+}
+
+// ---------- Exposed createPlayerVehicle for engine when created ----------
+function createPlayerVehicle(cfg){
+  // use cfg to create visual & physics
+  const group = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({color:cfg.color, metalness:0.3, roughness:0.4});
+  const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.9,4), bodyMat);
+  bodyMesh.position.y = 0.7;
+  group.add(bodyMesh);
+  // add small aesthetic parts
+  const spoiler = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.12,0.4), new THREE.MeshStandardMaterial({color:0x001226}));
+  spoiler.position.set(0,1.05,-1.6);
+  group.add(spoiler);
+  scene.add(group);
+
+  const shape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2));
+  const bodyPhys = new CANNON.Body({ mass: cfg.mass, shape, position: new CANNON.Vec3(0,1,0), linearDamping:0.4, angularDamping:0.8 });
+  world.addBody(bodyPhys);
+
+  return { group, bodyPhys, cfg, health:100, _fireCooldown:0 };
+}
+
+// ---------- Start minimal engine immediately (to allow panels) ----------
+initEngineAndWorld();
+renderVehicleList();
+updateHUD();
+
+// ---------- Simple safety: auto stop when hidden ----------
+document.addEventListener('visibilitychange', ()=>{ if(document.hidden) running=false; });
+
+// ---------- Performance note ----------
+/*
+  - This prototype uses simple geometries so it runs on mobiles.
+  - If needed reduce renderer.setPixelRatio to 1 to improve older phones.
+*/
+
+// end of module
 </script>
 </body>
 </html>
