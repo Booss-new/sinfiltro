@@ -1,487 +1,261 @@
-<!-- index.html -->
+<!-- index.html - SinFiltro: Vehículos 3D (MVP) -->
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Road Combat — Demo Muscle (SinFiltro)</title>
-  <meta name="description" content="Demo móvil: Muscle car + cámara 3ra persona, controles táctiles, física y disparos.">
-  <style>
-    /* ---------- UI estilo premium (mantener estética SinFiltro) ---------- */
-    :root{
-      --bg-1:#05060a; --bg-2:#071226;
-      --glass: rgba(255,255,255,0.04);
-      --accent:#00d1ff; --accent2:#8a6eff; --muted:#9fb0bf;
-      --ui-radius:14px;
-      --text:#eaf7ff;
-      --ui-pad:12px;
-    }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; -webkit-font-smoothing:antialiased;overflow:hidden}
-    #container{position:fixed;inset:0;display:flex;flex-direction:column}
-    canvas{display:block;width:100%;height:100%}
-
-    /* Top HUD */
-    .topbar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;z-index:40}
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-    .glass-btn{padding:8px 10px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:var(--text);backdrop-filter:blur(6px);font-size:13px;cursor:pointer}
-
-    /* Bottom HUD / controls */
-    .hud-bottom{position:fixed;left:12px;right:12px;bottom:14px;display:flex;justify-content:space-between;align-items:flex-end;z-index:40;pointer-events:none}
-    .left-controls, .right-controls{display:flex;flex-direction:column;gap:10px;pointer-events:auto}
-
-    /* Joystick */
-    .stick-wrap{width:140px;height:140px;border-radius:999px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(6px)}
-    .stick{width:72px;height:72px;border-radius:999px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--text);touch-action:none}
-
-    /* Action buttons */
-    .actions{display:flex;gap:10px}
-    .action-btn{width:64px;height:64px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#001;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 50px rgba(0,0,0,0.5);cursor:pointer}
-
-    /* Small floating buttons */
-    .mini-row{display:flex;gap:8px}
-    .mini-btn{padding:8px 10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);font-size:13px;color:var(--text);cursor:pointer}
-
-    /* Overlay messages */
-    .msg{position:fixed;left:50%;transform:translateX(-50%);top:72px;background:linear-gradient(90deg,var(--accent),var(--accent2));padding:8px 14px;border-radius:999px;color:#001;font-weight:700;z-index:50;display:none}
-
-    /* Responsive */
-    @media (max-width:420px){
-      .stick-wrap{width:120px;height:120px}
-      .stick{width:64px;height:64px}
-      .action-btn{width:56px;height:56px}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro - Arena Vehicular (MVP)</title>
+<style>
+  html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden}
+  #overlayUI{position:fixed;inset:0;pointer-events:none}
+  #canvasHolder{width:100%;height:100%}
+  /* joystick */
+  .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:30 }
+  .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.08); transform:translate(0,0) }
+  /* fire button */
+  .btnFire { position:fixed; right:20px; bottom:34px; width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#00d1ff,#8a6eff); color:#001; font-weight:700; font-size:28px; display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:30; box-shadow:0 12px 40px rgba(0,0,0,0.5) }
+  /* top UI */
+  .topBar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;z-index:40}
+  .logo{font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .miniBtns{display:flex;gap:8px}
+  .icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  /* viewer overlay */
+  #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:50}
+  #viewer img{max-width:90%;height:auto;border-radius:12px}
+  /* responsive */
+  @media(max-width:420px){ .joy{width:96px;height:96px} .stick{width:42px;height:42px} .btnFire{width:64px;height:64px} }
+</style>
 </head>
 <body>
-  <div id="container">
-    <!-- Top HUD -->
-    <div class="topbar">
-      <div class="brand">
-        <div class="logo">SinFiltro</div>
-        <div class="glass-btn" id="btnMenu">Menú</div>
-      </div>
-      <div class="mini-row">
-        <div class="glass-btn" id="btnReset">Reset</div>
-        <div class="glass-btn" id="btnCam">Cámara</div>
+  <div id="canvasHolder"></div>
+
+  <!-- UI -->
+  <div id="overlayUI">
+    <div class="topBar">
+      <div class="logo">SinFiltro - Arena (demo)</div>
+      <div class="miniBtns">
+        <div class="icon" id="btnMenu">☰</div>
+        <div class="icon" id="btnStart">▶</div>
       </div>
     </div>
 
-    <!-- 3D canvas -->
-    <canvas id="glCanvas"></canvas>
+    <div class="joy" id="joy">
+      <div class="stick" id="stick"></div>
+    </div>
 
-    <!-- message -->
-    <div id="msg" class="msg">Demo listo</div>
+    <div class="btnFire" id="btnFire">🔫</div>
+  </div>
 
-    <!-- Bottom HUD: joystick left, actions right -->
-    <div class="hud-bottom">
-      <div class="left-controls">
-        <div class="stick-wrap" id="stickWrap" aria-hidden="false">
-          <div class="stick" id="stick">↑</div>
-        </div>
-      </div>
-
-      <div class="right-controls">
-        <div class="actions">
-          <button id="btnAccel" class="action-btn">▲</button>
-          <button id="btnBrake" class="action-btn">■</button>
-        </div>
-        <div style="height:8px"></div>
-        <div class="actions">
-          <button id="btnFire" class="action-btn">🔫</button>
-          <button id="btnHorn" class="action-btn">🔊</button>
-        </div>
-      </div>
+  <div id="viewer" role="dialog" aria-hidden="true">
+    <div style="text-align:center">
+      <img id="viewerImg" src="" alt="preview"><br><br>
+      <button id="closeViewer" style="padding:8px 12px;border-radius:8px">Cerrar</button>
     </div>
   </div>
 
-  <!-- Scripts (module) -->
-  <script type="module">
-  // ---------- IMPORTS ----------
-  import * as THREE from 'https://unpkg.com/three@0.152.2/build/three.module.js';
-  import { GLTFLoader } from 'https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
-  import * as CANNON from 'https://unpkg.com/cannon-es@0.20.0/dist/cannon-es.js';
+  <!-- Three.js from CDN -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+  <script>
+  (function(){
+    // Basic scene
+    const holder = document.getElementById('canvasHolder');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x05060a, 0.002);
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    holder.appendChild(renderer.domElement);
 
-  // ---------- Scene & Renderer ----------
-  const canvas = document.getElementById('glCanvas');
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
-  renderer.setPixelRatio(window.devicePixelRatio ? Math.min(1.5, window.devicePixelRatio) : 1);
-  renderer.shadowMap.enabled = true;
-  renderer.outputEncoding = THREE.sRGBEncoding;
+    // Camera
+    const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+    camera.position.set(0,6,10);
 
-  const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x05060a, 0.0025);
+    // Light
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(5,10,7); scene.add(dir);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-  camera.position.set(0, 6, -12);
+    // Ground (simple grid/plane)
+    const gmat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.1, roughness:0.9});
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(800,800), gmat);
+    ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
 
-  // Resize
-  function resize(){ const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w,h); camera.aspect = w/h; camera.updateProjectionMatrix(); }
-  window.addEventListener('resize', resize);
-  resize();
-
-  // ---------- Physics world ----------
-  const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
-  world.broadphase = new CANNON.SAPBroadphase(world);
-  world.solver.iterations = 8;
-
-  // Materials
-  const groundMat = new CANNON.Material('ground');
-  const wheelMat = new CANNON.Material('wheel');
-  const wheelGroundContact = new CANNON.ContactMaterial(wheelMat, groundMat, { friction: 0.8, restitution: 0.0 });
-  world.addContactMaterial(wheelGroundContact);
-
-  // ---------- Lights ----------
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x222244, 0.6);
-  scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-  dir.position.set(5, 20, 10);
-  dir.castShadow = true;
-  dir.shadow.mapSize.set(2048,2048);
-  dir.shadow.camera.left = -30; dir.shadow.camera.right = 30; dir.shadow.camera.top = 30; dir.shadow.camera.bottom = -30;
-  scene.add(dir);
-
-  // ---------- Ground ----------
-  const groundGeo = new THREE.PlaneGeometry(200, 200);
-  const groundMat3 = new THREE.MeshStandardMaterial({color:0x09131a, metalness:0.1, roughness:0.9});
-  const groundMesh = new THREE.Mesh(groundGeo, groundMat3);
-  groundMesh.rotation.x = -Math.PI/2;
-  groundMesh.receiveShadow = true;
-  scene.add(groundMesh);
-
-  // Cannon ground
-  const groundBody = new CANNON.Body({ mass:0, shape:new CANNON.Plane(), material: groundMat });
-  groundBody.quaternion.setFromEuler(-Math.PI/2, 0, 0);
-  world.addBody(groundBody);
-
-  // ---------- Simple environment obstacles ----------
-  function makeObstacle(posX, posZ){
-    const geo = new THREE.BoxGeometry(2, 2, 2);
-    const mat = new THREE.MeshStandardMaterial({color:0x0f9aa7, metalness:0.1, roughness:0.6});
-    const m = new THREE.Mesh(geo, mat); m.position.set(posX,1,posZ); m.castShadow=true; m.receiveShadow=true;
-    scene.add(m);
-    const box = new CANNON.Body({ mass:0, shape:new CANNON.Box(new CANNON.Vec3(1,1,1)), position: new CANNON.Vec3(posX,1,posZ) });
-    world.addBody(box);
-  }
-  for(let i=0;i<12;i++){ makeObstacle((Math.random()-0.5)*80, (Math.random()-0.5)*80); }
-
-  // ---------- Car representation (muscle car simplified) ----------
-  // Visual
-  const carGroup = new THREE.Group();
-  // body
-  const bodyGeo = new THREE.BoxGeometry(2.8,0.9,5.2);
-  const bodyMat = new THREE.MeshStandardMaterial({color:0xb02929, metalness:0.4, roughness:0.3});
-  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat); bodyMesh.castShadow=true; bodyMesh.position.y = 0.9;
-  carGroup.add(bodyMesh);
-  // cabin
-  const cabinGeo = new THREE.BoxGeometry(1.8,0.6,2.2);
-  const cabinMat = new THREE.MeshStandardMaterial({color:0x111111, metalness:0.2, roughness:0.2});
-  const cabin = new THREE.Mesh(cabinGeo, cabinMat); cabin.position.set(0,1.15,0.1); cabin.castShadow=true;
-  carGroup.add(cabin);
-  // wheels (visual only)
-  const wheelGeo = new THREE.CylinderGeometry(0.45,0.45,0.6,20);
-  const wheelMat = new THREE.MeshStandardMaterial({color:0x0a0a0a, metalness:0.6, roughness:0.45});
-  const wheels = [];
-  const wheelPositions = [[-1.2,0.45,2], [1.2,0.45,2], [-1.2,0.45,-2], [1.2,0.45,-2]];
-  wheelPositions.forEach(p=>{
-    const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2; w.position.set(p[0], p[1], p[2]); w.castShadow=true;
-    carGroup.add(w); wheels.push(w);
-  });
-  scene.add(carGroup);
-
-  // Cannon body (simplified box)
-  const carShape = new CANNON.Box(new CANNON.Vec3(1.4,0.45,2.6));
-  const carBody = new CANNON.Body({ mass: 650, shape: carShape, position: new CANNON.Vec3(0, 1.3, 0) });
-  carBody.angularDamping = 0.5;
-  carBody.linearDamping = 0.2;
-  world.addBody(carBody);
-
-  // add small chassis collision boxes for better behavior (optional)
-
-  // ---------- Camera follow logic ----------
-  let camMode = 0; // 0 = behind, 1 = cinematic higher
-  function updateCamera(){
-    const carPos = new THREE.Vector3().copy(carGroup.position);
-    // desired camera position behind car
-    const forward = new THREE.Vector3(0,0,1).applyQuaternion(carGroup.quaternion).normalize();
-    const behind = forward.clone().multiplyScalar(-12);
-    const above = new THREE.Vector3(0,6,0);
-    const desired = carGroup.position.clone().add(behind).add(above);
-    camera.position.lerp(desired, 0.12);
-    // look at car
-    const lookAt = carGroup.position.clone().add(new THREE.Vector3(0,1.2,0));
-    camera.lookAt(lookAt);
-  }
-
-  // ---------- Controls (virtual joystick) ----------
-  const stick = document.getElementById('stick');
-  const stickWrap = document.getElementById('stickWrap');
-  let input = {x:0,y:0}; // x: steer (-1 left, 1 right), y: throttle (-1 back, 1 forward)
-  let activeTouchId = null;
-  let baseRect = stickWrap.getBoundingClientRect();
-
-  function resetStick(){ input.x = 0; input.y = 0; stick.style.transform = 'translate(0px,0px)'; stick.textContent = '↑'; }
-  resetStick();
-
-  // resize baseRect on orientation change
-  window.addEventListener('resize', ()=> baseRect = stickWrap.getBoundingClientRect());
-
-  stickWrap.addEventListener('touchstart', (e)=>{
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    activeTouchId = t.identifier;
-    handleStickMove(t);
-  }, {passive:false});
-
-  stickWrap.addEventListener('touchmove', (e)=>{
-    e.preventDefault();
-    for(const t of e.changedTouches) if(t.identifier === activeTouchId) handleStickMove(t);
-  }, {passive:false});
-
-  stickWrap.addEventListener('touchend', (e)=>{
-    for(const t of e.changedTouches) if(t.identifier === activeTouchId){ activeTouchId = null; resetStick(); }
-  }, {passive:false});
-
-  function handleStickMove(touch){
-    const x = touch.pageX - (baseRect.left + baseRect.width/2);
-    const y = touch.pageY - (baseRect.top + baseRect.height/2);
-    // normalize 60px radius
-    const max = baseRect.width/2 - 8;
-    const nx = Math.max(-1, Math.min(1, x/max));
-    const ny = -Math.max(-1, Math.min(1, y/max));
-    input.x = nx;
-    input.y = ny;
-    stick.style.transform = `translate(${nx * max * 0.45}px, ${-ny * max * 0.45}px)`;
-    // arrow feedback
-    if(Math.abs(ny) > 0.3) stick.textContent = ny>0 ? '▲' : '▼'; else stick.textContent = '▶';
-  }
-
-  // Desktop mouse support for joystick (optional)
-  stickWrap.addEventListener('pointerdown', e=>{
-    e.preventDefault(); stick.setPointerCapture(e.pointerId);
-    handlePointer(e);
-    function move(ev){ handlePointer(ev); }
-    function up(ev){ stick.removeEventListener('pointermove', move); stick.removeEventListener('pointerup', up); resetStick(); }
-    stick.addEventListener('pointermove', move);
-    stick.addEventListener('pointerup', up);
-  });
-
-  function handlePointer(e){
-    const x = e.pageX - (baseRect.left + baseRect.width/2);
-    const y = e.pageY - (baseRect.top + baseRect.height/2);
-    const max = baseRect.width/2 - 8;
-    const nx = Math.max(-1, Math.min(1, x/max));
-    const ny = -Math.max(-1, Math.min(1, y/max));
-    input.x = nx; input.y = ny;
-    stick.style.transform = `translate(${nx * max * 0.45}px, ${-ny * max * 0.45}px)`;
-    if(Math.abs(ny) > 0.3) stick.textContent = ny>0 ? '▲' : '▼'; else stick.textContent = '▶';
-  }
-
-  // ---------- Action buttons ----------
-  const btnAccel = document.getElementById('btnAccel');
-  const btnBrake = document.getElementById('btnBrake');
-  const btnFire = document.getElementById('btnFire');
-  const btnHorn = document.getElementById('btnHorn');
-  const btnCam = document.getElementById('btnCam');
-  const msg = document.getElementById('msg');
-  let firingCooldown = 0;
-
-  let manualAccel = 0;
-  btnAccel.addEventListener('touchstart', ()=> manualAccel = 1);
-  btnAccel.addEventListener('touchend', ()=> manualAccel = 0);
-  btnAccel.addEventListener('mousedown', ()=> manualAccel = 1);
-  btnAccel.addEventListener('mouseup', ()=> manualAccel = 0);
-
-  btnBrake.addEventListener('touchstart', ()=> manualAccel = -1);
-  btnBrake.addEventListener('touchend', ()=> manualAccel = 0);
-  btnBrake.addEventListener('mousedown', ()=> manualAccel = -1);
-  btnBrake.addEventListener('mouseup', ()=> manualAccel = 0);
-
-  btnFire.addEventListener('click', ()=> shoot());
-  btnFire.addEventListener('touchstart', ()=> shoot());
-  btnHorn.addEventListener('click', ()=> playHorn());
-
-  btnCam.addEventListener('click', ()=>{
-    camMode = (camMode+1)%2;
-    showMsg(camMode===0 ? 'Cámara: detrás' : 'Cámara: alta');
-  });
-
-  function showMsg(text, t=1200){ msg.textContent = text; msg.style.display='block'; setTimeout(()=> msg.style.display='none', t); }
-
-  function playHorn(){ showMsg('Bocina! (demo)'); /* could play audio */ }
-
-  // ---------- Shooting projectiles ----------
-  const projectiles = [];
-  function shoot(){
-    if(firingCooldown > 0) return;
-    firingCooldown = 10; // frames
-    const it = { id: Date.now() };
-    // Visual
-    const geo = new THREE.SphereGeometry(0.12, 8, 8);
-    const mat = new THREE.MeshStandardMaterial({ color: 0xffd166, emissive:0xffa700, metalness:0.6, roughness:0.3 });
-    const m = new THREE.Mesh(geo, mat); m.castShadow=true;
-    scene.add(m);
-    // Physics
-    const pBody = new CANNON.Body({ mass: 0.2, shape: new CANNON.Sphere(0.12), position: new CANNON.Vec3().copy(carBody.position).vadd(new CANNON.Vec3(0,0.9,2)) });
-    // velocity in forward direction
-    const forward = new THREE.Vector3(0,0,1).applyQuaternion(carGroup.quaternion).normalize();
-    const vel = new CANNON.Vec3(forward.x*40, forward.y*12, forward.z*40);
-    pBody.velocity.set(vel.x, vel.y, vel.z);
-    world.addBody(pBody);
-    projectiles.push({ mesh:m, body:pBody, life: 300 });
-  }
-
-  // ---------- Audio placeholders ----------
-  // For demo we skip audio files to keep code self-contained. Insert audio.play() where needed.
-
-  // ---------- Physics & render loop ----------
-  const clock = new THREE.Clock();
-  const tmpVec3 = new THREE.Vector3();
-
-  function physicsStep(dt){
-    // Basic car driving force: apply forward force relative to orientation
-    const forwardLocal = new CANNON.Vec3(0,0,1);
-    const q = carBody.quaternion;
-    const forwardWorld = q.vmult(forwardLocal);
-
-    // Determine throttle from input (stick.y OR manualAccel)
-    let throttle = manualAccel !== 0 ? manualAccel : input.y;
-    // small deadzone
-    if(Math.abs(throttle) < 0.08) throttle = 0;
-
-    // Steering - apply torque around Y
-    const steer = input.x * 0.8; // -1..1
-    // Compute forward force magnitude
-    const maxForce = 3800; // tune for mass
-    const force = forwardWorld.scale(maxForce * throttle);
-    carBody.applyForce(force, carBody.position);
-
-    // Apply steering by setting angular velocity around Y proportional to steering and speed
-    const speed = carBody.velocity.length();
-    const turnStrength = 0.5 + Math.min(speed/20, 1.2);
-    const yaw = steer * 0.6 * turnStrength;
-    // apply torque for yaw
-    carBody.angularVelocity.y += yaw * 0.02;
-
-    // simple stabilization
-    // reduce sideways velocity
-    const vel = carBody.velocity;
-    const forwardDir = new CANNON.Vec3(forwardWorld.x, 0, forwardWorld.z);
-    const lateral = vel.vsub(forwardDir.scale(vel.dot(forwardDir)/forwardDir.lengthSquared() || 1));
-    carBody.velocity.vsub(lateral.scale(0.25), carBody.velocity);
-
-    // small drag
-    carBody.velocity.scale(0.997, carBody.velocity);
-
-    // update projectiles life
-    for(let i = projectiles.length -1; i >= 0; i--){
-      const p = projectiles[i];
-      p.life--;
-      if(p.life <= 0){
-        scene.remove(p.mesh);
-        world.removeBody(p.body);
-        projectiles.splice(i,1);
-      } else {
-        // sync visuals
-        p.mesh.position.copy(p.body.position);
-      }
+    // Player: low-poly car (box + wheels)
+    const car = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.4, roughness:0.6}));
+    body.position.y = 0.7;
+    car.add(body);
+    // wheels
+    const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+    const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
+    for(let i=0;i<4;i++){
+      const w = new THREE.Mesh(wheelGeo, wheelMat);
+      w.rotation.z = Math.PI/2;
+      w.position.y = 0.25;
+      w.position.x = (i%2===0)?-1:1;
+      w.position.z = (i<2)?1.2:-1.2;
+      car.add(w);
     }
-    if(firingCooldown>0) firingCooldown--;
-  }
+    car.position.y = 0; car.position.z = 0;
+    scene.add(car);
 
-  // sync visuals from physics
-  function syncVisuals(){
-    // carGroup position + quaternion follow carBody
-    carGroup.position.set(carBody.position.x, carBody.position.y - 0.35, carBody.position.z);
-    carGroup.quaternion.set(carBody.quaternion.x, carBody.quaternion.y, carBody.quaternion.z, carBody.quaternion.w);
-    // rotate wheels (visual spin)
-    wheels.forEach((w,idx)=>{
-      w.rotation.x += carBody.velocity.length() * 0.02;
-    });
-  }
+    // Some obstacles (boxes) to give feel
+    const boxMat = new THREE.MeshStandardMaterial({color:0x13232f});
+    for(let i=0;i<40;i++){
+      const b = new THREE.Mesh(new THREE.BoxGeometry(1+Math.random()*2,1+Math.random()*2,1+Math.random()*2), boxMat);
+      b.position.set((Math.random()-0.5)*200, (b.geometry.parameters.height/2), (Math.random()-0.5)*200);
+      scene.add(b);
+    }
 
-  // Loop
-  let lastTime = performance.now();
-  function animate(){
-    const now = performance.now();
-    const dt = Math.min((now - lastTime)/1000, 1/30);
-    lastTime = now;
+    // simple enemy (bot) for demo
+    const bot = car.clone();
+    bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff});
+    bot.position.set(8,0, -6);
+    scene.add(bot);
 
-    // step physics
-    physicsStep(dt);
-    world.step(1/60, dt, 3);
+    // camera follow parameters
+    const camOffset = new THREE.Vector3(0,5,12);
 
-    // sync positions
-    syncVisuals();
-    updateCamera();
+    // movement state
+    const state = {forward:0, turn:0, speed:0, maxSpeed: 0.8, rotSpeed: 0.04};
+    let lastTime = performance.now();
 
-    // render
-    renderer.render(scene, camera);
+    // particles / bullets
+    const bullets = [];
 
+    function spawnBullet(origin, dir){
+      const g = new THREE.SphereGeometry(0.12, 8,8);
+      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+      const b = new THREE.Mesh(g,m);
+      b.position.copy(origin);
+      b.userData.dir = dir.clone();
+      b.userData.speed = 2.2;
+      scene.add(b); bullets.push(b);
+    }
+
+    // input: joystick handling
+    const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+    let touchId = null, baseX=0, baseY=0;
+    let stick = {x:0,y:0};
+
+    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+    joy.addEventListener('touchstart', e=>{
+      e.preventDefault();
+      const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY;
+    }, {passive:false});
+    joy.addEventListener('touchmove', e=>{
+      e.preventDefault();
+      for(const t of e.changedTouches){
+        if(t.identifier === touchId){
+          const dx = t.clientX - baseX;
+          const dy = t.clientY - baseY;
+          const max = 36;
+          const nx = Math.max(-1, Math.min(1, dx/max));
+          const ny = Math.max(-1, Math.min(1, dy/max));
+          stick.x = nx; stick.y = -ny; // invert y
+          stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`;
+        }
+      }
+    }, {passive:false});
+    joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId) { touchId=null; resetStick(); } }, {passive:false});
+    // also mouse drag (for desktop testing)
+    let md=false;
+    joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+    joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+    joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+
+    // fire button
+    const fireBtn = document.getElementById('btnFire');
+    fireBtn.addEventListener('touchstart', e=> { e.preventDefault(); doFire(); }, {passive:false});
+    fireBtn.addEventListener('mousedown', ()=> doFire());
+    function doFire(){
+      // spawn bullet in front of car
+      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+      const origin = car.position.clone().add(new THREE.Vector3(0,1, -2).applyQuaternion(car.quaternion));
+      spawnBullet(origin, dir);
+    }
+
+    // simple bot movement (circling)
+    let botAngle = 0;
+
+    // resize
+    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+
+    // MAIN LOOP
+    function animate(){
+      const now = performance.now();
+      const dt = Math.min(50, now - lastTime) / 16.666; // normalized delta (rough)
+      lastTime = now;
+
+      // state from joystick
+      state.forward = Math.max(-1, Math.min(1, stick.y));
+      state.turn = Math.max(-1, Math.min(1, stick.x));
+
+      // update speed and rotation (simple physics)
+      // accelerate
+      if(state.forward > 0.05) state.speed += 0.02 * state.forward * dt;
+      else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
+      else state.speed *= 0.98; // friction
+
+      state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+      // rotate
+      car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+
+      // move forward in local Z
+      const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+      car.position.add(forwardVec.multiplyScalar(state.speed * dt * 0.8));
+
+      // camera follow (smooth)
+      const desiredCam = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+      camera.position.lerp(desiredCam, 0.12);
+      const lookAt = car.position.clone().add(new THREE.Vector3(0,1.5,0));
+      camera.lookAt(lookAt);
+
+      // bot simple circular movement
+      botAngle += 0.002 * dt * 30;
+      bot.position.x = Math.cos(botAngle) * 8;
+      bot.position.z = Math.sin(botAngle) * 8;
+      bot.lookAt(car.position);
+
+      // bullets update + remove when far
+      for(let i=bullets.length-1;i>=0;i--){
+        const b = bullets[i];
+        b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+        // simple collision vs bot
+        if(b.position.distanceTo(bot.position) < 1.4){
+          scene.remove(b); bullets.splice(i,1);
+          // hit effect (simple)
+          const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522, color:0x111111}));
+          hit.position.copy(bot.position);
+          scene.add(hit);
+          setTimeout(()=> scene.remove(hit), 500);
+          continue;
+        }
+        if(b.position.length() > 1000){ scene.remove(b); bullets.splice(i,1); }
+      }
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
     requestAnimationFrame(animate);
-  }
 
-  // ---------- Initial placement ----------
-  carBody.position.set(0, 1.3, 0);
-  carGroup.position.copy(carBody.position);
-  // small initial rotation
-  carBody.quaternion.setFromEuler(0, 0, 0);
+    // Small UI actions
+    document.getElementById('btnMenu').addEventListener('click', ()=> { alert('Menu demo: ajustes, perfil, monetización (placeholders)'); });
+    document.getElementById('btnStart').addEventListener('click', ()=> { alert('Iniciar partida demo: se puede lanzar modo 1v1 / 4v4.'); });
 
-  // grid initial
-  function renderGridInitial(){
-    gridFeedPlaceholder(); // not used, kept to respect structure from web UI
-  }
-  function gridFeedPlaceholder(){}
+    // viewer demo (click on logo to show preview)
+    const viewer = document.getElementById('viewer'), viewerImg = document.getElementById('viewerImg'), closeViewer = document.getElementById('closeViewer');
+    document.querySelector('.logo').addEventListener('click', ()=> {
+      viewerImg.src = 'https://picsum.photos/800/420?random=12';
+      viewer.style.display='flex'; viewer.setAttribute('aria-hidden','false');
+    });
+    closeViewer.addEventListener('click', ()=> { viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); });
 
-  // ---------- Init & start ----------
-  function init(){
-    // add ambient details: roadside boxes / low poly trees (optional)
-    // show message then start
-    showMsg('Cargando demo...');
-    setTimeout(()=>{ showMsg('Listo — controla con joystick y botones'); }, 800);
+    // Touch fixes: ensure canvas doesn't capture all touches (we want UI to be responsive)
+    renderer.domElement.style.touchAction = 'none';
 
-    // run loop
-    animate();
-  }
-  init();
-
-  // ---------- Utilities: showMsg ----------
-  function showMsg(text){
-    msg.textContent = text;
-    msg.style.display = 'block';
-    clearTimeout(showMsg._t);
-    showMsg._t = setTimeout(()=> msg.style.display = 'none', 1400);
-  }
-
-  // ---------- Reset position ----------
-  document.getElementById('btnReset').addEventListener('click', ()=>{
-    carBody.position.set(0, 1.3, 0);
-    carBody.velocity.set(0,0,0);
-    carBody.angularVelocity.set(0,0,0);
-    carBody.quaternion.setFromEuler(0,0,0);
-    showMsg('Auto reiniciado');
-  });
-
-  // ---------- Minimal collisions handling for projectiles ----------
-  world.addEventListener('postStep', ()=>{
-    // detect projectiles hitting obstacles or ground (optional)
-  });
-
-  // ---------- Pointer lock / tap to focus (mobile friendly) ----------
-  canvas.addEventListener('touchstart', ()=> canvas.focus(), {passive:true});
-
-  // ---------- Tidy: ensure WebGL context lost safe handling ----------
-  window.addEventListener('beforeunload', ()=> {
-    try { renderer.forceContextLoss(); } catch(e){}
-  });
-
-  // ---------- Notes ----------
-  // This demo is intentionally self-contained (no external heavy assets).
-  // For a production-quality game:
-  // - Replace box car with optimized glTF model.
-  // - Use texture atlases, compressed textures, audio files and preloading.
-  // - Add network multiplayer using WebRTC / WebSockets for the "multiplayer car arena".
-
+  })();
   </script>
 </body>
 </html>
