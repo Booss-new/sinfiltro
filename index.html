@@ -2,861 +2,498 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro Arena — v1 (Demo)</title>
-<meta name="description" content="SinFiltro Arena — arena de combate web, autos personalizables, local multiplayer, optimizado para móvil." />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<title>MiniGTA 2.5D — Demo</title>
 <style>
-  /* ---------------- Palette & globals (premium look) ---------------- */
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --accent-1:#00d1ff; --accent-2:#8a6eff; --accent-3:#ff5fb7;
-    --muted:#9fb0bf; --glass: rgba(255,255,255,0.04);
-    --card:#071226; --radius:12px; --fast:160ms; --mid:260ms; --txt:#eaf7ff;
+  /* Estilos mínimos para contener el canvas y HUD */
+  html,body{height:100%;margin:0;background:#0a0f16;font-family:Inter,system-ui,Arial;color:#eaf7ff}
+  #gameWrap{position:relative;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  canvas{display:block;background:linear-gradient(#0b1220,#071226);border-radius:10px}
+  /* HUD */
+  .hud{position:absolute;left:12px;top:12px;z-index:30;display:flex;flex-direction:column;gap:8px}
+  .btn{background:rgba(255,255,255,0.04);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(6px);color:#eaf7ff;font-weight:600}
+  .miniMap{position:absolute;right:12px;top:12px;width:140px;height:100px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.6);z-index:30}
+  .fps{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,0.45);padding:6px 8px;border-radius:6px;font-size:12px}
+  /* Virtual joystick */
+  .joyOuter{position:absolute;left:16px;bottom:16px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;z-index:30;touch-action:none}
+  .joyInner{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));box-shadow:0 8px 20px rgba(0,0,0,0.6)}
+  /* Pedal buttons */
+  .pedals{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:30}
+  .pedal{width:64px;height:64px;border-radius:12px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.03);font-weight:700;color:#eaf7ff}
+  /* Responsive canvas size container */
+  @media(min-width:900px){
+    canvas{width:900px;height:600px}
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--txt);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Helvetica Neue";-webkit-font-smoothing:antialiased;touch-action:none}
-  a{color:inherit}
-  button{font:inherit}
-
-  /* App shell */
-  .app{height:100vh;display:flex;flex-direction:column;align-items:stretch;overflow:hidden}
-  header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02);z-index:60}
-  .brand{display:flex;align-items:center;gap:10px}
-  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .top-controls{display:flex;gap:8px;align-items:center}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-
-  /* Canvas area */
-  .game-wrap{position:relative;flex:1;display:flex;align-items:center;justify-content:center;padding:12px}
-  canvas#game{width:100%;height:100%;border-radius:14px;display:block;background:
-    radial-gradient(800px 400px at 10% 10%, rgba(138,110,255,0.03), transparent 8%),
-    linear-gradient(180deg,#06101a,#021018);box-shadow:0 20px 80px rgba(0,0,0,0.6)}
-
-  /* HUD overlays */
-  .hud{position:absolute;left:12px;top:76px;z-index:80;display:flex;flex-direction:column;gap:8px}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:10px;backdrop-filter:blur(6px)}
-  .stats{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
-  .control-ghost{position:absolute;right:12px;bottom:120px;z-index:85;display:flex;flex-direction:column;gap:10px;align-items:center}
-
-  /* Bottom UI */
-  .bottom-bar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:90}
-  .bubble-menu{display:flex;gap:10px;align-items:center}
-  .bubble{width:56px;height:56px;border-radius:999px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;box-shadow:0 24px 60px rgba(0,0,0,0.6);cursor:pointer;border:none}
-
-  /* Modal / side panels */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none}
-  .overlay.show{display:block}
-  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);min-width:280px;max-width:96vw;background:linear-gradient(180deg,#02101a,#00111a);border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.03);z-index:210;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .modal h3{margin:0 0 10px 0}
-  .row{display:flex;gap:8px;align-items:center}
-  input[type="range"]{width:100%}
-  .option-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-
-  /* small helpers */
-  .muted{color:var(--muted);font-size:13px}
-  .center{display:flex;align-items:center;justify-content:center}
-  .kbd{background:rgba(255,255,255,0.04);padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);font-weight:600}
-
-  @media(max-width:520px){
-    header{height:60px;padding:8px}
-    .hud{left:8px;top:68px}
-    .control-ghost{right:8px;bottom:100px}
+  @media(max-width:899px){
+    canvas{width:100%;height:100%}
   }
 </style>
 </head>
 <body>
-<div class="app" role="application" aria-label="SinFiltro Arena">
-  <header>
-    <div class="brand">
-      <button id="menuBtn" class="icon-btn" title="Menú">☰</button>
-      <button id="homeBtn" class="logo-btn" title="Inicio"><span class="logo">SinFiltro Arena</span></button>
-    </div>
-    <div class="top-controls">
-      <button id="searchBtn" class="icon-btn" title="Buscar">🔎</button>
-      <button id="settingsBtn" class="icon-btn" title="Ajustes">⚙️</button>
-    </div>
-  </header>
+<div id="gameWrap">
+  <canvas id="game"></canvas>
 
-  <div class="game-wrap">
-    <canvas id="game" width="1280" height="720" aria-label="Canvas de juego"></canvas>
-
-    <!-- HUD: stats, score, player panels -->
-    <div class="hud" id="hud">
-      <div class="panel stats" id="scorePanel">
-        <div>Jugador A: <span id="scoreA">0</span></div>
-        <div style="margin-left:12px">Jugador B: <span id="scoreB">0</span></div>
-      </div>
-      <div class="panel stats" id="infoPanel">
-        <div id="modeLabel">Modo: Local Arena (2 jugadores)</div>
-      </div>
-    </div>
-
-    <!-- Right controls for touch -->
-    <div class="control-ghost" id="controlsGhost">
-      <div class="panel center" id="joystickWrapper" style="width:120px;height:120px;border-radius:14px">
-        <!-- Virtual joystick rendered on canvas overlay, this is placeholder to position -->
-        <div class="muted">Joystick</div>
-      </div>
-    </div>
-
-    <!-- Bottom bubble menu -->
-    <div class="bottom-bar">
-      <div class="bubble-menu">
-        <button id="customBtn" class="bubble" title="Personalizar">🎨</button>
-        <button id="weapBtn" class="bubble" title="Armas">🔫</button>
-      </div>
-      <div class="bubble-menu">
-        <button id="spawnBtn" class="bubble" title="Respawn">⟳</button>
-        <button id="helpBtn" class="bubble" title="Ayuda">❔</button>
-      </div>
-    </div>
+  <div class="hud">
+    <div class="btn" id="btnPause">Pausa</div>
+    <div class="btn" id="btnReset">Reiniciar</div>
   </div>
 
-  <!-- Overlays / modals -->
-  <div id="overlay" class="overlay" role="presentation"></div>
+  <div class="miniMap" id="miniMap"></div>
 
-  <div id="modalMenu" class="modal" style="display:none">
-    <h3>Menú</h3>
-    <div class="row">
-      <button id="btnResume" class="icon-btn">▶</button>
-      <button id="btnRestart" class="icon-btn">↻</button>
-      <button id="btnQuit" class="icon-btn">⤫</button>
-    </div>
-    <p class="muted">Opciones demo. Aquí puedes añadir login, matchmaking, etc.</p>
+  <div class="fps" id="fps">FPS: --</div>
+
+  <!-- Joystick (izquierda) -->
+  <div class="joyOuter" id="joyOuter" aria-hidden="true">
+    <div class="joyInner" id="joyInner"></div>
   </div>
 
-  <div id="modalCustomize" class="modal" style="display:none">
-    <h3>Personalizar Auto</h3>
-    <label class="muted">Color</label>
-    <div class="option-list" id="colorOptions"></div>
-    <label class="muted" style="margin-top:10px">Ruedas</label>
-    <div class="option-list" id="wheelsOptions"></div>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-      <button id="saveCustom" class="icon-btn">Guardar</button>
-      <button id="closeCustom" class="icon-btn">Cerrar</button>
-    </div>
-  </div>
-
-  <div id="modalWeapons" class="modal" style="display:none">
-    <h3>Seleccionar Arma</h3>
-    <div class="option-list" id="weaponsList"></div>
-    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-      <button id="closeWeap" class="icon-btn">Cerrar</button>
-    </div>
-  </div>
-
-  <div id="modalHelp" class="modal" style="display:none">
-    <h3>Ayuda rápida</h3>
-    <p class="muted">Controles:</p>
-    <ul class="muted">
-      <li>Jugador A: WASD mover, F disparar</li>
-      <li>Jugador B: Flechas mover, L disparar</li>
-      <li>En móvil: touch-left joystick para mover, tap derecho para disparar</li>
-    </ul>
-    <div style="display:flex;justify-content:flex-end;margin-top:8px">
-      <button id="closeHelp" class="icon-btn">Cerrar</button>
-    </div>
+  <!-- Pedales (derecha) -->
+  <div class="pedals">
+    <div class="pedal" id="btnAccel">▲</div>
+    <div class="pedal" id="btnBrake">■</div>
   </div>
 </div>
 
 <script>
-/* =============================
-   SinFiltro Arena v1 - Single File
-   - Canvas 2D arena
-   - Two local players (keyboard + touch)
-   - Cars with basic physics, weapons, health, respawn
-   - Customization demo stored in localStorage
-   - Mobile-optimized touch (drag joystick + fire)
-   - UI modals for customization & weapons
-   ============================= */
+/*
+  MiniGTA 2.5D (top-down) - Single-file demo
+  - Canvas 2D rendering
+  - Player car with simple physics
+  - Keyboard controls + virtual joystick + pedals
+  - NPC cars with waypoint wander
+  - Camera follow + minimap
+  - Collision by simple circle approximations
+  - Optimized loop, lazy drawing, requestAnimationFrame
+*/
 
-/* ---------- Core variables & setup ---------- */
+/* ------------------ Config ------------------ */
+const CONFIG = {
+  worldWidth: 3000,
+  worldHeight: 2000,
+  npcCount: 20,
+  targetFPS: 60,
+  maxSpeed: 6.2,
+  tileSize: 200, // used to draw roads/blocks
+  debug: false
+};
+
+/* ------------------ Canvas & Context ------------------ */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d', { alpha: false });
-let W = canvas.width = Math.max(800, Math.min(window.innerWidth - 24, 1280));
-let H = canvas.height = Math.max(500, Math.min(window.innerHeight - 150, 800));
+resizeCanvas();
+
+window.addEventListener('resize', resizeCanvas);
 function resizeCanvas(){
-  W = canvas.width = Math.max(800, Math.min(window.innerWidth - 24, 1280));
-  H = canvas.height = Math.max(500, Math.min(window.innerHeight - 150, 800));
+  // set canvas internal resolution to match displayed size for crispness
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(800, Math.floor(rect.width * devicePixelRatio));
+  canvas.height = Math.max(600, Math.floor(rect.height * devicePixelRatio));
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
 }
-window.addEventListener('resize', ()=>{ resizeCanvas(); });
-ctx.imageSmoothingEnabled = true;
-ctx.lineJoin = 'round';
-ctx.lineCap = 'round';
 
-/* ---------- Utility helpers ---------- */
-const rand = n => Math.floor(Math.random()*n);
-const clamp = (v,a,b)=> Math.max(a,Math.min(b,v));
-const TAU = Math.PI*2;
-function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-function angleTo(a,b){ return Math.atan2(b.y-a.y, b.x-a.x); }
+/* ------------------ Utilities ------------------ */
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function randRange(a,b){ return a + Math.random()*(b-a); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function degToRad(d){ return d * Math.PI / 180; }
+function radToDeg(r){ return r * 180 / Math.PI; }
 
-/* ---------- Persistent customizations ---------- */
-const STORAGE_KEY = 'sinfiltro.arena.v1';
-const defaultCfg = {
-  pA: { color:'#00d1ff', weapon:'cannon' },
-  pB: { color:'#8a6eff', weapon:'laser' }
-};
-let cfg = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaultCfg;
-
-/* ---------- Game state ---------- */
-let lastTs = performance.now();
-let acc = 0;
-const FIXED_STEP = 1000/60; // ms
-let running = true;
-
-/* ---------- Arena & visuals ---------- */
-const arena = {
-  w: W - 60,
-  h: H - 120,
-  x: 30,
-  y: 30,
-  neon: true
+/* ------------------ World & Camera ------------------ */
+const world = {
+  w: CONFIG.worldWidth,
+  h: CONFIG.worldHeight,
+  roads: [] // we can procedurally create road rectangles
 };
 
-/* ---------- Players: car physics ---------- */
-class Car {
-  constructor(id,x,y,color='cyan',weapon='cannon'){
-    this.id = id;
-    this.x = x; this.y = y;
-    this.vx = 0; this.vy = 0;
-    this.angle = 0; // facing rad
-    this.radius = 24;
-    this.speed = 0;
-    this.maxSpeed = 3.2;
-    this.accel = 0.18;
-    this.friction = 0.94; // general slowing
-    this.turnSpeed = 0.08;
-    this.color = color;
-    this.weapon = createWeaponConfig(weapon);
-    this.hp = 100;
-    this.maxHp = 100;
-    this.score = 0;
-    this.respawnTimer = 0;
-    this.alive = true;
-    this.lastShot = 0;
-    this.controls = { up:false, down:false, left:false, right:false, fire:false };
+const camera = {
+  x: 0, y: 0,
+  width: 0, height: 0,
+  smooth: 0.12
+};
+
+function updateCamera(targetX, targetY){
+  const vw = canvas.clientWidth;
+  const vh = canvas.clientHeight;
+  camera.width = vw; camera.height = vh;
+  const desiredX = clamp(targetX - vw/2, 0, world.w - vw);
+  const desiredY = clamp(targetY - vh/2, 0, world.h - vh);
+  camera.x = lerp(camera.x, desiredX, camera.smooth);
+  camera.y = lerp(camera.y, desiredY, camera.smooth);
+}
+
+/* ------------------ Player (car) ------------------ */
+const player = {
+  x: world.w/2,
+  y: world.h/2,
+  angle: 0, // radians, 0 = right
+  speed: 0,
+  radius: 14,
+  width: 36, height: 18,
+  accel: 0.18,
+  brake: 0.35,
+  friction: 0.02,
+  turnSpeed: 0.035,
+  color: '#00d1ff'
+};
+
+/* ------------------ NPCs ------------------ */
+let npcs = [];
+function createNPC(i){
+  const k = {
+    id: 'npc'+i,
+    x: randRange(200, world.w-200),
+    y: randRange(200, world.h-200),
+    angle: randRange(0, Math.PI*2),
+    speed: randRange(1.2, 3.2),
+    color: ['#8a6eff','#ff5fb7','#ffd166'][i%3],
+    radius: 14,
+    width: 34,
+    height: 16,
+    target: null,
+    changeTimer: randRange(1.2, 4.5)
+  };
+  k.target = { x: clamp(k.x + randRange(-400,400), 50, world.w-50), y: clamp(k.y + randRange(-300,300), 50, world.h-50) };
+  return k;
+}
+
+/* ------------------ Generate simple city/grid (roads) ------------------ */
+function buildCity(){
+  // We'll create a grid of blocks with roads between
+  const blockW = CONFIG.tileSize;
+  const blockH = CONFIG.tileSize;
+  const cols = Math.ceil(world.w / blockW);
+  const rows = Math.ceil(world.h / blockH);
+  world.roads = [];
+  // create vertical & horizontal roads
+  for(let c=0;c<cols;c++){
+    const x = c * blockW + blockW/2;
+    world.roads.push({ x: x, y: 0, w: Math.max(80, blockW/3), h: world.h }); // vertical road strip
   }
-  update(dt){
-    if(!this.alive){
-      this.respawnTimer -= dt;
-      if(this.respawnTimer <= 0) this.respawn();
-      return;
-    }
-    // controls influence
-    let ax = 0, ay = 0;
-    if(this.controls.up) { ax += Math.cos(this.angle)*this.accel; ay += Math.sin(this.angle)*this.accel; }
-    if(this.controls.down){ ax -= Math.cos(this.angle)*this.accel*0.6; ay -= Math.sin(this.angle)*this.accel*0.6; }
-    if(this.controls.left) this.angle -= this.turnSpeed;
-    if(this.controls.right) this.angle += this.turnSpeed;
-    // apply acceleration to velocity
-    this.vx += ax; this.vy += ay;
-    // apply friction
-    this.vx *= this.friction; this.vy *= this.friction;
-    // limit speed
-    const sp = Math.hypot(this.vx, this.vy);
-    if(sp > this.maxSpeed){
-      const ratio = this.maxSpeed/sp;
-      this.vx *= ratio; this.vy *= ratio;
-    }
-    // update position
-    this.x += this.vx; this.y += this.vy;
-    // bounds within arena
-    this.x = clamp(this.x, arena.x + this.radius, arena.x + arena.w - this.radius);
-    this.y = clamp(this.y, arena.y + this.radius, arena.y + arena.h - this.radius);
-    // fire handling (rate-limited)
-    if(this.controls.fire && performance.now() - this.lastShot > this.weapon.rate){
-      this.lastShot = performance.now();
-      spawnBullet(this);
-      spawnMuzzle(this);
-    }
-  }
-  hit(damage){
-    if(!this.alive) return;
-    this.hp -= damage;
-    spawnHitEffect(this.x + Math.cos(this.angle)*10, this.y + Math.sin(this.angle)*10);
-    if(this.hp <= 0){
-      this.destroyed();
-    }
-  }
-  destroyed(){
-    this.alive = false;
-    this.respawnTimer = 1800; // ms
-    spawnExplosion(this.x, this.y);
-    // points handled by bullet collision
-  }
-  respawn(){
-    // simple respawn at random corner
-    this.hp = this.maxHp; this.alive = true;
-    const corners = [
-      {x: arena.x + 60, y: arena.y + 60},
-      {x: arena.x + arena.w - 60, y: arena.y + 60},
-      {x: arena.x + 60, y: arena.y + arena.h - 60},
-      {x: arena.x + arena.w - 60, y: arena.y + arena.h - 60}
-    ];
-    const p = corners[rand(corners.length)];
-    this.x = p.x; this.y = p.y;
-    this.vx = this.vy = 0;
-  }
-  draw(ctx){
-    if(!this.alive) {
-      // ghost effect
-      ctx.save();
-      ctx.globalAlpha = 0.4;
-      ctx.translate(this.x,this.y);
-      ctx.rotate(this.angle);
-      drawCarShape(ctx,this.color,this.radius);
-      ctx.restore();
-      return;
-    }
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.angle);
-    drawCarShape(ctx,this.color,this.radius);
-    // hp bar above
-    ctx.restore();
-    // HUD lifebar
-    ctx.save();
-    const barW = 84;
-    const barH = 8;
-    ctx.translate(this.x - barW/2, this.y - this.radius - 18);
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(-2,-2,barW+4,barH+4);
-    // background
-    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(0,0,barW,barH);
-    // hp fill
-    const hpPct = clamp(this.hp / this.maxHp,0,1);
-    const grad = ctx.createLinearGradient(0,0,barW,0);
-    grad.addColorStop(0,this.color); grad.addColorStop(1,'#fff');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,barW*hpPct,barH);
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.strokeRect(0,0,barW,barH);
-    ctx.restore();
+  for(let r=0;r<rows;r++){
+    const y = r * blockH + blockH/2;
+    world.roads.push({ x: 0, y: y, w: world.w, h: Math.max(80, blockH/3) }); // horizontal road strip
   }
 }
 
-/* ---------- Car drawing helper (stylish) ---------- */
-function drawCarShape(ctx,color,radius){
+/* ------------------ Input Handling ------------------ */
+/* Keyboard */
+const keys = {};
+window.addEventListener('keydown', e=> { keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keyup', e=> { keys[e.key.toLowerCase()] = false; });
+
+/* Joystick (touch) */
+const joyOuter = document.getElementById('joyOuter');
+const joyInner = document.getElementById('joyInner');
+let joyState = { active:false, startX:0, startY:0, dx:0, dy:0, nx:0, ny:0 };
+
+joyOuter.addEventListener('touchstart', e=>{
+  const t = e.touches[0];
+  joyState.active = true;
+  const rect = joyOuter.getBoundingClientRect();
+  joyState.startX = t.clientX - rect.left;
+  joyState.startY = t.clientY - rect.top;
+  joyState.dx = 0; joyState.dy = 0;
+}, {passive:true});
+joyOuter.addEventListener('touchmove', e=>{
+  if(!joyState.active) return;
+  const t = e.touches[0];
+  const rect = joyOuter.getBoundingClientRect();
+  joyState.dx = (t.clientX - rect.left) - joyState.startX;
+  joyState.dy = (t.clientY - rect.top) - joyState.startY;
+  // normalize to -1..1
+  const maxR = rect.width/2 - 10;
+  joyState.nx = clamp(joyState.dx / maxR, -1, 1);
+  joyState.ny = clamp(joyState.dy / maxR, -1, 1);
+  // move inner indicator
+  joyInner.style.transform = `translate(${joyState.nx*40}px, ${joyState.ny*40}px)`;
+  e.preventDefault();
+}, {passive:false});
+joyOuter.addEventListener('touchend', e=>{
+  joyState.active = false; joyState.dx = 0; joyState.dy = 0; joyState.nx = 0; joyState.ny = 0;
+  joyInner.style.transform = `translate(0,0)`;
+});
+
+/* Pedal buttons */
+let pedalAccel = false, pedalBrake = false;
+document.getElementById('btnAccel').addEventListener('touchstart', ()=> pedalAccel=true, {passive:true});
+document.getElementById('btnAccel').addEventListener('touchend', ()=> pedalAccel=false, {passive:true});
+document.getElementById('btnBrake').addEventListener('touchstart', ()=> pedalBrake=true, {passive:true});
+document.getElementById('btnBrake').addEventListener('touchend', ()=> pedalBrake=false, {passive:true});
+/* Also mouse click for desktop */
+document.getElementById('btnAccel').addEventListener('mousedown', ()=> pedalAccel=true);
+document.getElementById('btnAccel').addEventListener('mouseup', ()=> pedalAccel=false);
+document.getElementById('btnBrake').addEventListener('mousedown', ()=> pedalBrake=true);
+document.getElementById('btnBrake').addEventListener('mouseup', ()=> pedalBrake=false);
+
+/* Buttons: Pause/Reset */
+let paused = false;
+document.getElementById('btnPause').addEventListener('click', ()=> { paused = !paused; document.getElementById('btnPause').textContent = paused ? 'Reanudar' : 'Pausa'; });
+document.getElementById('btnReset').addEventListener('click', resetPlayer);
+
+/* ------------------ Physics & Movement ------------------ */
+function updatePlayer(dt){
+  // Controls: keyboard arrows/WASD, joystick, pedals
+  const forward = keys['arrowup'] || keys['w'] || pedalAccel || false;
+  const backward = keys['arrowdown'] || keys['s'] || pedalBrake || false;
+  const left = keys['arrowleft'] || keys['a'] || (joyState.nx < -0.35);
+  const right = keys['arrowright'] || keys['d'] || (joyState.nx > 0.35);
+
+  // joystick vertical controls acceleration/brake too
+  const joyForward = (joyState.ny < -0.35);
+  const joyBack = (joyState.ny > 0.35);
+
+  let acc = 0;
+  if(forward || joyForward) acc += player.accel;
+  if(backward || joyBack) acc -= player.brake;
+
+  // apply acceleration into speed in local forward direction
+  player.speed += acc * dt * 60; // scale by frame
+  // apply friction
+  player.speed *= (1 - player.friction * dt * 60);
+  // clamp
+  player.speed = clamp(player.speed, -CONFIG.maxSpeed/1.6, CONFIG.maxSpeed);
+
+  // turning when moving - scale with speed magnitude
+  const turning = (left ? -1 : 0) + (right ? 1 : 0);
+  // if joystick used, override turning with nx sign for finer control
+  if(Math.abs(joyState.nx) > 0.12) {
+    // turning proportional
+    const sign = Math.sign(joyState.nx);
+    player.angle += sign * 0.04 * dt * 60 * Math.min(1, Math.abs(joyState.nx));
+  } else {
+    player.angle += turning * player.turnSpeed * dt * 60 * (0.5 + Math.abs(player.speed)/CONFIG.maxSpeed);
+  }
+
+  // update position
+  player.x += Math.cos(player.angle) * player.speed * dt * 60;
+  player.y += Math.sin(player.angle) * player.speed * dt * 60;
+
+  // stay in bounds
+  player.x = clamp(player.x, 16, world.w - 16);
+  player.y = clamp(player.y, 16, world.h - 16);
+}
+
+/* ------------------ NPC AI ------------------ */
+function updateNPC(n, dt){
+  // move toward target
+  const dx = n.target.x - n.x;
+  const dy = n.target.y - n.y;
+  const dist = Math.hypot(dx,dy);
+  if(dist < 40 || (n.changeTimer -= dt) < 0){
+    // pick a new target
+    n.target.x = clamp(n.x + randRange(-600,600), 40, world.w-40);
+    n.target.y = clamp(n.y + randRange(-500,500), 40, world.h-40);
+    n.changeTimer = randRange(2.2,5.5);
+  } else {
+    const desired = Math.atan2(dy,dx);
+    // rotate slowly towards desired
+    let diff = desired - n.angle;
+    diff = ((diff + Math.PI) % (Math.PI*2)) - Math.PI;
+    n.angle += clamp(diff, -0.03, 0.03);
+    // move forward
+    n.x += Math.cos(n.angle) * n.speed * dt * 60;
+    n.y += Math.sin(n.angle) * n.speed * dt * 60;
+    // keep in bounds
+    n.x = clamp(n.x, 20, world.w-20);
+    n.y = clamp(n.y, 20, world.h-20);
+  }
+}
+
+/* ------------------ Collisions (simple circles) ------------------ */
+function checkCollisions(){
+  // player vs NPCs
+  for(let i=0;i<npcs.length;i++){
+    const n = npcs[i];
+    const dx = n.x - player.x, dy = n.y - player.y;
+    const d = Math.hypot(dx,dy);
+    if(d < n.radius + player.radius){
+      // simple collision response: separate and reduce speed
+      const overlap = n.radius + player.radius - d + 0.5;
+      const nx = dx / (d || 1), ny = dy / (d || 1);
+      player.x -= nx * overlap * 0.6;
+      player.y -= ny * overlap * 0.6;
+      // bounce back a bit
+      player.speed *= -0.2;
+      n.x += nx * overlap * 0.4;
+      n.y += ny * overlap * 0.4;
+    }
+  }
+}
+
+/* ------------------ Rendering ------------------ */
+function worldToScreen(wx,wy){
+  // convert world coordinates to screen using camera
+  return { sx: wx - camera.x, sy: wy - camera.y };
+}
+
+function drawBackground(){
+  // draw blocks (darker) and roads (lighter)
+  ctx.fillStyle = '#071226';
+  ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+  // draw road strips
   ctx.save();
-  // body
-  ctx.fillStyle = color;
-  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-  roundedRect(ctx, -radius*1.4, -radius, radius*2.8, radius*2, 8);
-  ctx.fill(); ctx.stroke();
-  // canopy
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.beginPath();
-  ctx.ellipse(0, -radius*0.2, radius*0.8, radius*0.5, 0, 0, TAU);
-  ctx.fill();
-  // wheels
-  const wheelW = radius*0.35, wheelH = radius*0.55;
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.beginPath(); ctx.ellipse(-radius*0.9, radius*0.6, wheelW, wheelH, 0, 0, TAU); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(radius*0.9, radius*0.6, wheelW, wheelH, 0, 0, TAU); ctx.fill();
+  ctx.translate(-camera.x, -camera.y);
+  ctx.globalCompositeOperation = 'source-over';
+  // subtle grid of blocks
+  const bs = CONFIG.tileSize;
+  for(let gx=0; gx<world.w; gx+=bs){
+    for(let gy=0; gy<world.h; gy+=bs){
+      // block rect
+      ctx.fillStyle = '#06121a';
+      ctx.fillRect(gx, gy, bs-40, bs-40);
+    }
+  }
+  // roads
+  ctx.fillStyle = '#0b1b28';
+  world.roads.forEach(r=>{
+    ctx.fillRect(r.x - r.w/2, r.y - r.h/2, r.w, r.h);
+  });
   ctx.restore();
 }
-function roundedRect(ctx,x,y,w,h,r){
+
+function drawCar(x,y,angle,w,h,color, opts = {}){
+  ctx.save();
+  ctx.translate(x - camera.x, y - camera.y);
+  ctx.rotate(angle);
+  // body
+  ctx.fillStyle = color;
+  roundRect(ctx, -w/2, -h/2, w, h, 4);
+  ctx.fill();
+  // windows highlight
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  roundRect(ctx, -w/4, -h/2+2, w/2, h/2, 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/* helper rounded rect */
+function roundRect(ctx, x, y, w, h, r){
   ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
   ctx.closePath();
 }
 
-/* ---------- Weapon configurations & bullets ---------- */
-function createWeaponConfig(name){
-  const defs = {
-    cannon: { name:'cannon', damage:18, speed:6.2, size:6, color:'#ffd89b', rate:360, splash:false },
-    machine: { name:'machine', damage:8, speed:7.2, size:4, color:'#fff', rate:120, splash:false },
-    laser: { name:'laser', damage:6, speed:12, size:2, color:'#00ffea', rate:90, splash:false },
-    rocket:{ name:'rocket', damage:30, speed:4.8, size:8, color:'#ff7b7b', rate:700, splash:true }
-  };
-  return defs[name] || defs.cannon;
-}
-let bullets = [];
-function spawnBullet(car){
-  const w = car.weapon;
-  const speed = w.speed;
-  const angle = car.angle;
-  const bx = car.x + Math.cos(angle)*(car.radius+8);
-  const by = car.y + Math.sin(angle)*(car.radius+8);
-  bullets.push({
-    x: bx, y: by, vx: Math.cos(angle)*speed + car.vx, vy: Math.sin(angle)*speed + car.vy,
-    damage: w.damage, size: w.size, color: w.color, owner: car.id, splash: w.splash, life: 2800, born: performance.now()
-  });
-}
-
-/* ---------- Visual effects: particles & muzzle ---------- */
-let particles = [];
-function spawnMuzzle(car){
-  for(let i=0;i<6;i++){
-    const a = car.angle + (Math.random()-0.5)*0.6;
-    particles.push({
-      x: car.x + Math.cos(a)*(car.radius+6),
-      y: car.y + Math.sin(a)*(car.radius+6),
-      vx: Math.cos(a)*(1+Math.random()*2) + car.vx*0.2,
-      vy: Math.sin(a)*(1+Math.random()*2) + car.vy*0.2,
-      life: 300 + Math.random()*200,
-      born: performance.now(),
-      col: 'rgba(255,220,150,'+(0.8+Math.random()*0.2)+')',
-      size: 2+Math.random()*3
-    });
-  }
-}
-function spawnHitEffect(x,y){
-  for(let i=0;i<10;i++){
-    particles.push({
-      x:x, y:y,
-      vx: (Math.random()-0.5)*4, vy:(Math.random()-0.5)*4,
-      life: 260+Math.random()*160, born: performance.now(),
-      col: 'rgba(255,120,120,'+(0.85+Math.random()*0.15)+')',
-      size: 2+Math.random()*4
-    });
-  }
-}
-function spawnExplosion(x,y){
-  for(let i=0;i<30;i++){
-    particles.push({
-      x:x, y:y,
-      vx: (Math.random()-0.5)*8, vy:(Math.random()-0.5)*8,
-      life: 500+Math.random()*400, born: performance.now(),
-      col: `rgba(${rand(255)},${rand(160)},${rand(255)},${0.85})`,
-      size: 2+Math.random()*5
-    });
-  }
-}
-
-/* ---------- Collision & update loop ---------- */
-function update(dt){
-  // update cars
-  cars.forEach(c => c.update(dt));
-  // bullets
-  const now = performance.now();
-  for(let i=bullets.length-1;i>=0;i--){
-    const b = bullets[i];
-    b.x += b.vx; b.y += b.vy;
-    b.life -= dt;
-    // remove if out of arena or expired
-    if(b.life <= 0 || b.x < arena.x-20 || b.x > arena.x+arena.w+20 || b.y < arena.y-20 || b.y > arena.y+arena.h+20){
-      bullets.splice(i,1); continue;
-    }
-    // check collisions with cars
-    for(const car of cars){
-      if(!car.alive) continue;
-      if(car.id === b.owner) continue; // no friendly fire for now
-      const d = Math.hypot(car.x - b.x, car.y - b.y);
-      if(d < car.radius + b.size + 2){
-        car.hit(b.damage);
-        // award shooter
-        const shooter = cars.find(x=>x.id===b.owner);
-        if(!car.alive && shooter) shooter.score++;
-        // splash rocket
-        if(b.splash){
-          // area damage
-          bullets.splice(i,1);
-          for(const other of cars){
-            const dd = Math.hypot(other.x - b.x, other.y - b.y);
-            if(dd < 80 && other.alive) other.hit(12);
-          }
-          spawnExplosion(b.x,b.y);
-        } else {
-          bullets.splice(i,1);
-        }
-        break;
-      }
-    }
-  }
-  // particles
-  for(let i=particles.length-1;i>=0;i--){
-    const p = particles[i];
-    const lifePct = (now - p.born);
-    if(lifePct > p.life){ particles.splice(i,1); continue; }
-    p.vy += 0.02; p.vx *= 0.995; p.vy *= 0.995;
-    p.x += p.vx; p.y += p.vy;
-  }
-  // resolve car-car collision (simple)
-  for(let i=0;i<cars.length;i++){
-    for(let j=i+1;j<cars.length;j++){
-      const a = cars[i], b = cars[j];
-      const dx = b.x - a.x, dy = b.y - a.y;
-      const d = Math.hypot(dx,dy);
-      const minD = a.radius + b.radius;
-      if(d < minD && d>0){
-        const overlap = (minD - d)/2;
-        const nx = dx/d, ny = dy/d;
-        a.x -= nx*overlap; a.y -= ny*overlap;
-        b.x += nx*overlap; b.y += ny*overlap;
-        // simple bounce
-        const k = 0.5;
-        const rvx = (b.vx - a.vx)*k, rvy = (b.vy - a.vy)*k;
-        a.vx -= rvx; a.vy -= rvy;
-        b.vx += rvx; b.vy += rvy;
-      }
-    }
-  }
-}
-
-/* ---------- Drawing routine ---------- */
-function render(){
+/* draw NPCs and player */
+function renderScene(){
   // background
-  ctx.fillStyle = '#04121a';
-  ctx.fillRect(0,0,W,H);
-  // arena panel
-  const ax = arena.x, ay = arena.y, aw = arena.w, ah = arena.h;
-  // neon border
-  ctx.save();
-  ctx.shadowBlur = 30; ctx.shadowColor = 'rgba(0,209,255,0.06)';
-  const grd = ctx.createLinearGradient(0,ay,0,ay+ah);
-  grd.addColorStop(0,'rgba(255,255,255,0.02)'); grd.addColorStop(1,'rgba(255,255,255,0.01)');
-  ctx.fillStyle = grd;
-  roundedRect(ctx, ax, ay, aw, ah, 16); ctx.fill();
-  ctx.restore();
-  // inner grid subtle
-  ctx.strokeStyle = 'rgba(255,255,255,0.02)';
-  ctx.lineWidth = 1;
-  for(let gx = ax+40; gx < ax+aw-40; gx+=80){
-    ctx.beginPath(); ctx.moveTo(gx, ay+8); ctx.lineTo(gx, ay+ah-8); ctx.stroke();
-  }
-  for(let gy = ay+40; gy < ay+ah-40; gy+=80){
-    ctx.beginPath(); ctx.moveTo(ax+8, gy); ctx.lineTo(ax+aw-8, gy); ctx.stroke();
-  }
-  // bullets
-  for(const b of bullets){
-    ctx.beginPath();
-    ctx.fillStyle = b.color;
-    ctx.arc(b.x, b.y, b.size, 0, TAU);
-    ctx.fill();
-  }
-  // particles
-  for(const p of particles){
-    const lifePct = (performance.now() - p.born)/p.life;
-    ctx.beginPath();
-    ctx.globalAlpha = 1 - lifePct;
-    ctx.fillStyle = p.col;
-    ctx.arc(p.x, p.y, p.size*(1-lifePct*0.6), 0, TAU);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-  // cars
-  for(const car of cars) car.draw(ctx);
-  // HUD text overlays in canvas
-  ctx.save();
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.font = '12px Inter';
-  ctx.fillText('SinFiltro Arena — v1 (demo)', ax+12, ay+14);
-  ctx.restore();
-}
+  drawBackground();
 
-/* ---------- Game loop (fixed timestep) ---------- */
-function gameLoop(ts){
-  if(!running) return;
-  let dt = ts - lastTs;
-  lastTs = ts;
-  acc += dt;
-  // cap to avoid spiral
-  if(acc > 250) acc = FIXED_STEP;
-  while(acc >= FIXED_STEP){
-    update(FIXED_STEP);
-    acc -= FIXED_STEP;
-  }
-  render();
-  // update HUD elements
-  document.getElementById('scoreA').textContent = cars[0].score;
-  document.getElementById('scoreB').textContent = cars[1].score;
-  requestAnimationFrame(gameLoop);
-}
-
-/* ---------- Initialize players & spawn ---------- */
-let cars = [];
-function initGame(){
-  // compute arena sizes
-  arena.w = Math.max(600, W - 120);
-  arena.h = Math.max(380, H - 160);
-  arena.x = (W - arena.w)/2;
-  arena.y = (H - arena.h)/2;
-  cars = [];
-  const pA = new Car('A', arena.x + 100, arena.y + 100, cfg.pA.color, cfg.pA.weapon);
-  const pB = new Car('B', arena.x + arena.w - 100, arena.y + arena.h - 100, cfg.pB.color, cfg.pB.weapon);
-  cars.push(pA, pB);
-  bullets = []; particles = [];
-}
-initGame();
-
-/* ---------- Input: keyboard for both players ---------- */
-const keyState = {};
-window.addEventListener('keydown', (e)=>{
-  keyState[e.key.toLowerCase()] = true;
-  applyKeyboardToControls();
-});
-window.addEventListener('keyup', (e)=>{
-  keyState[e.key.toLowerCase()] = false;
-  applyKeyboardToControls();
-});
-function applyKeyboardToControls(){
-  // Player A: WASD + f
-  const a = cars[0], b = cars[1];
-  if(a){
-    a.controls.up = !!keyState['w'];
-    a.controls.down = !!keyState['s'];
-    a.controls.left = !!keyState['a'];
-    a.controls.right = !!keyState['d'];
-    a.controls.fire = !!keyState['f'];
-  }
-  if(b){
-    b.controls.up = !!keyState['arrowup'];
-    b.controls.down = !!keyState['arrowdown'];
-    b.controls.left = !!keyState['arrowleft'];
-    b.controls.right = !!keyState['arrowright'];
-    b.controls.fire = !!keyState['l'];
-  }
-}
-
-/* ---------- Touch: simple left-half joystick + right-half fire ---------- */
-let touchState = {
-  active:false, startX:0, startY:0, curX:0, curY:0, dx:0, dy:0
-};
-// We'll implement joystick controlling player A when touching left half,
-// and tapping right half for fire for player B; if two touches, both control.
-canvas.addEventListener('touchstart', e=>{
-  e.preventDefault();
-  for(const t of Array.from(e.changedTouches)){
-    handleTouchStart(t);
-  }
-}, {passive:false});
-canvas.addEventListener('touchmove', e=>{
-  e.preventDefault();
-  for(const t of Array.from(e.changedTouches)) handleTouchMove(t);
-}, {passive:false});
-canvas.addEventListener('touchend', e=>{
-  e.preventDefault();
-  for(const t of Array.from(e.changedTouches)) handleTouchEnd(t);
-}, {passive:false});
-
-const activeTouches = {}; // id -> role
-function handleTouchStart(t){
-  const tx = t.clientX, ty = t.clientY;
-  const side = (tx < window.innerWidth*0.5) ? 'left' : 'right';
-  activeTouches[t.identifier] = { side, sx:tx, sy:ty, cx:tx, cy:ty };
-  if(side === 'left'){
-    // assign to player A joystick
-    const touch = activeTouches[t.identifier];
-    touch.joystick = true;
-    // record start
-  } else {
-    // right: fire for player B
-    // immediate fire on touchstart
-    if(cars[1]) { cars[1].controls.fire = true; }
-    // also, if tap on right upper half, maybe fire for A as well with second finger
-    if(tx < window.innerWidth && tx > window.innerWidth*0.6 && cars[0] && !toggleFlag) { /* nothing */ }
-  }
-  // set active for smoother controls
-  updateTouchControls();
-}
-function handleTouchMove(t){
-  const tx = t.clientX, ty = t.clientY;
-  const touch = activeTouches[t.identifier];
-  if(!touch) return;
-  touch.cx = tx; touch.cy = ty;
-  // joystick control: compute dx/dy relative to start
-  if(touch.joystick){
-    const dx = tx - touch.sx, dy = ty - touch.sy;
-    // convert to directional controls for player A
-    const ax = Math.abs(dx) > Math.abs(dy) ? dx : 0;
-    const ay = Math.abs(dy) > Math.abs(dx) ? dy : 0;
-    const dead = 18;
-    const a = cars[0];
-    if(a){
-      a.controls.left = dx < -dead;
-      a.controls.right = dx > dead;
-      a.controls.up = dy < -dead;
-      a.controls.down = dy > dead;
-    }
-  } else {
-    // right side: maybe aim or move player B via drag
-    // we'll interpret horizontal drag as rotation or movement
-    const a = cars[1];
-    if(a){
-      const dx = tx - touch.sx, dy = ty - touch.sy;
-      const dead = 18;
-      a.controls.left = dx < -dead;
-      a.controls.right = dx > dead;
-      a.controls.up = dy < -dead;
-      a.controls.down = dy > dead;
-    }
-  }
-}
-function handleTouchEnd(t){
-  const touch = activeTouches[t.identifier];
-  if(!touch) return;
-  // release assignments
-  if(touch.joystick){
-    if(cars[0]) { cars[0].controls.up = cars[0].controls.down = cars[0].controls.left = cars[0].controls.right = false; }
-  } else {
-    if(cars[1]) cars[1].controls.up = cars[1].controls.down = cars[1].controls.left = cars[1].controls.right = cars[1].controls.fire = false;
-  }
-  delete activeTouches[t.identifier];
-  // ensure no stuck controls:
-  applyKeyboardToControls();
-}
-
-/* Utility to update touch controls every frame to ensure no stuck keys */
-function updateTouchControls(){
-  // ensure any touches mapped to right-side keep fire true while active
-  let rightActive = false;
-  for(const id in activeTouches){
-    if(activeTouches[id].side === 'right') rightActive = true;
-  }
-  if(cars[1]) cars[1].controls.fire = rightActive;
-}
-
-/* ---------- Drag-to-scroll touch surfaces (for UI areas) ----------
-   (We implemented joystick; horizontal rows not present in game mode) */
-
-/* ---------- Spawn bullets, particles already above ---------- */
-
-/* ---------- UI Binding: buttons, modals, customization ---------- */
-const overlayEl = document.getElementById('overlay');
-const modalMenu = document.getElementById('modalMenu');
-const modalCustom = document.getElementById('modalCustomize');
-const modalWeapons = document.getElementById('modalWeapons');
-const modalHelp = document.getElementById('modalHelp');
-
-function showModal(el){
-  overlayEl.classList.add('show'); overlayEl.style.display = 'block';
-  el.style.display = 'block';
-  el.style.opacity = 0; setTimeout(()=> el.style.opacity = 1, 10);
-}
-function hideModal(el){
-  overlayEl.classList.remove('show'); overlayEl.style.display = 'none';
-  el.style.display = 'none';
-}
-
-/* menu btn */
-document.getElementById('menuBtn').addEventListener('click', ()=> showModal(modalMenu));
-document.getElementById('btnResume').addEventListener('click', ()=> hideModal(modalMenu));
-document.getElementById('btnRestart').addEventListener('click', ()=> { initGame(); hideModal(modalMenu); });
-document.getElementById('btnQuit').addEventListener('click', ()=> { alert('Demo: cerrar'); hideModal(modalMenu); });
-
-document.getElementById('settingsBtn').addEventListener('click', ()=> showModal(modalCustom));
-document.getElementById('customBtn').addEventListener('click', ()=> showModal(modalCustom));
-document.getElementById('weapBtn').addEventListener('click', ()=> showModal(modalWeapons));
-document.getElementById('helpBtn').addEventListener('click', ()=> showModal(modalHelp));
-
-document.getElementById('closeCustom').addEventListener('click', ()=> hideModal(modalCustom));
-document.getElementById('closeWeap').addEventListener('click', ()=> hideModal(modalWeapons));
-document.getElementById('closeHelp').addEventListener('click', ()=> hideModal(modalHelp));
-
-overlayEl.addEventListener('click', ()=> {
-  hideModal(modalMenu); hideModal(modalCustom); hideModal(modalWeapons); hideModal(modalHelp);
-});
-
-/* customization options build */
-const colors = ['#00d1ff','#8a6eff','#ff5fb7','#00ff90','#ffd166','#ff7b7b','#9be15d'];
-const wheels = ['Classic','Offroad','Sleek'];
-const weapons = ['cannon','machine','laser','rocket'];
-const colorOptions = document.getElementById('colorOptions');
-const wheelsOptions = document.getElementById('wheelsOptions');
-const weaponsList = document.getElementById('weaponsList');
-
-function buildOptions(){
-  colorOptions.innerHTML = '';
-  colors.forEach(c=>{
-    const b = document.createElement('button'); b.className = 'icon-btn';
-    b.style.width = '44px'; b.style.height='44px'; b.style.borderRadius='10px'; b.style.background = c;
-    b.addEventListener('click', ()=> {
-      // apply to player A by default; allow selecting which player later
-      cfg.pA.color = c; localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); cars[0].color = c;
-    });
-    colorOptions.appendChild(b);
+  // draw NPCs (behind roads? we just draw)
+  npcs.forEach(n=>{
+    drawCar(n.x, n.y, n.angle, n.width, n.height, n.color);
   });
-  wheelsOptions.innerHTML = '';
-  wheels.forEach(w=>{
-    const el = document.createElement('div'); el.className = 'panel'; el.style.cursor='pointer';
-    el.textContent = w;
-    el.addEventListener('click', ()=> { alert('Demo: seleccionar ruedas '+w); });
-    wheelsOptions.appendChild(el);
-  });
-  weaponsList.innerHTML = '';
-  weapons.forEach(w=>{
-    const el = document.createElement('div'); el.className = 'panel';
-    el.style.cursor = 'pointer'; el.textContent = w;
-    el.addEventListener('click', ()=> {
-      // toggle weapon for player A or B via prompt? For demo, prompt which player
-      const p = prompt('Asignar a jugador A o B? (A/B)','A');
-      if(p && p.toUpperCase()==='A'){ cfg.pA.weapon = w; cars[0].weapon = createWeaponConfig(w); localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); }
-      else { cfg.pB.weapon = w; cars[1].weapon = createWeaponConfig(w); localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); }
-      alert('Arma asignada (demo)');
-    });
-    weaponsList.appendChild(el);
-  });
+
+  // draw player
+  drawCar(player.x, player.y, player.angle, player.width, player.height, player.color);
 }
-buildOptions();
 
-/* save customization */
-document.getElementById('saveCustom').addEventListener('click', ()=>{
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
-  alert('Configuración guardada (demo).');
-});
+/* HUD: minimap */
+const miniCanvas = document.createElement('canvas');
+miniCanvas.width = 280; miniCanvas.height = 200;
+const miniCtx = miniCanvas.getContext('2d');
+document.getElementById('miniMap').appendChild(miniCanvas);
 
-/* spawn button */
-document.getElementById('spawnBtn').addEventListener('click', ()=> {
-  cars.forEach(c=> c.respawn());
-});
+function renderMiniMap(){
+  const mmw = miniCanvas.width, mmh = miniCanvas.height;
+  miniCtx.clearRect(0,0,mmw,mmh);
+  // background
+  miniCtx.fillStyle = '#021018';
+  miniCtx.fillRect(0,0,mmw,mmh);
+  const scaleX = mmw / world.w, scaleY = mmh / world.h;
+  // draw roads (approx)
+  miniCtx.fillStyle = '#12323a';
+  world.roads.forEach(r=>{
+    miniCtx.fillRect((r.x - r.w/2)*scaleX, (r.y - r.h/2)*scaleY, r.w*scaleX, r.h*scaleY);
+  });
+  // draw npcs
+  npcs.forEach(n=>{
+    miniCtx.fillStyle = n.color;
+    miniCtx.fillRect(n.x*scaleX - 2, n.y*scaleY - 2, 4,4);
+  });
+  // player
+  miniCtx.fillStyle = '#00d1ff';
+  miniCtx.fillRect(player.x*scaleX - 3, player.y*scaleY - 3, 6,6);
+}
 
-/* help close */
-document.getElementById('closeHelp').addEventListener('click', ()=> hideModal(modalHelp));
+/* ------------------ Game loop ------------------ */
+let lastTime = performance.now();
+let fpsCounter = { frames:0, last: performance.now(), value:0 };
 
-/* search and home */
-document.getElementById('searchBtn').addEventListener('click', ()=> {
-  // simple demo search: show modal with sample thumbnails
-  showModal(modalWeapons);
-  // populate weapons modal with thumbnails as demo
-});
+function loop(now){
+  if(paused){ lastTime = now; requestAnimationFrame(loop); return; }
+  const dt = Math.min(0.05, (now - lastTime) / 1000);
+  lastTime = now;
 
-/* ---------- Utility: spawn initial grid of objects (decor) ---------- */
-function seedEnvironment(){
-  // create some floating neon shapes as decorative particles
-  for(let i=0;i<20;i++){
-    particles.push({
-      x: arena.x + Math.random()*arena.w,
-      y: arena.y + Math.random()*arena.h,
-      vx: (Math.random()-0.5)*0.2,
-      vy: (Math.random()-0.5)*0.2,
-      life: 200000,
-      born: performance.now(),
-      col: `rgba(${50+rand(200)},${50+rand(200)},${50+rand(200)},0.06)`,
-      size: 6+Math.random()*8
-    });
+  // update
+  updatePlayer(dt);
+  for(let n of npcs) updateNPC(n, dt);
+  checkCollisions();
+  updateCamera(player.x, player.y);
+
+  // render
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  renderScene();
+  renderMiniMap();
+
+  // fps
+  fpsCounter.frames++;
+  if(now - fpsCounter.last > 500){
+    fpsCounter.value = Math.round((fpsCounter.frames*1000) / (now - fpsCounter.last));
+    fpsCounter.frames = 0;
+    fpsCounter.last = now;
+    document.getElementById('fps').textContent = `FPS: ${fpsCounter.value}`;
   }
+
+  requestAnimationFrame(loop);
 }
-seedEnvironment();
 
-/* ---------- Start animation loop ---------- */
-requestAnimationFrame((t)=>{ lastTs = t; gameLoop(t); });
+/* ------------------ Init & helpers ------------------ */
+function init(){
+  buildCity();
+  // spawn NPCs
+  npcs = [];
+  for(let i=0;i<CONFIG.npcCount;i++) npcs.push(createNPC(i));
+  // position player in center roads
+  player.x = world.w/2 + randRange(-200,200);
+  player.y = world.h/2 + randRange(-100,100);
+  player.angle = randRange(0, Math.PI*2);
+  player.speed = 0;
+  camera.x = player.x - canvas.clientWidth / 2;
+  camera.y = player.y - canvas.clientHeight / 2;
+  requestAnimationFrame(loop);
+}
 
-/* ---------- Small helpers to spawn demo debug items ---------- */
-function makeGridCard(item){ /* placeholder - kept from earlier UI concept; not used in core */ return null; }
+/* reset player */
+function resetPlayer(){
+  player.x = world.w/2; player.y = world.h/2; player.angle = 0; player.speed = 0;
+}
 
-/* ---------- Prevent pinch/scroll interfering on mobile while touching canvas ---------- */
-window.addEventListener('touchmove', function(e){
-  // allow touchmove only for certain elements? we prevent default to keep game control
-  if(e.target === canvas) e.preventDefault();
-}, { passive:false });
+/* seed for reproducible behavior if needed (not strictly necessary) */
+// Math.seedrandom && Math.seedrandom('sinfiltro'); // optional if seedrandom included
 
-/* ---------- Responsive: adjust arena and res position on resize ---------- */
-window.addEventListener('resize', ()=> {
-  resizeCanvas(); initGame();
-});
+/* ------------------ Drag scrolling for horizontal rows (not needed here but demo) ------------------ */
+/* (Kept for compatibility with your earlier web app concepts) */
 
-/* ---------- Export minimal API for debugging from console ---------- */
-window.SFA = {
-  cars, bullets, particles, cfg, initGame, spawnBullet, spawnExplosion
-};
+/* ------------------ Start game ------------------ */
+init();
 
-/* ---------- End of single-file game demo ---------- */
+/* Expose some for console testing (optional) */
+window.__miniGTA = { player, npcs, world, camera, init };
+
+/* ------------------ Notes & Next Steps (ideas to extend) ------------------
+ - Añadir colisiones por rectángulos rotados si se desea precisión
+ - Reemplazar shapes por sprites / tiles para estética
+ - Añadir disparos, armas y efectos particles (canvas or WebGL)
+ - Multijugador simple: usar WebSocket / WebRTC para posición de players
+ - Guardado local de vehículos, upgrades, skins
+ - Mejorar IA: pathfinding A* sobre navmesh/grid
+ - Optimización: chunking/visible region for thousands of entities
+----------------------------------------------------------------------- */
 </script>
 </body>
 </html>
-```0
