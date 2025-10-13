@@ -1,452 +1,471 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Prototipo Vehicular 3D (Opción A)</title>
-<meta name="description" content="Prototipo 3D: vehículo con física (cannon-es) y render (three.js). Controles táctiles para móvil.">
-<style>
-  html,body{height:100%;margin:0;background:#05060a;color:#fff;font-family:Inter,system-ui,Arial;}
-  #container{width:100%;height:100%;touch-action:none;overflow:hidden;position:relative}
-  /* HUD / controles */
-  .joystick { position: absolute; left:12px; bottom:96px; width:120px; height:120px; border-radius:50%; background: rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; }
-  .stick { width:54px; height:54px; border-radius:50%; background: rgba(255,255,255,0.06); transform:translate(0,0); transition:transform .02s; touch-action:none; }
-  .controls-right { position: absolute; right:12px; bottom:72px; display:flex; flex-direction:column; gap:12px; align-items:center; }
-  .btn { width:64px; height:64px; border-radius:14px; background: linear-gradient(135deg,#00d1ff,#8a6eff); display:flex;align-items:center;justify-content:center;font-weight:700;color:#001;box-shadow:0 8px 30px rgba(0,0,0,0.6); }
-  .btn.small{width:50px;height:50px;border-radius:12px}
-  #topHUD { position: absolute; left:12px; top:12px; z-index:30; color:#9fb0bf; font-size:13px; }
-  #fps { position:absolute; right:12px; top:12px; color:#9fb0bf; font-size:13px; z-index:30 }
-  #miniMap { position:absolute; right:12px; top:56px; width:110px; height:110px; border-radius:10px; background: rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.04); z-index:30; display:flex;align-items:center;justify-content:center; color:#9fb0bf; font-size:12px }
-  /* center overlay for messages */
-  #msg { position:absolute; left:50%; top:8px; transform:translateX(-50%); background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:8px; color:#9fb0bf; font-size:13px; z-index:30 }
-  /* small instructions for desktop */
-  #instructions { position:absolute; left:12px; bottom:12px; color:#9fb0bf; font-size:12px; z-index:30 }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SinFiltro — Fase1 (Conducción móvil)</title>
+  <meta name="description" content="Demo: física vehicular, controles táctiles, optimizado móvil (fase1) — SinFiltro" />
+  <!-- Three.js + cannon-es desde CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
+  <script type="module">
+    // cannon-es via ESM import (CDN)
+    import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+    window.CANNON = CANNON; // expose to non-module code below
+  </script>
+
+  <style>
+    /* Minimal neutral UI: mantén tu look aplicando tu CSS encima si lo deseas */
+    html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden;-webkit-tap-highlight-color:transparent}
+    #app{position:fixed;inset:0;display:flex;flex-direction:column}
+    canvas{display:block;width:100%;height:100%}
+
+    /* overlay controls */
+    .ui-top{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:30;pointer-events:auto}
+    .btn{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:10px;color:var(--text,#eaf7ff);backdrop-filter:blur(6px)}
+    .brand{font-weight:700}
+    /* joystick areas */
+    .touch-left, .touch-right{position:fixed;bottom:18px;height:36vh;width:46%;z-index:25;pointer-events:auto}
+    .touch-left{left:4%}
+    .touch-right{right:4%;display:flex;justify-content:flex-end}
+    /* small indicators */
+    .indicator{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:25;color:#9fb0bf;font-size:13px;pointer-events:none}
+
+    /* visual joystick (simple) */
+    .joystick-base{width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;touch-action:none}
+    .joystick-stick{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);box-shadow:0 8px 24px rgba(0,0,0,0.6);transform:translate(0,0)}
+    .controls-mini{display:flex;gap:8px}
+    .small-btn{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);color:#eaf7ff}
+
+    /* viewer / debug area */
+    .debug{position:fixed;top:72px;right:12px;background:rgba(0,0,0,0.45);padding:8px;border-radius:8px;color:#9fb0bf;font-size:12px;z-index:40}
+    @media (min-width:900px){ .touch-left,.touch-right{display:none} }
+  </style>
 </head>
 <body>
-<div id="container"></div>
+  <div id="app">
+    <div class="ui-top">
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="btn brand" id="brandBtn">SinFiltro</div>
+        <div class="btn" id="menuBtn">☰</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="btn" id="searchBtn">🔎</div>
+        <div class="btn" id="modeBtn">🌗</div>
+      </div>
+    </div>
 
-<div id="topHUD">SinFiltro — Prototipo 3D</div>
-<div id="fps">FPS: --</div>
-<div id="miniMap">MiniMapa</div>
-<div id="msg">Joystick izquierdo: dirección • Derecha: Acelerar / Frenar • ▶ Disparo</div>
-<div id="instructions">W/A/S/D o Flechas = mover • Click / touch en botones</div>
+    <!-- touch areas (left = steer, right = accel/brake + quick actions) -->
+    <div class="touch-left" id="touchLeft" aria-hidden="false" style="pointer-events:auto">
+      <div style="margin-left:12px;touch-action:none">
+        <div class="joystick-base" id="joyBaseLeft">
+          <div class="joystick-stick" id="joyStickLeft"></div>
+        </div>
+      </div>
+    </div>
 
-<!-- Joystick izquierdo -->
-<div class="joystick" id="joyWrap">
-  <div class="stick" id="stick"></div>
-</div>
+    <div class="touch-right" id="touchRight" aria-hidden="false" style="pointer-events:auto">
+      <div style="display:flex;align-items:flex-end;gap:12px;touch-action:none;margin-right:12px">
+        <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+          <div class="joystick-base" id="joyBaseRight" style="width:74px;height:74px">
+            <div class="joystick-stick" id="joyStickRight" style="width:34px;height:34px"></div>
+          </div>
+          <div class="controls-mini">
+            <div class="small-btn" id="handBrake">⛓</div>
+            <div class="small-btn" id="toggleView">👁</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- Controles a la derecha -->
-<div class="controls-right">
-  <div class="btn small" id="btnUp">▲</div>
-  <div style="display:flex;gap:10px">
-    <div class="btn" id="btnAccel">Acel</div>
-    <div class="btn" id="btnBrake">Freno</div>
+    <div class="indicator" id="fps">FPS: -- • Speed: 0</div>
+    <div class="debug" id="debug">Cargando física...</div>
+    <!-- THREE canvas will be inserted by script -->
   </div>
-  <div class="btn small" id="btnFire">💥</div>
-</div>
 
-<!-- Three.js + cannon-es desde CDN -->
-<script type="module">
-/* Prototipo vehicular 3D - Opción A
-   - Three.js para render
-   - cannon-es para física (RaycastVehicle)
-   - Controles táctiles y teclado
-   - Cámara que sigue al vehículo
-   - Optimizado para móvil (LOD básico y lazy ticks)
-*/
+<script>
+/* =============================
+   SinFiltro — Fase1 Juego (Core)
+   - Three.js renderer + cannon-es physics
+   - Mobile optimized (pixelRatio clamp)
+   - Touch joysticks (steer + throttle)
+   - Overlays non-blocking when hidden
+   Params: Ajusta variables en la parte superior de este script.
+   ============================= */
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js';
-import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+(async function(){
+  // ================= PARAMETERS (ajustables) =================
+  const PARAMS = {
+    PIXEL_RATIO_MAX: 1.6,        // clamp for mobile perf
+    PHYSICS_STEP: 1/60,
+    MAX_FORWARD_FORCE: 420,      // torque-ish drive force
+    MAX_STEER_ANGLE: 0.5,        // radians
+    BRAKE_FORCE: 150,
+    MASS: 1200,
+    WHEEL_RADIUS: 0.28
+  };
 
-const container = document.getElementById('container');
-let renderer, scene, camera;
-let world;
-let vehicle, chassisBody;
-let wheelBodies = [];
-let lastTime;
-let clock = new THREE.Clock();
+  // =============== UTILS ===============
+  const $ = s => document.querySelector(s);
+  const clamp = (v,a,b)=> Math.max(a, Math.min(b,v));
+  const now = ()=> (performance || Date).now();
 
-let speed = 0, steerValue = 0;
-let accel = 0, brake = 0;
+  // =============== Basic scene setup ===============
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05060a);
 
-let fpsEl = document.getElementById('fps');
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 2000);
+  camera.position.set(0, 3.2, -6);
+  camera.lookAt(0,0,0);
 
-initThree();
-initCannon();
-createGround();
-createObstacles();
-createVehicle();
-createVisuals();
-initControls();
-animate();
-
-function initThree(){
-  renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  // clamp pixel ratio for mobile
+  const dpr = Math.min(window.devicePixelRatio || 1, PARAMS.PIXEL_RATIO_MAX);
+  renderer.setPixelRatio(dpr);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  container.appendChild(renderer.domElement);
+  renderer.domElement.style.touchAction = 'none'; // prevent default gestures
+  document.getElementById('app').appendChild(renderer.domElement);
 
-  scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x05060a, 0.0008);
-
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 6, -10);
-
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x080820, 0.8);
+  // lights
+  const hemi = new THREE.HemisphereLight(0xffffff,0x222244, 0.8);
   scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xe0f7ff, 0.6);
-  dir.position.set(5,20,10);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+  dir.position.set(5,10,5);
   scene.add(dir);
 
-  // optional debug orbit for desktop
-  // const controls = new OrbitControls(camera, renderer.domElement);
-  window.addEventListener('resize', onWindowResize);
-}
-
-function initCannon(){
-  world = new CANNON.World({
-    gravity: new CANNON.Vec3(0, -9.82, 0)
-  });
-  world.broadphase = new CANNON.SAPBroadphase(world);
-  world.solver.iterations = 8;
-  world.defaultContactMaterial.friction = 0.4;
-}
-
-function createGround(){
-  // visual plane
-  const groundGeo = new THREE.PlaneGeometry(500,500);
-  const groundMat = new THREE.MeshStandardMaterial({color:0x071226});
+  // ground
+  const groundGeo = new THREE.PlaneGeometry(400, 400);
+  const groundMat = new THREE.MeshStandardMaterial({color:0x081026, roughness:0.9, metalness:0.05});
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI/2;
   scene.add(ground);
 
-  // physics ground
-  const groundShape = new CANNON.Plane();
-  const groundBody = new CANNON.Body({ mass:0, shape: groundShape, material: new CANNON.Material() });
+  // ================= physics (cannon-es loaded earlier via module) =================
+  // Wait until CANNON is available (imported earlier)
+  function waitForCannon(){ return new Promise((res,rej)=>{
+    const max = 2000; let t=0;
+    (function check(){
+      if(window.CANNON) return res(window.CANNON);
+      t+=50; if(t>max) return rej('cannon not loaded');
+      setTimeout(check,50);
+    })();
+  })}
+
+  const CANNON = await waitForCannon();
+  const world = new CANNON.World({ gravity: new CANNON.Vec3(0,-9.82,0) });
+  world.broadphase = new CANNON.SAPBroadphase(world);
+  world.defaultContactMaterial.friction = 0.3;
+
+  // ground body
+  const groundBody = new CANNON.Body({ mass:0, shape:new CANNON.Plane(), material: new CANNON.Material() });
   groundBody.quaternion.setFromEuler(-Math.PI/2,0,0);
   world.addBody(groundBody);
-}
 
-function createObstacles(){
-  // Add some boxes / ramps for fun
-  const boxGeo = new THREE.BoxGeometry(4,2,4);
-  const boxMat = new THREE.MeshStandardMaterial({color:0x0f1720});
-  for(let i=0;i<8;i++){
-    const mesh = new THREE.Mesh(boxGeo, boxMat);
-    mesh.position.set((Math.random()-0.5)*80,1, (Math.random()-0.5)*80);
-    scene.add(mesh);
-    const shape = new CANNON.Box(new CANNON.Vec3(2,1,2));
-    const body = new CANNON.Body({ mass:0, shape });
-    body.position.copy(mesh.position);
-    world.addBody(body);
-  }
-  // a ramp
-  const rampGeo = new THREE.BoxGeometry(8,1,12);
-  const rampMat = new THREE.MeshStandardMaterial({color:0x0b1220});
-  const ramp = new THREE.Mesh(rampGeo, rampMat);
-  ramp.position.set(0,0.5,30);
-  ramp.rotation.x = -0.35;
-  scene.add(ramp);
-  const rampShape = new CANNON.Box(new CANNON.Vec3(4,0.5,6));
-  const rampBody = new CANNON.Body({ mass:0, shape:rampShape });
-  rampBody.position.copy(ramp.position);
-  rampBody.quaternion.setFromEuler(-0.35, 0, 0);
-  world.addBody(rampBody);
-}
-
-function createVehicle(){
-  // chassis visual
-  const chassisShape = new CANNON.Box(new CANNON.Vec3(1.2,0.5,2));
-  chassisBody = new CANNON.Body({ mass: 150 });
+  // simple vehicle using raycast vehicle
+  const chassisShape = new CANNON.Box(new CANNON.Vec3(1.1,0.45,2.0));
+  const chassisBody = new CANNON.Body({ mass: PARAMS.MASS });
   chassisBody.addShape(chassisShape);
-  chassisBody.position.set(0, 2, 0);
-  chassisBody.angularDamping = 0.4;
+  chassisBody.position.set(0, 1.2, 0);
+  chassisBody.quaternion.setFromEuler(0,0,0);
   world.addBody(chassisBody);
 
-  // Vehicle setup using RaycastVehicle
-  vehicle = new CANNON.RaycastVehicle({
+  // visual chassis
+  const chassisMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2,0.9,4.0),
+    new THREE.MeshStandardMaterial({color:0x123144, metalness:0.4, roughness:0.35})
+  );
+  chassisMesh.castShadow = true;
+  scene.add(chassisMesh);
+
+  // Wheel info for raycast vehicle
+  const options = {
+    radius: PARAMS.WHEEL_RADIUS,
+    directionLocal: new CANNON.Vec3(0,-1,0),
+    axleLocal: new CANNON.Vec3(-1,0,0),
+    chassisConnectionPointLocal: new CANNON.Vec3(),
+    maxSuspensionForce: 100000,
+    suspensionRestLength: 0.3,
+    suspensionStiffness: 30,
+    suspensionDamping: 4.3,
+    frictionSlip: 2,
+    rollInfluence: 0.01
+  };
+
+  const vehicle = new CANNON.RaycastVehicle({
     chassisBody: chassisBody,
     indexRightAxis: 0, // x
     indexUpAxis: 1, // y
     indexForwardAxis: 2 // z
   });
 
-  const options = {
-    radius: 0.4,
-    directionLocal: new CANNON.Vec3(0, -1, 0),
-    suspensionStiffness: 30,
-    suspensionRestLength: 0.3,
-    maxSuspensionForce: 100000,
-    dampingRelaxation: 2.3,
-    dampingCompression: 4.4,
-    maxSuspensionTravel: 0.3,
-    rollInfluence: 0.01,
-    axleLocal: new CANNON.Vec3(-1, 0, 0),
-    chassisConnectionPointLocal: new CANNON.Vec3(),
-    maxSuspensionForce: 1e5
-  };
+  // positions for four wheels
+  const wheelPositions = [
+    new CANNON.Vec3(-1.0, 0,  1.6),
+    new CANNON.Vec3( 1.0, 0,  1.6),
+    new CANNON.Vec3(-1.0, 0, -1.6),
+    new CANNON.Vec3( 1.0, 0, -1.6)
+  ];
 
-  // Add 4 wheels
-  options.chassisConnectionPointLocal.set(1, 0, 1.4);
-  vehicle.addWheel(options);
-  options.chassisConnectionPointLocal.set(-1, 0, 1.4);
-  vehicle.addWheel(options);
-  options.chassisConnectionPointLocal.set(1, 0, -1.4);
-  vehicle.addWheel(options);
-  options.chassisConnectionPointLocal.set(-1, 0, -1.4);
-  vehicle.addWheel(options);
+  wheelPositions.forEach((pos)=>{
+    const opt = Object.assign({}, options);
+    opt.chassisConnectionPointLocal.set(pos.x, pos.y, pos.z);
+    vehicle.addWheel(opt);
+  });
 
   vehicle.addToWorld(world);
 
-  // wheel bodies (visual placeholders)
-  for(let i=0;i<vehicle.wheelInfos.length;i++){
-    const wheel = vehicle.wheelInfos[i];
-    const cylinder = new CANNON.Body({ mass: 0 });
-    const sphere = new CANNON.Sphere(wheel.radius);
-    cylinder.addShape(sphere);
-    wheelBodies.push(cylinder);
-    world.addBody(cylinder);
+  // wheel visuals (simple)
+  const wheelMeshes = [];
+  vehicle.wheelInfos.forEach((w)=>{
+    const geo = new THREE.CylinderGeometry(PARAMS.WHEEL_RADIUS, PARAMS.WHEEL_RADIUS, 0.36, 16);
+    geo.rotateZ(Math.PI/2);
+    const mat = new THREE.MeshStandardMaterial({color:0x0f1720, metalness:0.2, roughness:0.5});
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = true;
+    scene.add(m);
+    wheelMeshes.push(m);
+  });
+
+  // add some obstacles (for demo)
+  for(let i=0;i<8;i++){
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.8,0.8,0.8), new THREE.MeshStandardMaterial({color:0x223344}));
+    b.position.set((Math.random()-0.5)*40,0.4,(Math.random()-0.5)*80);
+    scene.add(b);
+    const cb = new CANNON.Body({mass:0});
+    cb.addShape(new CANNON.Box(new CANNON.Vec3(0.4,0.4,0.4)));
+    cb.position.copy(b.position);
+    world.addBody(cb);
   }
 
-  // Visual chassis
-  const chassisGeo = new THREE.BoxGeometry(2.4,1,4);
-  const chassisMat = new THREE.MeshStandardMaterial({color:0x00d1ff, metalness:0.3, roughness:0.6});
-  const chassisMesh = new THREE.Mesh(chassisGeo, chassisMat);
-  chassisMesh.castShadow = true;
-  chassisMesh.receiveShadow = true;
-  chassisMesh.name = 'chassis';
-  scene.add(chassisMesh);
-  chassisBody.threeMesh = chassisMesh;
-}
+  // ======= controls state =======
+  let steer = 0;     // -1..1
+  let throttle = 0;  // -1..1 (forward positive)
+  let brake = 0;     // 0..1
 
-function createVisuals(){
-  // map grid lines to help orientation
-  const grid = new THREE.GridHelper(200, 40, 0x1f3240, 0x0b1220);
-  scene.add(grid);
-  // a simple skybox effect by horizon
-  const hemi = new THREE.AmbientLight(0x404a5b, 0.5);
-  scene.add(hemi);
-}
+  // ======= joystick implementation (lightweight) =======
+  function makeJoystick(baseEl, stickEl, options){
+    // options: onMove(dx,dy), maxRadius
+    let active = false, identifier = null;
+    let startX=0, startY=0;
+    const maxR = options.maxRadius || 44;
 
-/* ---------- Input / Controls (mobile + keyboard) ---------- */
-let stick = document.getElementById('stick');
-let joyWrap = document.getElementById('joyWrap');
-let maxStick = 36; // px travel radius
-let stickCenter = {x:joyWrap.offsetLeft + joyWrap.clientWidth/2, y: joyWrap.offsetTop + joyWrap.clientHeight/2};
+    function setStick(x,y){
+      stickEl.style.transform = `translate(${x}px, ${y}px)`;
+    }
 
-// dynamic recalc on resize
-function recalcStickCenter(){ const r = joyWrap.getBoundingClientRect(); stickCenter = {x: r.left + r.width/2, y: r.top + r.height/2}; }
-window.addEventListener('resize', ()=> { renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); recalcStickCenter(); });
+    baseEl.addEventListener('touchstart', (e)=> {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      active = true; identifier = t.identifier;
+      startX = t.clientX; startY = t.clientY;
+      setStick(0,0);
+    }, {passive:false});
 
-let pointerId = null;
-joyWrap.addEventListener('pointerdown', (e)=>{
-  joyWrap.setPointerCapture(e.pointerId);
-  pointerId = e.pointerId;
-  onStickMove(e.clientX, e.clientY);
-});
-joyWrap.addEventListener('pointermove', (e)=>{
-  if(pointerId !== e.pointerId) return;
-  onStickMove(e.clientX, e.clientY);
-});
-joyWrap.addEventListener('pointerup', (e)=>{
-  joyWrap.releasePointerCapture(e.pointerId);
-  pointerId = null;
-  stick.style.transform = `translate(0px,0px)`;
-  steerValue = 0;
-});
+    baseEl.addEventListener('touchmove', (e)=>{
+      if(!active) return;
+      for(const t of e.changedTouches){
+        if(t.identifier===identifier){
+          const dx = t.clientX - startX;
+          const dy = t.clientY - startY;
+          const dist = Math.sqrt(dx*dx+dy*dy);
+          const ratio = Math.min(1, dist / maxR);
+          const nx = dx * ratio / (dist||1) * Math.min(dist, maxR);
+          const ny = dy * ratio / (dist||1) * Math.min(dist, maxR);
+          setStick(nx, ny);
+          options.onMove(nx / maxR, ny / maxR);
+        }
+      }
+    }, {passive:false});
 
-function onStickMove(clientX, clientY){
-  recalcStickCenter();
-  const dx = clientX - stickCenter.x;
-  const dy = clientY - stickCenter.y;
-  // only left-right steering influence X
-  let dist = Math.sqrt(dx*dx + dy*dy);
-  if(dist > maxStick) {
-    const scale = maxStick / dist;
-    dx *= scale; dy *= scale;
-  }
-  stick.style.transform = `translate(${dx}px, ${dy}px)`;
-  // steering (-1..1)
-  steerValue = Math.max(-1, Math.min(1, dx / maxStick));
-}
+    baseEl.addEventListener('touchend', (e)=>{
+      for(const t of e.changedTouches){
+        if(t.identifier===identifier){
+          active=false; identifier=null; setStick(0,0);
+          options.onEnd && options.onEnd();
+        }
+      }
+    }, {passive:false});
 
-/* Right-side buttons */
-const btnAccel = document.getElementById('btnAccel');
-const btnBrake = document.getElementById('btnBrake');
-const btnFire = document.getElementById('btnFire');
-
-btnAccel.addEventListener('pointerdown', ()=> { accel = 1; });
-btnAccel.addEventListener('pointerup', ()=> { accel = 0; });
-btnAccel.addEventListener('pointerout', ()=> { accel = 0; });
-
-btnBrake.addEventListener('pointerdown', ()=> { brake = 1; });
-btnBrake.addEventListener('pointerup', ()=> { brake = 0; });
-btnBrake.addEventListener('pointerout', ()=> { brake = 0; });
-
-btnFire.addEventListener('click', ()=> {
-  fireProjectile();
-});
-
-/* Desktop keyboard fallback */
-window.addEventListener('keydown', (e)=>{
-  if(e.key==='w' || e.key==='ArrowUp') accel = 1;
-  if(e.key==='s' || e.key==='ArrowDown') brake = 1;
-  if(e.key==='a' || e.key==='ArrowLeft') steerValue = -1;
-  if(e.key==='d' || e.key==='ArrowRight') steerValue = 1;
-  if(e.key===' ') fireProjectile();
-});
-window.addEventListener('keyup', (e)=>{
-  if(e.key==='w' || e.key==='ArrowUp') accel = 0;
-  if(e.key==='s' || e.key==='ArrowDown') brake = 0;
-  if(e.key==='a' || e.key==='ArrowLeft') steerValue = 0;
-  if(e.key==='d' || e.key==='ArrowRight') steerValue = 0;
-});
-
-/* ---------- Vehicle apply forces each physics step ---------- */
-function updateVehicleControls(){
-  // mapping to engineForce / steering
-  const maxSteer = 0.4;
-  const maxForce = 2500;
-  const brakeForce = 100;
-
-  // steer front wheels (index 0 and 1 are front in our add order)
-  vehicle.setSteeringValue(maxSteer * steerValue, 0);
-  vehicle.setSteeringValue(maxSteer * steerValue, 1);
-
-  // engine force to back wheels (2 and 3)
-  if(accel > 0){
-    vehicle.applyEngineForce(-maxForce * accel, 2);
-    vehicle.applyEngineForce(-maxForce * accel, 3);
-  } else {
-    vehicle.applyEngineForce(0, 2);
-    vehicle.applyEngineForce(0, 3);
+    // mouse fallback for desktop testing
+    let mouseDown=false;
+    baseEl.addEventListener('pointerdown', (e)=>{ mouseDown=true; startX=e.clientX; startY=e.clientY; setStick(0,0); });
+    baseEl.addEventListener('pointermove', (e)=>{ if(!mouseDown) return; const dx = e.clientX-startX, dy = e.clientY-startY; const dist=Math.sqrt(dx*dx+dy*dy); const nx=dx/Math.max(dist,1)*Math.min(dist,maxR); const ny=dy/Math.max(dist,1)*Math.min(dist,maxR); setStick(nx,ny); options.onMove(nx/maxR, ny/maxR); }, {passive:true});
+    baseEl.addEventListener('pointerup', (e)=>{ mouseDown=false; setStick(0,0); options.onEnd && options.onEnd(); });
   }
 
-  // braking
-  if(brake > 0){
+  // wire joysticks
+  const joyBaseLeft = $('#joyBaseLeft'), joyStickLeft = $('#joyStickLeft');
+  const joyBaseRight = $('#joyBaseRight'), joyStickRight = $('#joyStickRight');
+
+  makeJoystick(joyBaseLeft, joyStickLeft, {
+    maxRadius: 44,
+    onMove: (nx,ny)=> {
+      // left joystick: nx -> steer, up/down ignored
+      steer = clamp(nx, -1, 1); // left negative
+    },
+    onEnd: ()=> { steer = 0; }
+  });
+
+  makeJoystick(joyBaseRight, joyStickRight, {
+    maxRadius: 34,
+    onMove: (nx,ny)=> {
+      // right joystick: ny negative = forward (finger swipe up means negative dy if base center)
+      // we invert y so upward finger = forward positive
+      throttle = clamp(-ny, -1, 1);
+    },
+    onEnd: ()=> { throttle = 0; }
+  });
+
+  // handbrake and view toggle
+  $('#handBrake').addEventListener('click', ()=> { brake = brake>0?0:1; $('#handBrake').textContent = brake? '⛓' : '⛓'; });
+  let chase = true;
+  $('#toggleView').addEventListener('click', ()=> { chase = !chase; $('#toggleView').textContent = chase? '👁' : '👁'; });
+
+  // keyboard support (desktop)
+  const keys = {};
+  window.addEventListener('keydown', (e)=> { keys[e.key.toLowerCase()] = true; });
+  window.addEventListener('keyup', (e)=> { keys[e.key.toLowerCase()] = false; });
+
+  // ============ physics update loop ============
+  let lastTime = performance.now()/1000;
+  let accumulator = 0;
+  const maxSubSteps = 3;
+
+  function physicsStep(dt){
+    // apply engine force to rear wheels (wheels 2 & 3)
+    const engineForce = PARAMS.MAX_FORWARD_FORCE * throttle;
+    const brakeForce = PARAMS.BRAKE_FORCE * brake;
+
+    // simple steering: rotate chassis quaternion small amount proportional to steer and speed
+    // but better: set wheel steering on front wheels
+    const steerAngle = PARAMS.MAX_STEER_ANGLE * steer;
+
+    // apply to vehicle wheelInfos directly
+    vehicle.setSteeringValue(steerAngle, 0);
+    vehicle.setSteeringValue(steerAngle, 1);
+
+    // engine/brake on rear wheels
+    vehicle.applyEngineForce(-engineForce, 2);
+    vehicle.applyEngineForce(-engineForce, 3);
+
+    // braking: set brake force on all wheels
     vehicle.setBrake(brakeForce, 0);
     vehicle.setBrake(brakeForce, 1);
     vehicle.setBrake(brakeForce, 2);
     vehicle.setBrake(brakeForce, 3);
-  } else {
-    vehicle.setBrake(0, 0);
-    vehicle.setBrake(0, 1);
-    vehicle.setBrake(0, 2);
-    vehicle.setBrake(0, 3);
+
+    world.step(PARAMS.PHYSICS_STEP);
   }
-}
 
-/* ---------- Fire simple projectile from vehicle front ---------- */
-const projectiles = [];
-function fireProjectile(){
-  const forward = new CANNON.Vec3(0,0,1);
-  // get chassis world transform
-  const pos = chassisBody.position.clone();
-  const quat = chassisBody.quaternion;
-  // compute forward direction in world
-  const forwardWorld = quat.vmult(new CANNON.Vec3(0,0,1));
-  const muzzle = pos.vadd(forwardWorld.scale(2.2)).vadd(new CANNON.Vec3(0,0.6,0));
+  // ============ animation & sync visuals ============
+  const statsIndicator = $('#fps');
+  const debugEl = $('#debug');
+  let lastFpsTime = performance.now(), frames=0;
 
-  const sphere = new CANNON.Body({ mass: 1, shape: new CANNON.Sphere(0.15) });
-  sphere.position.copy(muzzle);
-  const velocity = forwardWorld.scale(50); // projectile speed
-  sphere.velocity.set(velocity.x, velocity.y, velocity.z);
-  world.addBody(sphere);
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = performance.now()/1000;
+    let dt = t - lastTime;
+    lastTime = t;
+    // clamp large dt
+    dt = Math.min(0.05, dt);
+    accumulator += dt;
 
-  // visual
-  const geo = new THREE.SphereGeometry(0.15,8,8);
-  const mat = new THREE.MeshStandardMaterial({color:0xffcc00});
-  const mesh = new THREE.Mesh(geo, mat);
-  scene.add(mesh);
-  projectiles.push({ body: sphere, mesh: mesh, born: performance.now() });
-}
-
-/* ---------- Sync visual bodies with physics ---------- */
-function syncVisuals(){
-  // chassis mesh
-  const chassisMesh = chassisBody.threeMesh;
-  chassisMesh.position.copy(chassisBody.position);
-  chassisMesh.quaternion.copy(chassisBody.quaternion);
-
-  // wheels positions
-  for(let i=0;i<vehicle.wheelInfos.length;i++){
-    vehicle.updateWheelTransform(i);
-    const t = vehicle.wheelInfos[i].worldTransform;
-    wheelBodies[i].position.copy(t.position);
-    wheelBodies[i].quaternion.copy(t.quaternion);
-    // optional small visual sphere
-    if(!wheelBodies[i].threeMesh){
-      const m = new THREE.Mesh(new THREE.SphereGeometry(vehicle.wheelInfos[i].radius,8,8), new THREE.MeshStandardMaterial({color:0x101820}));
-      m.scale.set(1,1,1);
-      scene.add(m);
-      wheelBodies[i].threeMesh = m;
+    // limit substeps adaptively
+    let substeps = 0;
+    while(accumulator >= PARAMS.PHYSICS_STEP && substeps < maxSubSteps){
+      physicsStep(PARAMS.PHYSICS_STEP);
+      accumulator -= PARAMS.PHYSICS_STEP;
+      substeps++;
     }
-    wheelBodies[i].threeMesh.position.copy(wheelBodies[i].position);
-    wheelBodies[i].threeMesh.quaternion.copy(wheelBodies[i].quaternion);
-  }
 
-  // projectiles
-  const now = performance.now();
-  for(let i=projectiles.length-1;i>=0;i--){
-    const p = projectiles[i];
-    p.mesh.position.copy(p.body.position);
-    // remove after 6s
-    if(now - p.born > 6000){
-      world.removeBody(p.body);
-      scene.remove(p.mesh);
-      projectiles.splice(i,1);
+    // Sync visuals: chassis
+    chassisMesh.position.copy(chassisBody.position);
+    chassisMesh.quaternion.copy(chassisBody.quaternion);
+
+    // wheels
+    for(let i=0;i<vehicle.wheelInfos.length;i++){
+      vehicle.updateWheelTransform(i);
+      const t = vehicle.wheelInfos[i].worldTransform;
+      const pos = t.position;
+      const quat = t.quaternion;
+      wheelMeshes[i].position.set(pos.x, pos.y, pos.z);
+      wheelMeshes[i].quaternion.set(quat.x, quat.y, quat.z, quat.w);
     }
-  }
-}
 
-/* ---------- Camera follow logic ---------- */
-function updateCamera(){
-  const desired = new THREE.Vector3();
-  desired.copy(chassisBody.position);
-  desired.add(new THREE.Vector3(0, 2.6, -6).applyQuaternion(new THREE.Quaternion(chassisBody.quaternion.x, chassisBody.quaternion.y, chassisBody.quaternion.z, chassisBody.quaternion.w)));
-  // smooth interpolation
-  camera.position.lerp(desired, 0.12);
-  // point slightly above car
-  const lookAt = new THREE.Vector3().copy(chassisBody.position).add(new THREE.Vector3(0, 1.2, 0));
-  camera.lookAt(lookAt);
-}
+    // camera follow
+    if(chase){
+      const carPos = chassisMesh.position;
+      const carQuaternion = chassisMesh.quaternion;
+      const forward = new THREE.Vector3(0,0,1).applyQuaternion(carQuaternion).normalize();
+      const camTarget = new THREE.Vector3().copy(carPos).add(new THREE.Vector3(0,1.6,0));
+      const camPos = new THREE.Vector3().copy(carPos).add(forward.clone().multiplyScalar(-6)).add(new THREE.Vector3(0,2,0));
+      camera.position.lerp(camPos, 0.08);
+      camera.lookAt(camTarget);
+    } else {
+      // free camera slight orbit (desktop)
+      camera.position.lerp(new THREE.Vector3(0,8,-12), 0.02);
+      camera.lookAt(0,0,0);
+    }
 
-/* ---------- Main loop ---------- */
-let accum = 0;
-function animate(){
-  requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 1/30);
-  // step physics with fixed time step for stability
-  world.step(1/60, dt, 3);
+    renderer.render(scene, camera);
 
-  // apply controls
-  updateVehicleControls();
+    // fps indicator
+    frames++;
+    const nowMs = performance.now();
+    if(nowMs - lastFpsTime >= 500){
+      const fps = Math.round(frames*1000/(nowMs-lastFpsTime));
+      frames=0; lastFpsTime = nowMs;
+      const speed = (chassisBody.velocity.length()).toFixed(1);
+      statsIndicator.textContent = `FPS: ${fps} • Speed: ${speed}`;
+      debugEl.textContent = `Throttle:${throttle.toFixed(2)} Steer:${steer.toFixed(2)} Brake:${brake} Mass:${PARAMS.MASS}`;
+    }
 
-  // sync chassis visual to physics
-  syncVisuals();
+  } // animate
 
-  // camera follow
-  updateCamera();
+  // kickstart
+  lastTime = performance.now()/1000;
+  animate();
 
-  renderer.render(scene, camera);
+  // resize handling
+  window.addEventListener('resize', ()=> {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
 
-  // lightweight FPS
-  const fps = Math.round(1 / dt);
-  fpsEl.textContent = 'FPS: ' + fps;
-}
+  // ============ UI interactions (demo menus) ============
+  // menu / search / brand
+  $('#menuBtn').addEventListener('click', ()=>{
+    // simple demo: show a toast / or open your panel
+    alert('Demo: abrir menú lateral (integra tu panel real aquí).');
+  });
+  $('#searchBtn').addEventListener('click', ()=> {
+    // open a demo search overlay (you can replace with real input)
+    const q = prompt('Buscar (demo): escribe término');
+    if(q) alert('Demo: buscar -> ' + q);
+  });
+  $('#brandBtn').addEventListener('click', ()=> { window.scrollTo({top:0,behavior:'smooth'}); });
 
-/* ---------- Utility: update wheel visual scale etc if needed ---------- */
-function onWindowResize(){
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-}
+  // mode toggle (dark/light) — adjust css variable quickly
+  $('#modeBtn').addEventListener('click', ()=>{
+    const b = document.body;
+    if(b.classList.contains('light')){ b.classList.remove('light'); $('#modeBtn').textContent='🌗'; }
+    else { b.classList.add('light'); $('#modeBtn').textContent='☀️'; }
+  });
 
-/* ---------- Initial recalculation for joystick center ---------- */
-setTimeout(recalcStickCenter, 300);
+  // ensure overlays don't block touch when hidden: pointer-events handled by CSS classes above
+  // touch areas already have pointer-events enabled.
+
+  // ============ cleanup hint ============
+  window._sinfiltro_cleanup = ()=> {
+    renderer.forceContextLoss();
+    renderer.domElement = null;
+  };
+
+  // final log
+  console.log('SinFiltro Fase1 core loaded — prueba en móvil: usa joystick izquierdo para dirigir y joystick derecho para acelerar.');
+
+})();
 </script>
 </body>
 </html>
