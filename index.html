@@ -3,415 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SinFiltro — Premium</title>
+  <title>SinFiltro - Arena (demo)</title>
   <style>
-    /* ====== Estilos base (idénticos al diseño aprobado) ====== */
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:"Poppins",sans-serif;
-      background:linear-gradient(180deg,#0d0d0d,#111827);
-      color:#eaf7ff;
-      -webkit-font-smoothing:antialiased;
-      overflow-y:auto;
-      -webkit-overflow-scrolling:touch;
+    html, body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+    #gameCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+    #ui {
+      position: absolute;
+      bottom: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: center;
     }
-    header{
-      position:fixed;top:0;left:0;right:0;height:76px;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 16px;z-index:1000;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
-      backdrop-filter:blur(8px);
-      border-bottom:1px solid rgba(255,255,255,0.02);
+    .button {
+      width: 64px; height: 64px; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center;
+      background: radial-gradient(circle at top left, #5ef, #36a);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
     }
-    .header-left{display:flex;align-items:center;gap:12px}
-    .icon-btn{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,0.02);display:inline-flex;align-items:center;justify-content:center;color:#9fb0bf;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-    .logo{font-weight:700;font-size:20px;background:linear-gradient(90deg,#00d1ff,#8a6eff);-webkit-background-clip:text;background-clip:text;color:transparent}
-    main{padding-top:96px;padding-bottom:120px;max-width:980px;margin:0 auto}
-    .container{padding:12px}
-
-    .hero{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
-    .hero h1{color:#8a6eff;margin-bottom:6px;font-size:18px}
-    .hero p{color:#9fb0bf;font-size:13px}
-
-    .section{margin-top:18px}
-    .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .section .title{font-weight:800;color:#00d1ff;font-size:18px}
-    .see-all{color:#9fb0bf;font-size:13px;cursor:pointer}
-
-    /* horizontal rows */
-    .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-    .h-row::-webkit-scrollbar{display:none}
-    .card{flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);position:relative;cursor:pointer;scroll-snap-align:center}
-    .card img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.6)}
-    .card .meta{position:absolute;left:12px;bottom:10px;color:#fff;z-index:5}
-    .badge{position:absolute;left:12px;top:12px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,#00d1ff,#8a6eff);color:#001;font-weight:700;font-size:12px;z-index:6}
-
-    /* grid */
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-    .grid .card{height:150px}
-    .grid .body{padding:8px;color:#eaf7ff}
-    .grid .title{font-weight:700}
-    .grid .meta{font-size:12px;color:#9fb0bf;margin-top:6px;display:flex;justify-content:space-between;align-items:center}
-
-    /* Streets canvas section */
-    .streets-wrap{margin-top:18px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
-    .streets-title{font-weight:800;color:#00d1ff;margin-bottom:8px}
-    #streetsCanvas{width:100%;height:300px;border-radius:10px;background:linear-gradient(180deg,#071226,#091a2a);display:block}
-
-    /* fab & bottom nav placeholders (kept for design) */
-    .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:68px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;border:none;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
-    .bottom-nav{position:fixed;left:12px;right:12px;bottom:10px;height:72px;border-radius:14px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);z-index:185}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:#9fb0bf;font-size:12px;cursor:pointer}
-
-    /* small screens */
-    @media (max-width:420px){
-      .card{flex:0 0 150px;height:100px}
-      #streetsCanvas{height:260px}
+    #joystick {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.3);
+      position: relative;
+    }
+    #stick {
+      width: 40px; height: 40px;
+      border-radius: 50%; background: rgba(255,255,255,0.4);
+      position: absolute; top: 30px; left: 30px;
+    }
+    #fps {
+      position: absolute; top: 8px; left: 8px; color: #0f0; font-family: monospace;
+      background: rgba(0,0,0,0.4); padding: 4px 6px; border-radius: 4px; font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-left">
-      <button id="menuBtn" class="icon-btn" aria-label="menu">☰</button>
-      <button id="brandBtn" class="logo" style="background:linear-gradient(90deg,#00d1ff,#8a6eff);-webkit-background-clip:text;color:transparent">SinFiltro</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button id="searchTop" class="icon-btn" title="buscar">🔍</button>
-      <button id="themeBtn" class="icon-btn" title="modo">🌗</button>
-    </div>
-  </header>
+  <canvas id="gameCanvas"></canvas>
+  <div id="fps">FPS: 0</div>
+  <div id="ui">
+    <div id="joystick"><div id="stick"></div></div>
+    <div class="button" id="fireBtn">🔫</div>
+  </div>
 
-  <main>
-    <div class="container">
-      <section class="hero" aria-label="presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-      </section>
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js";
+    
+    const canvas = document.getElementById("gameCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x111111);
 
-      <section class="section" aria-label="tendencias">
-        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all">Ver todo</div></div>
-        <div id="row1" class="h-row"></div>
-      </section>
+    // Cámara
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, -10);
+    camera.lookAt(0, 0, 0);
 
-      <section class="section" aria-label="recomendados">
-        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all">Ver todo</div></div>
-        <div id="row2" class="h-row"></div>
-      </section>
+    // Luz
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 10, -5);
+    scene.add(light);
 
-      <section class="section" aria-label="antes-visto">
-        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all">Ver todo</div></div>
-        <div id="row3" class="h-row"></div>
-      </section>
+    // Piso
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(1000, 1000),
+      new THREE.MeshPhongMaterial({ color: 0x202020 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
 
-      <!-- Grid -->
-      <section class="section" aria-label="explorar">
-        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all">Filtrar</div></div>
-        <div id="grid" class="grid"></div>
-      </section>
+    // Auto (bloque rojo)
+    const car = new THREE.Mesh(
+      new THREE.BoxGeometry(2, 1, 4),
+      new THREE.MeshPhongMaterial({ color: 0xff3333 })
+    );
+    car.position.y = 0.5;
+    scene.add(car);
 
-      <!-- Streets (mapa simple top-down): Puras calles por ahora -->
-      <section class="section streets-wrap" aria-label="calles">
-        <div class="streets-title">🛣️ Calles (mapa)</div>
-        <canvas id="streetsCanvas" aria-label="mapa de calles"></canvas>
-        <p style="color:#9fb0bf;font-size:13px;margin-top:8px">Mapa provisional: calles definidas (top-down). Esto es temporal: sólo calles, sin edificios móviles.</p>
-      </section>
-    </div>
-  </main>
+    // Joystick
+    const joystick = document.getElementById("joystick");
+    const stick = document.getElementById("stick");
+    let joy = { active: false, x: 0, y: 0 };
 
-  <button class="fab" id="fab">＋</button>
+    joystick.addEventListener("touchstart", (e) => {
+      joy.active = true;
+    });
+    joystick.addEventListener("touchmove", (e) => {
+      const rect = joystick.getBoundingClientRect();
+      const touch = e.touches[0];
+      const x = touch.clientX - rect.left - rect.width / 2;
+      const y = touch.clientY - rect.top - rect.height / 2;
+      const dist = Math.min(Math.sqrt(x * x + y * y), rect.width / 2);
+      const angle = Math.atan2(y, x);
+      joy.x = (dist / (rect.width / 2)) * Math.cos(angle);
+      joy.y = (dist / (rect.height / 2)) * Math.sin(angle);
+      stick.style.left = `${50 + joy.x * 50 - 20}px`;
+      stick.style.top = `${50 + joy.y * 50 - 20}px`;
+    });
+    joystick.addEventListener("touchend", () => {
+      joy = { active: false, x: 0, y: 0 };
+      stick.style.left = "30px";
+      stick.style.top = "30px";
+    });
 
-  <nav class="bottom-nav" role="navigation">
-    <div class="nav-item" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-    <div class="nav-item" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
-    <div class="nav-item" id="navSeen">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div class="nav-item" id="navMe">👤<div style="font-size:11px">Tus videos</div></div>
-  </nav>
+    // Movimiento
+    let speed = 0, angle = 0;
+    const accel = 0.02, turnSpeed = 0.04, maxSpeed = 0.8;
 
-  <script>
-    /* =========================
-       Versión base aprobada + sección "calles"
-       - Mantengo comportamiento original: filas horizontales drag, lazy-load, grid, infinite vertical
-       - Añadí canvas "streetsCanvas" con calles definidas (top-down)
-       - No cambio diseño ni estructura visual aprobada
-       ========================= */
+    // FPS
+    const fpsDisplay = document.getElementById("fps");
+    let lastTime = performance.now(), frames = 0;
 
-    /* ---- Refs ---- */
-    const row1 = document.getElementById('row1');
-    const row2 = document.getElementById('row2');
-    const row3 = document.getElementById('row3');
-    const grid = document.getElementById('grid');
-    const themeBtn = document.getElementById('themeBtn');
-    const body = document.body;
+    function animate() {
+      requestAnimationFrame(animate);
 
-    /* ---- Demo data pool ---- */
-    const pool = Array.from({length:40}).map((_,i)=>({
-      id: 'i'+i,
-      src: `https://picsum.photos/seed/${Math.floor(Math.random()*100000+i)}/640/360`,
-      title: ['Callejón','Atardecer','Retrato','Nocturna','Visual'][i%5],
-      likes: Math.floor(Math.random()*6000),
-      comments: Math.floor(Math.random()*1200),
-      views: Math.floor(Math.random()*900)+'K',
-      kind: (i%5===0)?'video':'image'
-    }));
-
-    /* ---- Lazy loading via IntersectionObserver ---- */
-    let imgObserver = null;
-    function lazyObserve(root=document){
-      const imgs = root.querySelectorAll('img[data-src]');
-      if('IntersectionObserver' in window){
-        if(!imgObserver){
-          imgObserver = new IntersectionObserver((entries,obs)=>{
-            entries.forEach(e=>{
-              if(e.isIntersecting){
-                const img = e.target;
-                img.src = img.dataset.src;
-                img.onload = ()=> img.parentElement.classList.remove('skel');
-                img.removeAttribute('data-src');
-                obs.unobserve(img);
-              }
-            });
-          }, {rootMargin:'300px', threshold:0.05});
-        }
-        imgs.forEach(i=> imgObserver.observe(i));
+      // Movimiento
+      if (joy.active) {
+        speed += joy.y * accel;
+        angle -= joy.x * turnSpeed;
       } else {
-        imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+        speed *= 0.95;
+      }
+      speed = Math.max(Math.min(speed, maxSpeed), -maxSpeed);
+
+      car.rotation.y = angle;
+      car.position.x += Math.sin(angle) * speed;
+      car.position.z += Math.cos(angle) * speed;
+
+      camera.position.lerp(new THREE.Vector3(car.position.x, car.position.y + 5, car.position.z - 10), 0.1);
+      camera.lookAt(car.position);
+
+      renderer.render(scene, camera);
+
+      // FPS cálculo
+      frames++;
+      const now = performance.now();
+      if (now - lastTime >= 1000) {
+        fpsDisplay.textContent = `FPS: ${frames}`;
+        frames = 0;
+        lastTime = now;
       }
     }
+    animate();
 
-    /* ---- Create card elements ---- */
-    function makeCard(item){
-      const d = document.createElement('div');
-      d.className = 'card skel';
-      d.tabIndex = 0;
-      d.innerHTML = `
-        <img data-src="${item.src}" alt="${item.title}">
-        ${item.likes>2000?'<div class="badge">TOP</div>':''}
-        <div class="meta">
-          <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-          <div style="font-size:12px;color:#fff;opacity:.95">❤ ${item.likes} • 💬 ${item.comments} • 👁 ${item.views}</div>
-        </div>
-      `;
-      d.addEventListener('click', ()=> openViewer(item));
-      return d;
-    }
-
-    function makeGridCard(item){
-      const a = document.createElement('article');
-      a.className = 'card skel';
-      a.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="body"><div class="title">${item.title}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-      a.addEventListener('click', ()=> openViewer(item));
-      return a;
-    }
-
-    /* ---- Render rows and grid ---- */
-    function fillRows(){
-      row1.innerHTML = ''; row2.innerHTML = ''; row3.innerHTML = ''; grid.innerHTML = '';
-      // distribute items
-      for(let i=0;i<12;i++){
-        row1.appendChild(makeCard(pool[i%pool.length]));
-      }
-      for(let i=12;i<24;i++){
-        row2.appendChild(makeCard(pool[i%pool.length]));
-      }
-      for(let i=24;i<32;i++){
-        row3.appendChild(makeCard(pool[i%pool.length]));
-      }
-      // grid
-      for(let i=32;i<pool.length;i++){
-        grid.appendChild(makeGridCard(pool[i]));
-      }
-      // ensure horizontal drag enabled
-      enableDrag(row1); enableDrag(row2); enableDrag(row3);
-      lazyObserve();
-    }
-
-    /* ---- Drag-to-scroll for horizontals (robust) ---- */
-    function enableDrag(el){
-      if(el.__drag) return;
-      el.__drag = true;
-      let isDown=false, startX, scrollLeft;
-      el.addEventListener('touchstart', e=>{
-        isDown = true;
-        startX = e.touches[0].pageX - el.offsetLeft;
-        scrollLeft = el.scrollLeft;
-      }, {passive:true});
-      el.addEventListener('touchmove', e=>{
-        if(!isDown) return;
-        const x = e.touches[0].pageX - el.offsetLeft;
-        const walk = (x - startX) * 1;
-        el.scrollLeft = scrollLeft - walk;
-      }, {passive:true});
-      el.addEventListener('touchend', ()=> { isDown=false; }, {passive:true});
-
-      // pointer events for desktop / mouse
-      let mouseDown=false;
-      el.addEventListener('pointerdown', e=>{ mouseDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
-      el.addEventListener('pointermove', e=>{ if(!mouseDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-      el.addEventListener('pointerup', e=>{ mouseDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
-    }
-
-    /* ---- Viewer (simple) ---- */
-    const viewer = document.createElement('div');
-    viewer.style.position='fixed'; viewer.style.inset='0'; viewer.style.display='none'; viewer.style.background='rgba(0,0,0,0.9)'; viewer.style.zIndex=1200; viewer.style.alignItems='center'; viewer.style.justifyContent='center';
-    viewer.addEventListener('click', (e)=>{ if(e.target===viewer) hideViewer(); });
-    document.body.appendChild(viewer);
-
-    function openViewer(item){
-      viewer.innerHTML = '';
-      const c = document.createElement(item.kind==='video' ? 'video' : 'img');
-      c.style.maxWidth='96%'; c.style.maxHeight='86%';
-      if(item.kind==='video'){ c.src = item.src; c.controls = true; c.autoplay = true; }
-      else { c.src = item.src; }
-      viewer.appendChild(c);
-      viewer.style.display='flex';
-    }
-    function hideViewer(){ viewer.style.display='none'; viewer.innerHTML=''; }
-
-    /* ---- Infinite vertical load (grid) ---- */
-    let loading = false;
-    window.addEventListener('scroll', ()=>{
-      if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loading){
-        loading = true;
-        setTimeout(()=>{
-          for(let i=0;i<6;i++){
-            grid.appendChild(makeGridCard(pool[Math.floor(Math.random()*pool.length)]));
-          }
-          lazyObserve(grid);
-          loading = false;
-        }, 700);
-      }
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
-
-    /* ---- Theme toggle ---- */
-    const THEME_KEY = 'sinfiltro.theme.v1';
-    let theme = localStorage.getItem(THEME_KEY) || 'dark';
-    function applyTheme(t){
-      if(t==='light'){ body.classList.add('light'); themeBtn.textContent='☀️'; body.style.background = 'linear-gradient(180deg,#f5f9ff,#eef6ff)'; body.style.color='#071226'; }
-      else { body.classList.remove('light'); themeBtn.textContent='🌗'; body.style.background = 'linear-gradient(180deg,#0d0d0d,#111827)'; body.style.color='#eaf7ff'; }
-    }
-    applyTheme(theme);
-    themeBtn.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; localStorage.setItem(THEME_KEY,theme); applyTheme(theme); });
-
-    /* ---- Brand and nav (demo behaviors) ---- */
-    document.getElementById('brandBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-    document.getElementById('navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-    document.getElementById('navSearch').addEventListener('click', ()=> alert('Demo: buscar'));
-    document.getElementById('navSeen').addEventListener('click', ()=> document.querySelector('[aria-label="antes-visto"]').scrollIntoView({behavior:'smooth'}));
-    document.getElementById('navMe').addEventListener('click', ()=> alert('Demo: tus videos'));
-
-    /* ---- Render initial content ---- */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      fillRows();
-      lazyObserve();
-      // ensure there are enough items in horizontals
-      [row1,row2,row3].forEach(r=>{ while(r.children.length < 6){ r.appendChild(makeCard(pool[Math.floor(Math.random()*pool.length)]) ); }});
-    });
-
-    /* ========== Sección "Calles" (canvas simple con calles definidas) ========== */
-    const canvas = document.getElementById('streetsCanvas');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas(){
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.floor(rect.width * (window.devicePixelRatio || 1));
-      canvas.height = Math.floor(rect.height * (window.devicePixelRatio || 1));
-      canvas.style.width = rect.width + 'px';
-      canvas.style.height = rect.height + 'px';
-      ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-      drawStreets();
-    }
-    window.addEventListener('resize', resizeCanvas);
-    // Example street layout: defined "streets" as straight horizontal/vertical lines forming blocks
-    const streetsDefinition = {
-      // grid of streets: spacing in pixels relative to canvas virtual coords
-      spacing: 80,
-      blocksX: 6,
-      blocksY: 4,
-      mainStreets: [1,3,5] // indices of main thicker streets horizontally/vertically
-    };
-
-    function drawStreets(){
-      // clear
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      // background
-      ctx.fillStyle = '#061018';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-
-      // compute a virtual grid with margins
-      const margin = 18 * (window.devicePixelRatio || 1);
-      const w = canvas.width - margin*2;
-      const h = canvas.height - margin*2;
-      const cols = streetsDefinition.blocksX;
-      const rows = streetsDefinition.blocksY;
-      const cellW = w / cols;
-      const cellH = h / rows;
-
-      // draw streets between blocks (simple representation)
-      // vertical streets
-      for(let i=0;i<=cols;i++){
-        const x = margin + i * cellW;
-        ctx.beginPath();
-        ctx.moveTo(x, margin);
-        ctx.lineTo(x, margin + h);
-        ctx.lineWidth = (streetsDefinition.mainStreets.includes(i) ? 6 : 3);
-        ctx.strokeStyle = (streetsDefinition.mainStreets.includes(i) ? '#17212a' : '#0f161a');
-        ctx.stroke();
-        // dashed center line for main streets
-        if(streetsDefinition.mainStreets.includes(i)){
-          ctx.setLineDash([8,10]);
-          ctx.lineWidth = 1.2;
-          ctx.strokeStyle = '#22343f';
-          ctx.beginPath(); ctx.moveTo(x+6, margin); ctx.lineTo(x+6, margin + h); ctx.stroke();
-          ctx.setLineDash([]);
-        }
-      }
-      // horizontal streets
-      for(let j=0;j<=rows;j++){
-        const y = margin + j * cellH;
-        ctx.beginPath();
-        ctx.moveTo(margin, y);
-        ctx.lineTo(margin + w, y);
-        ctx.lineWidth = (streetsDefinition.mainStreets.includes(j) ? 6 : 3);
-        ctx.strokeStyle = (streetsDefinition.mainStreets.includes(j) ? '#17212a' : '#0f161a');
-        ctx.stroke();
-        if(streetsDefinition.mainStreets.includes(j)){
-          ctx.setLineDash([8,10]);
-          ctx.lineWidth = 1.2;
-          ctx.strokeStyle = '#22343f';
-          ctx.beginPath(); ctx.moveTo(margin, y+6); ctx.lineTo(margin + w, y+6); ctx.stroke();
-          ctx.setLineDash([]);
-        }
-      }
-
-      // optionally draw small street posts at intersections
-      ctx.fillStyle = '#2b3b44';
-      for(let i=0;i<=cols;i++){
-        for(let j=0;j<=rows;j++){
-          const x = margin + i*cellW;
-          const y = margin + j*cellH;
-          ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI*2);
-          ctx.fill();
-        }
-      }
-
-      // label: "Calles definidas"
-      ctx.fillStyle = '#9fb0bf';
-      ctx.font = `${12 * (window.devicePixelRatio||1)}px Inter, Arial`;
-      ctx.fillText('Calles definidas — Vista top-down (provisional)', margin + 6, margin + 14);
-    }
-
-    // initialize canvas after DOM loaded
-    window.addEventListener('load', ()=>{ resizeCanvas(); });
-
-    /* Accessibility and keyboard: close viewer with Esc */
-    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideViewer(); });
-
-    /* NOTE: Este archivo mantiene la estética aprobada y la estructura original.
-       La sección "calles" es deliberadamente simple (solo vías definidas).
-       Cuando confirmes que la base es correcta, integro más opciones (p. ej. permitir seleccionar una calle, resaltar, exportar coordenadas, o integrar esto con la parte de "juego" que quieras retomar). */
   </script>
 </body>
 </html>
