@@ -1,366 +1,417 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Arena (demo ciudad)</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-  :root{--bg:#06070a;--accent:#00d1ff;--vio:#8a6eff;--muted:#9fb0bf}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a,#091225);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#eaf7ff;-webkit-font-smoothing:antialiased}
-  /* Header (kept SinFiltro) */
-  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:8px;z-index:120;background:rgba(255,255,255,0.02);backdrop-filter:blur(8px)}
-  .header-inner{width:100%;max-width:980px;display:flex;justify-content:space-between;align-items:center;padding:6px 12px}
-  .logo{font-family:Poppins, sans-serif;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
-  /* Game container under header and above bottom nav */
-  #game-wrap{position:fixed;inset:66px 0 90px 0;background:transparent;display:block;overflow:hidden}
-  /* bottom controls */
-  .bottom-ui{position:fixed;left:0;right:0;bottom:10px;height:84px;display:flex;align-items:center;justify-content:center;z-index:140;pointer-events:none}
-  .controls{width:100%;max-width:980px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;pointer-events:auto}
-  .joystick{width:120px;height:120px;border-radius:999px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;position:relative;touch-action:none}
-  .thumb{width:56px;height:56px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--vio));box-shadow:0 12px 30px rgba(0,0,0,0.6);transform:translate(0px,0px)}
-  .action-btn{width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--vio));display:flex;align-items:center;justify-content:center;box-shadow:0 18px 40px rgba(0,0,0,0.6);cursor:pointer}
-  /* HUD / info moved down for less obstruction */
-  .hud-bottom{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:150;pointer-events:none}
-  .panel{background:rgba(0,0,0,0.45);padding:6px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
-  /* mode buttons (top-left) */
-  .mode-bar{position:fixed;top:86px;left:18px;z-index:160;pointer-events:auto;display:flex;flex-direction:column;gap:8px}
-  .mode-bar button{padding:8px 12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),var(--vio));color:#001;font-weight:700;cursor:pointer}
-  /* minimal tweaks for small screens */
-  @media (max-width:420px){ .joystick{width:100px;height:100px} .thumb{width:48px;height:48px} .action-btn{width:58px;height:58px} }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SinFiltro — Premium</title>
+  <style>
+    /* ====== Estilos base (idénticos al diseño aprobado) ====== */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(180deg,#0d0d0d,#111827);
+      color:#eaf7ff;
+      -webkit-font-smoothing:antialiased;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    header{
+      position:fixed;top:0;left:0;right:0;height:76px;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;z-index:1000;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));
+      backdrop-filter:blur(8px);
+      border-bottom:1px solid rgba(255,255,255,0.02);
+    }
+    .header-left{display:flex;align-items:center;gap:12px}
+    .icon-btn{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,0.02);display:inline-flex;align-items:center;justify-content:center;color:#9fb0bf;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+    .logo{font-weight:700;font-size:20px;background:linear-gradient(90deg,#00d1ff,#8a6eff);-webkit-background-clip:text;background-clip:text;color:transparent}
+    main{padding-top:96px;padding-bottom:120px;max-width:980px;margin:0 auto}
+    .container{padding:12px}
+
+    .hero{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+    .hero h1{color:#8a6eff;margin-bottom:6px;font-size:18px}
+    .hero p{color:#9fb0bf;font-size:13px}
+
+    .section{margin-top:18px}
+    .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .section .title{font-weight:800;color:#00d1ff;font-size:18px}
+    .see-all{color:#9fb0bf;font-size:13px;cursor:pointer}
+
+    /* horizontal rows */
+    .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+    .h-row::-webkit-scrollbar{display:none}
+    .card{flex:0 0 190px;height:120px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);position:relative;cursor:pointer;scroll-snap-align:center}
+    .card img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.6)}
+    .card .meta{position:absolute;left:12px;bottom:10px;color:#fff;z-index:5}
+    .badge{position:absolute;left:12px;top:12px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,#00d1ff,#8a6eff);color:#001;font-weight:700;font-size:12px;z-index:6}
+
+    /* grid */
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+    .grid .card{height:150px}
+    .grid .body{padding:8px;color:#eaf7ff}
+    .grid .title{font-weight:700}
+    .grid .meta{font-size:12px;color:#9fb0bf;margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+
+    /* Streets canvas section */
+    .streets-wrap{margin-top:18px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+    .streets-title{font-weight:800;color:#00d1ff;margin-bottom:8px}
+    #streetsCanvas{width:100%;height:300px;border-radius:10px;background:linear-gradient(180deg,#071226,#091a2a);display:block}
+
+    /* fab & bottom nav placeholders (kept for design) */
+    .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:68px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;border:none;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+    .bottom-nav{position:fixed;left:12px;right:12px;bottom:10px;height:72px;border-radius:14px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);z-index:185}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:#9fb0bf;font-size:12px;cursor:pointer}
+
+    /* small screens */
+    @media (max-width:420px){
+      .card{flex:0 0 150px;height:100px}
+      #streetsCanvas{height:260px}
+    }
+  </style>
 </head>
 <body>
   <header>
-    <div class="header-inner">
-      <div style="display:flex;align-items:center;gap:12px">
-        <button id="backMenu" style="background:transparent;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">☰</button>
-        <div class="logo">SinFiltro — Arena (demo)</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="toggleRun" style="background:rgba(255,255,255,0.02);border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">▶</button>
-        <button id="resetBtn" style="background:rgba(255,255,255,0.02);border-radius:10px;padding:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer">⟲</button>
-      </div>
+    <div class="header-left">
+      <button id="menuBtn" class="icon-btn" aria-label="menu">☰</button>
+      <button id="brandBtn" class="logo" style="background:linear-gradient(90deg,#00d1ff,#8a6eff);-webkit-background-clip:text;color:transparent">SinFiltro</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button id="searchTop" class="icon-btn" title="buscar">🔍</button>
+      <button id="themeBtn" class="icon-btn" title="modo">🌗</button>
     </div>
   </header>
 
-  <div id="game-wrap"></div>
+  <main>
+    <div class="container">
+      <section class="hero" aria-label="presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+      </section>
 
-  <div class="mode-bar">
-    <button id="modeCity">Ciudad Libre</button>
-  </div>
+      <section class="section" aria-label="tendencias">
+        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all">Ver todo</div></div>
+        <div id="row1" class="h-row"></div>
+      </section>
 
-  <div class="hud-bottom">
-    <div class="panel" id="infoPanel">FPS: -- • Speed: 0.0</div>
-  </div>
+      <section class="section" aria-label="recomendados">
+        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all">Ver todo</div></div>
+        <div id="row2" class="h-row"></div>
+      </section>
 
-  <div class="bottom-ui">
-    <div class="controls">
-      <div class="joystick" id="joyBase" aria-hidden="false">
-        <div class="thumb" id="joyThumb"></div>
-      </div>
+      <section class="section" aria-label="antes-visto">
+        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all">Ver todo</div></div>
+        <div id="row3" class="h-row"></div>
+      </section>
 
-      <div style="display:flex;gap:12px;align-items:center">
-        <div class="action-btn" id="demoBtn" title="Acción demo">✨</div>
-      </div>
+      <!-- Grid -->
+      <section class="section" aria-label="explorar">
+        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all">Filtrar</div></div>
+        <div id="grid" class="grid"></div>
+      </section>
+
+      <!-- Streets (mapa simple top-down): Puras calles por ahora -->
+      <section class="section streets-wrap" aria-label="calles">
+        <div class="streets-title">🛣️ Calles (mapa)</div>
+        <canvas id="streetsCanvas" aria-label="mapa de calles"></canvas>
+        <p style="color:#9fb0bf;font-size:13px;margin-top:8px">Mapa provisional: calles definidas (top-down). Esto es temporal: sólo calles, sin edificios móviles.</p>
+      </section>
     </div>
-  </div>
+  </main>
 
-  <!-- Three.js CDN (light) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+  <button class="fab" id="fab">＋</button>
 
-<script>
-/* ===========================
-  SinFiltro — City demo (mobile-first)
-  - Based on the previous demo but SIMPLIFIED:
-    * NO ENEMIES
-    * NO BULLETS
-    * Procedural chunks: streets, buildings, posts only
-    * Joystick fixed (pointer events + proper reset)
-    * FPS HUD moved to bottom
-    * Chunk generation kept minimal to maintain performance
-  =========================== */
+  <nav class="bottom-nav" role="navigation">
+    <div class="nav-item" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
+    <div class="nav-item" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
+    <div class="nav-item" id="navSeen">👁️<div style="font-size:11px">Antes visto</div></div>
+    <div class="nav-item" id="navMe">👤<div style="font-size:11px">Tus videos</div></div>
+  </nav>
 
-/* Globals & config */
-const WRAP = document.getElementById('game-wrap');
-let WIDTH = window.innerWidth, HEIGHT = Math.max(window.innerHeight - 156, 340);
-WRAP.style.height = HEIGHT + 'px';
+  <script>
+    /* =========================
+       Versión base aprobada + sección "calles"
+       - Mantengo comportamiento original: filas horizontales drag, lazy-load, grid, infinite vertical
+       - Añadí canvas "streetsCanvas" con calles definidas (top-down)
+       - No cambio diseño ni estructura visual aprobada
+       ========================= */
 
-let scene, camera, renderer;
-let player, playerMesh;
-let chunks = {}; // created chunks
-const CHUNK_SIZE = 80; // larger chunk = fewer created
-const VISIBLE_RADIUS = 1; // smaller radius for better perf (mobile)
-let lastTime = performance.now();
-let running = true;
+    /* ---- Refs ---- */
+    const row1 = document.getElementById('row1');
+    const row2 = document.getElementById('row2');
+    const row3 = document.getElementById('row3');
+    const grid = document.getElementById('grid');
+    const themeBtn = document.getElementById('themeBtn');
+    const body = document.body;
 
-/* Controls state */
-let input = { throttle:0, steer:0 };
-const joyBase = document.getElementById('joyBase'), joyThumb = document.getElementById('joyThumb');
-let joyRect = null, dragging=false, origin={x:0,y:0}, maxJoy=36;
+    /* ---- Demo data pool ---- */
+    const pool = Array.from({length:40}).map((_,i)=>({
+      id: 'i'+i,
+      src: `https://picsum.photos/seed/${Math.floor(Math.random()*100000+i)}/640/360`,
+      title: ['Callejón','Atardecer','Retrato','Nocturna','Visual'][i%5],
+      likes: Math.floor(Math.random()*6000),
+      comments: Math.floor(Math.random()*1200),
+      views: Math.floor(Math.random()*900)+'K',
+      kind: (i%5===0)?'video':'image'
+    }));
 
-/* UI */
-const infoPanel = document.getElementById('infoPanel');
-const toggleRun = document.getElementById('toggleRun');
-const resetBtn = document.getElementById('resetBtn');
-
-/* Helpers */
-const rand = n => Math.floor(Math.random()*n);
-const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
-
-/* Init Three */
-function initThree(){
-  scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x06070a, 0.002);
-
-  camera = new THREE.PerspectiveCamera(60, WIDTH/HEIGHT, 0.1, 2000);
-  camera.position.set(0,8,-14);
-  camera.lookAt(0,0,0);
-
-  renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
-  // cap pixel ratio to avoid heavy rendering on weak mobiles
-  const pr = window.devicePixelRatio ? Math.min(window.devicePixelRatio, 1.5) : 1;
-  renderer.setPixelRatio(pr);
-  renderer.setSize(WIDTH, HEIGHT);
-  WRAP.appendChild(renderer.domElement);
-
-  const amb = new THREE.AmbientLight(0xffffff, 0.5);
-  scene.add(amb);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.5);
-  dir.position.set(-20,40,10);
-  scene.add(dir);
-
-  // ground (big plane)
-  const groundMat = new THREE.MeshStandardMaterial({color:0x0b0e12, roughness:0.98});
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000), groundMat);
-  ground.rotation.x = -Math.PI/2;
-  scene.add(ground);
-}
-
-/* Player */
-function createPlayer(){
-  const geom = new THREE.BoxGeometry(3.6,1.2,5);
-  const mat = new THREE.MeshStandardMaterial({color:0xbb2a2a, metalness:0.2, roughness:0.6});
-  playerMesh = new THREE.Mesh(geom, mat);
-  playerMesh.position.set(0,0.8,0);
-  scene.add(playerMesh);
-  player = {
-    pos:new THREE.Vector3(0,0,0),
-    vel:new THREE.Vector3(0,0,0),
-    rotY:0,
-    accel:30,
-    maxSpeed:26,
-    mesh:playerMesh
-  };
-}
-
-/* Chunk creation (lightweight) */
-function ensureChunks(px,pz){
-  const cx = Math.floor(px / CHUNK_SIZE);
-  const cz = Math.floor(pz / CHUNK_SIZE);
-  for(let dx=-VISIBLE_RADIUS; dx<=VISIBLE_RADIUS; dx++){
-    for(let dz=-VISIBLE_RADIUS; dz<=VISIBLE_RADIUS; dz++){
-      const key = (cx+dx)+'_'+(cz+dz);
-      if(!chunks[key]) createChunk(cx+dx, cz+dz);
-      chunks[key].last = performance.now();
+    /* ---- Lazy loading via IntersectionObserver ---- */
+    let imgObserver = null;
+    function lazyObserve(root=document){
+      const imgs = root.querySelectorAll('img[data-src]');
+      if('IntersectionObserver' in window){
+        if(!imgObserver){
+          imgObserver = new IntersectionObserver((entries,obs)=>{
+            entries.forEach(e=>{
+              if(e.isIntersecting){
+                const img = e.target;
+                img.src = img.dataset.src;
+                img.onload = ()=> img.parentElement.classList.remove('skel');
+                img.removeAttribute('data-src');
+                obs.unobserve(img);
+              }
+            });
+          }, {rootMargin:'300px', threshold:0.05});
+        }
+        imgs.forEach(i=> imgObserver.observe(i));
+      } else {
+        imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+      }
     }
-  }
-  // prune distant
-  Object.keys(chunks).forEach(k=>{
-    const [kx,kz] = k.split('_').map(Number);
-    if(Math.abs(kx-cx)>VISIBLE_RADIUS+1 || Math.abs(kz-cz)>VISIBLE_RADIUS+1){
-      chunks[k].objs.forEach(o=> scene.remove(o));
-      delete chunks[k];
+
+    /* ---- Create card elements ---- */
+    function makeCard(item){
+      const d = document.createElement('div');
+      d.className = 'card skel';
+      d.tabIndex = 0;
+      d.innerHTML = `
+        <img data-src="${item.src}" alt="${item.title}">
+        ${item.likes>2000?'<div class="badge">TOP</div>':''}
+        <div class="meta">
+          <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+          <div style="font-size:12px;color:#fff;opacity:.95">❤ ${item.likes} • 💬 ${item.comments} • 👁 ${item.views}</div>
+        </div>
+      `;
+      d.addEventListener('click', ()=> openViewer(item));
+      return d;
     }
-  });
-}
 
-function createChunk(cx, cz){
-  const baseX = cx * CHUNK_SIZE;
-  const baseZ = cz * CHUNK_SIZE;
-  const group = {objs:[], key:cx+'_'+cz, last:performance.now()};
+    function makeGridCard(item){
+      const a = document.createElement('article');
+      a.className = 'card skel';
+      a.innerHTML = `<img data-src="${item.src}" alt="${item.title}"><div class="body"><div class="title">${item.title}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+      a.addEventListener('click', ()=> openViewer(item));
+      return a;
+    }
 
-  // road (darker plane)
-  const roadMat = new THREE.MeshStandardMaterial({color:0x12151a, roughness:0.98});
-  const road = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), roadMat);
-  road.rotation.x = -Math.PI/2;
-  road.position.set(baseX + CHUNK_SIZE/2, 0.01, baseZ + CHUNK_SIZE/2);
-  group.objs.push(road);
-  scene.add(road);
+    /* ---- Render rows and grid ---- */
+    function fillRows(){
+      row1.innerHTML = ''; row2.innerHTML = ''; row3.innerHTML = ''; grid.innerHTML = '';
+      // distribute items
+      for(let i=0;i<12;i++){
+        row1.appendChild(makeCard(pool[i%pool.length]));
+      }
+      for(let i=12;i<24;i++){
+        row2.appendChild(makeCard(pool[i%pool.length]));
+      }
+      for(let i=24;i<32;i++){
+        row3.appendChild(makeCard(pool[i%pool.length]));
+      }
+      // grid
+      for(let i=32;i<pool.length;i++){
+        grid.appendChild(makeGridCard(pool[i]));
+      }
+      // ensure horizontal drag enabled
+      enableDrag(row1); enableDrag(row2); enableDrag(row3);
+      lazyObserve();
+    }
 
-  // few buildings (small shapes to simulate city)
-  const bcount = 4 + rand(4);
-  for(let i=0;i<bcount;i++){
-    const bw = 8 + rand(20);
-    const bd = 8 + rand(20);
-    const bh = 6 + rand(20);
-    const bx = baseX + 8 + rand(CHUNK_SIZE - 16);
-    const bz = baseZ + 8 + rand(CHUNK_SIZE - 16);
-    const bgeo = new THREE.BoxGeometry(bw, bh, bd);
-    const bmat = new THREE.MeshStandardMaterial({color: 0x15181d, roughness:0.95});
-    const bmesh = new THREE.Mesh(bgeo, bmat);
-    bmesh.position.set(bx, bh/2, bz);
-    group.objs.push(bmesh);
-    scene.add(bmesh);
-  }
+    /* ---- Drag-to-scroll for horizontals (robust) ---- */
+    function enableDrag(el){
+      if(el.__drag) return;
+      el.__drag = true;
+      let isDown=false, startX, scrollLeft;
+      el.addEventListener('touchstart', e=>{
+        isDown = true;
+        startX = e.touches[0].pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+      }, {passive:true});
+      el.addEventListener('touchmove', e=>{
+        if(!isDown) return;
+        const x = e.touches[0].pageX - el.offsetLeft;
+        const walk = (x - startX) * 1;
+        el.scrollLeft = scrollLeft - walk;
+      }, {passive:true});
+      el.addEventListener('touchend', ()=> { isDown=false; }, {passive:true});
 
-  // posts (few)
-  const postGeo = new THREE.CylinderGeometry(0.12,0.12,3.8,6);
-  const postMat = new THREE.MeshStandardMaterial({color:0xffd79a, emissive:0x222222, emissiveIntensity:0.15});
-  for(let p=0;p<3;p++){
-    const px = baseX + 6 + rand(CHUNK_SIZE - 12);
-    const pz = baseZ + 6 + rand(CHUNK_SIZE - 12);
-    const post = new THREE.Mesh(postGeo, postMat);
-    post.position.set(px, 1.9, pz);
-    group.objs.push(post);
-    scene.add(post);
-  }
+      // pointer events for desktop / mouse
+      let mouseDown=false;
+      el.addEventListener('pointerdown', e=>{ mouseDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
+      el.addEventListener('pointermove', e=>{ if(!mouseDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
+      el.addEventListener('pointerup', e=>{ mouseDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
+    }
 
-  chunks[group.key] = group;
-}
+    /* ---- Viewer (simple) ---- */
+    const viewer = document.createElement('div');
+    viewer.style.position='fixed'; viewer.style.inset='0'; viewer.style.display='none'; viewer.style.background='rgba(0,0,0,0.9)'; viewer.style.zIndex=1200; viewer.style.alignItems='center'; viewer.style.justifyContent='center';
+    viewer.addEventListener('click', (e)=>{ if(e.target===viewer) hideViewer(); });
+    document.body.appendChild(viewer);
 
-/* Joystick (robust) */
-function setupJoystick(){
-  function recalc(){ const r = joyBase.getBoundingClientRect(); joyRect = r; origin.x = r.left + r.width/2; origin.y = r.top + r.height/2; }
-  recalc(); window.addEventListener('resize', recalc);
-  let pointerId = null;
+    function openViewer(item){
+      viewer.innerHTML = '';
+      const c = document.createElement(item.kind==='video' ? 'video' : 'img');
+      c.style.maxWidth='96%'; c.style.maxHeight='86%';
+      if(item.kind==='video'){ c.src = item.src; c.controls = true; c.autoplay = true; }
+      else { c.src = item.src; }
+      viewer.appendChild(c);
+      viewer.style.display='flex';
+    }
+    function hideViewer(){ viewer.style.display='none'; viewer.innerHTML=''; }
 
-  function moveThumb(clientX, clientY){
-    const dx = clientX - origin.x;
-    const dy = clientY - origin.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const nx = dx / (dist || 1);
-    const ny = dy / (dist || 1);
-    const limited = Math.min(dist, maxJoy);
-    const tx = nx * limited, ty = ny * limited;
-    joyThumb.style.transform = `translate(${tx}px,${ty}px)`;
-    input.throttle = clamp(-ty/maxJoy, -1, 1); // up -> forward
-    input.steer = clamp(tx/maxJoy, -1, 1);
-  }
-  function resetThumb(){
-    joyThumb.style.transform = 'translate(0px,0px)';
-    input.throttle = 0; input.steer = 0;
-    pointerId = null;
-    dragging = false;
-  }
+    /* ---- Infinite vertical load (grid) ---- */
+    let loading = false;
+    window.addEventListener('scroll', ()=>{
+      if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loading){
+        loading = true;
+        setTimeout(()=>{
+          for(let i=0;i<6;i++){
+            grid.appendChild(makeGridCard(pool[Math.floor(Math.random()*pool.length)]));
+          }
+          lazyObserve(grid);
+          loading = false;
+        }, 700);
+      }
+    });
 
-  joyBase.addEventListener('pointerdown', e=>{
-    joyBase.setPointerCapture(e.pointerId);
-    pointerId = e.pointerId;
-    dragging = true;
-    moveThumb(e.clientX, e.clientY);
-  });
-  joyBase.addEventListener('pointermove', e=>{
-    if(!dragging || e.pointerId !== pointerId) return;
-    moveThumb(e.clientX, e.clientY);
-  });
-  joyBase.addEventListener('pointerup', e=>{
-    if(e.pointerId !== pointerId) return;
-    resetThumb();
-  });
-  joyBase.addEventListener('pointercancel', resetThumb);
+    /* ---- Theme toggle ---- */
+    const THEME_KEY = 'sinfiltro.theme.v1';
+    let theme = localStorage.getItem(THEME_KEY) || 'dark';
+    function applyTheme(t){
+      if(t==='light'){ body.classList.add('light'); themeBtn.textContent='☀️'; body.style.background = 'linear-gradient(180deg,#f5f9ff,#eef6ff)'; body.style.color='#071226'; }
+      else { body.classList.remove('light'); themeBtn.textContent='🌗'; body.style.background = 'linear-gradient(180deg,#0d0d0d,#111827)'; body.style.color='#eaf7ff'; }
+    }
+    applyTheme(theme);
+    themeBtn.addEventListener('click', ()=>{ theme = theme==='dark'?'light':'dark'; localStorage.setItem(THEME_KEY,theme); applyTheme(theme); });
 
-  // support mouse outside joystick area
-  window.addEventListener('mouseup', resetThumb);
-}
+    /* ---- Brand and nav (demo behaviors) ---- */
+    document.getElementById('brandBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+    document.getElementById('navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+    document.getElementById('navSearch').addEventListener('click', ()=> alert('Demo: buscar'));
+    document.getElementById('navSeen').addEventListener('click', ()=> document.querySelector('[aria-label="antes-visto"]').scrollIntoView({behavior:'smooth'}));
+    document.getElementById('navMe').addEventListener('click', ()=> alert('Demo: tus videos'));
 
-/* Update player kinematics */
-function updatePlayer(dt){
-  // forward vector (note: using rotY)
-  const forward = new THREE.Vector3(Math.sin(player.rotY), 0, Math.cos(player.rotY));
-  // apply throttle
-  const accel = input.throttle * player.accel;
-  player.vel.add(forward.clone().multiplyScalar(accel * dt));
-  // simple damping
-  player.vel.multiplyScalar(Math.max(0, 1 - 1.6 * dt));
-  if(player.vel.length() > player.maxSpeed) player.vel.setLength(player.maxSpeed);
+    /* ---- Render initial content ---- */
+    document.addEventListener('DOMContentLoaded', ()=>{
+      fillRows();
+      lazyObserve();
+      // ensure there are enough items in horizontals
+      [row1,row2,row3].forEach(r=>{ while(r.children.length < 6){ r.appendChild(makeCard(pool[Math.floor(Math.random()*pool.length)]) ); }});
+    });
 
-  // steering
-  player.rotY += input.steer * 1.8 * dt * (0.6 + player.vel.length()*0.01);
+    /* ========== Sección "Calles" (canvas simple con calles definidas) ========== */
+    const canvas = document.getElementById('streetsCanvas');
+    const ctx = canvas.getContext('2d');
 
-  // integrate
-  player.pos.add(player.vel.clone().multiplyScalar(dt));
-  player.mesh.position.copy(player.pos);
-  player.mesh.rotation.y = -player.rotY;
-}
+    function resizeCanvas(){
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width * (window.devicePixelRatio || 1));
+      canvas.height = Math.floor(rect.height * (window.devicePixelRatio || 1));
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+      drawStreets();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    // Example street layout: defined "streets" as straight horizontal/vertical lines forming blocks
+    const streetsDefinition = {
+      // grid of streets: spacing in pixels relative to canvas virtual coords
+      spacing: 80,
+      blocksX: 6,
+      blocksY: 4,
+      mainStreets: [1,3,5] // indices of main thicker streets horizontally/vertically
+    };
 
-/* Camera follow gently */
-function updateCamera(){
-  const desired = player.pos.clone().add(new THREE.Vector3(0,7,-12).applyAxisAngle(new THREE.Vector3(0,1,0), -player.rotY));
-  camera.position.lerp(desired, 0.12);
-  camera.lookAt(player.pos.x, player.pos.y + 1.2, player.pos.z);
-}
+    function drawStreets(){
+      // clear
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // background
+      ctx.fillStyle = '#061018';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
 
-/* Main animation loop */
-let fpsCounter = {frames:0, last:performance.now()};
-function animate(){
-  if(!running) return;
-  const now = performance.now();
-  const dt = Math.min(0.06, (now - lastTime)/1000);
-  lastTime = now;
+      // compute a virtual grid with margins
+      const margin = 18 * (window.devicePixelRatio || 1);
+      const w = canvas.width - margin*2;
+      const h = canvas.height - margin*2;
+      const cols = streetsDefinition.blocksX;
+      const rows = streetsDefinition.blocksY;
+      const cellW = w / cols;
+      const cellH = h / rows;
 
-  // FPS counter bottom
-  fpsCounter.frames++;
-  if(now - fpsCounter.last >= 1000){
-    const fps = Math.round((fpsCounter.frames*1000)/(now - fpsCounter.last));
-    fpsCounter.frames = 0; fpsCounter.last = now;
-    infoPanel.textContent = `FPS: ${fps} • Speed: ${player.vel.length().toFixed(1)}`;
-  }
+      // draw streets between blocks (simple representation)
+      // vertical streets
+      for(let i=0;i<=cols;i++){
+        const x = margin + i * cellW;
+        ctx.beginPath();
+        ctx.moveTo(x, margin);
+        ctx.lineTo(x, margin + h);
+        ctx.lineWidth = (streetsDefinition.mainStreets.includes(i) ? 6 : 3);
+        ctx.strokeStyle = (streetsDefinition.mainStreets.includes(i) ? '#17212a' : '#0f161a');
+        ctx.stroke();
+        // dashed center line for main streets
+        if(streetsDefinition.mainStreets.includes(i)){
+          ctx.setLineDash([8,10]);
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = '#22343f';
+          ctx.beginPath(); ctx.moveTo(x+6, margin); ctx.lineTo(x+6, margin + h); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+      // horizontal streets
+      for(let j=0;j<=rows;j++){
+        const y = margin + j * cellH;
+        ctx.beginPath();
+        ctx.moveTo(margin, y);
+        ctx.lineTo(margin + w, y);
+        ctx.lineWidth = (streetsDefinition.mainStreets.includes(j) ? 6 : 3);
+        ctx.strokeStyle = (streetsDefinition.mainStreets.includes(j) ? '#17212a' : '#0f161a');
+        ctx.stroke();
+        if(streetsDefinition.mainStreets.includes(j)){
+          ctx.setLineDash([8,10]);
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = '#22343f';
+          ctx.beginPath(); ctx.moveTo(margin, y+6); ctx.lineTo(margin + w, y+6); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
 
-  // updates
-  updatePlayer(dt);
-  ensureChunks(player.pos.x, player.pos.z);
-  updateCamera();
+      // optionally draw small street posts at intersections
+      ctx.fillStyle = '#2b3b44';
+      for(let i=0;i<=cols;i++){
+        for(let j=0;j<=rows;j++){
+          const x = margin + i*cellW;
+          const y = margin + j*cellH;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
 
-  renderer.render(scene, camera);
-  requestAnimationFrame(animate);
-}
+      // label: "Calles definidas"
+      ctx.fillStyle = '#9fb0bf';
+      ctx.font = `${12 * (window.devicePixelRatio||1)}px Inter, Arial`;
+      ctx.fillText('Calles definidas — Vista top-down (provisional)', margin + 6, margin + 14);
+    }
 
-/* Setup and boot */
-function boot(){
-  initThree();
-  createPlayer();
-  setupJoystick();
-  ensureChunks(0,0);
-  lastTime = performance.now();
-  animate();
-}
+    // initialize canvas after DOM loaded
+    window.addEventListener('load', ()=>{ resizeCanvas(); });
 
-/* Toggle run / reset handlers */
-toggleRun.addEventListener('click', ()=>{
-  running = !running;
-  toggleRun.textContent = running ? '⏸' : '▶';
-  if(running){ lastTime = performance.now(); animate(); }
-});
-resetBtn.addEventListener('click', ()=> {
-  // clear chunks
-  Object.values(chunks).forEach(c=> c.objs.forEach(o=> scene.remove(o)));
-  chunks = {};
-  // reset player
-  player.pos.set(0,0,0); player.vel.set(0,0,0); player.rotY = 0;
-  player.mesh.position.copy(player.pos);
-  player.mesh.rotation.set(0,0,0);
-  ensureChunks(0,0);
-});
+    /* Accessibility and keyboard: close viewer with Esc */
+    window.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideViewer(); });
 
-/* Responsive */
-function onResize(){
-  WIDTH = window.innerWidth; HEIGHT = Math.max(window.innerHeight - 156, 340);
-  WRAP.style.height = HEIGHT + 'px';
-  camera.aspect = WIDTH/HEIGHT; camera.updateProjectionMatrix();
-  renderer.setSize(WIDTH, HEIGHT);
-}
-window.addEventListener('resize', onResize);
-
-/* Prevent overscroll on mobiles while interacting with joystick */
-document.body.addEventListener('touchmove', function(e){
-  // if touch inside joystick area, prevent default to avoid page scroll
-  if(joyRect && e.target && (e.target === joyBase || joyBase.contains(e.target))) e.preventDefault();
-}, {passive:false});
-
-/* Start */
-boot();
-
-</script>
+    /* NOTE: Este archivo mantiene la estética aprobada y la estructura original.
+       La sección "calles" es deliberadamente simple (solo vías definidas).
+       Cuando confirmes que la base es correcta, integro más opciones (p. ej. permitir seleccionar una calle, resaltar, exportar coordenadas, o integrar esto con la parte de "juego" que quieras retomar). */
+  </script>
 </body>
 </html>
