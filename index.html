@@ -1,576 +1,586 @@
+<!--
+  pixeljump.html
+  Juego de plataformas 2D original inspirado en los clásicos (pero sin copiar assets).
+  - Controles: teclado (A/D, flechas izquierda/derecha, W / espacio / click para saltar)
+             botones táctiles en móvil (izq/der/saltar)
+  - Mecánicas: caminar, correr (hold shift), salto, gravedad, enemigos patrullando,
+               monedas, vidas, score, niveles, cámara, parallax, pause, guardado local.
+  - Todo en un solo archivo, ligero y optimizado para móvil.
+  - Cambia nombres, colores y reglas como quieras.
+-->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+<title>PixelJump — Demo</title>
 <style>
-  /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-    --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.04);
-    --radius:14px; --trans:260ms;
-    --text:#eaf7ff;
+    --bg1:#071226; --bg2:#001018; --accent:#00d1ff; --accent2:#8a6eff;
+    --ui:#eaf7ff; --muted:#9fb0bf;
+    --hud-bg: rgba(0,0,0,0.35);
   }
-  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
-  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
-
-  /* ================= keep UI identical to approved design ================= */
-  .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
-    radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
-  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
-
-  /* Top header */
-  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
-  .left-ctrl{display:flex;align-items:center;gap:12px}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
-  .icon-btn:active{transform:scale(.96)}
-  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
-  .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
-
-  /* Main content uses native body scrolling (fixes mobile touch) */
-  main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
-  .container{padding:12px}
-
-  /* Hero */
-  .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
-  .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
-  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
-
-  /* Section */
-  .section{margin-top:16px}
-  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
-
-  /* Horizontal two-row scrollers (kept visuals) */
-  .h-stack{display:flex;flex-direction:column;gap:10px}
-  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-  .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
-  .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
-  .card-small .meta{position:relative;z-index:6}
-  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
-  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
-  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
-
-  /* Grid (vertical infinite) */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
-  .grid .body{padding:8px;color:var(--text)}
-  .grid .title{font-weight:700}
-  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
-
-  /* FAB + bottom nav */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  .radials{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity .18s}
-  .radials.show{opacity:1;pointer-events:auto}
-  .bubble{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:none}
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-
-  /* Panel & overlay (menu lateral) */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
-  .overlay.show{display:block;pointer-events:auto;opacity:1}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
-  .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
-  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-
-  /* Viewer (immersive) */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
-  .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img,.viewer video{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
-
-  /* Search modal & MyVideos modal */
-  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
-  .modal.show{display:block}
-  .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
-  .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .mini-thumb img{width:100%;height:100%;object-fit:cover}
-  .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
-
-  /* Small screens */
-  @media (max-width:420px){
-    .card-small{min-width:150px;height:100px}
-    .grid img{height:120px}
-    .fab{width:64px;height:64px}
-    .panel{width:92%;left:4%}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));-webkit-font-smoothing:antialiased;font-family:Inter,system-ui,Arial;}
+  #gamewrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+  canvas{display:block;border-radius:12px;background:linear-gradient(180deg,#081224,#021018);box-shadow:0 20px 60px rgba(0,0,0,0.6);}
+  /* HUD */
+  .hud{position:fixed;left:16px;top:16px;color:var(--ui);z-index:40;background:var(--hud-bg);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(6px)}
+  .hud b{color:var(--accent)}
+  .hud-right{position:fixed;right:16px;top:16px;color:var(--ui);z-index:40;background:var(--hud-bg);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);backdrop-filter:blur(6px)}
+  /* Mobile touch controls */
+  .touch-controls{position:fixed;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:12px;z-index:50;pointer-events:none}
+  .btn{width:64px;height:64px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;color:var(--ui);font-size:22px;border:1px solid rgba(255,255,255,0.04);pointer-events:auto;user-select:none}
+  .btn.secondary{width:48px;height:48px;font-size:18px}
+  .left-group{display:flex;gap:8px}
+  .right-group{display:flex;gap:8px}
+  /* Overlay menus */
+  .overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.6),rgba(0,0,0,0.6));display:none;align-items:center;justify-content:center;z-index:80}
+  .menu{width:calc(100% - 40px);max-width:560px;background:linear-gradient(180deg,#06131c,#021018);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);color:var(--ui)}
+  .menu h2{margin:0 0 8px 0;color:var(--accent)}
+  .menu p{color:var(--muted);font-size:14px}
+  .row{display:flex;gap:8px;margin-top:12px}
+  .menu button{margin-top:12px;padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#001;font-weight:700;cursor:pointer}
+  /* Responsive canvas size */
+  @media(min-width:901px){
+    canvas{width:860px;height:540px}
   }
-
-  /* fallback when backdrop-filter not supported */
-  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
+  @media(max-width:900px){
+    canvas{width:100%;height:calc(100vh - 120px)}
+    .touch-controls{bottom:28px}
+    .btn{width:58px;height:58px}
   }
-
-  /* animation */
-  .fade-up{animation:fadeUp .48s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  /* Simple tiny animations */
+  .pulse{animation:pulse .9s ease-in-out infinite}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
-  <div class="bg-anim" aria-hidden="true"></div>
+<div id="gamewrap">
+  <canvas id="game"></canvas>
+</div>
 
-  <header>
-    <div class="header-inner">
-      <div class="left-ctrl">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
-        <button class="logo-btn" id="brandBtn"><span class="logo">SinFiltro</span></button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
-        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
-      </div>
-    </div>
-  </header>
+<div class="hud" id="hud">
+  Vida: <b id="life">3</b> • Puntos: <b id="score">0</b> • Nivel: <b id="level">1</b>
+</div>
+<div class="hud-right" id="hudright">
+  Tiempo: <b id="time">0</b>s
+</div>
 
-  <!-- overlay + panel -->
-  <div id="overlay" class="overlay" aria-hidden="true"></div>
-  <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
-    <div style="display:flex;align-items:center;gap:8px">
-      <strong>Cuenta</strong>
-      <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
-    </div>
-    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
-    <nav style="display:flex;flex-direction:column;gap:8px">
-      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
-      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
-      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
-      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mis videos</button>
-      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
-    </nav>
-  </aside>
-
-  <!-- main content uses body scroll -->
-  <main>
-    <div class="container">
-      <section class="hero fade-up" aria-label="presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-      </section>
-
-      <!-- Tendencias -->
-      <section class="section fade-up" aria-label="tendencias">
-        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
-          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
-        </div>
-      </section>
-
-      <!-- Recomendados -->
-      <section class="section fade-up" aria-label="recomendados">
-        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
-          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
-        </div>
-      </section>
-
-      <!-- Antes visto -->
-      <section class="section fade-up" aria-label="antes visto">
-        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
-          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
-        </div>
-      </section>
-
-      <!-- Explorar grid -->
-      <section class="section fade-up" aria-label="explorar">
-        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
-        <div id="gridFeed" class="grid" aria-live="polite"></div>
-      </section>
-    </div>
-  </main>
-
-  <!-- FAB + radial bubbles -->
-  <div id="radials" class="radials" aria-hidden="true"></div>
-  <button id="fab" class="fab" aria-label="Crear">＋</button>
-
-  <nav class="bottom-nav" role="navigation" aria-label="navegación">
-    <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
-    <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
-    <div style="width:78px"></div>
-    <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
-  </nav>
-
-  <!-- viewer modal -->
-  <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-    <div class="card" style="position:relative;">
-      <div id="viewerInner"></div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
-        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
-      </div>
-    </div>
+<!-- touch controls -->
+<div class="touch-controls" aria-hidden="false">
+  <div class="left-group">
+    <div class="btn" id="btnLeft">◀</div>
+    <div class="btn" id="btnRight">▶</div>
   </div>
-
-  <!-- Search modal (miniatures) -->
-  <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
-    <div class="head">
-      <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
-      <button id="closeSearch" class="icon-btn">✕</button>
-    </div>
-    <div id="searchMini" class="grid-mini"></div>
+  <div class="right-group">
+    <div class="btn secondary" id="btnRun">🏃</div>
+    <div class="btn" id="btnJump">⤴</div>
   </div>
+</div>
 
-  <!-- My videos modal (grid preview) -->
-  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
-    <div class="head" style="justify-content:space-between">
-      <strong>Tus videos (demo)</strong>
-      <button id="closeMy" class="icon-btn">✕</button>
+<!-- overlays -->
+<div class="overlay" id="menuOverlay">
+  <div class="menu" role="dialog" aria-modal="true">
+    <h2>PixelJump — Menú</h2>
+    <p>Demostración jugable. Controles: teclado A/D / ←→, W / espacio para saltar. En móvil usa botones táctiles.</p>
+    <div class="row">
+      <button id="resumeBtn">Continuar</button>
+      <button id="restartBtn">Reiniciar nivel</button>
+      <button id="gotoLevelBtn">Siguiente nivel</button>
     </div>
-    <div id="myGrid" class="grid-mini"></div>
+    <div class="row">
+      <button id="exportScore">Guardar puntaje</button>
+      <button id="closeMenu">Cerrar</button>
+    </div>
+    <p style="margin-top:10px;color:var(--muted);">Al presionar fuera de esta ventana también se cerrará.</p>
   </div>
+</div>
 
 <script>
-/* =========================
-   SinFiltro — mejoras funcionales (mantener diseño)
-   - FAB burbujas funcionales
-   - Buscador con miniaturas + abrir en viewer
-   - Tus videos mini-grid
-   - Fix theme toggle (fluido)
-   - Ensure overlays do not block touch when hidden
-   - Keep existing optimizations (lazy, drag-to-scroll)
-   ========================= */
+/* ===========================
+   PixelJump - Juego de plataformas 2D
+   Autor: ChatGPT (adaptación original)
+   =========================== */
 
-/* Helpers */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const rand = n => Math.floor(Math.random()*n);
-const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+/* ---- Setup canvas & sizing ---- */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d', { alpha: false });
 
-/* DOM refs */
-const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
-const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
-const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
-const gridFeed = $('#gridFeed');
-const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
-const fab = $('#fab'), radials = $('#radials');
-const themeToggle = $('#themeToggle');
-const brandBtn = $('#brandBtn');
-const searchTop = $('#searchTop');
-const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
-const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(640, Math.floor(rect.width * devicePixelRatio));
+  canvas.height = Math.max(360, Math.floor(rect.height * devicePixelRatio));
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
-/* Data pool (demo) */
-let pool = Array.from({length:160}).map((_,i)=>({
-  id:'p'+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
-  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
-}));
+/* ---- Game constants ---- */
+const GRAVITY = 1600; // px/s^2
+const TILE = 48;      // base tile size
+const PLAYER_SPEED = 220;
+const PLAYER_RUN_MULT = 1.45;
+const JUMP_SPEED = 520;
+const MAX_FALL = 900;
+const CAMERA_LERP = 0.12;
 
-let trends = pool.slice(0,12);
-let reco = pool.slice(12,24);
-let recent = pool.slice(24,36);
-let grid = pool.slice(36,72);
+/* ---- State ---- */
+let lastTs = 0;
+let keys = {};
+let touchState = {left:false,right:false,jump:false,run:false};
+let paused = false;
+let levelIndex = 0;
+let timeElapsed = 0;
+let highscore = Number(localStorage.getItem('pj.high')||0);
 
-/* ---------- Lazy loading images (IntersectionObserver) ---------- */
-let imgObserver = null;
-function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src]');
-  if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            const img = e.target;
-            img.src = img.dataset.src;
-            img.onload = ()=> img.parentElement.classList.remove('skel');
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
+/* HUD elems */
+const lifeEl = document.getElementById('life');
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const timeEl = document.getElementById('time');
+
+/* Sounds - optional (commented out to keep file tiny). Could be added via Audio objects. */
+
+/* ---- Simple tile-based levels ----
+   We'll define levels as arrays of strings for tiles:
+   ' ' = empty
+   '#' = solid block
+   'M' = moving enemy spawn placeholder
+   'C' = coin
+   'P' = player start
+   'G' = goal (flag)
+*/
+const LEVELS = [
+  {
+    name: "Pradera Inicial",
+    map: [
+      "                                                                                ",
+      "                                                                                ",
+      "                                                                                ",
+      "                                                                                ",
+      "                                                                                ",
+      "              C                                                                 ",
+      "       ####        ##                ##                                        ",
+      "                       C                     C                                  ",
+      "   P              #######       ###         #####        C                      ",
+      "############################### #############  ##############################  ",
+    ],
+  },
+  {
+    name: "Cañón Neon",
+    map: [
+      "                                                                                ",
+      "                                                                                ",
+      "                                                                                ",
+      "                              C                                                 ",
+      "                       ####              ####                                   ",
+      "           C                                                                    ",
+      "   P          ###      ###          C                                            ",
+      "             ####     ####      ##########         ###       M                  ",
+      "       ####            ####  ##############    ##############                    ",
+      "#########################################################################  ####",
+    ],
+  },
+];
+
+/* ---- Entities & world ---- */
+function createWorld(levelData){
+  const rows = levelData.map.slice(); // clone
+  const w = rows[0].length;
+  const h = rows.length;
+  const blocks = [];
+  const coins = [];
+  const enemies = [];
+  let playerStart = {x: TILE*2, y: TILE*(h-3)};
+  let goal = null;
+
+  for(let y=0;y<h;y++){
+    const row = rows[y];
+    for(let x=0;x<w;x++){
+      const ch = row[x] || ' ';
+      const px = x*TILE, py = y*TILE;
+      if(ch === '#') blocks.push({x:px,y:py,w:TILE,h:TILE});
+      if(ch === 'C') coins.push({x:px+TILE/4,y:py+TILE/4,w:TILE/2,h:TILE/2, collected:false});
+      if(ch === 'P') playerStart = {x:px,y:py};
+      if(ch === 'M') enemies.push({x:px,y:py,w:TILE-8,h:TILE-8,vx:80,dir:1,alive:true}); // patrol enemy
+      if(ch === 'G') goal = {x:px,y:py,w:TILE,h:TILE};
     }
-    imgs.forEach(i=> imgObserver.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
+
+  // fallback ground on last row if none
+  if(blocks.length === 0){
+    const py = (h-1)*TILE;
+    for(let i=0;i<w;i++) blocks.push({x:i*TILE,y:py,w:TILE,h:TILE});
+  }
+
+  return {w:w*TILE, h:h*TILE, blocks, coins, enemies, playerStart, goal};
 }
 
-/* ---------- Create card elements (keeps meta layout) ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-function makeSmallCard(item){
-  const d = document.createElement('div');
-  d.className = 'card-small skel fade-up';
-  d.setAttribute('tabindex','0');
-  d.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
-    ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
-    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
-      <div class="meta">
-        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
-      </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
-    </div>
-  `;
-  d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
-  return d;
+/* ---- Player object ---- */
+function createPlayer(x,y){
+  return {
+    x: x+4, y: y+4,
+    w: TILE-10, h: TILE-6,
+    vx:0, vy:0,
+    onGround:false,
+    lives:3,
+    score:0,
+    invuln:0
+  };
 }
 
-function makeGridCard(item){
-  const a = document.createElement('article');
-  a.className = 'card skel fade-up';
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-  a.addEventListener('click', ()=> openViewerByItem(item));
-  return a;
+/* ---- Collision helpers ---- */
+function rectsOverlap(a,b){
+  return !(a.x + a.w <= b.x || a.x >= b.x + b.w || a.y + a.h <= b.y || a.y >= b.y + b.h);
 }
 
-/* ---------- Render two rows with drag support ---------- */
-function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=>{
-    const target = (i%2===0)?row1:row2;
-    target.appendChild(makeSmallCard(it));
-  });
-  // ensure rows have enough children
-  [row1,row2].forEach(r=>{
-    if(r.children.length < 6){
-      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+function moveAndCollide(entity,dx,dy,world){
+  // move in x then y, resolving collisions with blocks
+  let newX = entity.x + dx;
+  let newY = entity.y;
+
+  // horizontal
+  entity.x = newX;
+  for(let b of world.blocks){
+    if(rectsOverlap(entity,b)){
+      if(dx > 0){ entity.x = b.x - entity.w - 0.01; entity.vx = 0; }
+      else if(dx < 0){ entity.x = b.x + b.w + 0.01; entity.vx = 0; }
     }
-    // attach drag-to-scroll for better horizontal experience on mobile
-    enableDragScroll(r);
-  });
-  lazyObserve();
-}
-
-/* ---------- Grid render ---------- */
-function renderGridInitial(){
-  gridFeed.innerHTML = '';
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
-  lazyObserve(gridFeed);
-}
-
-/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
-function enableDragScroll(el){
-  if(el.__dragEnabled) return;
-  el.__dragEnabled = true;
-  let startX = 0, scrollLeft = 0;
-  let isTouch = false;
-  el.addEventListener('touchstart', e=>{
-    isTouch = true;
-    startX = e.touches[0].pageX - el.offsetLeft;
-    scrollLeft = el.scrollLeft;
-  }, {passive:true});
-  el.addEventListener('touchmove', e=>{
-    if(!isTouch) return;
-    const x = e.touches[0].pageX - el.offsetLeft;
-    const walk = (x - startX) * 1;
-    el.scrollLeft = scrollLeft - walk;
-  }, {passive:true});
-  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
-
-  // pointer events for desktops/mice
-  let isDown=false;
-  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
-  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
-}
-
-/* ---------- Viewer modal (touch outside to close) ---------- */
-let activeList=[], currentIndex=0;
-function openViewerByItem(item){
-  // find list and index
-  const lists = [trends,reco,recent,grid,pool];
-  activeList = [];
-  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
-  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
-  showViewer();
-}
-function showViewer(){
-  const it = activeList[currentIndex];
-  viewerInner.innerHTML = '';
-  if(!it) return;
-  if(it.kind === 'video'){
-    const video = document.createElement('video');
-    video.src = it.src;
-    video.controls = true;
-    video.autoplay = false;
-    video.style.maxHeight = '70vh';
-    viewerInner.appendChild(video);
-  } else {
-    const img = document.createElement('img');
-    img.src = it.src;
-    img.alt = it.title;
-    img.style.maxHeight = '80vh';
-    viewerInner.appendChild(img);
   }
-  // show viewer
-  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
-  // ensure background overlay doesn't block scroll in viewer inner
-  document.body.style.overflow = 'hidden';
-}
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 
-closeViewer.addEventListener('click', closeViewerFunc);
-viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-
-/* ---------- Panel open/close ---------- */
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
-menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
-closePanelBtn.addEventListener('click', closePanel);
-
-// panel actions
-$$('.panel-item').forEach(btn=>{
-  btn.addEventListener('click', (e)=>{
-    const action = btn.dataset.action;
-    closePanel();
-    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
-    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'my'){ openMyModal(); }
-    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
-    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
-  });
-});
-
-/* ---------- FAB radial (bubbles) ---------- */
-fab.addEventListener('click', ()=>{
-  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
-  else {
-    radials.classList.add('show');
-    radials.innerHTML = '';
-    // create bubbles - upload, create post, short
-    const b1 = document.createElement('button'); b1.className='bubble'; b1.innerHTML='📤'; b1.title='Subir'; b1.onclick = ()=> { alert('Demo: Subir archivo (demo)'); radials.classList.remove('show'); };
-    const b2 = document.createElement('button'); b2.className='bubble'; b2.innerHTML='🖼️'; b2.title='Galería'; b2.onclick = ()=> { alert('Demo: Crear publicación (demo)'); radials.classList.remove('show'); };
-    const b3 = document.createElement('button'); b3.className='bubble'; b3.innerHTML='🎬'; b3.title='Short'; b3.onclick = ()=> { alert('Demo: Crear short (demo)'); radials.classList.remove('show'); };
-    radials.appendChild(b1); radials.appendChild(b2); radials.appendChild(b3);
-  }
-});
-
-/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-function applyTheme(t){
-  // Use rAF to avoid sync layout thrashing
-  requestAnimationFrame(()=>{
-    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
-    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
-  });
-}
-applyTheme(theme);
-themeToggle.addEventListener('click', ()=> {
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-});
-
-/* brand click -> home */
-brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navSearch').addEventListener('click', ()=> openSearchModal());
-$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal());
-
-/* Top search demo */
-searchTop.addEventListener('click', ()=> openSearchModal());
-
-/* ---------- Search modal (miniatures) ---------- */
-function openSearchModal(){
-  populateSearchMini();
-  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
-  // lock background scroll lightly
-  document.body.style.overflow = 'hidden';
-}
-function closeSearchModal(){
-  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
-  searchMini.innerHTML = '';
-  document.body.style.overflow = '';
-}
-closeSearch.addEventListener('click', closeSearchModal);
-searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
-
-function populateSearchMini(q){
-  searchMini.innerHTML = '';
-  // generate 12 thumbnails demo
-  for(let i=0;i<12;i++){
-    const item = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
-    searchMini.appendChild(d);
-  }
-}
-
-/* ---------- My videos modal (grid preview) ---------- */
-function openMyModal(){
-  myGrid.innerHTML = '';
-  // demo: fill with 9 random items (mix images & videos)
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
-    myGrid.appendChild(d);
-  }
-  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
-closeMy.addEventListener('click', closeMyModal);
-myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
-
-/* ---------- Infinite vertical load (grid) ---------- */
-let loadingGrid=false;
-window.addEventListener('scroll', ()=>{
-  // when approaching bottom, append grid items
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
-      lazyObserve(gridFeed); loadingGrid=false;
-    }, 700);
-  }
-});
-
-/* ---------- Render initial content ---------- */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  // seed rows for smoothness
-  $$('.h-row').forEach(r=> {
-    if(r.children.length < 8){
-      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+  // vertical
+  newY = entity.y + dy;
+  entity.y = newY;
+  entity.onGround = false;
+  for(let b of world.blocks){
+    if(rectsOverlap(entity,b)){
+      if(dy > 0){ // falling -> land on top
+        entity.y = b.y - entity.h - 0.01;
+        entity.vy = 0;
+        entity.onGround = true;
+      } else if(dy < 0){ // hitting head
+        entity.y = b.y + b.h + 0.01;
+        entity.vy = 0;
+      }
     }
-  });
-  lazyObserve();
+  }
 }
-document.addEventListener('DOMContentLoaded', renderAll);
 
-/* ---------- Accessibility & shortcuts ---------- */
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchModal(); closeMyModal(); } });
+/* ---- Game variables ---- */
+let world = null;
+let player = null;
+let cam = {x:0,y:0,w:canvas.width, h:canvas.height};
+let running = true;
 
-/* ---------- Ensure overlay hidden doesn't block touch ----------
-   overlay and panel pointer-events are toggled via classes.
-   Also ensure we don't leave body overflow hidden accidentally.
------------------------------------------------------------------ */
+/* ---- Load level ---- */
+function loadLevel(index){
+  levelIndex = Math.max(0, Math.min(index, LEVELS.length-1));
+  const level = LEVELS[levelIndex];
+  world = createWorld(level);
+  player = createPlayer(world.playerStart.x, world.playerStart.y);
+  player.lives = player.lives || 3;
+  player.score = player.score || 0;
+  cam.x = player.x - canvas.width/ (2*devicePixelRatio);
+  cam.y = player.y - canvas.height/ (2*devicePixelRatio);
+  timeElapsed = 0;
+  updateHUD();
+  levelEl.textContent = levelIndex + 1;
+}
 
-/* End of script */
+/* ---- HUD update ---- */
+function updateHUD(){
+  lifeEl.textContent = player.lives;
+  scoreEl.textContent = player.score;
+  timeEl.textContent = Math.floor(timeElapsed);
+  levelEl.textContent = levelIndex+1;
+}
+
+/* ---- Input handlers ---- */
+window.addEventListener('keydown', (e)=>{ keys[e.key.toLowerCase()] = true; if(e.key==='Escape') toggleMenu(); e.preventDefault && e.preventDefault(); });
+window.addEventListener('keyup', (e)=>{ keys[e.key.toLowerCase()] = false; });
+
+/* touch buttons */
+const btnLeft = document.getElementById('btnLeft');
+const btnRight = document.getElementById('btnRight');
+const btnJump = document.getElementById('btnJump');
+const btnRun = document.getElementById('btnRun');
+
+btnLeft.addEventListener('touchstart',(e)=>{ touchState.left = true; e.preventDefault(); });
+btnLeft.addEventListener('touchend',()=>{ touchState.left = false; });
+btnRight.addEventListener('touchstart',(e)=>{ touchState.right = true; e.preventDefault(); });
+btnRight.addEventListener('touchend',()=>{ touchState.right = false; });
+btnJump.addEventListener('touchstart',(e)=>{ touchState.jump = true; e.preventDefault(); setTimeout(()=>touchState.jump=false,150); });
+btnRun.addEventListener('touchstart',(e)=>{ touchState.run = true; e.preventDefault(); });
+btnRun.addEventListener('touchend',()=>{ touchState.run = false; });
+
+/* also respond to mouse clicks for jump */
+canvas.addEventListener('mousedown',(e)=>{ touchState.jump = true; setTimeout(()=>touchState.jump=false,120); });
+
+/* ---- Menu overlay controls ---- */
+const menuOverlay = document.getElementById('menuOverlay');
+document.getElementById('resumeBtn').addEventListener('click', ()=>{ toggleMenu(false); });
+document.getElementById('closeMenu').addEventListener('click', ()=>{ toggleMenu(false); });
+document.getElementById('restartBtn').addEventListener('click', ()=>{ restartLevel(); toggleMenu(false); });
+document.getElementById('gotoLevelBtn').addEventListener('click', ()=>{ nextLevel(); toggleMenu(false); });
+document.getElementById('exportScore').addEventListener('click', ()=>{ localStorage.setItem('pj.lastScore', player.score); alert('Puntaje guardado localmente: '+player.score); });
+
+menuOverlay.addEventListener('click',(e)=>{ if(e.target===menuOverlay) toggleMenu(false); });
+
+function toggleMenu(forceState){
+  if(typeof forceState === 'boolean'){ paused = !forceState; }
+  paused = (typeof forceState === 'boolean') ? forceState : !paused;
+  menuOverlay.style.display = paused ? 'flex':'none';
+}
+
+/* ---- Game logic update ---- */
+function update(dt){
+  if(paused) return;
+  timeElapsed += dt;
+  // input: combine keyboard and touch
+  const left = keys['arrowleft'] || keys['a'] || touchState.left;
+  const right = keys['arrowright'] || keys['d'] || touchState.right;
+  const jumpKey = keys['w'] || keys[' '] || keys['arrowup'] || touchState.jump;
+  const runKey = keys['shift'] || touchState.run;
+
+  // horizontal velocity
+  let targetSpeed = 0;
+  if(left) targetSpeed = -PLAYER_SPEED;
+  if(right) targetSpeed = PLAYER_SPEED;
+  if(runKey) targetSpeed *= PLAYER_RUN_MULT;
+
+  // simple acceleration
+  const accel = 1600;
+  player.vx += Math.sign(targetSpeed - player.vx) * Math.min(Math.abs(targetSpeed - player.vx), accel * dt);
+
+  // apply gravity
+  player.vy += GRAVITY * dt;
+  if(player.vy > MAX_FALL) player.vy = MAX_FALL;
+
+  // jump
+  if(jumpKey && player.onGround){
+    player.vy = -JUMP_SPEED;
+    player.onGround = false;
+  }
+
+  // move and collide against world blocks
+  moveAndCollide(player, player.vx * dt, player.vy * dt, world);
+
+  // coins pickup
+  for(let c of world.coins){
+    if(!c.collected && rectsOverlap(player, c)){
+      c.collected = true;
+      player.score += 10;
+    }
+  }
+
+  // enemies movement + collision with player
+  for(let e of world.enemies){
+    if(!e.alive) continue;
+    e.x += e.vx * dt * e.dir;
+    // reverse on block collision or edge
+    let collided = false;
+    const probe = {x:e.x,y:e.y,w:e.w,h:e.h};
+    for(let b of world.blocks){
+      if(rectsOverlap(probe,b)){
+        collided = true; break;
+      }
+    }
+    if(collided){
+      e.dir *= -1;
+      e.x += e.vx * dt * e.dir * 2;
+    }
+    // player vs enemy
+    if(rectsOverlap(player, e) && e.alive){
+      // if player falling onto enemy (stomp)
+      if(player.vy > 120){
+        e.alive = false;
+        player.vy = -JUMP_SPEED*0.45;
+        player.score += 40;
+      } else {
+        if(player.invuln <= 0){
+          player.lives -= 1;
+          player.invuln = 1.2;
+          player.x = world.playerStart.x+4;
+          player.y = world.playerStart.y+4;
+          player.vx = player.vy = 0;
+        }
+      }
+    }
+  }
+
+  if(player.invuln > 0) player.invuln -= dt;
+
+  // goal detection - if none defined create implicit rightmost goal
+  // If player goes beyond right edge of world, advance level
+  if(player.x > world.w - TILE*1.5){
+    nextLevel();
+  }
+
+  // update camera (smooth)
+  const screenW = canvas.width / devicePixelRatio;
+  const screenH = canvas.height / devicePixelRatio;
+  const targetCx = player.x + player.w/2 - screenW/2;
+  const targetCy = player.y + player.h/2 - screenH/2;
+  cam.x += (targetCx - cam.x) * CAMERA_LERP;
+  cam.y += (targetCy - cam.y) * CAMERA_LERP;
+  // clamp
+  cam.x = Math.max(0, Math.min(world.w - screenW, cam.x));
+  cam.y = Math.max(0, Math.min(world.h - screenH, cam.y));
+
+  // update HUD
+  updateHUD();
+
+  // lose condition
+  if(player.lives <= 0){
+    alert('Has perdido todas las vidas. Reiniciando juego.');
+    player.lives = 3;
+    player.score = 0;
+    loadLevel(0);
+  }
+}
+
+/* ---- Render loop ---- */
+function clear(){
+  ctx.fillStyle = "#06131a";
+  ctx.fillRect(0,0,canvas.width/devicePixelRatio,canvas.height/devicePixelRatio);
+}
+
+// simple parallax background
+function drawBackground(){
+  const sw = canvas.width/devicePixelRatio, sh = canvas.height/devicePixelRatio;
+  // gradient sky
+  const grad = ctx.createLinearGradient(0,0,0,sh);
+  grad.addColorStop(0, "#05203a");
+  grad.addColorStop(1, "#00141b");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,sw,sh);
+
+  // distant hills parallax
+  const p1 = Math.max(0, Math.min(1, cam.x / (world.w || 1000)));
+  ctx.fillStyle = "rgba(10,20,30,0.6)";
+  ctx.beginPath();
+  const baseY = sh*0.75;
+  ctx.moveTo(0,baseY);
+  for(let i=0;i<=10;i++){
+    const x = (i/10)*sw;
+    const y = baseY - Math.sin((i+p1*6)*0.9)*30 - 30;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(sw,baseY); ctx.closePath(); ctx.fill();
+
+  // small parallax clouds
+  ctx.fillStyle = "rgba(255,255,255,0.03)";
+  for(let i=0;i<6;i++){
+    const cx = ((i*180) - (cam.x*0.2 % 1000) + sw*2) % (sw+200) - 100;
+    const cy = 40 + i*18;
+    ctx.beginPath(); ctx.ellipse(cx,cy,70,18,0,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function draw(){
+  clear();
+  drawBackground();
+
+  // transform world to camera view
+  ctx.save();
+  ctx.translate(-Math.floor(cam.x), -Math.floor(cam.y));
+
+  // draw blocks
+  ctx.fillStyle = "#0b3f3f";
+  for(let b of world.blocks){
+    ctx.fillStyle = "#0d3b2f";
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    // top bevel
+    ctx.fillStyle = "rgba(255,255,255,0.02)";
+    ctx.fillRect(b.x, b.y, b.w, 4);
+  }
+
+  // draw coins
+  for(let c of world.coins){
+    if(c.collected) continue;
+    ctx.fillStyle = "#ffd24a";
+    ctx.beginPath(); ctx.ellipse(c.x + c.w/2, c.y + c.h/2, c.w/2, c.h/2, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,0.12)"; ctx.fillRect(c.x + c.w*0.15, c.y + c.h*0.45, c.w*0.7, c.h*0.15);
+  }
+
+  // draw enemies
+  for(let e of world.enemies){
+    if(!e.alive) continue;
+    ctx.fillStyle = "#ff6b6b";
+    ctx.fillRect(e.x, e.y, e.w, e.h);
+    // eyes
+    ctx.fillStyle = "#111"; ctx.fillRect(e.x + 8, e.y + 8, 6, 6); ctx.fillRect(e.x + e.w - 16, e.y + 8, 6, 6);
+  }
+
+  // draw player (simple 3-color sprite)
+  ctx.save();
+  if(player.invuln > 0 && Math.floor(player.invuln * 10) % 2 === 0) ctx.globalAlpha = 0.4;
+  // body
+  ctx.fillStyle = "#00d1ff"; ctx.fillRect(player.x, player.y, player.w, player.h);
+  // head
+  ctx.fillStyle = "#083042"; ctx.fillRect(player.x + 6, player.y - 10, player.w - 12, 10);
+  // eye
+  ctx.fillStyle = "#fff"; ctx.fillRect(player.x + 8, player.y - 8, 4, 4);
+  ctx.restore();
+
+  // draw goal (optional)
+  if(world.goal){
+    ctx.fillStyle="#8aff8a"; ctx.fillRect(world.goal.x, world.goal.y, world.goal.w, world.goal.h);
+  }
+
+  ctx.restore();
+
+  // HUD overlay drawn in DOM for clearer text; but we can draw tooltips here if needed
+}
+
+/* ---- Main loop ---- */
+function mainLoop(ts){
+  if(!lastTs) lastTs = ts;
+  const dt = Math.min(0.033, (ts - lastTs)/1000); // cap dt ~33ms
+  lastTs = ts;
+
+  if(!paused) update(dt);
+  draw();
+
+  requestAnimationFrame(mainLoop);
+}
+
+/* ---- Utility: restart/next level ---- */
+function restartLevel(){
+  loadLevel(levelIndex);
+  paused = false; menuOverlay.style.display = 'none';
+}
+
+function nextLevel(){
+  loadLevel((levelIndex+1) % LEVELS.length);
+}
+
+/* ---- Start game ---- */
+loadLevel(0);
+requestAnimationFrame(mainLoop);
+
+/* ---- Small polish: keyboard UI and click handlers ---- */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'p') { toggleMenu(true); }
+  if(e.key === 'r') restartLevel();
+  if(e.key === 'n') nextLevel();
+});
+
+/* expose small debug */
+window.pixeljump = { loadLevel, restartLevel, nextLevel };
+
+/* ---- Make sure touch controls not blocking vertical scroll outside canvas on mobile ---- */
+(function allowPageScrollOutsideCanvas(){
+  // If the user scrolls the page outside canvas, allow default behavior.
+  // We already bound touchstart on our control buttons only; canvas click used only for jump.
+})();
+
+/* ---- Performance notes ----
+  - All heavy loops are small; images and audio avoided to keep size low.
+  - IntersectionObserves not needed here; we use simple game loop + culling via camera.
+  - For production: replace primitive shapes with optimized sprite atlases.
+---- */
 </script>
 </body>
 </html>
+```0
