@@ -1,24 +1,30 @@
-<!-- index.html - SinFiltro: Vehículos 3D con calles reales (Jardines de Morelos) -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro - Arena Vehicular (MVP con Mapa Real)</title>
+<title>SinFiltro - Arena Vehicular (MVP) — Calles</title>
 <style>
   html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden}
   #overlayUI{position:fixed;inset:0;pointer-events:none}
   #canvasHolder{width:100%;height:100%}
-  .joy{position:fixed;left:18px;bottom:18px;width:110px;height:110px;border-radius:60px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:30}
-  .stick{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08);transform:translate(0,0)}
-  .btnFire{position:fixed;right:20px;bottom:34px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#00d1ff,#8a6eff);color:#001;font-weight:700;font-size:28px;display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:30;box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+  /* joystick */
+  .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:30 }
+  .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.08); transform:translate(0,0) }
+  /* fire button */
+  .btnFire { position:fixed; right:20px; bottom:34px; width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#00d1ff,#8a6eff); color:#001; font-weight:700; font-size:28px; display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:30; box-shadow:0 12px 40px rgba(0,0,0,0.5) }
+  /* top UI */
   .topBar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;z-index:40}
-  .logo{font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .logo{font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
   .miniBtns{display:flex;gap:8px}
-  .icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02)}
+  .icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
+  /* viewer overlay */
   #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:50}
   #viewer img{max-width:90%;height:auto;border-radius:12px}
-  @media(max-width:420px){.joy{width:96px;height:96px}.stick{width:42px;height:42px}.btnFire{width:64px;height:64px}}
+  /* debug overlay */
+  #debugUI{position:fixed;right:12px;top:80px;background:rgba(0,0,0,0.5);padding:8px;border-radius:10px;color:#bcd;z-index:80;pointer-events:auto;font-size:13px}
+  /* responsive */
+  @media(max-width:420px){ .joy{width:96px;height:96px} .stick{width:42px;height:42px} .btnFire{width:64px;height:64px} }
 </style>
 </head>
 <body>
@@ -27,7 +33,7 @@
   <!-- UI -->
   <div id="overlayUI">
     <div class="topBar">
-      <div class="logo">SinFiltro - Arena</div>
+      <div class="logo" id="logoBtn">SinFiltro - Arena (demo)</div>
       <div class="miniBtns">
         <div class="icon" id="btnMenu">☰</div>
         <div class="icon" id="btnStart">▶</div>
@@ -48,10 +54,18 @@
     </div>
   </div>
 
-  <!-- Three.js -->
+  <div id="debugUI" style="display:none">
+    <div>FPS: <span id="fps">0</span></div>
+    <div>Scale: <span id="mapScale">1</span></div>
+    <button id="toggleMap">Ocultar/Mostrar calles</button>
+  </div>
+
+  <!-- three.js -->
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+
   <script>
   (function(){
+    // ---------- setup ----------
     const holder = document.getElementById('canvasHolder');
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x05060a, 0.002);
@@ -59,137 +73,363 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.domElement.style.touchAction = 'none'; // important: avoid default gestures
     holder.appendChild(renderer.domElement);
 
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
-    camera.position.set(0,6,10);
+    camera.position.set(0,6,12);
 
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(5,10,7); scene.add(dir);
+    // lights
+    const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(5,10,7); scene.add(dir);
     scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
+    // ground
     const gmat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.1, roughness:0.9});
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), gmat);
-    ground.rotation.x = -Math.PI/2; scene.add(ground);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600,1600), gmat);
+    ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
 
-    // VEHÍCULO DEL JUGADOR
+    // ---------- player car (unchanged) ----------
     const car = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555}));
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.4, roughness:0.6}));
     body.position.y = 0.7; car.add(body);
     const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
     const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
     for(let i=0;i<4;i++){
       const w = new THREE.Mesh(wheelGeo, wheelMat);
-      w.rotation.z = Math.PI/2; w.position.y = 0.25;
-      w.position.x = (i%2===0)?-1:1; w.position.z = (i<2)?1.2:-1.2; car.add(w);
+      w.rotation.z = Math.PI/2;
+      w.position.y = 0.25;
+      w.position.x = (i%2===0)?-1:1;
+      w.position.z = (i<2)?1.2:-1.2;
+      car.add(w);
     }
+    car.position.set(0,0,0);
     scene.add(car);
 
-    // ENEMIGO DEMO
+    // bot
     const bot = car.clone();
     bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff});
-    bot.position.set(8,0,-6); scene.add(bot);
+    bot.position.set(8,0, -6);
+    scene.add(bot);
 
-    const state = {forward:0, turn:0, speed:0, maxSpeed:0.8, rotSpeed:0.04};
-    const camOffset = new THREE.Vector3(0,4,10);
-    let lastTime = performance.now();
+    // bullets
     const bullets = [];
-
     function spawnBullet(origin, dir){
-      const g = new THREE.SphereGeometry(0.12,8,8);
-      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77});
+      const g = new THREE.SphereGeometry(0.12, 8,8);
+      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
       const b = new THREE.Mesh(g,m);
-      b.position.copy(origin); b.userData.dir = dir.clone(); b.userData.speed = 2.2;
+      b.position.copy(origin);
+      b.userData.dir = dir.clone();
+      b.userData.speed = 2.2;
       scene.add(b); bullets.push(b);
     }
 
-    // JOYSTICK
+    // ---------- MAP: road texture on plane (efficient for mobile) ----------
+    // Road network data (array of segments). Each coordinate is [x, z] in meters (scene units).
+    // The following polyline set is a small approximation (grid-like) to simulate real streets.
+    // You can replace or extend these with more precise data later.
+    const roadPolylines = [
+      // main avenue horizontal
+      [[-120, -20], [-80, -20], [-40, -20], [0,-20], [40,-20], [80,-20], [120,-20]],
+      // parallel avenue
+      [[-120, 20], [-80, 20], [-40, 20], [0,20], [40,20], [80,20], [120,20]],
+      // vertical connectors
+      [[-80, -60], [-80, -20], [-80, 20], [-80, 60]],
+      [[0, -60], [0, -20], [0, 20], [0, 60]],
+      [[80, -60], [80, -20], [80, 20], [80, 60]],
+      // smaller cross streets
+      [[-40, -40], [-40, -20], [-40, 0], [-40, 20], [-40, 40]],
+      [[40, -40], [40, -20], [40, 0], [40, 20], [40, 40]]
+    ];
+
+    // canvas texture size (power of two recommended)
+    const CANVAS_SZ = 2048;
+    let mapScale = 1.0; // multiplier to change how big the map is on plane
+    document.getElementById('mapScale').textContent = mapScale;
+
+    // function to draw roads onto canvas
+    function drawRoadsToCanvas(polylines, options = {}) {
+      const roadWidth = options.roadWidth || 10; // in scene meters
+      const laneMarkWidth = 0.6; // scene meters for dashed line
+      // compute bounds of polylines to center them
+      let minX=Infinity, maxX=-Infinity, minZ=Infinity, maxZ=-Infinity;
+      polylines.forEach(poly=>{
+        poly.forEach(p=>{
+          minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+          minZ = Math.min(minZ, p[1]); maxZ = Math.max(maxZ, p[1]);
+        });
+      });
+      const widthMeters = (maxX - minX) || 200;
+      const heightMeters = (maxZ - minZ) || 200;
+      // padding
+      const pad = 20;
+      const scaleX = (CANVAS_SZ - pad*2) / (widthMeters * mapScale);
+      const scaleY = (CANVAS_SZ - pad*2) / (heightMeters * mapScale);
+      const scale = Math.min(scaleX, scaleY);
+
+      const offsetX = (CANVAS_SZ/2) - ((minX+maxX)/2)*scale*mapScale;
+      const offsetY = (CANVAS_SZ/2) + ((minZ+maxZ)/2)*scale*mapScale; // + because canvas y down
+
+      // create canvas and draw
+      const c = document.createElement('canvas'); c.width = CANVAS_SZ; c.height = CANVAS_SZ;
+      const ctx = c.getContext('2d');
+      // background subtle asphalt gradient
+      const g = ctx.createLinearGradient(0,0,CANVAS_SZ, CANVAS_SZ);
+      g.addColorStop(0,'#0b1118'); g.addColorStop(1,'#0c151e');
+      ctx.fillStyle = g; ctx.fillRect(0,0,CANVAS_SZ,CANVAS_SZ);
+
+      // sidewalk pattern (very subtle)
+      ctx.globalAlpha = 0.06;
+      ctx.fillStyle = '#ffffff';
+      for(let y=0;y<CANVAS_SZ;y+=18){ ctx.fillRect(0,y, CANVAS_SZ, 1); }
+      ctx.globalAlpha = 1;
+
+      // draw each polyline as series of rectangles (road segments)
+      ctx.lineCap = 'round';
+      polylines.forEach(poly=>{
+        for(let i=0;i<poly.length-1;i++){
+          const [x1,z1] = poly[i]; const [x2,z2] = poly[i+1];
+          const cx = (x1 + x2)/2; const cz = (z1 + z2)/2;
+          const dx = (x2 - x1), dz = (z2 - z1);
+          const len = Math.sqrt(dx*dx + dz*dz);
+          const angle = Math.atan2(dz, dx);
+
+          const px = cx*scale*mapScale + offsetX;
+          const py = -cz*scale*mapScale + offsetY;
+
+          const roadPxLen = len * scale * mapScale;
+          const roadPxW = roadWidth * scale * mapScale;
+
+          // draw road rectangle rotated
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(angle);
+          // asphalt
+          ctx.fillStyle = '#0e1620';
+          roundRect(ctx, -roadPxLen/2, -roadPxW/2, roadPxLen, roadPxW, Math.max(4, roadPxW*0.08), true, false);
+          // darker inner to create depth
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = 'rgba(0,0,0,0.08)';
+          roundRect(ctx, -roadPxLen/2, -roadPxW/2, roadPxLen, Math.max(roadPxW*0.3,2), Math.max(4,roadPxW*0.06), true, false);
+          ctx.globalCompositeOperation = 'source-over';
+          // center dashed line
+          ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+          ctx.lineWidth = Math.max(2, laneMarkWidth*scale*mapScale*0.6);
+          ctx.setLineDash([roadPxLen*0.02, roadPxLen*0.03]);
+          ctx.beginPath(); ctx.moveTo(-roadPxLen/2 + 6, 0); ctx.lineTo(roadPxLen/2 - 6, 0); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+      });
+
+      // small helper: roundRect
+      function roundRect(ctx,x,y,w,h,r,fill,stroke){
+        if (typeof r === 'undefined') r = 5;
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+        if (fill) ctx.fill();
+        if (stroke) ctx.stroke();
+      }
+
+      return {canvas:c, scale, offsetX, offsetY, minX, minZ, maxX, maxZ};
+    }
+
+    // generate canvas texture and plane
+    let mapPlane = null;
+    let mapTexture = null;
+    function createMapLayer(){
+      const draw = drawRoadsToCanvas(roadPolylines, {roadWidth:10});
+      if(mapTexture) mapTexture.dispose();
+      mapTexture = new THREE.CanvasTexture(draw.canvas);
+      mapTexture.wrapS = mapTexture.wrapT = THREE.ClampToEdgeWrapping;
+      mapTexture.anisotropy = 1;
+      mapTexture.needsUpdate = true;
+
+      // plane geometry size should match world meters extents * mapScale
+      // compute extents from draw result
+      const wMeters = (draw.maxX - draw.minX) * mapScale + 40;
+      const hMeters = (draw.maxZ - draw.minZ) * mapScale + 40;
+      const planeG = new THREE.PlaneGeometry(wMeters, hMeters, 1,1);
+      const planeM = new THREE.MeshBasicMaterial({map:mapTexture, transparent:false, opacity:1});
+      if(mapPlane) { scene.remove(mapPlane); mapPlane.geometry.dispose(); mapPlane.material.dispose(); mapPlane = null; }
+      mapPlane = new THREE.Mesh(planeG, planeM);
+      mapPlane.rotation.x = -Math.PI/2;
+      // center plane at average of min/max:
+      const centerX = (draw.minX + draw.maxX)/2;
+      const centerZ = (draw.minZ + draw.maxZ)/2;
+      mapPlane.position.set(centerX*mapScale, 0.01, centerZ*mapScale); // slight elevation to avoid z-fighting
+      scene.add(mapPlane);
+
+      // create few simple lamp posts at intersections (lightweight)
+      addLampPostsAtIntersections(draw, 24);
+    }
+
+    // add few lamp posts at some intersection points (approx)
+    const lampGroup = new THREE.Group(); scene.add(lampGroup);
+    function addLampPostsAtIntersections(draw, count=20){
+      // clear previous
+      lampGroup.children.slice().forEach(c=>lampGroup.remove(c));
+      const postGeo = new THREE.CylinderGeometry(0.06, 0.06, 2.2, 6);
+      const headGeo = new THREE.SphereGeometry(0.14, 6,6);
+      const postMat = new THREE.MeshStandardMaterial({color:0x222222, metalness:0.2, roughness:0.6});
+      const headMat = new THREE.MeshStandardMaterial({emissive:0xfff8cc, color:0xffffee, emissiveIntensity:0.6});
+      // collect candidate points along polylines (junctions)
+      const points = [];
+      roadPolylines.forEach(poly=>{
+        poly.forEach(p=>{
+          points.push([p[0]*mapScale + (Math.random()-0.5)*2, p[1]*mapScale + (Math.random()-0.5)*2]);
+        });
+      });
+      for(let i=0;i<count;i++){
+        const idx = Math.floor(Math.random()*points.length);
+        const [x,z] = points[idx];
+        const post = new THREE.Mesh(postGeo, postMat);
+        const head = new THREE.Mesh(headGeo, headMat);
+        post.position.set(x, 1.1, z);
+        head.position.set(x, 2.4, z);
+        lampGroup.add(post); lampGroup.add(head);
+      }
+    }
+
+    // ---------- movement + controls (unchanged) ----------
+    const camOffset = new THREE.Vector3(0,5,12);
+    const state = {forward:0, turn:0, speed:0, maxSpeed: 0.8, rotSpeed: 0.04};
+    let lastTime = performance.now();
+
+    // joystick
     const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-    let stick={x:0,y:0}, touchId=null, baseX=0, baseY=0;
-    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform=`translate(0,0)`; }
-    joy.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touchId=t.identifier;baseX=t.clientX;baseY=t.clientY;},{passive:true});
-    joy.addEventListener('touchmove',e=>{
-      for(const t of e.changedTouches){if(t.identifier===touchId){
-        const dx=t.clientX-baseX, dy=t.clientY-baseY, max=36;
-        stick.x=Math.max(-1,Math.min(1,dx/max)); stick.y=Math.max(-1,Math.min(1,-dy/max));
-        stickEl.style.transform=`translate(${stick.x*28}px,${-stick.y*28}px)`;
-      }}},{passive:true});
-    joy.addEventListener('touchend',()=>{resetStick();},{passive:true});
+    let touchId = null, baseX=0, baseY=0;
+    let stick = {x:0,y:0};
+    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+    joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
+    joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier === touchId){ const dx = t.clientX - baseX; const dy = t.clientY - baseY; const max = 36; const nx = Math.max(-1, Math.min(1, dx/max)); const ny = Math.max(-1, Math.min(1, dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+    joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
+    let md=false;
+    joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+    joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+    joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
-    document.getElementById('btnFire').addEventListener('click',()=>{
-      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-      const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
+    // fire
+    const fireBtn = document.getElementById('btnFire');
+    fireBtn.addEventListener('touchstart', e=> { e.preventDefault(); doFire(); }, {passive:false});
+    fireBtn.addEventListener('mousedown', ()=> doFire());
+    function doFire(){
+      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+      const origin = car.position.clone().add(new THREE.Vector3(0,1, -2).applyQuaternion(car.quaternion));
       spawnBullet(origin, dir);
-    });
+    }
 
-    // LOOP PRINCIPAL
+    // simple bot movement
+    let botAngle = 0;
+
+    // resize
+    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+
+    // MAIN LOOP
+    let fpsEl = document.getElementById('fps');
+    let lastFPSUpdate = performance.now(); let frames = 0;
     function animate(){
-      const now=performance.now(), dt=Math.min(50,now-lastTime)/16.666; lastTime=now;
-      state.forward=stick.y; state.turn=stick.x;
-      if(state.forward>0.05) state.speed+=0.02*state.forward*dt;
-      else if(state.forward<-0.05) state.speed-=0.03*(-state.forward)*dt;
-      else state.speed*=0.98;
-      state.speed=Math.max(-state.maxSpeed,Math.min(state.maxSpeed,state.speed));
-      car.rotation.y += -state.turn*state.rotSpeed*(0.9+Math.abs(state.speed))*dt;
-      const forward=new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-      car.position.add(forward.multiplyScalar(state.speed*dt*0.8));
-      const camTarget=car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
-      camera.position.lerp(camTarget,0.12); camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.5,0)));
+      const now = performance.now();
+      const dt = Math.min(50, now - lastTime) / 16.666; lastTime = now;
 
-      renderer.render(scene,camera);
+      // joystick -> state
+      state.forward = Math.max(-1, Math.min(1, stick.y));
+      state.turn = Math.max(-1, Math.min(1, stick.x));
+
+      // physics-like speed
+      if(state.forward > 0.05) state.speed += 0.02 * state.forward * dt;
+      else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
+      else state.speed *= 0.98;
+      state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+      car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+
+      // move in local forward
+      const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+      car.position.add(forwardVec.multiplyScalar(state.speed * dt * 0.8));
+
+      // camera follow
+      const desiredCam = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+      camera.position.lerp(desiredCam, 0.12);
+      const lookAt = car.position.clone().add(new THREE.Vector3(0,1.5,0));
+      camera.lookAt(lookAt);
+
+      // bot circle
+      botAngle += 0.002 * dt * 30;
+      bot.position.x = Math.cos(botAngle) * 8;
+      bot.position.z = Math.sin(botAngle) * 8;
+      bot.lookAt(car.position);
+
+      // bullets update
+      for(let i=bullets.length-1;i>=0;i--){
+        const b = bullets[i];
+        b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+        if(b.position.distanceTo(bot.position) < 1.4){
+          scene.remove(b); bullets.splice(i,1);
+          const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522, color:0x111111}));
+          hit.position.copy(bot.position); scene.add(hit);
+          setTimeout(()=> scene.remove(hit), 500);
+          continue;
+        }
+        if(b.position.length() > 1000){ scene.remove(b); bullets.splice(i,1); }
+      }
+
+      renderer.render(scene, camera);
+
+      // FPS counter (update every 300ms)
+      frames++;
+      if(now - lastFPSUpdate > 300){
+        const fps = Math.round((frames / (now - lastFPSUpdate)) * 1000);
+        fpsEl && (fpsEl.textContent = fps);
+        frames = 0; lastFPSUpdate = now;
+      }
+
       requestAnimationFrame(animate);
     }
-    animate();
 
-    // MAPA REAL: CALLES DE JARDINES DE MORELOS
-    (async function loadOSM(){
-      const NOMINATIM_QUERY='Jardines de Morelos, Ecatepec de Morelos, México';
-      const OVERPASS_URL='https://overpass-api.de/api/interpreter';
-      function lonLatToMeters(lon,lat,refLat){
-        const latMeters=lat*111320;
-        const lonMeters=lon*(111320*Math.cos(refLat*Math.PI/180));
-        return [lonMeters,latMeters];
-      }
-      try{
-        const nomData=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(NOMINATIM_QUERY)}&limit=1`);
-        const nom=await nomData.json(); if(!nom.length) return;
-        const [south,north,west,east]=nom[0].boundingbox.map(parseFloat);
-        const q=`[out:json][timeout:25];(way["highway"](${south},${west},${north},${east}););(._;>;);out body;`;
-        const res=await fetch(OVERPASS_URL,{method:'POST',body:q,headers:{'Content-Type':'text/plain'}});
-        const json=await res.json();
-        const nodes=new Map(); const ways=[];
-        for(const el of json.elements){if(el.type==='node')nodes.set(el.id,[el.lon,el.lat]);}
-        for(const el of json.elements){if(el.type==='way'){const pts=(el.nodes||[]).map(id=>nodes.get(id)).filter(Boolean);if(pts.length>1)ways.push(pts);}}
-        const refLat=(north+south)/2, centerLon=(west+east)/2, centerLat=(north+south)/2;
-        const [cx,cy]=lonLatToMeters(centerLon,centerLat,refLat);
-        const roads=new THREE.Group();
-        const mat=new THREE.LineBasicMaterial({color:0x33aaff,transparent:true,opacity:0.9});
-        for(const pts of ways){
-          const pos=new Float32Array(pts.length*3);
-          pts.forEach((p,i)=>{
-            const [mx,my]=lonLatToMeters(p[0],p[1],refLat);
-            pos[i*3]=mx-cx; pos[i*3+1]=0.02; pos[i*3+2]=-(my-cy);
-          });
-          const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-          const line=new THREE.Line(geo,mat); roads.add(line);
-        }
-        roads.scale.set(0.6,0.6,0.6);
-        scene.add(roads);
-        console.log('Calles cargadas:',ways.length);
-      }catch(e){console.error(e);}
-    })();
+    // ---------- create map layer first time ----------
+    createMapLayer();
 
-    window.addEventListener('resize',()=>{
-      renderer.setSize(window.innerWidth,window.innerHeight);
-      camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+    // start loop
+    requestAnimationFrame(animate);
+
+    // ---------- UI small actions ----------
+    document.getElementById('btnMenu').addEventListener('click', ()=> { alert('Menu demo: ajustes, perfil, monetización (placeholders)'); });
+    document.getElementById('btnStart').addEventListener('click', ()=> { alert('Iniciar partida demo: se puede lanzar modo 1v1 / 4v4.'); });
+    document.getElementById('logoBtn').addEventListener('click', ()=> {
+      const v = document.getElementById('viewer'); document.getElementById('viewerImg').src = 'https://picsum.photos/800/420?random=12';
+      v.style.display='flex'; v.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('closeViewer').addEventListener('click', ()=>{ document.getElementById('viewer').style.display='none'; });
+
+    // debug toggle
+    const debugUI = document.getElementById('debugUI');
+    let debugVisible = false;
+    // show debug only on desktop or if localStorage flag
+    if(window.innerWidth > 700 || localStorage.getItem('sf.debug') === '1'){ debugVisible = true; debugUI.style.display='block'; }
+    document.getElementById('toggleMap').addEventListener('click', ()=>{ if(mapPlane) mapPlane.visible = !mapPlane.visible; });
+
+    // allow adjusting scale with + and - keys (desktop)
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === '+'){ mapScale *= 1.08; createMapLayer(); document.getElementById('mapScale').textContent = mapScale.toFixed(2); }
+      if(e.key === '-'){ mapScale /= 1.08; createMapLayer(); document.getElementById('mapScale').textContent = mapScale.toFixed(2); }
+      if(e.key === 'd'){ debugVisible = !debugVisible; debugUI.style.display = debugVisible ? 'block' : 'none'; }
     });
 
-    // UI
-    document.getElementById('btnMenu').addEventListener('click',()=>alert('Menú en desarrollo'));
-    document.getElementById('btnStart').addEventListener('click',()=>alert('Iniciando partida...'));
-    const viewer=document.getElementById('viewer');
-    document.querySelector('.logo').addEventListener('click',()=>{viewer.style.display='flex';});
-    document.getElementById('closeViewer').addEventListener('click',()=>viewer.style.display='none');
+    // expose small function for later: rebuild map after editing polylines
+    window.SF_rebuildMap = function(newPolylines){
+      if(Array.isArray(newPolylines)) {
+        roadPolylines.length = 0; newPolylines.forEach(p=> roadPolylines.push(p));
+        createMapLayer();
+      }
+    };
+
+    // Performance note: using CanvasTexture + single plane is the lightest approach for mobile.
+    // If later you want roads with height or meshes, we can add low-poly extruded meshes selectively.
+
   })();
   </script>
 </body>
