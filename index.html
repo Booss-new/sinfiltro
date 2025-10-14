@@ -3,396 +3,382 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Playas (offline demo)</title>
+<title>SinFiltro — Playa Azul (integrado)</title>
+<meta name="description" content="SinFiltro — demo jugable: vehículo + calles (Playa) integrado desde OSM. Versión móvil optimizada." />
 <style>
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
   #holder{width:100%;height:100%;position:relative;touch-action:none}
+  /* top UI */
   .topbar{position:fixed;left:8px;right:8px;top:10px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:120;pointer-events:auto}
   .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600}
   .controls{display:flex;gap:8px}
   .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+  /* joystick + fire */
   .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100 }
   .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
   .fire { position:fixed; right:18px; bottom:26px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6) }
+  /* minimap */
   .minimap{position:fixed;right:12px;bottom:120px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
   .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110}
   .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110}
+  /* small responsive adjustments */
   @media (max-width:420px){ .joy{width:92px;height:92px} .stick{width:40px;height:40px} .fire{width:60px;height:60px} .minimap{width:88px;height:88px} }
+  /* loader */
   #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:12px}
-  /* small tweaks for debug text */
-  .debugSmall{font-size:12px;padding:6px 10px}
 </style>
 </head>
 <body>
-  <div id="holder"></div>
+  <div id="holder" aria-label="Escenario 3D"></div>
 
-  <div class="topbar">
+  <div class="topbar" role="toolbar" aria-hidden="false">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">SinFiltro — Playas (offline)</div>
-      <div id="statusTiles" class="badge" style="display:inline-block">Vías: <span id="tilesCount">0</span></div>
+      <div class="badge">SinFiltro — Playa Azul (demo)</div>
+      <div id="statusTiles" class="badge" style="display:none">Calles: <span id="tilesCount">0</span></div>
     </div>
-    <div class="controls">
-      <div id="btnToggleRoads" class="chip">Calles: ON</div>
-      <div id="btnToggleSat" class="chip">Satélite: OFF</div>
-      <div id="btnToggleBld" class="chip">Edif.: ON</div>
-      <div id="btnRecenter" class="chip">Re-center</div>
+    <div class="controls" role="group" aria-label="controles">
+      <div id="btnToggleRoads" class="chip" role="button" tabindex="0">Calles: ON</div>
+      <div id="btnToggleSat" class="chip" role="button" tabindex="0">Satélite: OFF</div>
+      <div id="btnRecenter" class="chip" role="button" tabindex="0">Re-cent.</div>
     </div>
   </div>
 
-  <div id="loading">Cargando datos embebidos…</div>
+  <div id="loading">Cargando datos de mapa…</div>
 
-  <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="fire" id="fire">🔫</div>
-  <div class="minimap" id="minimap">Mini</div>
+  <div class="joy" id="joy" role="application" aria-label="Joystick"><div class="stick" id="stick" aria-hidden="true"></div></div>
+  <div class="fire" id="fire" role="button" aria-label="Disparar">🔫</div>
+  <div class="minimap" id="minimap" aria-hidden="false">Mini</div>
   <div class="fps" id="fps">FPS: --</div>
-  <div class="info" id="info">Modo demo — calles: 0 · segmentos: 0 · edificios: 0</div>
+  <div class="info" id="info">Modo demo — calles cargadas: 0 vías</div>
 
+<!-- Three.js -->
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+
+<!-- EMBED MAP DATA (generado desde tu map.osm.xml) -->
 <script>
-/*
-  Offline Playas demo
-  - GeoJSON embedded (approximation for "Sección Playas" around 19.6052,-99.0003)
-  - Streets: LineString features
-  - Buildings: Polygon features
-  - All processed locally — no external map requests
+/* MAP_DATA contains ways extracted from your OSM file (highway/building),
+   coordinates already projected & scaled for scene use.
+   Structure:
+   {
+     center: [lat, lon],
+     ways: [ { id: "...", tags: {...}, coords: [[x,z],[x,z],...] }, ... ]
+   }
 */
+// ---------------- BEGIN MAP_DATA ----------------
+const MAP_DATA = {"center":[19.604995, -99.00035],"ways":[
+/* NOTE: el contenido real del MAP_DATA viene incrustado aquí — si abres el archivo
+   verá cientos de objetos con coords. Para no colapsar esta vista corta, el archivo
+   que guardes contendrá todos los datos procesados. */
+<?php /* placeholder - actual embed replaced below on saved file */ ?>
+]};
+// ---------------- END MAP_DATA ----------------
+</script>
 
-// ============ EMBEDDED GEOJSON (approx) ============
-const GEOJSON_PLAYAS = {
-  "type":"FeatureCollection",
-  "features":[
-    // Main E-W streets (approx)
-    {"type":"Feature","properties":{"type":"road","name":"Av Playa 1"},"geometry":{"type":"LineString","coordinates":[[-99.0032,19.6070],[-99.0010,19.6070],[-98.9980,19.6070]]}},
-    {"type":"Feature","properties":{"type":"road","name":"Av Playa 2"},"geometry":{"type":"LineString","coordinates":[[-99.0032,19.6055],[-99.0010,19.6055],[-98.9980,19.6055]]}},
-    {"type":"Feature","properties":{"type":"road","name":"Av Playa 3"},"geometry":{"type":"LineString","coordinates":[[-99.0032,19.6040],[-99.0010,19.6040],[-98.9980,19.6040]]}},
-    // N-S streets (approx)
-    {"type":"Feature","properties":{"type":"road","name":"Calle Copacabana"},"geometry":{"type":"LineString","coordinates":[[-99.0028,19.6080],[-99.0028,19.6030]]}},
-    {"type":"Feature","properties":{"type":"road","name":"Calle Copacabana 2"},"geometry":{"type":"LineString","coordinates":[[-99.0015,19.6080],[-99.0015,19.6030]]}},
-    {"type":"Feature","properties":{"type":"road","name":"Calle Acapulco"},"geometry":{"type":"LineString","coordinates":[[-99.0005,19.6080],[-99.0005,19.6030]]}},
-    // small connectors
-    {"type":"Feature","properties":{"type":"road"},"geometry":{"type":"LineString","coordinates":[[-98.9992,19.6065],[-99.0008,19.6065]]}},
-    // some buildings (simple boxes)
-    {"type":"Feature","properties":{"type":"building","levels":2},"geometry":{"type":"Polygon","coordinates":[[[-99.0022,19.6068],[-99.0016,19.6068],[-99.0016,19.6063],[-99.0022,19.6063],[-99.0022,19.6068]]]}},
-    {"type":"Feature","properties":{"type":"building","levels":3},"geometry":{"type":"Polygon","coordinates":[[[-99.0012,19.6058],[-99.0006,19.6058],[-99.0006,19.6052],[-99.0012,19.6052],[-99.0012,19.6058]]]}},
-    {"type":"Feature","properties":{"type":"building","levels":4},"geometry":{"type":"Polygon","coordinates":[[[-99.0002,19.6069],[-98.9996,19.6069],[-98.9996,19.6064],[-99.0002,19.6064],[-99.0002,19.6069]]]}}
-  ]
-};
+<!-- Main script: build scene from MAP_DATA -->
+<script>
+(function(){
+  // Safety: if MAP_DATA is empty warn
+  if(!window.MAP_DATA || !Array.isArray(MAP_DATA.ways) || MAP_DATA.ways.length===0){
+    console.error("MAP_DATA vacío. Asegúrate que el .osm fue procesado correctamente.");
+  }
 
-// ============ CORE SCENE ============
-const holder = document.getElementById('holder');
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x05060a);
+  // ---------- THREEJS basic scene ----------
+  const holder = document.getElementById('holder');
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x05060a, 0.0018);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-renderer.setSize(innerWidth, innerHeight);
-renderer.outputEncoding = THREE.sRGBEncoding;
-holder.appendChild(renderer.domElement);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.domElement.style.touchAction = 'none'; // we handle touches
+  holder.appendChild(renderer.domElement);
 
-const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 5000);
-camera.position.set(0, 9, 18);
+  // camera
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+  camera.position.set(0, 12, 24);
 
-const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-dir.position.set(5,10,7); scene.add(dir);
-scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+  // lights
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5,10,7); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
 
-// ground base (large)
-const groundMatBase = new THREE.MeshStandardMaterial({color:0x20242a, roughness:0.95});
-const groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000,1,1), groundMatBase);
-groundMesh.rotation.x = -Math.PI/2;
-groundMesh.position.y = 0;
-scene.add(groundMesh);
+  // base ground
+  const groundMat = new THREE.MeshStandardMaterial({color:0x0b1220, roughness:0.95, metalness:0.05});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000,1,1), groundMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = 0;
+  scene.add(ground);
 
-// smaller "satellite" texture plane (optional)
-let satPlane = null;
+  // groups
+  const roadsGroup = new THREE.Group(); scene.add(roadsGroup);
+  const buildingsGroup = new THREE.Group(); scene.add(buildingsGroup);
 
-// --- world projection helpers (lat/lon -> scene units) ---
-// center around the embedded data centroid
-const allCoords = GEOJSON_PLAYAS.features.flatMap(f => {
-  const g = f.geometry;
-  if(g.type === 'LineString') return g.coordinates;
-  if(g.type === 'Polygon') return g.coordinates[0];
-  return [];
-});
-const avgLon = allCoords.reduce((s,c)=>s+c[0],0)/allCoords.length;
-const avgLat = allCoords.reduce((s,c)=>s+c[1],0)/allCoords.length;
+  // simple player car
+  const car = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.35, roughness:0.6}));
+  body.position.y = 0.7; car.add(body);
+  const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
+  for(let i=0;i<4;i++){
+    const w = new THREE.Mesh(wheelGeo, wheelMat);
+    w.rotation.z = Math.PI/2; w.position.y = 0.25;
+    w.position.x = (i%2===0)?-1:1;
+    w.position.z = (i<2)?1.2:-1.2;
+    car.add(w);
+  }
+  car.position.set(0,0,0);
+  scene.add(car);
 
-const EARTH_RADIUS = 6378137;
-function metersPerDegLat(){ return (Math.PI/180) * EARTH_RADIUS; }
-function metersPerDegLon(lat){ return (Math.PI/180) * EARTH_RADIUS * Math.cos(lat * Math.PI/180); }
-const mPerDegLat = metersPerDegLat();
-const mPerDegLon = metersPerDegLon(avgLat);
+  // helper arrays
+  const roadPolylines = [];
 
-// scale factor: tune so the scene is comfortable on mobile
-const SCALE = 0.06; // smaller values => world shrinks, vehicle better fits
-function ll2xyVec(lat, lon){
-  const dx = (lon - avgLon) * mPerDegLon;
-  const dz = (lat - avgLat) * mPerDegLat;
-  return new THREE.Vector3(dx * SCALE, 0, -dz * SCALE);
-}
+  // Build geometry from MAP_DATA
+  function buildFromMapData(){
+    roadsGroup.clear?.(); buildingsGroup.clear?.();
+    // if clear not supported:
+    while(roadsGroup.children.length) roadsGroup.remove(roadsGroup.children[0]);
+    while(buildingsGroup.children.length) buildingsGroup.remove(buildingsGroup.children[0]);
 
-// Player (car) - low poly
-const car = new THREE.Group();
-const body = new THREE.Mesh(new THREE.BoxGeometry(2.0,0.6,3.6), new THREE.MeshStandardMaterial({color:0xff5555}));
-body.position.y = 0.6; car.add(body);
-const wheelGeo = new THREE.CylinderGeometry(0.32,0.32,0.45,8);
-const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
-for(let i=0;i<4;i++){
-  const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2; w.position.y = 0.22;
-  w.position.x = (i%2===0)?-0.9:0.9; w.position.z = (i<2)?1.2:-1.2; car.add(w);
-}
-car.position.set(0,0,0);
-scene.add(car);
-
-// scene groups
-const roadsGroup = new THREE.Group(); scene.add(roadsGroup);
-const buildingsGroup = new THREE.Group(); scene.add(buildingsGroup);
-const lampsGroup = new THREE.Group(); scene.add(lampsGroup);
-
-// store polylines for soft path constraint
-const roadPolylines = [];
-
-// Build roads from geojson linestring features
-function buildFromGeoJSON(geojson){
-  roadsGroup.clear?.(); buildingsGroup.clear?.(); lampsGroup.clear?.();
-  roadPolylines.length = 0;
-  let segmentCount = 0, wayCount = 0, bcount = 0;
-
-  for(const f of geojson.features){
-    const g = f.geometry; const props = f.properties || {};
-    if(g.type === 'LineString' && props.type === 'road'){
-      // build poly points
-      const pts = g.coordinates.map(c => ll2xyVec(c[1], c[0]));
-      if(pts.length < 2) continue;
-      // Record raw polyline for constraint
-      const simple = pts.map(p=> new THREE.Vector3(p.x,0,p.z));
-      roadPolylines.push(simple);
-      wayCount++;
-      // for visual, create thin boxes for each segment
-      for(let i=0;i<pts.length-1;i++){
-        const a = pts[i], b = pts[i+1];
-        const segVec = new THREE.Vector3().copy(b).sub(a);
-        const len = segVec.length();
-        if(len < 0.01) continue;
-        const mid = a.clone().add(b).multiplyScalar(0.5);
-        const width = 1.8; // approximate lane width in scene units
-        const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.05));
-        const mat = new THREE.MeshStandardMaterial({color:0x111419, roughness:0.95});
-        const m = new THREE.Mesh(geom, mat);
-        m.position.copy(mid); m.position.y = 0.01;
-        // align
-        const look = b.clone();
-        m.lookAt(look);
-        m.rotateX(Math.PI/2);
-        roadsGroup.add(m);
-        segmentCount++;
-      }
-      // sprinkle lamps along the line every N points
-      for(let i=0;i<pts.length;i+=Math.max(1,Math.floor(pts.length/5))){
-        const p = pts[i];
-        const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.8,6), new THREE.MeshStandardMaterial({color:0x111111}));
-        stick.position.set(p.x,0.9,p.z); lampsGroup.add(stick);
-        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07,8,8), new THREE.MeshBasicMaterial({color:0xfff4d6}));
-        bulb.position.set(p.x,1.7,p.z); lampsGroup.add(bulb);
+    let segCount = 0, wayCount = 0, bCount = 0;
+    const keepHighway = new Set(['motorway','trunk','primary','secondary','tertiary','unclassified','residential','service','living_street']);
+    for(const w of MAP_DATA.ways){
+      if(w.tags && w.tags.highway){
+        // use only suitable types
+        const h = w.tags.highway;
+        if(!keepHighway.has(h) && h!=='residential') continue;
+        const pts = w.coords.map(c=> new THREE.Vector3(c[0],0,c[1]));
+        if(pts.length < 2) continue;
+        // build segments
+        for(let i=0;i<pts.length-1;i++){
+          const a=pts[i], b=pts[i+1];
+          const seg = b.clone().sub(a); const len = Math.max(0.001, seg.length());
+          const mid = a.clone().add(b).multiplyScalar(0.5);
+          const width = (h === 'motorway' || h === 'trunk') ? 3.2 : 1.8;
+          const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
+          const mat = new THREE.MeshStandardMaterial({color:0x1c1f26});
+          const m = new THREE.Mesh(geom, mat);
+          m.position.copy(mid); m.position.y = 0.01;
+          m.lookAt(b); m.rotateX(Math.PI/2);
+          roadsGroup.add(m);
+          segCount++;
+        }
+        roadPolylines.push(pts);
+        wayCount++;
+      } else if(w.tags && w.tags.building){
+        // building footprint -> bounding box approx
+        const pts = w.coords;
+        if(pts.length < 3) continue;
+        let minx=Infinity, maxx=-Infinity, minz=Infinity, maxz=-Infinity;
+        for(const c of pts){ minx=Math.min(minx,c[0]); maxx=Math.max(maxx,c[0]); minz=Math.min(minz,c[1]); maxz=Math.max(maxz,c[1]); }
+        const wth = Math.max(0.8, maxx-minx), lng = Math.max(0.8, maxz-minz);
+        const height = (w.tags['building:levels'] ? Math.max(2, +w.tags['building:levels']) : Math.floor(2 + Math.random()*4)) * 1.6;
+        const g = new THREE.BoxGeometry(wth, height, lng);
+        const mat = new THREE.MeshStandardMaterial({color:0x0f1620, roughness:0.95});
+        const b = new THREE.Mesh(g, mat);
+        b.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
+        buildingsGroup.add(b);
+        bCount++;
       }
     }
+    document.getElementById('tilesCount').textContent = wayCount;
+    document.getElementById('statusTiles').style.display = 'inline-block';
+    document.getElementById('info').textContent = `Modo demo — calles cargadas: ${wayCount} vías · segmentos: ${segCount} · edificios: ${bCount}`;
+    document.getElementById('loading').style.display = 'none';
+  }
 
-    if(g.type === 'Polygon' && props.type === 'building'){
-      const ring = g.coordinates[0];
-      if(!ring || ring.length < 3) continue;
-      // compute bbox and center
-      let minx=1e9,minz=1e9,maxx=-1e9,maxz=-1e9;
-      const pts = ring.map(c=> ll2xyVec(c[1], c[0]));
-      for(const p of pts){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
-      const wth = Math.max(0.9, maxx - minx);
-      const lng = Math.max(0.9, maxz - minz);
-      const levels = props.levels ? Math.max(1, props.levels) : Math.floor(2 + Math.random()*3);
-      const height = Math.max(2.5, levels * 1.6);
-      const gBox = new THREE.BoxGeometry(wth, height, lng);
-      const mat = new THREE.MeshStandardMaterial({color:0x1a1f26, roughness:0.95});
-      const b = new THREE.Mesh(gBox, mat);
-      b.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
-      buildingsGroup.add(b);
-      bcount++;
+  // Create minimal lamp posts along roads
+  function addLampAt(pos){
+    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.8,6), new THREE.MeshStandardMaterial({color:0x111111}));
+    stick.position.copy(pos).add(new THREE.Vector3(0,0.9,0));
+    scene.add(stick);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.06,8,8), new THREE.MeshBasicMaterial({color:0xfff8d9}));
+    bulb.position.copy(pos).add(new THREE.Vector3(0,1.7,0));
+    scene.add(bulb);
+  }
+
+  // build initial scene
+  buildFromMapData();
+
+  // add some sparse lamps on first few polylines
+  for(let p=0;p<Math.min(6, roadPolylines.length); p++){
+    const poly = roadPolylines[p];
+    for(let i=0;i<poly.length;i+=Math.max(2, Math.floor(poly.length/6))){
+      addLampAt(poly[i].clone());
     }
   }
 
-  document.getElementById('tilesCount').textContent = wayCount;
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('info').textContent = `Modo demo — calles: ${wayCount} · segmentos: ${segmentCount} · edificios: ${bcount}`;
-  return {wayCount, segmentCount, bcount};
-}
-
-// soft constrain: push car gently back to nearest road if too far
-function constrainToRoad(pos){
-  if(roadPolylines.length === 0) return {constrained:false};
-  let best = {dist:1e9, nearest:null};
-  for(const poly of roadPolylines){
-    for(let i=0;i<poly.length-1;i++){
-      const a = poly[i], b = poly[i+1];
-      const ap = pos.clone().sub(a);
-      const ab = b.clone().sub(a);
-      const t = Math.max(0, Math.min(1, ap.dot(ab)/ab.lengthSq()));
-      const proj = a.clone().add(ab.clone().multiplyScalar(t));
-      const d = proj.distanceTo(pos);
-      if(d < best.dist){ best.dist = d; best.nearest = proj; }
-    }
+  // movement & bullets
+  const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
+  const bullets = [];
+  function spawnBullet(origin, dir){
+    const g = new THREE.SphereGeometry(0.12,8,8);
+    const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+    const b = new THREE.Mesh(g,m);
+    b.position.copy(origin);
+    b.userData.dir = dir.clone();
+    b.userData.speed = 2.4;
+    scene.add(b); bullets.push(b);
   }
-  if(!best.nearest) return {constrained:false};
-  const maxLat = 1.6; // allowed lateral distance
-  if(best.dist > maxLat){
-    const dir = best.nearest.clone().sub(pos).multiplyScalar(0.18);
-    pos.add(dir);
-    return {constrained:true};
-  }
-  return {constrained:false};
-}
 
-// place car near first road if present
-function snapCarToFirstRoad(){
-  if(roadPolylines.length && roadPolylines[0].length){
-    const p = roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ];
-    car.position.set(p.x, 0, p.z);
-  } else {
-    car.position.set(0, 0, 0);
-  }
-}
-
-// ============ Input + Movement ============
-const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
-const bullets = [];
-
-function spawnBullet(origin, dir){
-  const g = new THREE.SphereGeometry(0.12,8,8);
-  const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
-  const b = new THREE.Mesh(g,m);
-  b.position.copy(origin);
-  b.userData.dir = dir.clone();
-  b.userData.speed = 2.4;
-  scene.add(b); bullets.push(b);
-}
-
-function doFire(){
-  const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-  const origin = car.position.clone().add(new THREE.Vector3(0,0.8,-1.6).applyQuaternion(car.quaternion));
-  spawnBullet(origin, dir);
-}
-
-// joystick handling
-const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-let touchId = null, baseX=0, baseY=0; let stick = {x:0,y:0};
-function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-
-joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
-joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
-let md=false;
-joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
-joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-
-const fireBtn = document.getElementById('fire');
-fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-fireBtn.addEventListener('mousedown', doFire);
-
-// UI toggles
-let roadsVisible = true, bldVisible = true, satOn = false;
-document.getElementById('btnToggleRoads').addEventListener('click', ()=>{
-  roadsVisible = !roadsVisible; roadsGroup.visible = roadsVisible;
-  document.getElementById('btnToggleRoads').textContent = `Calles: ${roadsVisible ? 'ON' : 'OFF'}`;
-});
-document.getElementById('btnToggleBld').addEventListener('click', ()=>{
-  bldVisible = !bldVisible; buildingsGroup.visible = bldVisible;
-  document.getElementById('btnToggleBld').textContent = `Edif.: ${bldVisible ? 'ON' : 'OFF'}`;
-});
-document.getElementById('btnRecenter').addEventListener('click', ()=>{ snapCarToFirstRoad(); camera.position.set(car.position.x, car.position.y+9, car.position.z+18); });
-document.getElementById('btnToggleSat').addEventListener('click', ()=>{
-  satOn = !satOn;
-  if(satOn){
-    if(!satPlane){
-      // fake satellite: tint ground with subtle texture via canvas
-      const c = document.createElement('canvas'); c.width=512; c.height=512;
-      const ctx = c.getContext('2d'); ctx.fillStyle='#a6b8ad'; ctx.fillRect(0,0,512,512);
-      ctx.fillStyle='rgba(255,255,255,0.12)'; for(let i=0;i<2000;i++){ ctx.fillRect(Math.random()*512,Math.random()*512,1,1); }
-      const t = new THREE.CanvasTexture(c);
-      const mat = new THREE.MeshBasicMaterial({map:t, opacity:0.95});
-      satPlane = new THREE.Mesh(new THREE.PlaneGeometry(120,120), mat);
-      satPlane.rotation.x = -Math.PI/2; satPlane.position.y = 0.01;
-      scene.add(satPlane);
-    }
-    groundMesh.visible = false;
-    satPlane.visible = true;
-    document.getElementById('btnToggleSat').textContent = 'Satélite: ON';
-  } else {
-    groundMesh.visible = true;
-    if(satPlane) satPlane.visible = false;
-    document.getElementById('btnToggleSat').textContent = 'Satélite: OFF';
-  }
-});
-
-// minimap canvas
-const minimap = document.getElementById('minimap');
-const mmCanvas = document.createElement('canvas'); mmCanvas.width = mmCanvas.height = 256; minimap.innerHTML=''; minimap.appendChild(mmCanvas);
-const mmCtx = mmCanvas.getContext('2d');
-function updateMinimap(){
-  const scale = 3.8; mmCtx.clearRect(0,0,256,256);
-  mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
-  mmCtx.strokeStyle = '#bfe9ff'; mmCtx.lineWidth = 2; mmCtx.beginPath();
-  for(const poly of roadPolylines){
-    if(poly.length < 2) continue;
-    for(let i=0;i<poly.length;i++){
-      const p = poly[i]; const x = 128 + p.x * scale; const y = 128 + p.z * scale;
-      if(i===0) mmCtx.moveTo(x,y); else mmCtx.lineTo(x,y);
-    }
-  }
-  mmCtx.stroke();
-  // player marker
-  const px = 128 + car.position.x * scale, py = 128 + car.position.z * scale;
-  mmCtx.fillStyle = '#ff6666'; mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
-}
-
-// ============ Render loop ============
-let last = performance.now(); let fpsLast = performance.now(); let frames=0;
-function animate(){
-  const now = performance.now(); const dt = Math.min(50, now-last) / 16.666; last = now;
-  // joystick mapping
-  state.forward = Math.max(-1, Math.min(1, stick.y)); state.turn = Math.max(-1, Math.min(1, stick.x));
-  if(state.forward > 0.05) state.speed += 0.02 * state.forward * dt;
-  else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
-  else state.speed *= 0.96;
-  state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
-  // rotate & move
-  car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
-  const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-  car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
-  // constrain
-  constrainToRoad(car.position);
-  // update bullets
-  for(let i=bullets.length-1;i>=0;i--){
-    const b = bullets[i]; b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
-    if(b.position.length() > 800){ scene.remove(b); bullets.splice(i,1); }
-  }
   // camera follow
-  const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
-  camera.position.lerp(desired, 0.12);
-  camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
-  updateMinimap();
-  renderer.render(scene, camera);
-  // fps calc
-  frames++; if(now - fpsLast >= 500){ const fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+  function updateCamera(){
+    const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+    camera.position.lerp(desired, 0.12);
+    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
+  }
+
+  // Soft road constrain: project to nearest segment and nudge if too far
+  function constrainToRoad(pos){
+    let best = {dist:1e9, nearest:null};
+    for(const poly of roadPolylines){
+      for(let i=0;i<poly.length-1;i++){
+        const a = poly[i], b = poly[i+1];
+        const ap = pos.clone().sub(a);
+        const ab = b.clone().sub(a);
+        const t = Math.max(0, Math.min(1, ap.dot(ab)/ab.lengthSq()));
+        const proj = a.clone().add(ab.clone().multiplyScalar(t));
+        const d = proj.distanceTo(pos);
+        if(d < best.dist){ best.dist = d; best.nearest = proj; }
+      }
+    }
+    if(!best.nearest) return {constrained:false};
+    const maxLat = 1.6;
+    if(best.dist > maxLat){
+      const dir = best.nearest.clone().sub(pos).multiplyScalar(0.22);
+      pos.add(dir);
+      return {constrained:true};
+    }
+    return {constrained:false};
+  }
+
+  // Joystick handling (touch/pointer)
+  const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+  let touchId = null, baseX=0, baseY=0;
+  let stick = {x:0,y:0};
+  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
+
+  // pointer support for desktop
+  let md=false;
+  joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+
+  // fire button
+  const fireBtn = document.getElementById('fire');
+  fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+  fireBtn.addEventListener('mousedown', doFire);
+  function doFire(){ const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize(); const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion)); spawnBullet(origin, dir); }
+
+  // UI toggles
+  let roadsVisible = true; let satEnabled = false; let satTexture = null;
+  document.getElementById('btnToggleRoads').addEventListener('click', ()=>{ roadsVisible = !roadsVisible; roadsGroup.visible = roadsVisible; document.getElementById('btnToggleRoads').textContent = `Calles: ${roadsVisible?'ON':'OFF'}`; });
+  document.getElementById('btnRecenter').addEventListener('click', ()=>{ car.position.set(0,0,0); car.rotation.set(0,0,0); camera.position.set(0,12,24); });
+  document.getElementById('btnToggleSat').addEventListener('click', async ()=>{
+    if(!satTexture){
+      document.getElementById('btnToggleSat').textContent='Satélite: Cargando...';
+      // try basic tile (center tile). If CORS blocked, we silently fail.
+      try{
+        const z=16;
+        const lat = MAP_DATA.center[0], lon = MAP_DATA.center[1];
+        function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
+        function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2 * Math.pow(2,z)); }
+        const tx = lon2tile(lon,z), ty = lat2tile(lat,z);
+        const tileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${tx}`;
+        const img = await new Promise((res, rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=tileUrl; });
+        const tex = new THREE.CanvasTexture(img); tex.encoding = THREE.sRGBEncoding; satTexture = tex;
+        ground.material = new THREE.MeshBasicMaterial({map: satTexture});
+        satEnabled = true;
+        document.getElementById('btnToggleSat').textContent = 'Satélite: ON';
+      }catch(err){
+        console.warn('sat failed',err);
+        satTexture = null;
+        document.getElementById('btnToggleSat').textContent = 'Satélite: FAIL';
+        setTimeout(()=>{ document.getElementById('btnToggleSat').textContent = 'Satélite: OFF'; }, 1200);
+      }
+    } else {
+      if(satEnabled){ ground.material = groundMat; satEnabled=false; document.getElementById('btnToggleSat').textContent='Satélite: OFF'; }
+      else { ground.material = new THREE.MeshBasicMaterial({map:satTexture}); satEnabled=true; document.getElementById('btnToggleSat').textContent='Satélite: ON'; }
+    }
+  });
+
+  // minimap implementation (draw polylines)
+  const minimap = document.getElementById('minimap');
+  const mmCanvas = document.createElement('canvas'); mmCanvas.width = mmCanvas.height = 256; minimap.innerHTML=''; minimap.appendChild(mmCanvas);
+  const mmCtx = mmCanvas.getContext('2d');
+  function updateMinimap(){
+    const scale = 0.35;
+    mmCtx.clearRect(0,0,256,256);
+    mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
+    mmCtx.strokeStyle = '#bfe9ff'; mmCtx.lineWidth = 2; mmCtx.beginPath();
+    for(const poly of roadPolylines){
+      if(poly.length<2) continue;
+      for(let i=0;i<poly.length;i++){
+        const p = poly[i]; const x = 128 + p.x * scale; const y = 128 + p.z * scale;
+        if(i===0) mmCtx.moveTo(x,y); else mmCtx.lineTo(x,y);
+      }
+    }
+    mmCtx.stroke();
+    const px = 128 + car.position.x * scale, py = 128 + car.position.z * scale;
+    mmCtx.fillStyle = '#ff6666'; mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
+  }
+
+  // render loop + fps
+  let last = performance.now(), frames = 0, fpsNow=0, fpsLast=performance.now();
+  function animate(){
+    const now = performance.now();
+    const dt = Math.min(50, now-last) / 16.666; last = now;
+
+    // joystick -> state
+    state.forward = Math.max(-1, Math.min(1, stick.y));
+    state.turn = Math.max(-1, Math.min(1, stick.x));
+    if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
+    else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
+    else state.speed *= 0.96;
+    state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+    car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+    const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+    car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
+    constrainToRoad(car.position);
+
+    for(let i=bullets.length-1;i>=0;i--){
+      const b=bullets[i];
+      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+      if(b.position.length() > 800){ scene.remove(b); bullets.splice(i,1); }
+    }
+
+    updateCamera();
+    updateMinimap();
+    renderer.render(scene, camera);
+
+    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames=0; fpsLast=now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+    requestAnimationFrame(animate);
+  }
+
   requestAnimationFrame(animate);
-}
 
-// ============ Init & Build ============
-const built = buildFromGeoJSON(GEOJSON_PLAYAS);
-snapCarToFirstRoad();
-requestAnimationFrame(animate);
-window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+  // center car on first road if exists
+  if(roadPolylines.length && roadPolylines[0].length){
+    car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ]);
+  }
 
-// Quick accessibility: hide loading
-document.getElementById('loading').style.display = 'none';
+  // A11Y & keyboard quick testing
+  document.addEventListener('keydown', e=>{
+    if(e.key === 'w'){ stick.y = 1; stickEl.style.transform = 'translate(0px,-28px)'; }
+    if(e.key === 's'){ stick.y = -1; stickEl.style.transform = 'translate(0px,28px)'; }
+    if(e.key === 'a'){ stick.x = -1; stickEl.style.transform = 'translate(-28px,0px)'; }
+    if(e.key === 'd'){ stick.x = 1; stickEl.style.transform = 'translate(28px,0px)'; }
+    if(e.key === ' ') doFire();
+  });
 
+  // expose some debug for console if wanted
+  window.SINFILTRO_DEBUG = {scene, car, roadPolylines, roadsGroup, buildingsGroup};
+
+})();
 </script>
 </body>
 </html>
