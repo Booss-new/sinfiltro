@@ -1,175 +1,452 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SinFiltro — Playa Azul (demo)</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: #000; font-family: monospace; }
-    canvas { display: block; }
-    #hud {
-      position: absolute;
-      top: 10px; left: 10px;
-      background: rgba(0,0,0,0.6);
-      color: #00ffff;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-    }
-    #controls {
-      position: absolute;
-      top: 10px; right: 10px;
-      display: flex;
-      gap: 8px;
-    }
-    button {
-      background: linear-gradient(90deg, #007bff, #00ffff);
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-weight: bold;
-      padding: 8px 10px;
-    }
-    #minimap {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      width: 140px;
-      height: 140px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 10px #000;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Playa Azul (demo)</title>
+<style>
+  :root{--bg:#05060a;--ui:#0b1220;--accent1:#00d1ff;--accent2:#8a6eff;--muted:#9fb0bf}
+  html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#eaf7ff;overflow:hidden}
+  #canvasHolder{width:100%;height:100%;position:fixed;inset:0;z-index:0}
+  #overlayUI{position:fixed;inset:0;pointer-events:none;z-index:30}
+  .topRow{position:fixed;left:12px;right:12px;top:10px;display:flex;gap:8px;align-items:center;pointer-events:auto}
+  .pill{background:linear-gradient(90deg,var(--accent1),var(--accent2));padding:8px 12px;border-radius:12px;color:#001;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.6)}
+  .btn{background:rgba(255,255,255,0.03);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .rightGroup{margin-left:auto;display:flex;gap:8px}
+  /* joystick + fire */
+  .joy { position:fixed; left:18px; bottom:22px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:35 }
+  .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.08); transform:translate(0,0) }
+  .btnFire { position:fixed; right:18px; bottom:24px; width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#001; display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:35; box-shadow:0 12px 40px rgba(0,0,0,0.6) }
+  /* little UI */
+  #infoBox{position:fixed;left:12px;bottom:92px;background:rgba(0,0,0,0.6);padding:8px 12px;border-radius:10px;font-size:13px;pointer-events:auto;z-index:35}
+  #miniMap{position:fixed;right:12px;bottom:92px;width:110px;height:110px;border-radius:12px;overflow:hidden;border:2px solid rgba(0,0,0,0.5);z-index:35;pointer-events:auto;background:#071226}
+  #fps{position:fixed;right:12px;top:14px;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,0.45);z-index:35}
+  /* responsive */
+  @media(max-width:420px){ .joy{width:96px;height:96px}.stick{width:42px;height:42px}.btnFire{width:64px;height:64px} #miniMap{width:86px;height:86px} }
+</style>
 </head>
 <body>
-  <div id="hud">FPS: --</div>
-  <div id="controls">
-    <button id="toggleMap">Satélite: OFF</button>
+  <div id="canvasHolder"></div>
+
+  <div id="overlayUI">
+    <div class="topRow">
+      <div class="pill">SinFiltro — Playa Azul (demo)</div>
+      <div class="btn" id="btnMenu">☰</div>
+      <div class="btn" id="btnRecenter">Re-cent.</div>
+      <div class="btn" id="toggleTiles">Calles: ON</div>
+      <div class="btn" id="toggleSat">Satélite: OFF</div>
+      <div class="rightGroup">
+        <div id="fps" class="pill">FPS: --</div>
+      </div>
+    </div>
+
+    <div id="infoBox">Modo demo — calles cargadas: <span id="tileCount">0</span> vías · segmentos: <span id="segCount">0</span> · edificios: <span id="bCount">0</span></div>
+
+    <div id="miniMap"><canvas id="miniCanvas" width="220" height="220" style="width:100%;height:100%"></canvas></div>
+
+    <div class="joy" id="joy">
+      <div class="stick" id="stick"></div>
+    </div>
+
+    <div class="btnFire" id="btnFire">🔫</div>
+
   </div>
-  <div id="minimap">
-    <iframe id="mapFrame"
-      src="https://www.openstreetmap.org/export/embed.html?bbox=-99.002,19.589,-98.999,19.592&layer=mapnik"
-      allowfullscreen>
-    </iframe>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- three.js -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 
-  <script>
-    // === Inicialización ===
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
+<script>
+/* ========================
+   SinFiltro — Playa Azul (demo)
+   Base estable -> mejoras: tiles, satélite, minimapa, detección vía
+   ======================== */
 
-    // === Iluminación ===
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    const directional = new THREE.DirectionalLight(0xffffff, 1);
-    directional.position.set(10, 15, 10);
-    directional.castShadow = true;
-    scene.add(ambient, directional);
+(async function(){
+  // ---------- CONFIG ----------
+  const centerLat = 19.605200, centerLon = -99.000289; // playa azul center
+  const TILE_Z = 15;            // zoom tiles (balance detalle/perform)
+  const TILE_RADIUS = 2;        // number of tiles from center (radius => (2*R+1)^2 tiles)
+  const TILE_SIZE = 100;        // world units per tile (scaling)
+  const SAT_PROVIDER = 'stamen-terrain'; // choices: 'osm','stamen-terrain'
+  // ---------- helpers ----------
+  const $ = s => document.querySelector(s);
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
 
-    // === Terreno con textura (OpenStreetMap) ===
-    const textureLoader = new THREE.TextureLoader();
-    let mapTile = textureLoader.load("https://tile.openstreetmap.org/15/13200/8430.png");
-    const terrainGeometry = new THREE.PlaneGeometry(500, 500);
-    const terrainMaterial = new THREE.MeshLambertMaterial({ map: mapTile });
-    const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
-    terrain.rotation.x = -Math.PI / 2;
-    terrain.receiveShadow = true;
-    scene.add(terrain);
+  // lat/lon -> tile coords
+  function lon2tilex(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
+  function lat2tiley(lat,z){ const latRad = lat*Math.PI/180; return Math.floor((1 - Math.log(Math.tan(latRad) + 1/Math.cos(latRad))/Math.PI)/2 * Math.pow(2,z)); }
+  function tilex2lon(x,z){ return x/Math.pow(2,z)*360 - 180; }
+  function tiley2lat(y,z){ const n = Math.PI - 2*Math.PI*y/Math.pow(2,z); return (180/Math.PI)*Math.atan(0.5*(Math.exp(n)-Math.exp(-n))); }
 
-    // === Vehículo ===
-    const carGeometry = new THREE.BoxGeometry(4, 1.5, 2);
-    const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff3333 });
-    const car = new THREE.Mesh(carGeometry, carMaterial);
-    car.position.set(0, 1, 0);
-    car.castShadow = true;
-    scene.add(car);
+  // tile URLs
+  function tileURL(x,y,z,mode){
+    if(mode === 'osm') return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+    if(mode === 'stamen-terrain') return `https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.jpg`;
+    // fallback
+    return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  }
 
-    // === Cámara y controles ===
-    camera.position.set(0, 6, -12);
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enablePan = false;
-    controls.enableZoom = false;
+  // ---------- three.js scene ----------
+  const holder = $('#canvasHolder');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05060a);
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  holder.appendChild(renderer.domElement);
 
-    // === Movimiento del coche ===
-    const keys = {};
-    let velocity = 0;
+  // camera
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+  camera.position.set(0,6,10);
 
-    document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-    document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+  // lights
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5,10,7); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-    function updateCar() {
-      if (keys["w"]) velocity = Math.min(velocity + 0.02, 1);
-      if (keys["s"]) velocity = Math.max(velocity - 0.02, -0.5);
-      if (keys["a"]) car.rotation.y += 0.05;
-      if (keys["d"]) car.rotation.y -= 0.05;
+  // ground base
+  const groundMat = new THREE.MeshStandardMaterial({color:0x0f1418, metalness:0.1, roughness:0.9});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,1,1), groundMat);
+  ground.rotation.x = -Math.PI/2; ground.position.y = -0.01; scene.add(ground);
 
-      car.translateZ(velocity);
-      velocity *= 0.98;
-    }
+  // ---------- car (player) ----------
+  const car = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.4, roughness:0.6}));
+  body.position.y = 0.7; car.add(body);
+  const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
+  for(let i=0;i<4;i++){
+    const w = new THREE.Mesh(wheelGeo, wheelMat);
+    w.rotation.z = Math.PI/2;
+    w.position.y = 0.25;
+    w.position.x = (i%2===0)?-1:1;
+    w.position.z = (i<2)?1.2:-1.2;
+    car.add(w);
+  }
+  car.position.set(0,0,0);
+  scene.add(car);
 
-    // === Minimapa (coordenadas de Playa Azul) ===
-    const miniMap = document.getElementById("mapFrame");
-    let satelliteMode = false;
-    document.getElementById("toggleMap").addEventListener("click", () => {
-      satelliteMode = !satelliteMode;
-      document.getElementById("toggleMap").innerText = `Satélite: ${satelliteMode ? "ON" : "OFF"}`;
-      const layer = satelliteMode ? "hot" : "mapnik";
-      miniMap.src = `https://www.openstreetmap.org/export/embed.html?bbox=-99.002,19.589,-98.999,19.592&layer=${layer}`;
-    });
+  // simple obstacles/buildings container
+  const buildings = new THREE.Group(); scene.add(buildings);
 
-    // === Indicador FPS ===
-    let fpsDisplay = document.getElementById("hud");
-    let lastFrame = performance.now();
-    let frames = 0;
-    let fps = 0;
+  // ---------- small bot (optional) ----------
+  const bot = car.clone(); bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff}); bot.position.set(8,0,-6); scene.add(bot);
 
-    function calcFPS() {
-      const now = performance.now();
-      frames++;
-      if (now - lastFrame >= 1000) {
-        fps = frames;
-        frames = 0;
-        lastFrame = now;
-        fpsDisplay.textContent = `FPS: ${fps} | Calles: 52 | Edificios: 12`;
+  // ---------- bullets ----------
+  const bullets = [];
+
+  function spawnBullet(origin, dir){
+    const g = new THREE.SphereGeometry(0.12, 8,8);
+    const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+    const b = new THREE.Mesh(g,m);
+    b.position.copy(origin);
+    b.userData.dir = dir.clone();
+    b.userData.speed = 2.2;
+    scene.add(b); bullets.push(b);
+  }
+
+  // ---------- tiles (mosaico) ----------
+  const tileGroup = new THREE.Group(); scene.add(tileGroup);
+  const tileCanvasStore = {}; // offscreen canvases for tiles (for sampling & minimap)
+  let currentMode = 'osm'; // 'osm' or 'stamen-terrain'
+  let tilesLoadedCount = 0;
+
+  // center tile coords
+  const centerX = lon2tilex(centerLon, TILE_Z);
+  const centerY = lat2tiley(centerLat, TILE_Z);
+
+  // load tiles in grid radius
+  async function loadTiles(){
+    // clear previous
+    tileGroup.clear();
+    buildings.clear();
+    tilesLoadedCount = 0;
+    tileCanvasStoreMap = {};
+    let loaded = 0;
+    const promises = [];
+    for(let dy = -TILE_RADIUS; dy <= TILE_RADIUS; dy++){
+      for(let dx = -TILE_RADIUS; dx <= TILE_RADIUS; dx++){
+        const tx = centerX + dx;
+        const ty = centerY + dy;
+        const px = dx * TILE_SIZE;
+        const pz = dy * TILE_SIZE;
+        const url = tileURL(tx,ty,TILE_Z, currentMode);
+        promises.push(fetchTileToPlane(url, tx, ty, TILE_Z, px, pz));
       }
     }
+    await Promise.all(promises);
+    // populate some placeholder buildings along tiles edges (simple boxes) to give depth.
+    populateBuildingsFromTiles();
+    updateTileCountsUI();
+  }
 
-    // === Bucle de animación ===
-    function animate() {
-      requestAnimationFrame(animate);
-      updateCar();
-
-      const camOffset = new THREE.Vector3(0, 5, -10).applyEuler(car.rotation);
-      const camPos = car.position.clone().add(camOffset);
-      camera.position.lerp(camPos, 0.1);
-      camera.lookAt(car.position);
-
-      controls.update();
-      calcFPS();
-      renderer.render(scene, camera);
+  async function fetchTileToPlane(url, tx, ty, z, xpos, zpos){
+    try{
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('tile fail');
+      const blob = await res.blob();
+      const img = await createImageBitmap(blob);
+      // create texture
+      const tex = new THREE.CanvasTexture(bitmapToCanvas(img));
+      tex.encoding = THREE.sRGBEncoding;
+      tex.anisotropy = 2;
+      tex.minFilter = THREE.LinearMipMapLinearFilter;
+      const mat = new THREE.MeshStandardMaterial({map:tex, metalness:0.05, roughness:0.95});
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE), mat);
+      plane.rotation.x = -Math.PI/2;
+      plane.position.set(xpos, 0, zpos);
+      tileGroup.add(plane);
+      // keep tile canvas for sampling/minimap
+      tileCanvasStore[`${tx}_${ty}_${z}`] = bitmapToCanvas(img);
+      tilesLoadedCount++;
+    } catch(err){
+      // tile failed — still create empty plane
+      const mat = new THREE.MeshStandardMaterial({color:0x0b0f12});
+      const plane = new THREE.Mesh(new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE), mat);
+      plane.rotation.x = -Math.PI/2;
+      plane.position.set(xpos, 0, zpos);
+      tileGroup.add(plane);
     }
+  }
 
-    animate();
+  function bitmapToCanvas(imgBitmap){
+    const c = document.createElement('canvas');
+    c.width = imgBitmap.width; c.height = imgBitmap.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(imgBitmap,0,0);
+    return c;
+  }
 
-    // === Ajuste de ventana ===
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+  function populateBuildingsFromTiles(){
+    // Simple approach: for each tile canvas, sample a few dark-ish blobs and spawn simple box buildings.
+    const keys = Object.keys(tileCanvasStore);
+    let bcount = 0;
+    keys.forEach((k, idx)=>{
+      const parts = k.split('_'); // tx_ty_z
+      const tx = parseInt(parts[0]), ty = parseInt(parts[1]);
+      const c = tileCanvasStore[k]; if(!c) return;
+      const ctx = c.getContext('2d');
+      const w = c.width, h = c.height;
+      // sample grid points and spawn building if color is not road/background (very naive)
+      for(let i=0;i<6;i++){
+        const sx = Math.floor(Math.random()*w);
+        const sy = Math.floor(Math.random()*h);
+        const p = ctx.getImageData(sx,sy,1,1).data;
+        const brightness = (p[0]+p[1]+p[2])/3;
+        if(brightness < 220 && Math.random() > 0.8){ // darker pixel -> building candidate
+          const localX = (tx - centerX) * TILE_SIZE + (sx/w - 0.5)*TILE_SIZE;
+          const localZ = (ty - centerY) * TILE_SIZE + (sy/h - 0.5)*TILE_SIZE;
+          const bh = 3 + Math.random()*10;
+          const box = new THREE.Mesh(new THREE.BoxGeometry(6, bh, 6), new THREE.MeshStandardMaterial({color:0x0c1216}));
+          box.position.set(localX, bh/2 -0.01, localZ);
+          buildings.add(box);
+          bcount++;
+        }
+      }
     });
-  </script>
+    document.getElementById('bCount').textContent = bcount;
+  }
+
+  function updateTileCountsUI(){
+    document.getElementById('tileCount').textContent = tilesLoadedCount;
+    // segments and buildings are approximations (we'll show zeros or counts)
+    document.getElementById('segCount').textContent = Math.floor(tilesLoadedCount * 3.6 * 10);
+    // buildings updated earlier
+  }
+
+  // ---------- minimap rendering ----------
+  const miniCanvas = document.getElementById('miniCanvas');
+  const miniCtx = miniCanvas.getContext('2d');
+  function renderMiniMap(){
+    const size = miniCanvas.width;
+    miniCtx.fillStyle = '#071226'; miniCtx.fillRect(0,0,size,size);
+    // draw loaded tile thumbnails centered
+    const keys = Object.keys(tileCanvasStore);
+    if(keys.length===0) return;
+    // simple approach: draw a downscaled mosaic by mapping world positions
+    const centerKeyX = centerX, centerKeyY = centerY;
+    keys.forEach(k=>{
+      const parts = k.split('_'); if(parts.length<3) return;
+      const tx = parseInt(parts[0]), ty = parseInt(parts[1]);
+      const c = tileCanvasStore[k];
+      const dx = tx - centerKeyX, dy = ty - centerKeyY;
+      const s = size / (TILE_RADIUS*2 + 1);
+      const ix = Math.floor(size/2 + dx*s);
+      const iy = Math.floor(size/2 + dy*s);
+      try{ miniCtx.drawImage(c, ix - s/2, iy - s/2, s, s); }catch(e){}
+    });
+    // draw player dot at center
+    miniCtx.fillStyle = '#ff4d4d'; miniCtx.beginPath(); miniCtx.arc(size-18, size-18, 6, 0, Math.PI*2); miniCtx.fill();
+  }
+
+  // ---------- sampling: is car on road? ----------
+  // We'll use the tile canvas to sample the pixel under the car's world pos.
+  function isOnRoad(worldX, worldZ){
+    // convert worldX/worldZ to tile and pixel coordinates
+    // worldX = (tx-centerX) * TILE_SIZE + localOffset
+    // find approximate tx,ty
+    const localTX = Math.round(centerX + worldX / TILE_SIZE);
+    const localTY = Math.round(centerY + worldZ / TILE_SIZE);
+    const key = `${localTX}_${localTY}_${TILE_Z}`;
+    const canvas = tileCanvasStore[key];
+    if(!canvas) return false;
+    const txWorldOriginX = (localTX - centerX) * TILE_SIZE;
+    const txWorldOriginZ = (localTY - centerY) * TILE_SIZE;
+    const relX = (worldX - txWorldOriginX) / TILE_SIZE; // -0..1..+
+    const relZ = (worldZ - txWorldOriginZ) / TILE_SIZE;
+    const px = Math.floor((relX + 0.5) * canvas.width);
+    const py = Math.floor((relZ + 0.5) * canvas.height);
+    if(px < 0 || py < 0 || px >= canvas.width || py >= canvas.height) return false;
+    const ctx = canvas.getContext('2d');
+    const d = ctx.getImageData(px,py,1,1).data;
+    // Heuristic: roads in OSM tiles are relatively light (near white) or different tone; adjust threshold by mode
+    const brightness = (d[0]+d[1]+d[2])/3;
+    // For OSM style: roads are light (brightness high) -> treat as road if brightness > 200 (adjustable)
+    if(currentMode === 'osm') return brightness > 200;
+    // For stamen/terrain: roads may be darker; use different threshold:
+    return brightness > 180;
+  }
+
+  // ---------- input: joystick ----------
+  const joy = $('#joy'), stickEl = $('#stick');
+  let touchId = null, baseX=0, baseY=0;
+  let stick = {x:0,y:0};
+  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
+  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx = t.clientX - baseX; const dy = t.clientY - baseY; const max = 36; const nx = clamp(dx/max,-1,1); const ny = clamp(dy/max,-1,1); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
+  // pointer fallback
+  let md=false;
+  joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=clamp(dx/max,-1,1); const ny=clamp(dy/max,-1,1); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+
+  // fire
+  $('#btnFire').addEventListener('click', ()=> doFire());
+  function doFire(){
+    const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+    const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
+    spawnBullet(origin, dir);
+  }
+
+  // small UI toggles
+  document.getElementById('toggleTiles').addEventListener('click', ()=>{
+    const el = document.getElementById('toggleTiles');
+    const on = el.textContent.includes('ON');
+    el.textContent = on ? 'Calles: OFF' : 'Calles: ON';
+    // toggling "calles" will simply show/hide tileGroup
+    tileGroup.visible = !on;
+  });
+
+  document.getElementById('toggleSat').addEventListener('click', async ()=>{
+    const el = document.getElementById('toggleSat'); const on = el.textContent.includes('ON');
+    currentMode = on ? 'osm' : 'stamen-terrain';
+    el.textContent = on ? 'Satélite: OFF' : 'Satélite: ON';
+    // reload tiles in new mode
+    await loadTiles();
+    renderMiniMap();
+  });
+
+  document.getElementById('btnRecenter').addEventListener('click', ()=>{
+    car.position.set(0,0,0); car.rotation.y = 0;
+    camera.position.set(0,6,10);
+  });
+
+  // ---------- basic movement / physics ----------
+  const state = {speed:0, forward:0, turn:0, maxSpeed:0.9, rotSpeed:0.04};
+  let lastTime = performance.now();
+  function updateMovement(dt){
+    state.forward = clamp(stick.y, -1, 1);
+    state.turn = clamp(stick.x, -1, 1);
+    // accelerate
+    if(Math.abs(state.forward) > 0.05) state.speed += 0.02 * state.forward * dt;
+    else state.speed *= 0.98;
+    state.speed = clamp(state.speed, -state.maxSpeed, state.maxSpeed);
+    // rotation
+    car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+    // move forward
+    const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+    car.position.add(forwardVec.multiplyScalar(state.speed * dt * 0.8));
+    // road check
+    const onRoad = isOnRoad(car.position.x, car.position.z);
+    if(!onRoad){
+      // soft limit: reduce maximum speed and apply extra friction
+      state.speed *= 0.96;
+      // apply gentle push back to center if wanted (not now)
+    }
+    // camera follow
+    const desiredCam = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+    camera.position.lerp(desiredCam, 0.12);
+    const lookAt = car.position.clone().add(new THREE.Vector3(0,1.5,0));
+    camera.lookAt(lookAt);
+  }
+
+  // ---------- bullets update ----------
+  function updateBullets(dt){
+    for(let i=bullets.length-1;i>=0;i--){
+      const b = bullets[i];
+      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+      if(b.position.distanceTo(car.position) < 1 && false) { /* friendly collision suppress */ }
+      // collision with bot
+      if(b.position.distanceTo(bot.position) < 1.4){
+        scene.remove(b); bullets.splice(i,1);
+        const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522, color:0x111111}));
+        hit.position.copy(bot.position); scene.add(hit);
+        setTimeout(()=> scene.remove(hit), 500);
+        continue;
+      }
+      if(b.position.length() > 1000){ scene.remove(b); bullets.splice(i,1); }
+    }
+  }
+
+  // ---------- animation loop ----------
+  let fpsEl = document.getElementById('fps');
+  let tick = 0, fpsCounter = 0, fpsTime = performance.now();
+  async function animate(){
+    requestAnimationFrame(animate);
+    const now = performance.now();
+    let dt = Math.min(40, now - lastTime) / 16.666;
+    lastTime = now;
+    updateMovement(dt);
+    updateBullets(dt);
+    // simple bot movement
+    bot.rotation.y += 0.01 * dt;
+    // FPS counter
+    tick++; fpsCounter++;
+    if(now - fpsTime > 1000){
+      fpsEl.textContent = `FPS: ${Math.round((fpsCounter*1000)/(now-fpsTime))}`;
+      fpsCounter = 0; fpsTime = now;
+    }
+    renderer.render(scene, camera);
+  }
+
+  // ---------- initial load ----------
+  await loadTiles();
+  renderMiniMap();
+  requestAnimationFrame(animate);
+
+  // re-render mini map every second
+  setInterval(() => { renderMiniMap(); updateTileCountsUI(); }, 1000);
+
+  // handle resize
+  window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+
+  // ensure touches on canvas do not block UI
+  renderer.domElement.style.touchAction = 'none';
+
+  // keyboard support for quick testing
+  window.addEventListener('keydown', e=>{
+    if(e.key === 'w') stick.y = 1;
+    if(e.key === 's') stick.y = -1;
+    if(e.key === 'a') stick.x = -1;
+    if(e.key === 'd') stick.x = 1;
+    if(e.key === ' ') doFire();
+  });
+  window.addEventListener('keyup', e=>{ if(['w','s','a','d'].includes(e.key)) resetStick(); });
+
+})(); // end IIFE
+</script>
 </body>
 </html>
