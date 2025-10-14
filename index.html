@@ -1,281 +1,204 @@
+<!-- index.html - SinFiltro: Playas (Prototipo calles, joystick, minimapa, toggle satélite) -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro - Playa Azul (Arena Vehicular) — MVP (Calles A)</title>
-<meta name="description" content="SinFiltro - demo vehicular: calles Playa Azul (simuladas), móvil optimizado, minimapa y colisiones suaves.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-
+<title>SinFiltro - Playas (prototipo)</title>
+<meta name="description" content="Prototipo: calles Playas - joystick, minimapa, satélite toggle, colisiones suaves, optimizado móvil" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-/* ================= GLOBAL (mantener estética premium) ================= */
-:root{
-  --bg-1:#05060a; --bg-2:#071226;
-  --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-  --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-  --glass: rgba(255,255,255,0.04);
-  --radius:12px; --trans:220ms;
-  --text:#eaf7ff;
-}
-html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
-body.light{--bg-1:#f5f9ff;--bg-2:#eef6ff;--text:#071226;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));}
-
-/* Canvas holder */
-#canvasHolder{position:fixed;inset:0;background:transparent;z-index:0}
-
-/* UI overlay - keep approved design */
-#overlayUI{position:fixed;inset:0;pointer-events:none;z-index:40}
-.topBar{position:fixed;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:auto;z-index:80}
-.logo{font-family:'Poppins',sans-serif;font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
-.miniBtns{display:flex;gap:8px}
-.icon{padding:8px;border-radius:10px;background:rgba(255,255,255,0.02);cursor:pointer}
-
-/* joystick */
-.joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:80 }
-.stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.08); transform:translate(0,0); touch-action:none; }
-
-/* fire button */
-.btnFire { position:fixed; right:20px; bottom:34px; width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet)); color:#001; font-weight:700; font-size:28px; display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:80; box-shadow:0 12px 40px rgba(0,0,0,0.5); border:none; }
-
-/* FAB small menu */
-#fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:28px;z-index:80;border:none}
-
-/* bottom nav (kept) */
-.bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:72px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:80}
-.nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-
-/* viewer overlay */
-#viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:90;pointer-events:auto}
-#viewer img{max-width:92%;height:auto;border-radius:12px}
-#viewer .closeBtn{margin-top:12px;padding:8px 12px;border-radius:8px}
-
-/* minimap in a corner */
-#minimap{position:fixed;right:12px;top:86px;width:120px;height:120px;border-radius:10px;background:rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.04);z-index:85;overflow:hidden;pointer-events:auto}
-#fpsCounter{position:fixed;left:12px;bottom:12px;background:rgba(0,0,0,0.45);padding:6px 8px;border-radius:8px;font-size:12px;color:var(--muted);z-index:85}
-
-/* responsive adjustments */
-@media(max-width:420px){
-  .joy{width:96px;height:96px}
-  .stick{width:42px;height:42px}
-  .btnFire{width:64px;height:64px}
-  #minimap{width:100px;height:100px;top:86px;right:8px}
-}
+  :root{
+    --bg-1:#05060a; --text:#eaf7ff; --muted:#9fb0bf; --accent:#00d1ff;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg-1),#071226);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  #canvasHolder{width:100%;height:100vh;display:block;position:relative}
+  /* Top bar (keeps approved style) */
+  .topBar{position:fixed;left:12px;right:12px;top:12px;z-index:80;display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:12px;background:rgba(255,255,255,0.02);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.03)}
+  .brand{font-weight:700;font-size:18px;background:linear-gradient(90deg,var(--accent),#8a6eff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .top-controls{display:flex;gap:8px;align-items:center}
+  .icon-btn{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.03);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
+  /* joystick */
+  .joy { position:fixed; left:14px; bottom:14px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.02); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:60 }
+  .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
+  /* fire */
+  .btnFire { position:fixed; right:14px; bottom:22px; width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8a6eff);display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;z-index:60;box-shadow:0 12px 40px rgba(0,0,0,0.45);pointer-events:auto }
+  /* minimap */
+  #minimap { position:fixed; right:12px; top:86px; width:120px; height:120px; border-radius:8px; background:rgba(0,0,0,0.45); z-index:80; border:1px solid rgba(255,255,255,0.03); overflow:hidden; }
+  #minimap canvas{ width:100%; height:100%; display:block }
+  /* FPS */
+  #fps { position:fixed; left:12px; bottom:12px; font-size:12px; color:var(--muted); z-index:80; background:rgba(0,0,0,0.35);padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.02) }
+  /* viewer preview */
+  #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.88), rgba(0,0,0,0.96));z-index:120}
+  #viewer .card{width:92%;max-width:820px;border-radius:12px;padding:12px;background:#000}
+  #viewer img{width:100%;height:auto;display:block;border-radius:10px}
+  /* responsive tweaks */
+  @media(max-width:420px){
+    .joy{width:96px;height:96px}
+    .stick{width:42px;height:42px}
+    #minimap{width:94px;height:94px;top:82px}
+  }
 </style>
 </head>
 <body>
   <div id="canvasHolder"></div>
 
-  <div id="overlayUI">
-    <div class="topBar">
-      <div style="display:flex;align-items:center;gap:12px">
-        <button id="menuBtn" class="icon" aria-label="menu">☰</button>
-        <button id="brandBtn" class="logo" aria-label="inicio">SinFiltro</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchBtn" class="icon" aria-label="buscar">🔎</button>
-        <button id="themeBtn" class="icon" aria-label="modo">🌗</button>
-      </div>
+  <div class="topBar" role="banner" aria-label="cabecera">
+    <div style="display:flex;gap:12px;align-items:center">
+      <button id="menuBtn" class="icon-btn" title="Menú">☰</button>
+      <button id="brandBtn" class="brand" title="Ir al inicio">SinFiltro</button>
     </div>
-
-    <div id="minimap" aria-hidden="false"></div>
-
-    <div class="joy" id="joy" aria-hidden="false">
-      <div class="stick" id="stick"></div>
+    <div class="top-controls">
+      <button id="toggleSat" class="icon-btn" title="Alternar Satélite/Normal">🛰️</button>
+      <button id="themeBtn" class="icon-btn" title="Modo">🌗</button>
     </div>
+  </div>
 
-    <button id="btnFire" class="btnFire" aria-label="disparar">🔫</button>
+  <div id="minimap" aria-hidden="false"><canvas id="miniCanvas" width="300" height="300"></canvas></div>
+  <div id="fps">FPS: --</div>
 
-    <button id="fab" title="Crear" aria-label="crear">＋</button>
+  <div class="joy" id="joy" aria-label="Joystick">
+    <div class="stick" id="stick"></div>
+  </div>
+  <div class="btnFire" id="btnFire" title="Disparar">🔫</div>
 
-    <div class="bottom-nav" role="navigation">
-      <div class="nav-item" id="navHome">🏠<div style="font-size:11px">Inicio</div></div>
-      <div class="nav-item" id="navSearch">🔍<div style="font-size:11px">Buscar</div></div>
-      <div style="width:78px"></div>
-      <div class="nav-item" id="navRecent">👁️<div style="font-size:11px">Antes visto</div></div>
-      <div class="nav-item" id="navMe">👤<div style="font-size:11px">Tus videos</div></div>
-    </div>
-
-    <div id="fpsCounter">FPS: --</div>
-
-    <div id="viewer" role="dialog" aria-hidden="true">
-      <div style="text-align:center;color:#fff">
-        <img id="viewerImg" src="" alt="preview"><br>
-        <button id="closeViewer" class="closeBtn">Cerrar</button>
+  <div id="viewer" role="dialog" aria-hidden="true">
+    <div class="card">
+      <img id="viewerImg" src="" alt="preview">
+      <div style="display:flex;justify-content:center;margin-top:12px">
+        <button id="closeViewer" class="icon-btn" style="padding:8px 12px">Cerrar</button>
       </div>
     </div>
   </div>
 
-  <!-- Three.js (stable minor) -->
+  <!-- Three.js minimal -->
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-  <!-- Simple OrbitControls only for debug (not enabled by default) -->
-  <script>
-/*
-  SinFiltro - Playa Azul (Opción A)
-  - Calles simuladas: created as road polygons (rectangles) in world space
-  - Car physics: lightweight forward/turn with soft collisions (pushback/clamping to road)
-  - Minimap: 2D canvas shows player & roads
-  - FPS: small counter
-  - Optimizations: limited lights, low poly, dynamic LOD (clamped pxRatio), lazy arrays
-  - No external map tokens / no map APIs
+
+<script>
+/* ================= Prototype Playas map - SinFiltro
+   - Simula calles principales Playa Azul / Playa Caleta / Playa Hornos
+   - Joystick touch, fire, minimap, sat toggle (placeholder), collisions, mobile-optimized
+   - Keep UI/design consistent with approved premium look
 */
 
-/* --------------------- Configuration --------------------- */
-const CONFIG = {
-  ROAD_WIDTH: 6.4,          // meters (car width fit)
-  SIDEWALK_WIDTH: 1.6,
-  MAX_SPEED: 0.9,
-  BULLET_SPEED: 2.1,
-  PIXEL_RATIO_CAP: 1.5,     // limit devicePixelRatio to avoid mobile perf issues
-  MINIMAP_SCALE: 0.06,      // 0.06 world meters -> minimap px
-  MINIMAP_SIZE: 120,
-  SHOW_SATELLITE_FAKE: false // placeholder toggle (not using external tiles)
-};
+/* ---------- Helpers ---------- */
+const $ = s => document.querySelector(s);
+const mkImg = (n) => `https://picsum.photos/seed/sinfiltro-${n}/1024/1024`;
 
-/* --------------------- Scene setup --------------------- */
+/* ---------- Three.js scene setup ---------- */
 const holder = document.getElementById('canvasHolder');
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x05060a, 0.0012);
+scene.fog = new THREE.FogExp2(0x05060a, 0.0018);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CONFIG.PIXEL_RATIO_CAP));
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.domElement.style.display = 'block';
+renderer.domElement.style.touchAction = 'none'; // avoid passive touch capture
 holder.appendChild(renderer.domElement);
 
-// camera
-const camera = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 3000);
-camera.position.set(0,6,12);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
+camera.position.set(0, 6, 12);
 
-// lighting (kept minimal)
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-dirLight.position.set(8,20,8);
-scene.add(dirLight);
-scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+dir.position.set(5,10,7); scene.add(dir);
+scene.add(new THREE.AmbientLight(0xffffff, 0.24));
 
-// ground (big plane)
+/* ---------- Ground + road materials ---------- */
 const groundMat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.05, roughness:0.9});
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), groundMat);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200,1200), groundMat);
 ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
 
-/* --------------------- WORLD: Playa Azul (simulated street network) ---------------------
-   We'll create a small network of primary streets and secondary streets. Each road is represented
-   as rectangular segment(s). We'll also generate simple box-buildings alongside roads.
-   The layout below is artificially designed but inspired by a coastal neighborhood:
-   - main coastal avenue (long east-west)
-   - perpendicular streets forming blocks
-   - some curve segments approximated with multiple pieces
-*/
-const roads = [];   // each road: {center:Vector3, length, angle (rad), width}
-const roadMeshes = new THREE.Group();
-scene.add(roadMeshes);
-const buildingGroup = new THREE.Group();
-scene.add(buildingGroup);
+/* Road materials: normal (asphalt) and satellite placeholder */
+const roadMat = new THREE.MeshStandardMaterial({color:0x2f3538, metalness:0.02, roughness:0.7});
+const roadSatMat = new THREE.MeshStandardMaterial({map: new THREE.TextureLoader().load(mkImg(77)), metalness:0.02, roughness:0.8});
 
-// Helper: add a straight road segment centered at (x,z), length along local z, rotated by angle
-function addRoad(cx, cz, length, angle, width=CONFIG.ROAD_WIDTH){
-  const hw = width/2;
-  const geom = new THREE.PlaneGeometry(width, length);
-  const mat = new THREE.MeshStandardMaterial({color:0x202b33, metalness:0.02, roughness:0.8});
-  const mesh = new THREE.Mesh(geom, mat);
-  mesh.rotation.x = -Math.PI/2;
-  mesh.rotation.z = 0;
-  mesh.rotation.y = angle;
+/* ---------- Simple map geometry: roads defined as rectangles
+   Coordinates are local (x,z). We create a set of road segments approximating
+   Playa Azul / Playa Caleta / Playa Hornos intersection network (prototype).
+*/
+const roads = [];
+function addRoadSegment(cx, cz, length, width, angle=0){
+  const geom = new THREE.PlaneGeometry(length+0.01, width+0.01);
+  geom.rotateX(-Math.PI/2);
+  const mesh = new THREE.Mesh(geom, roadMat);
   mesh.position.set(cx, 0.01, cz);
-  roadMeshes.add(mesh);
-  roads.push({cx, cz, length, angle, width, mesh});
+  mesh.rotation.y = angle;
+  mesh.userData.road = true;
+  scene.add(mesh);
+  roads.push(mesh);
   return mesh;
 }
 
-// Create sidewalks using a slightly lighter strip
-function addSidewalk(cx, cz, length, angle, width=CONFIG.ROAD_WIDTH){
-  const sw = width + CONFIG.SIDEWALK_WIDTH*2;
-  const geom = new THREE.PlaneGeometry(sw, length);
-  const mat = new THREE.MeshStandardMaterial({color:0x26333b, metalness:0.02, roughness:0.85});
-  const mesh = new THREE.Mesh(geom, mat);
-  mesh.rotation.x = -Math.PI/2;
-  mesh.rotation.y = angle;
-  mesh.position.set(cx, 0.011, cz);
-  roadMeshes.add(mesh);
-}
+// prototype layout (hand-crafted approximate)
+// main avenue (east-west) - Playa Azul
+addRoadSegment(0, 0, 240, 8, 0);              // Playa Azul central
+addRoadSegment(0, -26, 200, 6, 0);            // branch
+addRoadSegment(0, 26, 200, 6, 0);             // branch
 
-// Simple blocky buildings: boxes placed along road edges
-function addBuilding(x,z,w,h,d, color=0x2a3b45){
-  const mat = new THREE.MeshStandardMaterial({color:color, metalness:0.05, roughness:0.85});
-  const b = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
-  b.position.set(x, h/2, z);
-  buildingGroup.add(b);
-  return b;
-}
+// north-south collectors - Playa Caleta & Playa Hornos
+addRoadSegment(-40, 0, 160, 6, Math.PI/2);    // Playa Caleta
+addRoadSegment(40, 0, 160, 6, Math.PI/2);     // Playa Hornos
 
-/* Layout: "Playa Azul" simplified map */
-// Main coastal avenue (east-west)
-addSidewalk(0, -40, 320, 0, 10);
-addRoad(0, -40, 320, 0, 10);
+// smaller connectors
+addRoadSegment(-90, -40, 90, 4, Math.PI*0.12);
+addRoadSegment(90, 40, 90, 4, -Math.PI*0.08);
+addRoadSegment(-30, 70, 70, 4, Math.PI*0.08);
+addRoadSegment(30, -70, 70, 4, -Math.PI*0.08);
 
-// Parallel inland avenue
-addSidewalk(0, 40, 300, 0, 9);
-addRoad(0, 40, 300, 0, 9);
-
-// Perpendicular streets (north-south) forming blocks
-const cols = [-140,-80,-20,40,100,160];
-cols.forEach((x)=>{
-  addSidewalk(x,0,200, Math.PI/2, 8);
-  addRoad(x,0,200, Math.PI/2, 6.6);
+// Add curbs/sidewalk visual thin planes
+roads.forEach(r=>{
+  const edge = r.clone();
+  edge.material = new THREE.MeshStandardMaterial({color:0x0d1b22, metalness:0.02, roughness:1});
+  edge.scale.y = 1;
+  edge.position.y = 0.02;
+  scene.add(edge);
 });
 
-// A curved beach access: approximate by multiple short segments
-for(let i=0;i<8;i++){
-  const ang = -Math.PI*0.06 + i*0.015;
-  const cx = Math.sin(i*0.22)*60 + 0;
-  const cz = -80 + i*8;
-  addRoad(cx, cz, 18, ang, 6);
-  addSidewalk(cx, cz, 18, ang, 6);
+/* ---------- Buildings (low-poly, instanced-like) ---------- */
+const buildings = [];
+const bMat = new THREE.MeshStandardMaterial({color:0x25333a, metalness:0.05, roughness:0.95});
+for(let i=0;i<120;i++){
+  const w = 6 + Math.random()*12;
+  const d = 6 + Math.random()*12;
+  const h = 2 + Math.random()*8;
+  const geom = new THREE.BoxGeometry(w, h, d);
+  const m = new THREE.Mesh(geom, bMat);
+  // place mostly along roads
+  let placed=false, tries=0;
+  while(!placed && tries<40){
+    tries++;
+    const x = (Math.random()-0.5)*200;
+    const z = (Math.random()-0.5)*200;
+    // avoid placing on road planes (simple distance check)
+    let onRoad=false;
+    for(const r of roads){
+      const dist = distancePointToPlaneXZ({x,z}, r);
+      if(dist < (Math.max(r.geometry.parameters.width || r.geometry.parameters.height || 6,4) * 0.5 + 6)) { onRoad = false; }
+    }
+    // better: place near roads edges
+    if(Math.abs(z) < 120 && Math.abs(x) < 120){
+      // simple heuristics: place only outside center corridor
+      if(Math.abs(z) > 10 || Math.abs(x) > 10){
+        placed=true; m.position.set(x, h/2, z); scene.add(m); buildings.push(m); break;
+      }
+    }
+  }
 }
 
-// Add simple buildings aligned to some streets
-function populateBuildings(){
-  buildingGroup.clear && (buildingGroup.clear()); // if available (three r125+), else fallback
-  // fallback removal
-  while (buildingGroup.children.length) buildingGroup.remove(buildingGroup.children[0]);
-  const rng = (a,b)=> a + Math.random()*(b-a);
-  // Along main avenue
-  for(let i=-150;i<=150;i+=28){
-    addBuilding(i, -60, rng(8,16), rng(4,9), rng(8,20), 0x24343b);
-    addBuilding(i+8, -24, rng(6,12), rng(3,8), rng(8,16), 0x2a3b45);
-  }
-  // inland
-  for(let i=-160;i<=160;i+=32){
-    addBuilding(i, 64, rng(6,12), rng(3,6), rng(8,12), 0x26333b);
-  }
-}
-populateBuildings();
-
-/* Road bounding check helper
-   We'll represent road rectangles as sets of corners by computing each road mesh bounding rectangle.
-   For collision/clamping we detect whether a point is over ANY road rectangle. If not, we consider
-   it off-road and apply a soft pushback / reduce speed. This allows "soft" collision/limits without
-   heavy physics.
-*/
-function pointOnAnyRoad(x,z){
-  for(const r of roads){
-    // local coords
-    const dx = x - r.cx;
-    const dz = z - r.cz;
-    const ca = Math.cos(-r.angle), sa = Math.sin(-r.angle);
-    const localX = dx*ca - dz*sa;
-    const localZ = dx*sa + dz*ca;
-    if(Math.abs(localX) <= r.width/2 + 0.001 && Math.abs(localZ) <= r.length/2 + 0.001) return true;
-  }
-  return false;
+/* helper to compute simple distance to road plane center (XZ) */
+function distancePointToPlaneXZ(p, planeMesh){
+  const px = planeMesh.position.x, pz = planeMesh.position.z;
+  return Math.hypot(p.x - px, p.z - pz);
 }
 
-/* --------------------- Player car (low poly) --------------------- */
+/* ---------- Player car (low poly) ---------- */
 const car = new THREE.Group();
-const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.3, roughness:0.6}));
-body.position.y = 0.7;
-car.add(body);
-const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.45,8);
-const wheelMat = new THREE.MeshStandardMaterial({color:0x0b0b0b});
+const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.35, roughness:0.6}));
+body.position.y = 0.7; car.add(body);
+const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
 for(let i=0;i<4;i++){
   const w = new THREE.Mesh(wheelGeo, wheelMat);
   w.rotation.z = Math.PI/2;
@@ -284,241 +207,201 @@ for(let i=0;i<4;i++){
   w.position.z = (i<2)?1.2:-1.2;
   car.add(w);
 }
-car.position.set(0,0,10);
-scene.add(car);
+car.position.set(-6,0,6); scene.add(car);
 
-/* Bot for demo */
-const bot = car.clone();
-bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff, metalness:0.2});
-bot.position.set(8,0,-6);
-scene.add(bot);
+/* ---------- Simple collision boxes (for buildings) ---------- */
+const colliders = [];
+buildings.forEach(b=>{
+  const box = new THREE.Box3().setFromObject(b);
+  colliders.push(box);
+});
 
-/* Bullets pool */
-const bullets = [];
+/* ---------- Camera follow ---------- */
+const camOffset = new THREE.Vector3(0,5,10);
 
-/* --------------------- Movement & Input --------------------- */
-const state = {forward:0,turn:0,speed:0,maxSpeed:CONFIG.MAX_SPEED,rotSpeed:0.042};
+/* ---------- Movement state & joystick handling ---------- */
+const state = {forward:0, turn:0, speed:0, maxSpeed:0.85, rotSpeed:0.045};
+let stick = {x:0,y:0};
 let lastTime = performance.now();
 
-/* joystick handling (touch + pointer) */
 const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-let activeTouchId = null, baseX=0, baseY=0;
-let stick = {x:0,y:0};
-function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = 'translate(0px,0px)'; }
-joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; activeTouchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
-joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===activeTouchId){ const dx = t.clientX - baseX, dy = t.clientY - baseY; const max=40; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*30}px,${-ny*30}px)`; } } }, {passive:false});
-joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===activeTouchId){ activeTouchId=null; resetStick(); } } }, {passive:false});
-// pointer fallback for desktop
-let pointerDown=false;
-joy.addEventListener('pointerdown', e=>{ pointerDown=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-joy.addEventListener('pointermove', e=>{ if(!pointerDown) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=40; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*30}px,${-ny*30}px)`; });
-joy.addEventListener('pointerup', e=>{ pointerDown=false; resetStick(); });
+let touchId = null, baseX=0, baseY=0;
+function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX; const dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
+// pointer fallback
+let mouseDown=false;
+joy.addEventListener('pointerdown', e=>{ mouseDown=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+joy.addEventListener('pointermove', e=>{ if(!mouseDown) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+joy.addEventListener('pointerup', e=>{ mouseDown=false; resetStick(); });
 
-/* fire button */
-const fireBtn = document.getElementById('btnFire');
-fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-fireBtn.addEventListener('mousedown', ()=> doFire());
+/* Fire button (spawn small bullet) */
+const bullets = [];
 function spawnBullet(origin, dir){
-  const g = new THREE.SphereGeometry(0.12,8,8);
-  const m = new THREE.MeshStandardMaterial({emissive:0xffd48c, color:0x111111});
-  const bullet = new THREE.Mesh(g,m);
-  bullet.position.copy(origin);
-  bullet.userData.dir = dir.clone().normalize();
-  bullet.userData.speed = CONFIG.BULLET_SPEED;
-  scene.add(bullet);
-  bullets.push(bullet);
+  const g = new THREE.SphereGeometry(0.12,6,6);
+  const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+  const b = new THREE.Mesh(g,m);
+  b.position.copy(origin);
+  b.userData.dir = dir.clone();
+  b.userData.speed = 2.4;
+  scene.add(b); bullets.push(b);
 }
-function doFire(){
-  const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-  const origin = car.position.clone().add(new THREE.Vector3(0,0.9,-2).applyQuaternion(car.quaternion));
-  spawnBullet(origin, dir);
-}
+$('#btnFire').addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+$('#btnFire').addEventListener('mousedown', doFire);
+function doFire(){ const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize(); const origin = car.position.clone().add(new THREE.Vector3(0,1.2,-2).applyQuaternion(car.quaternion)); spawnBullet(origin, dir); }
 
-/* --------------------- Soft collision & road-following ---------------------
-   Approach:
-   - If car is on a road rectangle, allow normal speed
-   - If car is off-road, gradually reduce speed (friction) and gently push car back to nearest road centerline
-   - This keeps 'soft boundaries' but feels natural on mobile
-*/
-function nearestRoadCenter(x,z){
-  let best = null;
-  let bestDist = 1e9;
-  for(const r of roads){
-    const dx = x - r.cx;
-    const dz = z - r.cz;
-    const ca = Math.cos(-r.angle), sa = Math.sin(-r.angle);
-    const localX = dx*ca - dz*sa;
-    const localZ = dx*sa + dz*ca;
-    // clamp localZ to segment
-    const clz = Math.max(-r.length/2, Math.min(r.length/2, localZ));
-    // centerline point in world coords
-    const wx = r.cx + (clz*Math.sin(r.angle));
-    const wz = r.cz + (clz*Math.cos(r.angle));
-    const dist = Math.hypot(x-wx, z-wz);
-    if(dist < bestDist){ bestDist = dist; best = {r, wx, wz, dist}; }
+/* ---------- Collision handling: simple sphere vs box approximate ---------- */
+function collideCar(pos){
+  // approximate car as sphere radius
+  const r = 1.1;
+  for(const b of colliders){
+    if(b.distanceToPoint(pos) < r){
+      return true;
+    }
   }
-  return best;
+  return false;
 }
 
-/* --------------------- Minimap --------------------- */
-const minimap = document.getElementById('minimap');
-const mmCanvas = document.createElement('canvas');
-mmCanvas.width = CONFIG.MINIMAP_SIZE; mmCanvas.height = CONFIG.MINIMAP_SIZE;
-minimap.appendChild(mmCanvas);
-const mmCtx = mmCanvas.getContext('2d');
-
-function drawMinimap(){
-  const s = CONFIG.MINIMAP_SCALE;
-  mmCtx.clearRect(0,0,mmCanvas.width,mmCanvas.height);
-  // background
-  mmCtx.fillStyle = '#071226';
-  mmCtx.fillRect(0,0,mmCanvas.width,mmCanvas.height);
-  // draw roads simplified
-  mmCtx.strokeStyle = '#1f2933';
-  mmCtx.lineWidth = 4;
-  mmCtx.beginPath();
-  for(const r of roads){
-    // draw centerline as line segment scaled & transformed to canvas center
-    const cx = mmCanvas.width/2 + r.cx * s;
-    const cz = mmCanvas.height/2 + r.cz * s;
-    const len = r.length;
-    const dx = Math.sin(r.angle) * (len/2) * s;
-    const dz = Math.cos(r.angle) * (len/2) * s;
-    mmCtx.moveTo(cx - dx, cz - dz);
-    mmCtx.lineTo(cx + dx, cz + dz);
-  }
-  mmCtx.stroke();
-  // draw player
-  mmCtx.fillStyle = '#ff8a8a';
-  const px = mmCanvas.width/2 + car.position.x * s;
-  const pz = mmCanvas.height/2 + car.position.z * s;
-  mmCtx.beginPath();
-  mmCtx.arc(px, pz, 4, 0, Math.PI*2);
-  mmCtx.fill();
+/* ---------- Minimap (2D canvas) ---------- */
+const miniCanvas = document.getElementById('miniCanvas');
+const miniCtx = miniCanvas.getContext('2d');
+function renderMini(){
+  const w = miniCanvas.width, h = miniCanvas.height;
+  miniCtx.clearRect(0,0,w,h);
+  // draw background
+  miniCtx.fillStyle = '#06101a';
+  miniCtx.fillRect(0,0,w,h);
+  // simple transform: world area [-120..120] -> canvas
+  function toMini(x,z){ return {x: (x+120)/240*w, y: (z+120)/240*h}; }
+  // roads
+  miniCtx.fillStyle = '#666';
+  roads.forEach(r=>{
+    // draw center rectangle using position and rotation
+    const len = r.geometry.parameters.width || r.geometry.parameters.height || 40;
+    const width = (r.geometry.parameters.height || r.geometry.parameters.width || 6);
+    // approximate as line between endpoints
+    const cx = r.position.x, cz = r.position.z;
+    const angle = r.rotation.y;
+    const L = (r.geometry.parameters.width || r.geometry.parameters.height) || 40;
+    // approximate endpoints in world coords
+    const dx = Math.cos(angle) * L/2, dz = Math.sin(angle) * L/2;
+    const p1 = toMini(cx - dx, cz - dz), p2 = toMini(cx + dx, cz + dz);
+    miniCtx.lineWidth = Math.max(4, width/2);
+    miniCtx.strokeStyle = '#333';
+    miniCtx.beginPath(); miniCtx.moveTo(p1.x, p1.y); miniCtx.lineTo(p2.x, p2.y); miniCtx.stroke();
+  });
+  // player dot
+  const p = toMini(car.position.x, car.position.z);
+  miniCtx.fillStyle = '#ff5555'; miniCtx.beginPath(); miniCtx.arc(p.x, p.y, 6,0,Math.PI*2); miniCtx.fill();
 }
 
-/* --------------------- FPS counter --------------------- */
-const fpsCounter = document.getElementById('fpsCounter');
-let frames=0,lastSec=performance.now(),fps=0;
+/* ---------- Main loop + physics ---------- */
+let fpsCounter = {frames:0, last:performance.now(), fps:0};
+const fpsEl = $('#fps');
 
-/* --------------------- Animation loop --------------------- */
 function animate(){
   const now = performance.now();
-  const rawDt = Math.min(40, now - lastTime);
-  const dt = rawDt / 16.666; // normalized as ~1 per 16.66ms
+  const rawDt = now - lastTime;
+  const dt = Math.min(50, rawDt) / 16.666;
   lastTime = now;
 
-  // input -> state
+  // update state from stick
   state.forward = Math.max(-1, Math.min(1, stick.y));
   state.turn = Math.max(-1, Math.min(1, stick.x));
 
-  // acceleration/braking
-  if(Math.abs(state.forward) > 0.05){
-    state.speed += 0.018 * state.forward * dt;
-  } else {
-    state.speed *= 0.985;
-  }
-  state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+  if(state.forward > 0.05) state.speed += 0.02 * state.forward * dt;
+  else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
+  else state.speed *= 0.985;
 
-  // steering (rotate quickly if moving)
+  state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+  // rotate
   car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
 
-  // forward vector
+  // forward vector and next pos
   const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-  car.position.add(forwardVec.clone().multiplyScalar(state.speed * dt * 0.9));
+  const delta = forwardVec.multiplyScalar(state.speed * dt * 0.82);
+  const nextPos = car.position.clone().add(delta);
 
-  // soft-road enforcement
-  if(!pointOnAnyRoad(car.position.x, car.position.z)){
-    // find nearest road center and gently pull
-    const nr = nearestRoadCenter(car.position.x, car.position.z);
-    if(nr){
-      // vector from car to road centerline
-      const toRoad = new THREE.Vector3(nr.wx - car.position.x, 0, nr.wz - car.position.z);
-      // scale pull based on distance (soft)
-      const pull = Math.min(0.08 * (nr.dist/4 + 0.2), 0.6);
-      car.position.add(toRoad.multiplyScalar(pull * dt * 0.6));
-      // and reduce speed strongly
-      state.speed *= 0.92;
-    }
+  // collision check
+  if(!collideCar(nextPos)){
+    car.position.copy(nextPos);
+  } else {
+    // softly stop
+    state.speed *= 0.45;
   }
 
-  // camera follow
+  // camera follow smooth
   const desiredCam = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
-  camera.position.lerp(desiredCam, 0.12);
-  camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.5,0)));
+  camera.position.lerp(desiredCam, 0.14);
+  camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.4,0)));
 
-  // bot movement (circle) - light weight
-  const t = now*0.001;
-  bot.position.x = Math.cos(t*0.9)*10;
-  bot.position.z = Math.sin(t*0.9)*10;
-  bot.lookAt(car.position);
-
-  // bullets movement + collision check
+  // update bullets
   for(let i=bullets.length-1;i>=0;i--){
     const b = bullets[i];
     b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
-    if(b.position.distanceTo(bot.position) < 1.4){
-      // hit effect: small flash remove
-      const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522, color:0x111111}));
-      hit.position.copy(bot.position);
-      scene.add(hit);
-      setTimeout(()=> scene.remove(hit), 400);
-      scene.remove(b); bullets.splice(i,1);
-      continue;
-    }
-    if(b.position.length() > 2000){ scene.remove(b); bullets.splice(i,1); }
+    if(b.position.length() > 200){ scene.remove(b); bullets.splice(i,1); continue; }
   }
 
-  // render
   renderer.render(scene, camera);
 
-  // minimap + fps updates at lower frequency
-  frames++;
-  if(now - lastSec >= 500){
-    fps = Math.round((frames*1000)/(now-lastSec));
-    frames = 0; lastSec = now;
-    fpsCounter.textContent = `FPS: ${fps} • Speed: ${state.speed.toFixed(2)}`;
-    drawMinimap();
+  // minimap & fps update every frame
+  renderMini();
+  fpsCounter.frames++;
+  if(now - fpsCounter.last >= 500){
+    fpsCounter.fps = Math.round((fpsCounter.frames*1000)/(now - fpsCounter.last));
+    fpsCounter.last = now; fpsCounter.frames = 0;
+    fpsEl.textContent = `FPS: ${fpsCounter.fps}`;
   }
 
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
-/* --------------------- UI interactions and small demos --------------------- */
-const viewer = document.getElementById('viewer'), viewerImg = document.getElementById('viewerImg'), closeViewer = document.getElementById('closeViewer');
-document.querySelector('.logo').addEventListener('click', ()=> {
-  viewerImg.src = 'https://picsum.photos/900/420?random=' + Math.floor(Math.random()*200);
-  viewer.style.display='flex'; viewer.setAttribute('aria-hidden','false');
+/* ---------- Window / resize ---------- */
+window.addEventListener('resize', ()=>{ renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+
+/* ---------- Sat toggle: swap road materials (placeholder) ---------- */
+let sat = false;
+$('#toggleSat').addEventListener('click', ()=>{
+  sat = !sat;
+  roads.forEach(r => r.material = sat ? roadSatMat : roadMat);
+  // also change ground tint slightly
+  ground.material.color.set(sat ? 0x0f120e : 0x0b1220);
 });
-closeViewer.addEventListener('click', ()=> { viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); });
 
-// menu / theme / search placeholders (demos)
-document.getElementById('menuBtn').addEventListener('click', ()=> alert('Menú demo: Ajustes / Perfil / Opciones (placeholder)'));
-document.getElementById('searchBtn').addEventListener('click', ()=> alert('Buscar demo: Abre buscador (placeholder)'));
-document.getElementById('fab').addEventListener('click', ()=> alert('Acción crear (demo)'));
-document.getElementById('navSearch').addEventListener('click', ()=> alert('Buscar (demo)'));
-document.getElementById('navMe').addEventListener('click', ()=> alert('Tus videos (mini preview demo)'));
-
-// theme toggle (should be light enough)
-const themeBtn = document.getElementById('themeBtn');
-let theme = localStorage.getItem('sinfiltro.theme') || 'dark';
-function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); themeBtn.textContent='☀️'; } else { document.body.classList.remove('light'); themeBtn.textContent='🌗'; } }
+/* ---------- Theme toggle (keeps body class but doesn't change layout) ---------- */
+const THEME_KEY = 'sinfiltro.theme';
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+function applyTheme(t){ if(t==='light'){ document.body.classList.add('light'); $('#themeBtn').textContent='☀️'; } else { document.body.classList.remove('light'); $('#themeBtn').textContent='🌗'; } }
 applyTheme(theme);
-themeBtn.addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem('sinfiltro.theme', theme); applyTheme(theme); });
+$('#themeBtn').addEventListener('click', ()=>{ theme = (theme==='dark') ? 'light' : 'dark'; localStorage.setItem(THEME_KEY, theme); applyTheme(theme); });
 
-/* Resize handling */
-window.addEventListener('resize', ()=> {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+/* ---------- Viewer image demo (click brand) ---------- */
+$('#brandBtn').addEventListener('click', ()=> {
+  $('#viewerImg').src = mkImg(21);
+  $('#viewer').style.display='flex'; $('#viewer').setAttribute('aria-hidden','false');
 });
+$('#closeViewer').addEventListener('click', ()=> { $('#viewer').style.display='none'; $('#viewer').setAttribute('aria-hidden','true'); });
 
-/* --------------------- Notes & tuning ---------------------
- - To adjust map size / density: change the addRoad/addSidewalk loops above.
- - To reduce GPU load on very low-end phones: lower CONFIG.PIXEL_RATIO_CAP to 1.
- - To add more realistic streets: replace plane materials with simple textured meshes (keep small texture size).
- - We simulate "Playa Azul" with handcrafted roads. If you later want satellite tiles, use Option C and tile images (requires tokens).
------------------------------------------------------------------ */
-  </script>
+/* ---------- Small streaming optimization hint (not heavy: keep scene light)
+   - We kept building count low and used basic materials.
+   - If you want to scale: use InstancedMesh for buildings, or load tiles and create mesh per tile.
+   - For true satellite tiles, swap roadSatMat.map with tile compositor (see notes).
+*/
+
+/* ---------- End prototype ----------
+   Next steps I recommend (pick one):
+   1) Replace placeholder satellite with real tile provider (OpenStreetMap or ESRI WorldImagery). I can integrate tiles and a simple tile cache next.
+   2) Convert buildings -> InstancedMesh for big map performance.
+   3) Add precise street geometry using GeoJSON extracted from the Playas area and generate extruded polylines (most accurate).
+   4) Add NPC traffic & basic capture/arena mechanics.
+*/
+
+/* If quieres que integre las tiles satelitales reales (WorldImagery/OSM/Mapbox),
+   dime cuál proveedor prefieres. Mapbox & Google requieren token; ESRI WorldImagery and OSM tiles can be used freely (respectando TOS). Puedo integrar el compositor de tiles y un cache local en el navegador.
+*/
+
+</script>
 </body>
 </html>
