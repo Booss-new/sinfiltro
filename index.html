@@ -3,32 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Playas Jardines de Morelos (demo) — Versión MÓVIL OFFLINE</title>
+<title>SinFiltro — Playa Azul (demo) — Modo OFFLINE</title>
 <style>
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
   #holder{width:100%;height:100%;position:relative;touch-action:none}
   /* top UI */
   .topbar{position:fixed;left:8px;right:8px;top:10px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:120;pointer-events:auto}
-  .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600; font-size: 14px;} /* Ajuste de fuente para móvil */
+  .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600}
   .controls{display:flex;gap:8px}
-  .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5); font-size: 14px;} /* Ajuste de fuente para móvil */
+  .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
   /* joystick + fire */
   .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100 }
   .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
-  .fire { position:fixed; right:18px; bottom:26px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6); font-size: 28px; } /* Ajuste de fuente para el icono de fuego */
+  .fire { position:fixed; right:18px; bottom:26px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6) }
   /* minimap */
-  .minimap{position:fixed;right:12px;bottom:120px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6); font-size: 12px;}
-  .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110; font-size: 12px;}
-  .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110; font-size: 12px;}
+  .minimap{position:fixed;right:12px;bottom:120px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+  .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110}
+  .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110}
   /* small responsive adjustments */
-  @media (max-width:420px){ 
-    .joy{width:92px;height:92px} 
-    .stick{width:40px;height:40px} 
-    .fire{width:60px;height:60px} 
-    .minimap{width:88px;height:88px}
-    .badge, .chip, .fps, .info { font-size: 10px; } /* Ajuste de fuente más agresivo en pantallas muy pequeñas */
-  }
+  @media (max-width:420px){ .joy{width:92px;height:92px} .stick{width:40px;height:40px} .fire{width:60px;height:60px} .minimap{width:88px;height:88px} }
   /* loader */
   #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:12px}
 </style>
@@ -38,7 +32,7 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">SinFiltro — Playas Jardines de Morelos (demo) — OFFLINE</div>
+      <div class="badge">SinFiltro — Playa Azul (demo) — OFFLINE</div>
       <div id="statusTiles" class="badge" style="display:inline-block">Vías: <span id="tilesCount">0</span></div>
     </div>
     <div class="controls">
@@ -57,29 +51,29 @@
   <div class="fps" id="fps">FPS: --</div>
   <div class="info" id="info">Modo demo — calles cargadas: 0 vías · segmentos: 0 · edificios: 0</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 
 <script>
 /* =======================
    GEOJSON EMBEBIDO (OFFLINE)
+   - generado desde tu OSM XML
    ======================= */
 const GEOJSON = 
 // --- BEGIN GEOJSON ---
-{"type":"FeatureCollection","features":[
-{"type":"Feature","properties":{"highway":"residential"},"geometry":{"type":"LineString","coordinates":[[-99.00691,19.61066],[-99.00688,19.6107],[-99.00684,19.61075],[-99.00676,19.61084],[-99.00669,19.61092],[-99.0066,19.61102],[-99.0065,19.61113],[-99.0064,19.61125],[-99.0063,19.61138],[-99.0062,19.61151],[-99.0061,19.61163],[-99.006,19.61176],[-99.0059,19.61189],[-99.0058,19.61202],[-99.0057,19.61215],[-99.0056,19.61228],[-99.0055,19.61241],[-99.0054,19.61254],[-99.0053,19.61267],[-99.0052,19.6128],[-99.0051,19.61293],[-99.005,19.61306],[-99.0049,19.61319],[-99.0048,19.61332],[-99.0047,19.61345],[-99.0046,19.61358],[-99.0045,19.61371],[-99.0044,19.61384],[-99.0043,19.61397],[-99.0042,19.6141],[-99.0041,19.61423],[-99.004,19.61436],[-99.0039,19.61449],[-99.0038,19.61462],[-99.0037,19.61475],[-99.0036,19.61488],[-99.0035,19.61501],[-99.0034,19.61514],[-99.0033,19.61527],[-99.0032,19.6154],[-99.0031,19.61553],[-99.003,19.61566],[-99.0029,19.61579],[-99.0028,19.61592],[-99.0027,19.61605],[-99.0026,19.61618],[-99.0025,19.61631],[-99.0024,19.61644],[-99.0023,19.61657],[-99.0022,19.6167],[-99.0021,19.61683],[-99.002,19.61696],[-99.0019,19.61709],[-99.0018,19.61722],[-99.0017,19.61735],[-99.0016,19.61748],[-99.0015,19.61761],[-99.0014,19.61774],[-99.0013,19.61787],[-99.0012,19.618],[-99.0011,19.61813],[-99.001,19.61826],[-99.0009,19.61839],[-99.0008,19.61852],[-99.0007,19.61865],[-99.0006,19.61878],[-99.0005,19.61891],[-99.0004,19.61904],[-99.0003,19.61917],[-99.0002,19.6193],[-99.0001,19.61943],[-99.00,19.61956],[-98.9999,19.61969],[-98.9998,19.61982],[-98.9997,19.61995],[-98.9996,19.62008],[-98.9995,19.62021],[-98.9994,19.62034],[-98.9993,19.62047],[-98.9992,19.6206],[-98.9991,19.62073],[-98.999,19.62086],[-98.9989,19.62099],[-98.9988,19.62112],[-98.9987,19.62125],[-98.9986,19.62138],[-98.9985,19.62151],[-98.9984,19.62164],[-98.9983,19.62177],[-98.9982,19.6219],[-98.9981,19.62203],[-98.998,19.62216],[-98.9979,19.62229],[-98.9978,19.62242],[-98.9977,19.62255],[-98.9976,19.62268],[-98.9975,19.62281],[-98.9974,19.62294],[-98.9973,19.62307],[-98.9972,19.6232],[-98.9971,19.62333],[-98.997,19.62346],[-98.9969,19.62359],[-98.9968,19.62372],[-98.9967,19.62385],[-98.9966,19.62398],[-98.9965,19.62411],[-98.9964,19.62424],[-98.9963,19.62437],[-98.9962,19.6245],[-98.9961,19.62463],[-98.996,19.62476],[-98.9959,19.62489],[-98.9958,19.62502],[-98.9957,19.62515],[-98.9956,19.62528],[-98.9955,19.62541],[-98.9954,19.62554],[-98.9953,19.62567],[-98.9952,19.6258],[-98.9951,19.62593],[-98.995,19.62606],[-98.9949,19.62619],[-98.9948,19.62632],[-98.9947,19.62645],[-98.9946,19.62658]]},
-{"type":"Feature","properties":{"highway":"residential"},"geometry":{"type":"LineString","coordinates":[[-99.00693,19.61057],[-99.00685,19.61066],[-99.00676,19.61075],[-99.00667,19.61084],[-99.00658,19.61093],[-99.00649,19.61102],[-99.0064,19.61111],[-99.00631,19.6112],[-99.00622,19.61129],[-99.00613,19.61138],[-99.00604,19.61147],[-99.00595,19.61156],[-99.00586,19.61165],[-99.00577,19.61174],[-99.00568,19.61183],[-99.00559,19.61192],[-99.0055,19.61201],[-99.00541,19.6121],[-99.00532,19.61219],[-99.00523,19.61228],[-99.00514,19.61237],[-99.00505,19.61246],[-99.00496,19.61255],[-99.00487,19.61264],[-99.00478,19.61273],[-99.00469,19.61282],[-99.0046,19.61291],[-99.00451,19.613],[-99.00442,19.61309],[-99.00433,19.61318],[-99.00424,19.61327],[-99.00415,19.61336],[-99.00406,19.61345],[-99.00397,19.61354],[-99.00388,19.61363],[-99.00379,19.61372],[-99.0037,19.61381],[-99.00361,19.6139],[-99.00352,19.61399],[-99.00343,19.61408],[-99.00334,19.61417],[-99.00325,19.61426],[-99.00316,19.61435],[-99.00307,19.61444],[-99.00298,19.61453],[-99.00289,19.61462],[-99.0028,19.61471],[-99.00271,19.6148],[-99.00262,19.61489],[-99.00253,19.61498],[-99.00244,19.61507],[-99.00235,19.61516],[-99.00226,19.61525],[-99.00217,19.61534],[-99.00208,19.61543],[-99.00199,19.61552],[-99.0019,19.61561],[-99.00181,19.6157],[-99.00172,19.61579],[-99.00163,19.61588],[-99.00154,19.61597],[-99.00145,19.61606],[-99.00136,19.61615],[-99.00127,19.61624],[-99.00118,19.61633],[-99.00109,19.61642],[-99.001,19.61651],[-99.00091,19.6166],[-99.00082,19.61669],[-99.00073,19.61678],[-99.00064,19.61687],[-99.00055,19.61696],[-99.00046,19.61705],[-99.00037,19.61714],[-99.00028,19.61723],[-99.00019,19.61732],[-99.0001,19.61741],[-99.0,19.6175],[-98.99991,19.61759],[-98.99982,19.61768],[-98.99973,19.61777],[-98.99964,19.61786],[-98.99955,19.61795],[-98.99946,19.61804],[-98.99937,19.61813],[-98.99928,19.61822],[-98.99919,19.61831],[-98.9991,19.6184],[-98.99901,19.61849],[-98.99892,19.61858],[-98.99883,19.61867],[-98.99874,19.61876],[-98.99865,19.61885],[-98.99856,19.61894],[-98.99847,19.61903],[-98.99838,19.61912],[-98.99829,19.61921],[-98.9982,19.6193],[-98.99811,19.61939],[-98.99802,19.61948],[-98.99793,19.61957],[-98.99784,19.61966],[-98.99775,19.61975],[-98.99766,19.61984],[-98.99757,19.61993],[-98.99748,19.62002],[-98.99739,19.62011],[-98.9973,19.6202],[-98.99721,19.62029],[-98.99712,19.62038],[-98.99703,19.62047],[-98.99694,19.62056],[-98.99685,19.62065],[-98.99676,19.62074],[-98.99667,19.62083],[-98.99658,19.62092],[-98.99649,19.62101],[-98.9964,19.6211],[-98.99631,19.62119],[-98.99622,19.62128],[-98.99613,19.62137],[-98.99604,19.62146],[-98.99595,19.62155],[-98.99586,19.62164],[-98.99577,19.62173],[-98.99568,19.62182],[-98.99559,19.62191],[-98.9955,19.622],[-98.99541,19.62209],[-98.99532,19.62218],[-98.99523,19.62227],[-98.99514,19.62236],[-98.99505,19.62245],[-98.99496,19.62254],[-98.99487,19.62263],[-98.99478,19.62272],[-98.99469,19.62281],[-98.9946,19.6229],[-98.99451,19.62299],[-98.99442,19.62308],[-98.99433,19.62317],[-98.99424,19.62326],[-98.99415,19.62335],[-98.99406,19.62344],[-98.99397,19.62353],[-98.99388,19.62362],[-98.99379,19.62371],[-98.9937,19.6238],[-98.99361,19.62389],[-98.99352,19.62398],[-98.99343,19.62407],[-98.99334,19.62416],[-98.99325,19.62425],[-98.99316,19.62434],[-98.99307,19.62443],[-98.99298,19.62452],[-98.99289,19.62461],[-98.9928,19.6247],[-98.99271,19.62479],[-98.99262,19.62488],[-98.99253,19.62497],[-98.99244,19.62506],[-98.99235,19.62515],[-98.99226,19.62524],[-98.99217,19.62533],[-98.99199,19.62551],[-98.9919,19.6256],[-98.99181,19.62569],[-98.99172,19.62578],[-98.99163,19.62587],[-98.99154,19.62596],[-98.99145,19.62605],[-98.99136,19.62614],[-98.99127,19.62623],[-98.99118,19.62632],[-98.99109,19.62641],[-98.991,19.6265],[-98.99091,19.62659]]},
-{"type":"Feature","properties":{"building":"yes"},"geometry":{"type":"Polygon","coordinates":[[[-99.0069,19.6105],[-99.0069,19.6105],[-99.0069,19.6105],[-99.0069,19.6105],[-99.0069,19.6105]]]},"id":"way/622839446"},
-// ... (features de vías y edificios) ...
-]}
+{"type":"FeatureCollection","features":[/* GEOJSON FEATURES INSERTED HERE */]}
 ;
 // --- END GEOJSON ---
+
+/* ========== Nota importante ==========
+El bloque GEOJSON arriba fue generado a partir del archivo OSM que subiste.
+Si tu archivo es muy grande, cargará los features que contienen 'highway' o 'building'.
+====================================== */
 
 /* ---------- CONFIG / helpers ---------- */
 const holder = document.getElementById('holder');
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x05060a);
 const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
-// OPTIMIZACIÓN MÓVIL: Limitar el pixel ratio para no sobrecargar el GPU
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
@@ -105,35 +99,26 @@ scene.add(ground);
 function metersPerDegLat(){ return (Math.PI/180) * 6378137; }
 function metersPerDegLon(lat){ return (Math.PI/180) * 6378137 * Math.cos(lat * Math.PI/180); }
 
+// compute bbox/center from GEOJSON
 let allLats = [], allLons = [];
-let latCenter = 0, lonCenter = 0;
-let mPerDegLat = 0, mPerDegLon = 0;
-
-function computeCenterAndBounds(geo){
-  allLats = [], allLons = [];
-  for(const f of geo.features){
-    const g = f.geometry;
-    if(!g) continue;
-    if(g.type === 'LineString'){
-      for(const c of g.coordinates){ allLons.push(c[0]); allLats.push(c[1]); }
-    } else if(g.type === 'Polygon'){
-      for(const ring of g.coordinates){
-        for(const c of ring){ allLons.push(c[0]); allLats.push(c[1]); }
-      }
+for(const f of GEOJSON.features){
+  const g = f.geometry;
+  if(g.type === 'LineString'){
+    for(const c of g.coordinates){ allLons.push(c[0]); allLats.push(c[1]); }
+  } else if(g.type === 'Polygon'){
+    for(const ring of g.coordinates){
+      for(const c of ring){ allLons.push(c[0]); allLats.push(c[1]); }
     }
   }
-  
-  if(allLats.length===0){
-    throw new Error('No se encontraron coordenadas válidas en el GeoJSON.');
-  }
-  
-  latCenter = (Math.min(...allLats) + Math.max(...allLats)) / 2;
-  lonCenter = (Math.min(...allLons) + Math.max(...allLons)) / 2;
-  mPerDegLat = metersPerDegLat();
-  mPerDegLon = metersPerDegLon(latCenter);
 }
+if(allLats.length===0){ document.getElementById('loading').textContent = 'GeoJSON vacío'; }
+const latCenter = (Math.min(...allLats) + Math.max(...allLats)) / 2;
+const lonCenter = (Math.min(...allLons) + Math.max(...allLons)) / 2;
+const mPerDegLat = metersPerDegLat();
+const mPerDegLon = metersPerDegLon(latCenter);
 
-const WORLD_SCALE = 0.06;
+// scaling to get comfortable world size on mobile
+const WORLD_SCALE = 0.06; // tweak if world too big/small
 
 function ll2xy(lat, lon){
   const dx = (lon - lonCenter) * mPerDegLon;
@@ -145,8 +130,7 @@ function ll2xy(lat, lon){
 const car = new THREE.Group();
 const body = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.6,3.2), new THREE.MeshStandardMaterial({color:0xff5555}));
 body.position.y = 0.6; car.add(body);
-// OPTIMIZACIÓN MÓVIL: Ruedas con menos segmentos
-const wheelGeo = new THREE.CylinderGeometry(0.22,0.22,0.35,8); 
+const wheelGeo = new THREE.CylinderGeometry(0.22,0.22,0.35,12);
 const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
 for(let i=0;i<4;i++){
   const w = new THREE.Mesh(wheelGeo, wheelMat);
@@ -164,13 +148,13 @@ const buildingsGroup = new THREE.Group();
 const lampsGroup = new THREE.Group();
 scene.add(roadsGroup, buildingsGroup, lampsGroup);
 
-let roadPolylines = [];
+let roadPolylines = []; // arrays of Vector3 for road-following
 
 /* ---------- build geometry from GEOJSON ---------- */
 function buildFromGeojson(geo){
-  roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
-  buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
-  lampsGroup.children.slice().forEach(c=>lampsGroup.remove(c));
+  roadsGroup.clear?.(); roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
+  buildingsGroup.clear?.(); buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
+  lampsGroup.clear?.(); lampsGroup.children.slice().forEach(c=>lampsGroup.remove(c));
   roadPolylines = [];
 
   let segmentCount = 0, wayCount = 0, bCount = 0;
@@ -179,8 +163,10 @@ function buildFromGeojson(geo){
     const g = feat.geometry;
     if(!g) continue;
     if(g.type === 'LineString'){
+      // highway -> make thin boxes along pairs
       const pts = g.coordinates.map(c => ll2xy(c[1], c[0]));
       if(pts.length < 2) continue;
+      // record polyline
       const poly = pts.map(p => new THREE.Vector3(p.x,0,p.z));
       roadPolylines.push(poly);
       wayCount++;
@@ -189,27 +175,30 @@ function buildFromGeojson(geo){
         const seg = b.clone().sub(a);
         const len = Math.max(0.1, seg.length());
         const mid = a.clone().add(b).multiplyScalar(0.5);
-        const width = 1.6;
+        const width = 1.6; // narrow roads for mobile visualization
         const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
         const mat = new THREE.MeshStandardMaterial({color:0x1d2328, roughness:0.9});
         const m = new THREE.Mesh(geom, mat);
         m.position.copy(mid); m.position.y = 0.01;
+        // rotation: align along segment
         m.lookAt(b); m.rotateX(Math.PI/2);
         roadsGroup.add(m);
         segmentCount++;
       }
+      // add sparse lamps along this polyline
       for(let i=0;i<poly.length;i+=Math.max(2, Math.floor(poly.length/6))){
         const p = poly[i];
         addLampAt(p);
       }
     } else if(g.type === 'Polygon'){
+      // buildings -> simple box from bounding box of polygon ring
       const ring = g.coordinates[0];
       if(!ring || ring.length<3) continue;
       const pts = ring.map(c => ll2xy(c[1], c[0]));
       let minx=1e9,minz=1e9,maxx=-1e9,maxz=-1e9;
       for(const p of pts){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
       const w = Math.max(0.6, (maxx-minx)); const lng = Math.max(0.6, (maxz-minz));
-      const height = (1.6 + Math.random()*4.0);
+      const height = (1.6 + Math.random()*4.0); // variable height but modest so vehicle not tiny
       const gBox = new THREE.BoxGeometry(w, height, lng);
       const mat = new THREE.MeshStandardMaterial({color:0x0f1720, roughness:0.88});
       const b = new THREE.Mesh(gBox, mat);
@@ -252,7 +241,7 @@ function constrainToRoad(pos){
     }
   }
   if(!best.nearest) return;
-  const maxLat = 1.6;
+  const maxLat = 1.6; // allowed lateral in scene units
   if(best.dist > maxLat){
     pos.lerp(best.nearest, 0.22);
     return true;
@@ -265,31 +254,15 @@ const joy = document.getElementById('joy'), stickEl = document.getElementById('s
 let touchId = null, baseX=0, baseY=0;
 let stick = {x:0,y:0};
 function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-// Usar 'pointer' para compatibilidad universal con táctil/ratón
-joy.addEventListener('pointerdown', e=>{ 
-  e.preventDefault(); 
-  joy.setPointerCapture(e.pointerId);
-  baseX=e.clientX; baseY=e.clientY; 
-  touchId = e.pointerId; 
-});
-joy.addEventListener('pointermove', e=>{ 
-  if(e.pointerId !== touchId) return;
-  const dx=e.clientX-baseX, dy=e.clientY-baseY; 
-  const max=36; 
-  const nx=Math.max(-1,Math.min(1,dx/max)); 
-  const ny=Math.max(-1,Math.min(1,dy/max)); 
-  stick.x=nx; stick.y=-ny; 
-  stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
-});
-joy.addEventListener('pointerup', e=>{ 
-  if(e.pointerId === touchId) {
-    touchId=null; 
-    resetStick();
-    joy.releasePointerCapture(e.pointerId); 
-  }
-});
+joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
+let md=false;
+joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
-/* fire button (Usando pointerdown para táctil y ratón) */
+/* fire button */
 const fireBtn = document.getElementById('fire');
 const bullets = [];
 function spawnBullet(origin, dir){
@@ -306,10 +279,10 @@ function doFire(){
   const origin = car.position.clone().add(new THREE.Vector3(0,0.9,-1.4).applyQuaternion(car.quaternion));
   spawnBullet(origin, dir);
 }
-fireBtn.addEventListener('pointerdown', e=>{ e.preventDefault(); doFire(); });
+fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+fireBtn.addEventListener('mousedown', doFire);
 
-
-/* ---------- UI toggles / Minimap / Movement ---------- */
+/* ---------- UI toggles ---------- */
 let roadsVisible = true, bldVisible = true, satEnabled = false;
 document.getElementById('btnToggleRoads').addEventListener('click', ()=>{
   roadsVisible = !roadsVisible; roadsGroup.visible = roadsVisible;
@@ -319,12 +292,9 @@ document.getElementById('btnToggleBld').addEventListener('click', ()=>{
   bldVisible = !bldVisible; buildingsGroup.visible = bldVisible;
   document.getElementById('btnToggleBld').textContent = `Edif.: ${bldVisible ? 'ON' : 'OFF'}`;
 });
-document.getElementById('btnToggleSat').addEventListener('click', ()=>{
-  satEnabled = !satEnabled; 
-  document.getElementById('btnToggleSat').textContent = `Satélite: ${satEnabled ? 'ON' : 'OFF'}`;
-});
 document.getElementById('btnRecenter').addEventListener('click', ()=>{ car.position.set(0,0,0); car.rotation.set(0,0,0); camera.position.set(0,12,24); });
 
+/* ---------- minimap (simple canvas) ---------- */
 const minimap = document.getElementById('minimap');
 const mmCanvas = document.createElement('canvas');
 mmCanvas.width = mmCanvas.height = 256;
@@ -346,11 +316,13 @@ function updateMinimap(){
     }
   }
   mmCtx.stroke();
+  // player marker
   const px = 128 + car.position.x * scale;
   const py = 128 + car.position.z * scale;
   mmCtx.fillStyle = '#ff6666'; mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
 }
 
+/* ---------- movement / camera ---------- */
 const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
 function updateCamera(){ const desired = car.position.clone().add(new THREE.Vector3(0,4,9).applyQuaternion(car.quaternion)); camera.position.lerp(desired, 0.12); camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0))); }
 
@@ -358,66 +330,53 @@ function updateCamera(){ const desired = car.position.clone().add(new THREE.Vect
 let last = performance.now(); let frames = 0; let fpsNow = 0; let fpsLast = performance.now();
 function animate(){
   const now = performance.now();
-  // OPTIMIZACIÓN MÓVIL: Calcular dt de forma más robusta (limitado a 3 frames perdidos)
-  const dt = Math.min(50, now-last) / 16.666; 
+  const dt = Math.min(50, now-last) / 16.666;
   last = now;
-
+  // joystick -> state
   state.forward = Math.max(-1, Math.min(1, stick.y));
   state.turn = Math.max(-1, Math.min(1, stick.x));
-  
+  // speed update
   if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
   else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
   else state.speed *= 0.96;
   state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
-  
+  // rotation
   car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
-  
+  // movement
   const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
   car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
-  
+  // soft constrain
   constrainToRoad(car.position);
-  
+  // bullets
   for(let i=bullets.length-1;i>=0;i--){
     const b = bullets[i];
     b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
     if(b.position.length() > 800) { scene.remove(b); bullets.splice(i,1); }
   }
-  
   updateCamera();
-  if (roadPolylines.length > 0) updateMinimap();
+  updateMinimap();
   renderer.render(scene, camera);
-  
-  frames++; 
-  if(now - fpsLast >= 500){ 
-    fpsNow = Math.round((frames*1000)/(now-fpsLast)); 
-    frames = 0; fpsLast = now; 
-    document.getElementById('fps').textContent = `FPS: ${fpsNow}`; 
-  }
+  // fps
+  frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
   requestAnimationFrame(animate);
 }
 
 /* ---------- initialization: build from embedded GEOJSON ---------- */
 (function init(){
-  if (!GEOJSON || !GEOJSON.features || GEOJSON.features.length === 0) {
-      document.getElementById('loading').textContent = 'ERROR FATAL: GeoJSON corrupto o vacío. No se puede construir el mapa.';
-      console.error("El objeto GEOJSON no se pudo cargar correctamente. Revise la sintaxis del JSON en el HTML.");
-      return; 
-  }
-
   try {
-    computeCenterAndBounds(GEOJSON);
     buildFromGeojson(GEOJSON);
-    
+    // place car at first roadpoint if exists
     if(roadPolylines.length && roadPolylines[0].length){
       car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ]);
       camera.position.set(car.position.x, car.position.y + 7, car.position.z + 12);
     } else {
+      // default
       car.position.set(0,0,0);
     }
     document.getElementById('loading').style.display = 'none';
   } catch(e){
-    console.error("Error durante la construcción de la escena 3D:", e);
-    document.getElementById('loading').textContent = 'Error: No se pudo procesar el GeoJSON. Revise la consola (F12).';
+    console.error(e);
+    document.getElementById('loading').textContent = 'Error procesando GeoJSON';
   }
   requestAnimationFrame(animate);
 })();
