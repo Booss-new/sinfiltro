@@ -3,25 +3,27 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Playa Azul (demo) — Fix</title>
+<title>SinFiltro — Playa Azul (demo, tiles)</title>
 <style>
-  :root{--bg:#05060a;--accent1:#00d1ff;--accent2:#8a6eff}
-  html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,Arial;color:#eaf7ff;overflow:hidden}
-  #holder{width:100%;height:100%;position:fixed;left:0;top:0;touch-action:none}
-  .topbar{position:fixed;left:8px;right:8px;top:10px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:260}
-  .badge{background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:12px;font-weight:700}
+  :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
+  html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
+  #holder{width:100%;height:100%;position:relative;touch-action:none;display:block}
+  /* top UI */
+  .topbar{position:fixed;left:8px;right:8px;top:10px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:200;pointer-events:auto}
+  .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600;backdrop-filter: blur(4px)}
   .controls{display:flex;gap:8px}
-  .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+  .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.4);user-select:none}
   /* joystick + fire */
-  .joy { position:fixed; left:14px; bottom:18px; width:96px; height:96px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:240 }
-  .stick { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0px,0px) }
-  .fire { position:fixed; right:16px; bottom:18px; width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:245;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6);font-size:20px}
-  /* minimap top-right so it does not overlap fire */
-  .minimap{position:fixed;right:12px;top:80px;width:92px;height:92px;border-radius:10px;background:rgba(0,0,0,0.55);z-index:245;display:flex;align-items:center;justify-content:center;pointer-events:auto}
-  .fps{position:fixed;left:12px;top:80px;background:rgba(0,0,0,0.45);padding:6px 10px;border-radius:10px;font-weight:700;z-index:245}
-  .info{position:fixed;left:12px;top:120px;background:rgba(0,0,0,0.35);padding:8px 10px;border-radius:10px;z-index:245;max-width:60%}
-  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:270;background:rgba(0,0,0,0.7);padding:12px 16px;border-radius:12px}
-  @media (max-width:420px){ .joy{width:84px;height:84px} .stick{width:36px;height:36px} .fire{width:56px;height:56px} .minimap{width:78px;height:78px} }
+  .joy { position:fixed; left:16px; bottom:16px; width:100px; height:100px; border-radius:60px; background:rgba(255,255,255,0.02); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:150 }
+  .stick { width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
+  .fire { position:fixed; right:16px; bottom:20px; width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:150;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.5);font-size:22px }
+  /* minimap */
+  .minimap{position:fixed;right:12px;bottom:120px;width:96px;height:96px;border-radius:12px;background:rgba(0,0,0,0.4);z-index:160;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.5)}
+  .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.4);padding:6px 10px;border-radius:10px;font-weight:600;z-index:160;}
+  .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.35);padding:8px 10px;border-radius:10px;z-index:160;max-width:75%}
+  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:220;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:12px}
+  /* misc */
+  @media(max-width:420px){ .joy{width:84px;height:84px} .stick{width:38px;height:38px} .fire{width:56px;height:56px} .minimap{width:76px;height:76px} }
 </style>
 </head>
 <body>
@@ -29,88 +31,117 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge" id="titleBadge">SinFiltro — Playa Azul (demo)</div>
+      <div class="badge">SinFiltro — Playa Azul (demo)</div>
       <div id="statusTiles" class="badge" style="display:none">Vías: <span id="tilesCount">0</span></div>
     </div>
     <div class="controls">
       <div id="btnToggleRoads" class="chip">Calles: ON</div>
       <div id="btnToggleSat" class="chip">Satélite: OFF</div>
-      <div id="btnToggleBuildings" class="chip">Edif.: ON</div>
+      <div id="btnToggleBld" class="chip">Edif.: ON</div>
       <div id="btnRecenter" class="chip">Re-center</div>
     </div>
   </div>
 
-  <div id="loading">Cargando mapa…</div>
+  <div id="loading">Cargando datos de mapa…</div>
 
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="fire" id="fire">🔫</div>
-  <div class="minimap" id="minimap">Mini</div>
+  <div class="fire" id="fire" title="Disparar">🔫</div>
+  <div class="minimap" id="minimap"><canvas id="mm" width="256" height="256"></canvas></div>
   <div class="fps" id="fps">FPS: --</div>
-  <div class="info" id="info">Cargando…</div>
+  <div class="info" id="info">Modo demo — cargando…</div>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <script>
 (async function(){
-  // ---------- config ----------
+  // ---------- CONFIG ----------
   const holder = document.getElementById('holder');
+  // BBOX around Playa Azul (latMin,longMin, latMax,longMax)
+  const BBOX = [19.6028, -99.0032, 19.6072, -98.9975];
   const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+  const OSM_TILE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const OSM_SUBDOMAINS = ['a','b','c'];
   const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-  // bbox centrado en Playa Azul (ajusta si hace falta)
-  const BBOX = [19.6029, -99.0032, 19.6070, -98.9975];
 
-  // ---------- three ----------
+  // ---------- THREE SETUP ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060a);
-  const renderer = new THREE.WebGLRenderer({antialias:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
   holder.appendChild(renderer.domElement);
 
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-  camera.position.set(0, 18, 28); // alto y atrás por defecto
+  camera.position.set(0, 12, 24);
 
-  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(6,12,8); scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5,10,7); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.28));
 
-  // base ground
-  const groundMatDefault = new THREE.MeshStandardMaterial({color:0x0b1016, roughness:0.95});
-  const groundPlane = new THREE.Mesh(new THREE.PlaneGeometry(3000,3000,1,1), groundMatDefault);
-  groundPlane.rotation.x = -Math.PI/2; groundPlane.position.y = -0.01; scene.add(groundPlane);
+  // ground base (we'll swap material when satellite loaded)
+  const baseGroundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.95});
+  const groundGeometry = new THREE.PlaneGeometry(2000,2000,1,1);
+  const ground = new THREE.Mesh(groundGeometry, baseGroundMat);
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = 0;
+  scene.add(ground);
 
-  // satellite plane (separate overlay) - initially invisible
-  let satPlane = null;
-
-  // conversion coords -> scene meters (approx)
+  // ---------- GEODESY helpers (small area equirect) ----------
   const latCenter = (BBOX[0] + BBOX[2]) / 2;
   const lonCenter = (BBOX[1] + BBOX[3]) / 2;
   const EARTH_RADIUS = 6378137;
   const mPerDegLat = (Math.PI/180) * EARTH_RADIUS;
   const mPerDegLon = (Math.PI/180) * EARTH_RADIUS * Math.cos(latCenter * Math.PI/180);
-  const SCALE = 0.055; // reduce global size for mobile
-
+  const SCALE = 0.06; // world scaling for mobile
   function ll2xy(lat, lon){
     const dx = (lon - lonCenter) * mPerDegLon;
     const dz = (lat - latCenter) * mPerDegLat;
     return new THREE.Vector3(dx * SCALE, 0, -dz * SCALE);
   }
 
-  // ---------- player car ----------
+  // ---------- PLAYER (proportional) ----------
   const car = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.4,0.8,4.4), new THREE.MeshStandardMaterial({color:0xff5a5a, metalness:0.2, roughness:0.6}));
-  body.position.y = 1.0; car.add(body);
-  const wheelGeo = new THREE.CylinderGeometry(0.36,0.36,0.5,10);
-  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
-  for(let i=0;i<4;i++){ const w=new THREE.Mesh(wheelGeo,wheelMat); w.rotation.z=Math.PI/2; w.position.y=0.35; w.position.x=(i%2===0)?-1:1; w.position.z=(i<2)?1.4:-1.4; car.add(w); }
-  car.position.set(0,0,0); scene.add(car);
+  // vehicle dims (meters) then scaled down by 1 -> apply visually in scene units: meters * 1
+  const carWidth = 1.8, carHeight = 1.2, carLength = 3.5;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(carWidth, carHeight, carLength), new THREE.MeshStandardMaterial({color:0xff4d4d, metalness:0.2, roughness:0.6}));
+  body.position.y = carHeight/2; car.add(body);
+  // wheels minimal visual
+  const wheelGeo = new THREE.CylinderGeometry(0.28,0.28,0.45,12);
+  const wheelMat = new THREE.MeshStandardMaterial({color:0x0f0f0f});
+  for(let i=0;i<4;i++){
+    const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2;
+    w.position.y = 0.22;
+    w.position.x = (i%2===0)?-carWidth*0.45:carWidth*0.45;
+    w.position.z = (i<2)?carLength*0.28:-carLength*0.28;
+    car.add(w);
+  }
+  car.position.set(0,0,0);
+  scene.add(car);
 
-  // groups
-  const roadsGroup = new THREE.Group(), buildingsGroup = new THREE.Group();
-  scene.add(roadsGroup); scene.add(buildingsGroup);
+  // ---------- groups ----------
+  const roadsGroup = new THREE.Group(); scene.add(roadsGroup);
+  const buildingsGroup = new THREE.Group(); scene.add(buildingsGroup);
+  const lampsGroup = new THREE.Group(); scene.add(lampsGroup);
 
-  const roadPolylines = [];
+  // ---------- movement state ----------
+  const state = {forward:0, turn:0, speed:0, maxSpeed:1.0, rotSpeed:0.045};
+  const bullets = [];
 
-  // ---------- Overpass fetch ----------
+  function spawnBullet(origin, dir){
+    const g = new THREE.SphereGeometry(0.09,8,8);
+    const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
+    const b = new THREE.Mesh(g,m);
+    b.position.copy(origin);
+    b.userData.dir = dir.clone();
+    b.userData.speed = 2.6;
+    scene.add(b); bullets.push(b);
+  }
+
+  // ---------- road data containers ----------
+  const roadPolylines = []; // arrays of Vector3
+  let satTexture = null, satEnabled = false;
+
+  // ---------- Overpass query ----------
   function overpassQuery(bbox){
     const [s,w,n,e] = bbox;
     return `
@@ -123,283 +154,361 @@
       out body;
     `;
   }
-  async function fetchOSM(){
+
+  async function fetchOverpass(){
     try{
       const res = await fetch(OVERPASS_URL, {method:'POST', body: overpassQuery(BBOX)});
-      if(!res.ok) throw new Error('Overpass ' + res.status);
-      return await res.json();
-    }catch(e){ console.warn('Overpass failed', e); return null; }
+      if(!res.ok) throw new Error('overpass status ' + res.status);
+      const data = await res.json();
+      return data;
+    }catch(e){
+      console.warn('Overpass failed:', e);
+      return null;
+    }
   }
+
   function parseOverpass(data){
     const nodes = new Map(), ways = [];
-    for(const el of data.elements) if(el.type==='node') nodes.set(el.id, el);
-    for(const el of data.elements) if(el.type==='way') ways.push({id:el.id, nodes:el.nodes, tags:el.tags || {}});
+    for(const el of data.elements){
+      if(el.type === 'node') nodes.set(el.id, el);
+    }
+    for(const el of data.elements){
+      if(el.type === 'way') ways.push(el);
+    }
     return {nodes, ways};
   }
 
-  // ---------- build roads and buildings (safe limits) ----------
-  function clearGroup(g){ if(g.clear) g.clear(); else g.children.slice().forEach(c=>g.remove(c)); }
-  function buildRoads(nodes, ways){
-    clearGroup(roadsGroup);
-    roadPolylines.length = 0;
+  // ---------- build scene from OSM */
+  function clearGroup(g){ while(g.children.length) g.remove(g.children[0]); }
+
+  function buildRoadsFromOSM(nodesMap, ways){
+    clearGroup(roadsGroup); roadPolylines.length = 0;
+    let segments = 0, waysAdded = 0;
     const keep = new Set(['motorway','trunk','primary','secondary','tertiary','unclassified','residential','service','living_street']);
-    let segCount=0, wayCount=0, MAX_SEG=600;
     for(const w of ways){
-      if(!w.tags.highway) continue;
-      if(!keep.has(w.tags.highway) && w.tags.highway!=='residential') continue;
+      if(!w.tags || !w.tags.highway) continue;
+      if(!keep.has(w.tags.highway) && w.tags.highway !== 'residential') continue;
       const pts = [];
-      for(const nid of w.nodes){ const n = nodes.get(nid); if(!n) continue; pts.push(ll2xy(n.lat, n.lon)); }
-      if(pts.length < 2) continue;
-      const step = Math.max(1, Math.floor(pts.length / 30));
-      const sampled = []; for(let i=0;i<pts.length;i+=step) sampled.push(pts[i]);
-      if(sampled.length < 2) continue;
-      for(let i=0;i<sampled.length-1 && segCount<MAX_SEG;i++){
-        const a=sampled[i], b=sampled[i+1]; const len=a.distanceTo(b);
-        const width = (w.tags.highway==='motorway'||w.tags.highway==='trunk')?3.2:1.8;
-        const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
-        // bright, visible color for roads
-        const mat = new THREE.MeshStandardMaterial({color:0xcfeff8, roughness:0.95});
-        const m = new THREE.Mesh(geom, mat);
-        const mid = a.clone().add(b).multiplyScalar(0.5);
-        m.position.copy(mid); m.position.y = 0.03;
-        m.lookAt(b); m.rotateX(Math.PI/2);
-        roadsGroup.add(m); segCount++;
+      for(const nid of w.nodes){
+        const n = nodesMap.get(nid); if(!n) continue;
+        pts.push(ll2xy(n.lat, n.lon));
       }
-      roadPolylines.push(sampled.map(p=>new THREE.Vector3(p.x,0,p.z)));
-      wayCount++;
-      if(segCount >= MAX_SEG) break;
+      if(pts.length < 2) continue;
+      // simplify (skip close nodes)
+      const simplified = [pts[0]];
+      for(let i=1;i<pts.length;i++){
+        const prev = simplified[simplified.length-1];
+        if(prev.distanceTo(pts[i]) > 0.3) simplified.push(pts[i]);
+      }
+      if(simplified.length < 2) continue;
+      // add segments
+      for(let i=0;i<simplified.length-1;i++){
+        const a = simplified[i], b = simplified[i+1];
+        const segVec = b.clone().sub(a); const len = segVec.length();
+        const width = (w.tags.highway === 'motorway' || w.tags.highway==='trunk')?3.2:1.9;
+        const geom = new THREE.BoxGeometry(width, 0.015, Math.max(len,0.05));
+        const mat = new THREE.MeshStandardMaterial({color:0x1a1d22, roughness:0.95});
+        const m = new THREE.Mesh(geom, mat);
+        const mid = a.clone().add(b).multiplyScalar(0.5); m.position.copy(mid); m.position.y = 0.01;
+        // rotation
+        m.lookAt(b); m.rotateX(Math.PI/2);
+        roadsGroup.add(m); segments++;
+      }
+      // store polyline for constraints
+      const poly = simplified.map(p=> new THREE.Vector3(p.x,0,p.z));
+      roadPolylines.push(poly);
+      waysAdded++;
     }
-    return {segmentCount:segCount, wayCount};
+    return {segments, waysAdded};
   }
 
-  function buildBuildings(nodes, ways){
+  function buildBuildingsFromOSM(nodesMap, ways){
     clearGroup(buildingsGroup);
-    let count=0, MAX_B=60;
+    let count = 0;
     for(const w of ways){
-      if(!w.tags.building) continue;
-      const pts=[];
-      for(const nid of w.nodes){ const n=nodes.get(nid); if(!n) continue; pts.push(ll2xy(n.lat,n.lon)); }
+      if(!w.tags || !w.tags.building) continue;
+      const pts = [];
+      for(const nid of w.nodes){
+        const n = nodesMap.get(nid); if(!n) continue;
+        pts.push(ll2xy(n.lat, n.lon));
+      }
       if(pts.length < 3) continue;
       let minx=1e9,minz=1e9,maxx=-1e9,maxz=-1e9;
-      for(const p of pts){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
-      const wth = Math.max(0.8, maxx-minx), lng = Math.max(0.8, maxz-minz);
+      for(const p of pts){ minx=Math.min(minx,p.x); minx; maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
+      const wth = Math.max( Math.abs(maxx-minx), 1.0 );
+      const lng = Math.max( Math.abs(maxz-minz), 1.0 );
       const levels = w.tags['building:levels'] ? Math.max(1, +w.tags['building:levels']) : Math.floor(1 + Math.random()*3);
-      // reduce height scale to avoid tall walls
-      const height = Math.max(1.2, levels * 1.6) * 0.55;
+      const height = Math.max(3,levels*2.8);
       const g = new THREE.BoxGeometry(wth, height, lng);
-      const mat = new THREE.MeshStandardMaterial({color:0x0f1720, roughness:0.95, transparent:true, opacity:0.92});
-      const b = new THREE.Mesh(g, mat);
-      b.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
-      buildingsGroup.add(b); count++;
-      if(count >= MAX_B) break;
+      const mat = new THREE.MeshStandardMaterial({color:0x242a33, roughness:0.95});
+      const mesh = new THREE.Mesh(g, mat);
+      mesh.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
+      buildingsGroup.add(mesh); count++;
     }
     return count;
   }
 
-  // ---------- procedural fallback grid ----------
-  function buildProceduralGrid(){
-    clearGroup(roadsGroup); clearGroup(buildingsGroup); roadPolylines.length=0;
-    const cols=6, rows=6, spacing=6;
-    for(let r=-Math.floor(rows/2); r<=Math.floor(rows/2); r++){
-      const poly=[];
-      for(let c=-Math.floor(cols/2); c<=Math.floor(cols/2); c++){
-        poly.push(new THREE.Vector3(c*spacing,0,r*spacing));
-      }
-      for(let i=0;i<poly.length-1;i++){
-        const a=poly[i], b=poly[i+1];
-        const len=a.distanceTo(b);
-        const geom=new THREE.BoxGeometry(2.0,0.02,len);
-        const mat=new THREE.MeshStandardMaterial({color:0xcfeff8, roughness:0.95});
-        const m=new THREE.Mesh(geom, mat);
-        const mid=a.clone().add(b).multiplyScalar(0.5); m.position.copy(mid); m.position.y=0.03; m.lookAt(b); m.rotateX(Math.PI/2); roadsGroup.add(m);
+  // ---------- Procedural fallback (grid-like local roads) ----------
+  function buildProceduralFallback(){
+    clearGroup(roadsGroup); clearGroup(buildingsGroup); roadPolylines.length = 0;
+    // generate grid sized to bbox
+    const W = 60; const H = 60; // in scene units
+    const lanes = 6;
+    const step = 6.0;
+    for(let i=-lanes;i<=lanes;i++){
+      const z = i * step;
+      const a = new THREE.Vector3(-W,0,z), b = new THREE.Vector3(W,0,z);
+      // box segment approach - create long boxes sliced into chunks
+      const geom = new THREE.BoxGeometry(3.0, 0.02, (W*2));
+      const mat = new THREE.MeshStandardMaterial({color:0x1a1d22});
+      const m = new THREE.Mesh(geom, mat); m.position.set(0,0.01,z); m.rotateX(Math.PI/2);
+      roadsGroup.add(m);
+      const poly = [];
+      const segs = 12;
+      for(let s=0;s<=segs;s++){
+        poly.push(new THREE.Vector3(-W + (W*2)*(s/segs), 0, z));
       }
       roadPolylines.push(poly);
     }
-    for(let i=0;i<24;i++){ const gx=(Math.random()-0.5)*cols*spacing, gz=(Math.random()-0.5)*rows*spacing; const wth=0.8+Math.random()*1.6, lng=0.8+Math.random()*1.6, h=1.6+Math.random()*2.6; const g=new THREE.BoxGeometry(wth,h,lng); const mat=new THREE.MeshStandardMaterial({color:0x0f1720,transparent:true,opacity:0.92}); const b=new THREE.Mesh(g,mat); b.position.set(gx,h/2,gz); buildingsGroup.add(b); }
-    document.getElementById('info').textContent = 'Modo demo (procedural): Overpass no disponible.';
+    // buildings: columns near roads
+    for(let x=-40;x<=40;x+=10){
+      for(let z=-40;z<=40;z+=10){
+        const w = Math.random()*4 + 3;
+        const l = Math.random()*4 + 3;
+        const h = 4 + Math.random()*14;
+        const b = new THREE.Mesh(new THREE.BoxGeometry(w,h,l), new THREE.MeshStandardMaterial({color:0x222630}));
+        b.position.set(x + (Math.random()*4-2), h/2, z + (Math.random()*4-2));
+        buildingsGroup.add(b);
+      }
+    }
+    return {ways: roadPolylines.length, segments: 0, buildings: buildingsGroup.children.length};
   }
 
-  // ---------- lamps ----------
-  function addLampAt(pos){
-    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.6,6), new THREE.MeshStandardMaterial({color:0x111111}));
-    stick.position.copy(pos).add(new THREE.Vector3(0,0.8,0)); scene.add(stick);
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), new THREE.MeshBasicMaterial({color:0xfff3d9}));
-    bulb.position.copy(pos).add(new THREE.Vector3(0,1.45,0)); scene.add(bulb);
+  // ---------- Lamps ----------
+  function addLamp(pos){
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2,6), new THREE.MeshStandardMaterial({color:0x111111}));
+    pole.position.set(pos.x,1,pos.z);
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), new THREE.MeshBasicMaterial({color:0xfff8d9}));
+    bulb.position.set(pos.x,1.9,pos.z);
+    lampsGroup.add(pole); lampsGroup.add(bulb);
+  }
+  function scatterLamps(){
+    // scatter along road polylines sparsely
+    lampsGroup.clear?.(); while(lampsGroup.children.length) lampsGroup.remove(lampsGroup.children[0]);
+    for(const poly of roadPolylines){
+      for(let i=0;i<poly.length;i+=Math.max(2,Math.floor(poly.length/5))){
+        addLamp(poly[i]);
+      }
+    }
   }
 
-  // ---------- satellite loading and correct scaling ----------
-  let satTexture = null, satEnabled = false;
-  async function loadSatelliteAndApply(){
+  // ---------- Satellite texture helper ----------
+  async function loadSatelliteTile(){
     try{
-      // compute tile for center
       const z = 16;
       function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
       function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2 * Math.pow(2,z)); }
-      const tx = lon2tile(lonCenter, z);
-      const ty = lat2tile(latCenter, z);
+      const tx = lon2tile(lonCenter, z), ty = lat2tile(latCenter, z);
       const url = ESRI_TILE.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
       const img = await new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=url; });
-      satTexture = new THREE.CanvasTexture(img); satTexture.encoding = THREE.sRGBEncoding;
-
-      // create satPlane sized to bbox (meters -> scene units)
-      // compute bbox physical size
-      const dx_m = Math.abs((BBOX[3] - BBOX[1]) * mPerDegLon); // east-west meters
-      const dz_m = Math.abs((BBOX[2] - BBOX[0]) * mPerDegLat); // north-south meters
-      const widthScene = dx_m * SCALE;
-      const heightScene = dz_m * SCALE;
-      // remove existing
-      if(satPlane){ scene.remove(satPlane); satPlane.geometry.dispose(); satPlane.material.dispose(); satPlane = null; }
-      const geom = new THREE.PlaneGeometry(Math.max(8,widthScene), Math.max(8,heightScene));
-      const mat = new THREE.MeshBasicMaterial({map: satTexture});
-      satPlane = new THREE.Mesh(geom, mat);
-      satPlane.rotation.x = -Math.PI/2;
-      // position plane centered
-      satPlane.position.set(0, 0.02, 0);
-      scene.add(satPlane);
+      const tex = new THREE.CanvasTexture(img); tex.encoding = THREE.sRGBEncoding; satTexture = tex;
       return true;
-    }catch(e){ console.warn('sat error', e); return false; }
+    }catch(e){ console.warn('sat failed', e); return false; }
   }
+
   function enableSatellite(on){
-    if(on && satPlane){ satPlane.visible = true; satEnabled = true; document.getElementById('btnToggleSat').textContent = 'Satélite: ON'; }
-    else if(satPlane){ satPlane.visible = false; satEnabled = false; document.getElementById('btnToggleSat').textContent = 'Satélite: OFF'; }
-    else { document.getElementById('btnToggleSat').textContent = 'Satélite: OFF'; }
+    if(on && satTexture){
+      // apply simple tiling onto ground: create a plane mesh small and positioned at 0
+      ground.material = new THREE.MeshBasicMaterial({map: satTexture});
+      satEnabled = true; document.getElementById('btnToggleSat').textContent = 'Satélite: ON';
+    } else {
+      ground.material = baseGroundMat; satEnabled = false; document.getElementById('btnToggleSat').textContent = 'Satélite: OFF';
+    }
   }
 
-  // ---------- constraining (soft) ----------
-  function constrainToRoad(pos){
-    let best = {dist:1e9, proj:null};
-    for(const poly of roadPolylines){
-      for(let i=0;i<poly.length-1;i++){
-        const a = poly[i], b = poly[i+1];
-        const ap = pos.clone().sub(a), ab = b.clone().sub(a);
-        const abLen2 = ab.lengthSq(); if(abLen2 === 0) continue;
-        const t = Math.max(0, Math.min(1, ap.dot(ab) / abLen2));
-        const proj = a.clone().add(ab.multiplyScalar(t));
-        const d = proj.distanceTo(pos);
-        if(d < best.dist){ best.dist = d; best.proj = proj; }
-      }
-    }
-    if(!best.proj) return false;
-    const maxLat = 1.8;
-    if(best.dist > maxLat){
-      const push = best.proj.clone().sub(pos).multiplyScalar(0.24);
-      pos.add(push); return true;
-    }
-    return false;
-  }
-
-  // ---------- minimap ----------
-  const minimap = document.getElementById('minimap'); const mmCanvas = document.createElement('canvas'); mmCanvas.width = mmCanvas.height = 256; minimap.innerHTML = ''; minimap.appendChild(mmCanvas); const mmCtx = mmCanvas.getContext('2d');
+  // ---------- Minimap (draw polylines & player) ----------
+  const mm = document.getElementById('mm'), mmCtx = mm.getContext('2d');
   function updateMinimap(){
-    const scale = 0.35; mmCtx.clearRect(0,0,256,256); mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
+    mmCtx.clearRect(0,0,256,256);
+    mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
     mmCtx.strokeStyle = '#bfe9ff'; mmCtx.lineWidth = 2; mmCtx.beginPath();
+    const scale = 0.6;
     for(const poly of roadPolylines){
-      if(poly.length < 2) continue;
+      if(poly.length<2) continue;
       for(let i=0;i<poly.length;i++){
-        const p = poly[i];
-        const x = 128 + p.x * scale;
-        const y = 128 + p.z * scale;
+        const p = poly[i]; const x = 128 + p.x*scale; const y = 128 + p.z*scale;
         if(i===0) mmCtx.moveTo(x,y); else mmCtx.lineTo(x,y);
       }
     }
     mmCtx.stroke();
-    const px = 128 + car.position.x * scale;
-    const py = 128 + car.position.z * scale;
+    // player dot
+    const px = 128 + car.position.x * scale, py = 128 + car.position.z * scale;
     mmCtx.fillStyle = '#ff6666'; mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
   }
 
-  // ---------- input (joystick + fire) ----------
-  const joy = document.getElementById('joy'), stickEl = document.getElementById('stick'); let touchId=null, baseX=0, baseY=0; const stick = {x:0,y:0};
-  function resetStick(){ stick.x=0; stick.y=0; stickEl.style.transform='translate(0px,0px)'; }
-  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches) if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY, max=36; const nx=Math.max(-1,Math.min(1,dx/max)), ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; } }, {passive:false});
-  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
-  // pointer fallback
-  let md=false; joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY, max=36; const nx=Math.max(-1,Math.min(1,dx/max)), ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  // ---------- Input (joystick + fire) ----------
+  const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+  let touchId = null, baseX=0, baseY=0;
+  let stick = {x:0,y:0};
+  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
+  // pointer desktop support
+  let md=false; joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture && joy.setPointerCapture(e.pointerId); });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
-  const bullets = [];
-  function spawnBullet(origin, dir){
-    const g = new THREE.SphereGeometry(0.12,8,8);
-    const m = new THREE.MeshStandardMaterial({emissive:0xffcc66, color:0x111111});
-    const b = new THREE.Mesh(g,m);
-    b.position.copy(origin); b.userData.dir = dir.clone(); b.userData.speed = 2.8;
-    scene.add(b); bullets.push(b);
+  // fire button safe
+  const fireBtn = document.getElementById('fire');
+  fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+  fireBtn.addEventListener('mousedown', doFire);
+  function doFire(){
+    // spawn bullet slightly ahead
+    const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+    const origin = car.position.clone().add(new THREE.Vector3(0,0.9,-(carLength*0.6)).applyQuaternion(car.quaternion));
+    spawnBullet(origin, dir);
   }
-  function doFire(){ const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize(); const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion)); spawnBullet(origin, dir); }
-  document.getElementById('fire').addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-  document.getElementById('fire').addEventListener('mousedown', doFire);
 
-  // ---------- UI interactions ----------
-  let roadsVisible = true, buildingsVisible = true;
-  document.getElementById('btnToggleRoads').addEventListener('click', ()=>{ roadsVisible = !roadsVisible; roadsGroup.visible = roadsVisible; document.getElementById('btnToggleRoads').textContent = `Calles: ${roadsVisible ? 'ON':'OFF'}`; });
-  document.getElementById('btnToggleBuildings').addEventListener('click', ()=>{ buildingsVisible = !buildingsVisible; buildingsGroup.visible = buildingsVisible; document.getElementById('btnToggleBuildings').textContent = `Edif.: ${buildingsVisible ? 'ON':'OFF'}`; });
-  document.getElementById('btnRecenter').addEventListener('click', ()=>{ car.position.set(0,0,0); car.rotation.set(0,0,0); camera.position.set(0,18,28); });
+  // ---------- UI toggles ----------
+  let roadsVisible=true, bldVisible=true;
+  document.getElementById('btnToggleRoads').addEventListener('click', ()=>{ roadsVisible = !roadsVisible; roadsGroup.visible = roadsVisible; document.getElementById('btnToggleRoads').textContent = `Calles: ${roadsVisible? 'ON':'OFF'}`; });
+  document.getElementById('btnToggleBld').addEventListener('click', ()=>{ bldVisible = !bldVisible; buildingsGroup.visible = bldVisible; document.getElementById('btnToggleBld').textContent = `Edif.: ${bldVisible? 'ON':'OFF'}`; });
+  document.getElementById('btnRecenter').addEventListener('click', ()=>{ car.position.set(0,0,0); car.rotation.set(0,0,0); camera.position.set(0,12,24); });
 
-  document.getElementById('btnToggleSat').addEventListener('click', async ()=>{ if(!satPlane){ document.getElementById('btnToggleSat').textContent = 'Satélite: cargando...'; await loadSatelliteAndApply(); } enableSatellite(!satEnabled); });
+  document.getElementById('btnToggleSat').addEventListener('click', async ()=>{
+    if(!satTexture){ document.getElementById('btnToggleSat').textContent = 'Satélite: Cargando...'; await loadSatelliteTile(); }
+    enableSatellite(!satEnabled);
+  });
 
-  // ---------- animation ----------
-  const state = {speed:0, maxSpeed:0.9, rotSpeed:0.045};
-  let last = performance.now(), frames = 0, fpsNow = 0, fpsLast = performance.now();
+  // ---------- Soft road constrain ----------
+  function constrainToRoad(pos){
+    let best = {dist:1e9, nearest:null};
+    for(const poly of roadPolylines){
+      for(let i=0;i<poly.length-1;i++){
+        const a = poly[i], b = poly[i+1];
+        const ap = pos.clone().sub(a); const ab = b.clone().sub(a);
+        const denom = ab.lengthSq(); if(denom === 0) continue;
+        const t = Math.max(0, Math.min(1, ap.dot(ab)/denom));
+        const proj = a.clone().add(ab.clone().multiplyScalar(t));
+        const d = proj.distanceTo(pos);
+        if(d < best.dist){ best.dist = d; best.nearest = proj; }
+      }
+    }
+    if(!best.nearest) return {constrained:false};
+    const maxLat = 1.8; // allowed lateral margin (scene units)
+    if(best.dist > maxLat){
+      const dir = best.nearest.clone().sub(pos).multiplyScalar(0.22);
+      pos.add(dir); return {constrained:true};
+    }
+    return {constrained:false};
+  }
+
+  // ---------- RENDER LOOP ----------
+  let last = performance.now(), frames=0, fpsNow=0, fpsLast=performance.now();
+  function updateCamera(){
+    const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+    camera.position.lerp(desired, 0.14);
+    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
+  }
   function animate(){
-    const now = performance.now(); const dt = Math.min(50, now - last) / 16.666; last = now;
-    const forward = Math.max(-1, Math.min(1, stick.y)); const turn = Math.max(-1, Math.min(1, stick.x));
-    if(forward > 0.06) state.speed += 0.018 * forward * dt; else if(forward < -0.06) state.speed -= 0.03 * (-forward) * dt; else state.speed *= 0.96;
+    const now = performance.now();
+    const dt = Math.min(50, now-last) / 16.666; last = now;
+    // joystick -> motion
+    state.forward = Math.max(-1, Math.min(1, stick.y)); state.turn = Math.max(-1, Math.min(1, stick.x));
+    if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
+    else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
+    else state.speed *= 0.96;
     state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
-    car.rotation.y += -turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+    car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
     const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
     car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
     constrainToRoad(car.position);
     // bullets
-    for(let i=bullets.length-1;i>=0;i--){ const b=bullets[i]; b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt)); if(b.position.length()>1200){ scene.remove(b); bullets.splice(i,1); } }
-    // camera smooth
-    const desired = car.position.clone().add(new THREE.Vector3(0,5,10).applyQuaternion(car.quaternion));
-    camera.position.lerp(desired, 0.12); camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
-    updateMinimap(); renderer.render(scene, camera);
-    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now - fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+    for(let i=bullets.length-1;i>=0;i--){
+      const b = bullets[i];
+      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+      if(b.position.length() > 800){ scene.remove(b); bullets.splice(i,1); }
+    }
+    updateCamera();
+    updateMinimap();
+    // renderer
+    renderer.render(scene, camera);
+    // fps calc (half-second)
+    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames=0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
     requestAnimationFrame(animate);
   }
 
-  // ---------- load data ----------
-  document.getElementById('loading').style.display = 'block';
-  let raw = await fetchOSM();
-  if(raw && raw.elements && raw.elements.length){
-    const {nodes, ways} = parseOverpass(raw);
-    const roadsInfo = buildRoads(nodes, ways);
-    const bcount = buildBuildings(nodes, ways);
-    // sparse lamps
-    for(const poly of roadPolylines) for(let i=0;i<poly.length;i+=Math.max(2,Math.floor(poly.length/4))) addLampAt(poly[i]);
-    document.getElementById('tilesCount').textContent = roadPolylines.length;
-    document.getElementById('statusTiles').style.display = 'inline-block';
-    document.getElementById('info').textContent = `Map: OSM · vías: ${roadPolylines.length} · segmentos: ${roadsInfo.segmentCount} · edificios: ${bcount}`;
+  // ---------- Initialization: try Overpass, otherwise fallback procedural ----------
+  async function init(){
+    document.getElementById('loading').style.display = 'block';
+    let useOSM = false;
+    const raw = await fetchOverpass();
+    if(raw){
+      try{
+        const {nodes, ways} = parseOverpass(raw);
+        const roadsInfo = buildRoadsFromOSM(nodes, ways);
+        const bcount = buildBuildingsFromOSM(nodes, ways);
+        scatterLamps();
+        document.getElementById('info').textContent = `Modo demo — calles cargadas: ${roadPolylines.length} vías · segmentos: ${roadsInfo.segments} · edificios: ${bcount}`;
+        document.getElementById('tilesCount').textContent = roadPolylines.length;
+        document.getElementById('statusTiles').style.display = 'inline-block';
+        useOSM = true;
+      }catch(e){
+        console.warn('parse/build failed', e);
+      }
+    }
+    if(!useOSM){
+      const pf = buildProceduralFallback();
+      document.getElementById('info').textContent = `Modo demo (procedural) — vías: ${pf.ways} · edificios: ${pf.buildings}`;
+      document.getElementById('tilesCount').textContent = pf.ways;
+      document.getElementById('statusTiles').style.display = 'inline-block';
+    }
+    // place car at approximate road center
+    if(roadPolylines.length && roadPolylines[0].length){
+      car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ] );
+      car.position.y = 0;
+    } else { car.position.set(0,0,0); }
+    // try preloading satellite (async)
+    loadSatelliteTile().then(()=>{/*sat ready*/}).catch(()=>{/*ignore*/});
     document.getElementById('loading').style.display = 'none';
-  } else {
-    // fallback procedural ensures playability
-    buildProceduralGrid();
-    document.getElementById('loading').style.display = 'none';
+    requestAnimationFrame(animate);
   }
 
-  // preload satellite (async) but show only when toggled
-  loadSatelliteAndApply().then(()=>{/* preloaded */}).catch(()=>{/* ignore */});
-
-  // center car if roads exist
-  if(roadPolylines.length && roadPolylines[0].length){
-    car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ]);
-  } else {
-    car.position.set(0,0,0);
+  // ---------- satellite load attempt ----------
+  async function loadSatelliteTile(){ return await loadSatelliteTile_impl(); }
+  async function loadSatelliteTile_impl(){
+    try{
+      const success = await (async ()=>{ return await (async function(){ const z=16; function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); } function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2 * Math.pow(2,z)); } const tx=lon2tile(lonCenter,z), ty=lat2tile(latCenter,z); const url = ESRI_TILE.replace('{z}',z).replace('{x}',tx).replace('{y}',ty); const img = await new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=url; }); satTexture = new THREE.CanvasTexture(img); satTexture.encoding = THREE.sRGBEncoding; return true; })(); })();
+      return success;
+    }catch(e){ console.warn('sat impl failed', e); return false; }
   }
 
-  requestAnimationFrame(animate);
+  // ---------- Window resize ----------
   window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
 
-  // expose enableSatellite (already used)
-  function enableSatellite(on){
-    if(satPlane){ satPlane.visible = !!on; satEnabled = !!on; document.getElementById('btnToggleSat').textContent = `Satélite: ${on ? 'ON' : 'OFF'}`; }
-    else { document.getElementById('btnToggleSat').textContent = 'Satélite: OFF'; }
+  // start
+  await init();
+
+  // helper: show map origin debug on minimap update
+  function updateMinimap(){ // override previous with local
+    const mmCtx = document.getElementById('mm').getContext('2d');
+    mmCtx.clearRect(0,0,256,256); mmCtx.fillStyle='#07101a'; mmCtx.fillRect(0,0,256,256);
+    mmCtx.strokeStyle='#bfe9ff'; mmCtx.lineWidth=2; mmCtx.beginPath();
+    const scale = 0.6;
+    for(const poly of roadPolylines){
+      if(poly.length<2) continue;
+      for(let i=0;i<poly.length;i++){
+        const p = poly[i]; const x=128+p.x*scale; const y=128+p.z*scale;
+        if(i===0) mmCtx.moveTo(x,y); else mmCtx.lineTo(x,y);
+      }
+    }
+    mmCtx.stroke();
+    // player
+    mmCtx.fillStyle='#ff6666'; mmCtx.beginPath(); mmCtx.arc(128 + car.position.x*scale, 128 + car.position.z*scale, 4, 0, Math.PI*2); mmCtx.fill();
   }
 
-})();
+})(); // IIFE
 </script>
 </body>
 </html>
