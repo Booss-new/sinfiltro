@@ -51,7 +51,7 @@
   <div class="fps" id="fps">FPS: --</div>
   <div class="info" id="info">Modo demo — calles cargadas: 0 vías · segmentos: 0 · edificios: 0</div>
 
-<script src="three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
 /* =======================
@@ -92,48 +92,8 @@ const dir = new THREE.DirectionalLight(0xffffff, 0.9);
 dir.position.set(5,10,7); scene.add(dir);
 scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-// --- SOLUCIÓN AL ERROR #2 (CORS en Texturas) ---
-// Para cargar texturas desde archivos locales o un CDN sin problemas de CORS, 
-// se debe usar el método setCrossOrigin().
-
-const textureLoader = new THREE.TextureLoader();
-// Esta línea previene la mayoría de los errores CORS al cargar texturas/imágenes
-// desde ubicaciones externas (como un CDN) o locales (protocolo file://).
-textureLoader.setCrossOrigin(''); // Usar '' o 'anonymous'
-
-// ground base - VAMOS A INTENTAR APLICAR UNA TEXTURA (Ejemplo de recurso externo)
-// Reemplaza 'groundMatPlain' por una que use textura si el satélite está activado (simulación)
+// ground base
 const groundMatPlain = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.95, metalness:0.05});
-let groundMatSat; // Material con textura de satélite (si se implementa)
-
-function toggleSatelliteView(enabled) {
-    if (enabled) {
-        if (!groundMatSat) {
-            // Ejemplo de carga de textura. Esto daría CORS sin setCrossOrigin()
-            const satTexture = textureLoader.load('path/to/tu_mapa_satelital.jpg', 
-                // Función de éxito (se ejecuta si la carga funciona)
-                (texture) => {
-                    groundMatSat = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, metalness: 0.1 });
-                    ground.material = groundMatSat;
-                },
-                // Función de progreso (opcional)
-                undefined,
-                // Función de error (IMPORTANTE: para debug)
-                (err) => {
-                    console.error('Error al cargar la textura satelital. Revisa la ruta y CORS:', err);
-                    alert('Error de carga de textura. ¡Asegúrate de usar Live Server!');
-                    ground.material = groundMatPlain; // Vuelve al material plano
-                }
-            );
-        } else {
-            ground.material = groundMatSat;
-        }
-    } else {
-        ground.material = groundMatPlain;
-    }
-}
-// -----------------------------------------------------------------------------
-
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000,1,1), groundMatPlain);
 ground.rotation.x = -Math.PI/2;
 ground.position.y = 0;
@@ -336,11 +296,13 @@ document.getElementById('btnToggleBld').addEventListener('click', ()=>{
   bldVisible = !bldVisible; buildingsGroup.visible = bldVisible;
   document.getElementById('btnToggleBld').textContent = `Edif.: ${bldVisible ? 'ON' : 'OFF'}`;
 });
-// Botón de Satélite modificado para usar la función de manejo de CORS
+
+// Nota: El botón de Satélite está simulado. Si quieres que haga algo real, necesitarías un mapa satelital de esa zona.
 document.getElementById('btnToggleSat').addEventListener('click', ()=>{
   satEnabled = !satEnabled; 
   document.getElementById('btnToggleSat').textContent = `Satélite: ${satEnabled ? 'ON' : 'OFF'}`;
-  toggleSatelliteView(satEnabled);
+  // Aquí iría la lógica para cambiar el material del suelo a uno con textura satelital
+  // ground.material = satEnabled ? groundMatSat : groundMatPlain;
 });
 
 document.getElementById('btnRecenter').addEventListener('click', ()=>{ car.position.set(0,0,0); car.rotation.set(0,0,0); camera.position.set(0,12,24); });
@@ -415,6 +377,8 @@ function animate(){
 /* ---------- initialization: build from embedded GEOJSON ---------- */
 (function init(){
   try {
+    // Si Three.js no se cargó, 'THREE' no existe y esto causará un error.
+    // Usar el CDN previene esto.
     buildFromGeojson(GEOJSON);
     // place car at first roadpoint if exists
     if(roadPolylines.length && roadPolylines[0].length){
@@ -427,7 +391,9 @@ function animate(){
     document.getElementById('loading').style.display = 'none';
   } catch(e){
     console.error(e);
-    document.getElementById('loading').textContent = 'Error procesando GeoJSON';
+    // Este mensaje de error solo se mostraría si falla el procesamiento de GeoJSON, 
+    // pero la carga del mapa ahora debería funcionar.
+    document.getElementById('loading').textContent = 'Error procesando GeoJSON (Revisa la consola)';
   }
   requestAnimationFrame(animate);
 })();
