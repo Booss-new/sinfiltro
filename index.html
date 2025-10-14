@@ -1,184 +1,179 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>SinFiltro — Playas Jardines</title>
-  <style>
-    body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
-    #mapButton, #shootButton {
-      position: absolute;
-      border: none;
-      border-radius: 50%;
-      width: 70px;
-      height: 70px;
-      bottom: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #4a00e0, #8e2de2);
-      box-shadow: 0 0 10px #0008;
-      color: #fff;
-      font-size: 24px;
-      z-index: 10;
-    }
-    #shootButton {
-      right: 110px;
-      background: linear-gradient(135deg, #ff7a18, #af002d);
-    }
-    #fpsCounter {
-      position: absolute;
-      left: 10px;
-      bottom: 10px;
-      color: white;
-      background: #0008;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Playa Azul (demo) — Opción C</title>
+<style>
+  :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
+  html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
+  #holder{width:100%;height:100%;position:relative;touch-action:none}
+  .topbar{position:fixed;left:8px;right:8px;top:10px;height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px;z-index:120;pointer-events:auto}
+  .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600}
+  .controls{display:flex;gap:8px}
+  .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
+  .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100 }
+  .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
+  .fire { position:fixed; right:18px; bottom:26px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6) }
+  .minimap{position:fixed;right:12px;bottom:120px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+  .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110}
+  .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110}
+  @media (max-width:420px){ .joy{width:92px;height:92px} .stick{width:40px;height:40px} .fire{width:60px;height:60px} .minimap{width:88px;height:88px} }
+  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:12px}
+</style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-  <button id="shootButton">🔫</button>
-  <button id="mapButton">🗺️</button>
-  <div id="fpsCounter">FPS: 0</div>
+  <div id="holder"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://unpkg.com/osmtogeojson@3.0.0/osmtogeojson.js"></script>
+  <div class="topbar">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="badge">SinFiltro — Playa Azul (demo)</div>
+      <div id="statusTiles" class="badge" style="display:none">Calles: <span id="tilesCount">0</span></div>
+    </div>
+    <div class="controls">
+      <div id="btnToggleRoads" class="chip">Calles: ON</div>
+      <div id="btnToggleSat" class="chip">Satélite: OFF</div>
+      <div id="btnRecenter" class="chip">Re-cent.</div>
+    </div>
+  </div>
 
-  <script>
-    const canvas = document.getElementById('canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
+  <div id="loading">Cargando datos de mapa…</div>
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050505);
+  <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
+  <div class="fire" id="fire">🔫</div>
+  <div class="minimap" id="minimap">Mini</div>
+  <div class="fps" id="fps">FPS: --</div>
+  <div class="info" id="info">Modo demo — calles cargadas: 0 vías · segmentos: 0</div>
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 5, 10);
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script>
+(async function(){
+  const holder = document.getElementById('holder');
+  const BBOX = [19.6028, -99.0032, 19.6072, -98.9975]; 
+  const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+  const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
-    const controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0, 0);
-    controls.enableDamping = true;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05060a);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  holder.appendChild(renderer.domElement);
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(10, 20, 10);
-    light.castShadow = true;
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0x404040));
+  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+  camera.position.set(0, 12, 24);
 
-    // Suelo
-    const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(500, 500),
-      new THREE.MeshStandardMaterial({ color: 0x333333 })
-    );
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+  dir.position.set(5,10,7); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-    // Vehículo
-    const car = new THREE.Group();
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(2, 1, 4),
-      new THREE.MeshStandardMaterial({ color: 0xaa0000 })
-    );
-    body.castShadow = true;
-    car.add(body);
+  const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000), groundMat);
+  ground.rotation.x = -Math.PI/2;
+  scene.add(ground);
 
-    const gun = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.1, 0.1, 2),
-      new THREE.MeshStandardMaterial({ color: 0xffd700 })
-    );
-    gun.rotation.z = Math.PI / 2;
-    gun.position.set(1.5, 0.5, 0);
-    car.add(gun);
+  const latCenter = (BBOX[0]+BBOX[2])/2, lonCenter=(BBOX[1]+BBOX[3])/2;
+  const EARTH_RADIUS=6378137, mPerDegLat=(Math.PI/180)*EARTH_RADIUS, mPerDegLon=(Math.PI/180)*EARTH_RADIUS*Math.cos(latCenter*Math.PI/180);
+  const SCALE=0.06;
+  function ll2xy(lat,lon){return new THREE.Vector3((lon-lonCenter)*mPerDegLon*SCALE,0,-(lat-latCenter)*mPerDegLat*SCALE);}
 
-    scene.add(car);
+  const car=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2),new THREE.MeshStandardMaterial({color:0xff5555}));
+  body.position.y=0.7; car.add(body);
+  scene.add(car);
 
-    // Movimiento
-    let velocity = 0;
-    const keys = {};
-    document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-    document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+  const state={forward:0,turn:0,speed:0,maxSpeed:0.9,rotSpeed:0.045};
+  const bullets=[];
 
-    // Disparo
-    const projectiles = [];
-    document.getElementById('shootButton').onclick = () => {
-      const bullet = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 8, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffff00 })
-      );
-      bullet.position.copy(gun.getWorldPosition(new THREE.Vector3()));
-      bullet.userData.velocity = new THREE.Vector3(Math.cos(car.rotation.y), 0, Math.sin(car.rotation.y)).multiplyScalar(-0.8);
-      scene.add(bullet);
-      projectiles.push(bullet);
-    };
+  function spawnBullet(origin,dir){
+    const g=new THREE.SphereGeometry(0.12,8,8);
+    const m=new THREE.MeshStandardMaterial({emissive:0xffcc77});
+    const b=new THREE.Mesh(g,m); b.position.copy(origin); b.userData={dir,speed:2.4};
+    scene.add(b); bullets.push(b);
+  }
 
-    // Calles desde OpenStreetMap
-    async function loadMap() {
-      const bbox = [-99.0285, 19.6038, -99.015, 19.612]; // Playas Jardines de Morelos
-      const url = `https://api.openstreetmap.org/api/0.6/map?bbox=${bbox.join(',')}`;
-      const res = await fetch(url);
-      const text = await res.text();
-      const xml = new DOMParser().parseFromString(text, 'text/xml');
-      const geojson = osmtogeojson(xml);
+  function updateCamera(){
+    const desired=car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+    camera.position.lerp(desired,0.12);
+    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
+  }
 
-      const roadMat = new THREE.LineBasicMaterial({ color: 0x00ffff });
-      geojson.features.forEach(f => {
-        if (f.geometry.type === 'LineString') {
-          const points = f.geometry.coordinates.map(([lon, lat]) => {
-            const x = (lon - bbox[0]) * 10000;
-            const z = (lat - bbox[1]) * 10000;
-            return new THREE.Vector3(x, 0.01, z);
-          });
-          const geom = new THREE.BufferGeometry().setFromPoints(points);
-          const line = new THREE.Line(geom, roadMat);
-          scene.add(line);
-        }
-      });
+  const roadsGroup=new THREE.Group(), buildingsGroup=new THREE.Group();
+  scene.add(roadsGroup, buildingsGroup);
+  const roadPolylines=[];
+
+  function addLampAt(pos){
+    const s=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2,6),new THREE.MeshStandardMaterial({color:0x111111}));
+    s.position.copy(pos).add(new THREE.Vector3(0,1,0)); scene.add(s);
+  }
+
+  async function fetchOSM(){
+    try{
+      const query=`[out:json][timeout:25];(way["highway"](${BBOX.join(',')});way["building"](${BBOX.join(',')}));(._;>;);out body;`;
+      const res=await fetch(OVERPASS_URL,{method:'POST',body:query});
+      return await res.json();
+    }catch(e){console.warn('Overpass falló',e); return {elements:[]};}
+  }
+
+  function parseOverpass(data){
+    const nodes=new Map(), ways=[];
+    for(const el of data.elements){if(el.type==='node')nodes.set(el.id,el);}
+    for(const el of data.elements){if(el.type==='way')ways.push(el);}
+    return {nodes,ways};
+  }
+
+  function buildRoads(nodes,ways){
+    roadsGroup.children=[]; 
+    const keep=new Set(['primary','secondary','tertiary','residential','service','unclassified']);
+    for(const w of ways){
+      if(!w.tags||!keep.has(w.tags.highway))continue;
+      const pts=w.nodes.map(nid=>{const n=nodes.get(nid);return n?ll2xy(n.lat,n.lon):null;}).filter(Boolean);
+      for(let i=0;i<pts.length-1;i++){
+        const a=pts[i],b=pts[i+1],len=a.distanceTo(b);
+        const geom=new THREE.BoxGeometry(1.8,0.02,len);
+        const mat=new THREE.MeshStandardMaterial({color:0x1c1f26});
+        const m=new THREE.Mesh(geom,mat);
+        m.position.copy(a.clone().add(b).multiplyScalar(0.5)); m.position.y=0.01;
+        m.lookAt(b); m.rotateX(Math.PI/2); roadsGroup.add(m);
+      }
+      roadPolylines.push(pts);
     }
-    loadMap();
+  }
 
-    // FPS y animación
-    let last = performance.now(), frames = 0;
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-
-      if (keys['w']) velocity += 0.02;
-      if (keys['s']) velocity -= 0.02;
-      if (keys['a']) car.rotation.y += 0.05;
-      if (keys['d']) car.rotation.y -= 0.05;
-
-      velocity *= 0.95;
-      car.position.x -= Math.sin(car.rotation.y) * velocity;
-      car.position.z -= Math.cos(car.rotation.y) * velocity;
-
-      projectiles.forEach((b, i) => {
-        b.position.add(b.userData.velocity);
-        if (b.position.length() > 300) {
-          scene.remove(b);
-          projectiles.splice(i, 1);
-        }
-      });
-
-      renderer.render(scene, camera);
-
-      // FPS Counter
-      frames++;
-      const now = performance.now();
-      if (now - last >= 1000) {
-        document.getElementById('fpsCounter').textContent = `FPS: ${frames}`;
-        frames = 0; last = now;
+  function constrainToRoad(pos){
+    let best={d:1e9,p:null};
+    for(const poly of roadPolylines){
+      for(let i=0;i<poly.length-1;i++){
+        const a=poly[i],b=poly[i+1];
+        const ap=pos.clone().sub(a),ab=b.clone().sub(a);
+        const t=Math.max(0,Math.min(1,ap.dot(ab)/ab.lengthSq()));
+        const proj=a.clone().add(ab.multiplyScalar(t));
+        const d=proj.distanceTo(pos);
+        if(d<best.d){best={d,p:proj};}
       }
     }
-    animate();
+    if(best.d>1.6 && best.p){pos.add(best.p.clone().sub(pos).multiplyScalar(0.25));}
+  }
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+  async function initMap(){
+    const data=await fetchOSM();
+    const {nodes,ways}=parseOverpass(data);
+    buildRoads(nodes,ways);
+    document.getElementById('loading').style.display='none';
+  }
+
+  function animate(){
+    const fwd=new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+    car.position.add(fwd.multiplyScalar(state.speed*0.82));
+    constrainToRoad(car.position);
+    updateCamera();
+    renderer.render(scene,camera);
+    requestAnimationFrame(animate);
+  }
+
+  await initMap();
+  requestAnimationFrame(animate);
+})();
+</script>
 </body>
 </html>
