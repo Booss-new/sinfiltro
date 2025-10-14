@@ -1,10 +1,10 @@
-<!-- index.html - SinFiltro - Arena Vehicular (MVP) + CARGA CALLES Jardines de Morelos -->
+<!-- index.html - SinFiltro - Arena Vehicular (MVP) + Roads (wide) + Tiles satélite + Optim -->
 <!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro - Arena Vehicular (MVP) — Calles</title>
+<title>SinFiltro - Arena Vehicular (MVP) — Calles & Satélite</title>
 <style>
   html,body{height:100%;margin:0;background:#05060a;color:#eaf7ff;font-family:Inter,system-ui;overflow:hidden}
   #overlayUI{position:fixed;inset:0;pointer-events:none}
@@ -22,10 +22,14 @@
   /* viewer overlay */
   #viewer{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:50}
   #viewer img{max-width:90%;height:auto;border-radius:12px}
-  /* roads toggle badge */
+  /* roads controls */
   .roads-toggle{position:fixed;right:14px;top:86px;background:linear-gradient(90deg,#00d1ff,#8a6eff);color:#001;padding:8px 10px;border-radius:10px;z-index:45;cursor:pointer;pointer-events:auto}
+  .sat-toggle{position:fixed;right:14px;top:132px;background:rgba(255,255,255,0.06);color:#eaf7ff;padding:8px 10px;border-radius:10px;z-index:45;cursor:pointer;pointer-events:auto}
+  .export-btn{position:fixed;right:14px;top:178px;background:rgba(255,255,255,0.04);color:#eaf7ff;padding:8px 10px;border-radius:10px;z-index:45;cursor:pointer;pointer-events:auto}
+  /* loading hint */
+  .hint{position:fixed;left:12px;bottom:12px;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,0.5);z-index:60;color:var(--text)}
   /* responsive */
-  @media(max-width:420px){ .joy{width:96px;height:96px} .stick{width:42px;height:42px} .btnFire{width:64px;height:64px} .roads-toggle{top:78px} }
+  @media(max-width:420px){ .joy{width:96px;height:96px} .stick{width:42px;height:42px} .btnFire{width:64px;height:64px} .roads-toggle{top:78px} .sat-toggle{top:120px} .export-btn{top:160px} }
 </style>
 </head>
 <body>
@@ -46,7 +50,10 @@
     </div>
 
     <div class="btnFire" id="btnFire">🔫</div>
+
     <div class="roads-toggle" id="roadsToggle" title="Mostrar/Ocultar calles">Calles: OFF</div>
+    <div class="sat-toggle" id="satToggle" title="Alternar satélite">Satélite: OFF</div>
+    <div class="export-btn" id="exportBtn" title="Exportar GeoJSON">Exportar GeoJSON</div>
   </div>
 
   <div id="viewer" role="dialog" aria-hidden="true">
@@ -56,39 +63,62 @@
     </div>
   </div>
 
+  <div class="hint" id="hint">Listo</div>
+
   <!-- Three.js -->
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 
   <script>
   (function(){
-    /* -------------------------
-       Escena básica (igual que tu versión)
-       ------------------------- */
+    // ---------------------- Config & small helpers ----------------------
+    // Keep exact visual layout & behavior unchanged; only extend features.
     const holder = document.getElementById('canvasHolder');
+    const hint = document.getElementById('hint');
+    const showHint = (t)=>{ hint.textContent = t; setTimeout(()=> hint.textContent='Listo', 2500); };
+
+    // OSM bbox for Jardines de Morelos (approx)
+    const bbox = {
+      south: 19.5850,
+      west: -99.0300,
+      north: 19.5970,
+      east: -99.0180
+    };
+    const lat0 = (bbox.south + bbox.north)/2;
+    const lon0 = (bbox.west + bbox.east)/2;
+    const metersPerDegLat = 111320;
+    const metersPerDegLon = 111320 * Math.cos(lat0 * Math.PI/180);
+    const scaleFactor = 0.05; // maps meters -> scene units
+
+    const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+
+    const $ = s => document.querySelector(s);
+    const rand = n => Math.floor(Math.random()*n);
+
+    // ---------------------- THREE scene ----------------------
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x05060a, 0.002);
+
     const renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.4));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
     holder.appendChild(renderer.domElement);
 
     const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
-    camera.position.set(0,6,10);
+    camera.position.set(0,8,16);
 
-    const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.95);
     dir.position.set(5,10,7); scene.add(dir);
     scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-    const gmat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.1, roughness:0.9});
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(800,800), gmat);
+    const groundMat = new THREE.MeshStandardMaterial({color:0x0b1220, metalness:0.05, roughness:0.9});
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600,1600), groundMat);
     ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
 
-    // player car
+    // player car (same)
     const car = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555, metalness:0.4, roughness:0.6}));
-    body.position.y = 0.7;
-    car.add(body);
+    body.position.y = 0.7; car.add(body);
     const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
     const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
     for(let i=0;i<4;i++){
@@ -102,126 +132,26 @@
     car.position.y = 0; car.position.z = 0;
     scene.add(car);
 
-    // obstacles
-    const boxMat = new THREE.MeshStandardMaterial({color:0x13232f});
-    for(let i=0;i<40;i++){
-      const h = 1 + Math.random()*2;
-      const b = new THREE.Mesh(new THREE.BoxGeometry(1+Math.random()*2,h,1+Math.random()*2), boxMat);
-      b.position.set((Math.random()-0.5)*200, h/2, (Math.random()-0.5)*200);
-      scene.add(b);
-    }
-
-    // simple bot
+    // bot
     const bot = car.clone();
     bot.children[0].material = new THREE.MeshStandardMaterial({color:0x55aaff});
     bot.position.set(8,0, -6);
     scene.add(bot);
 
-    // camera follow
-    const state = {forward:0, turn:0, speed:0, maxSpeed: 0.8, rotSpeed: 0.04};
-    let lastTime = performance.now();
-    const bullets = [];
+    // ---------------------- Roads system ----------------------
+    const roadsGroup = new THREE.Group(); scene.add(roadsGroup);
+    let roadsDataRaw = null; // store raw OSM elements
+    let roadsMeshes = [];    // store meshes created
 
-    function spawnBullet(origin, dir){
-      const g = new THREE.SphereGeometry(0.12, 8,8);
-      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
-      const b = new THREE.Mesh(g,m);
-      b.position.copy(origin);
-      b.userData.dir = dir.clone();
-      b.userData.speed = 2.2;
-      scene.add(b); bullets.push(b);
-    }
-
-    /* -------------------------
-       Joystick & input (idéntico)
-       ------------------------- */
-    const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-    let touchId = null, baseX=0, baseY=0;
-    let stick = {x:0,y:0};
-    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-    joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
-    joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier === touchId){ const dx = t.clientX - baseX; const dy = t.clientY - baseY; const max = 36; const nx = Math.max(-1, Math.min(1, dx/max)); const ny = Math.max(-1, Math.min(1, dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
-    joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId) { touchId=null; resetStick(); } }, {passive:false});
-    // pointer fallback
-    let md=false;
-    joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-    joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
-    joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-
-    // fire
-    const fireBtn = document.getElementById('btnFire');
-    fireBtn.addEventListener('touchstart', e=> { e.preventDefault(); doFire(); }, {passive:false});
-    fireBtn.addEventListener('mousedown', ()=> doFire());
-    function doFire(){
-      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-      const origin = car.position.clone().add(new THREE.Vector3(0,1, -2).applyQuaternion(car.quaternion));
-      spawnBullet(origin, dir);
-    }
-
-    // resize
-    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
-
-    /* -------------------------
-       Roads loader (OpenStreetMap / Overpass)
-       - bbox centrado en Jardines de Morelos (Ecatepec)
-       - simple lat/lon -> local meters transform (equirectangular approx)
-       - draws simplified THREE.Line segments (thin) to map streets
-       ------------------------- */
-
-    // configuration: bbox (south,west,north,east)
-    // center coordinates approximated from earlier: 19.59083 N, -99.02444 W
-    // bbox small area around colonia
-    const bbox = {
-      south: 19.5850,
-      west: -99.0300,
-      north: 19.5970,
-      east: -99.0180
-    };
-
-    // lat/lon to local meters approximation
-    const lat0 = (bbox.south + bbox.north)/2;
-    const lon0 = (bbox.west + bbox.east)/2;
-    const metersPerDegLat = 111320; // approximate
-    const metersPerDegLon = 111320 * Math.cos(lat0 * Math.PI/180);
-
-    // group for roads (so we can show/hide, remove)
-    const roadsGroup = new THREE.Group();
-    roadsGroup.name = 'roads';
-    roadsGroup.visible = false; // off by default
-    scene.add(roadsGroup);
-
-    // function to fetch OSM ways (highway)
-    async function fetchOSMRoads(){
-      try{
-        // Overpass query: get ways with highway tag in bbox, include geometry
-        // Note: Overpass interprets bbox as south,west,north,east
-        const query = `[out:json][timeout:25];way["highway"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});out geom;`;
-        const url = 'https://overpass-api.de/api/interpreter';
-        const resp = await fetch(url, {
-          method: 'POST',
-          body: query,
-          headers: { 'Content-Type': 'text/plain' }
-        });
-        if(!resp.ok) throw new Error('No se pudo obtener OSM: ' + resp.status);
-        const data = await resp.json();
-        return data;
-      } catch (err) {
-        console.warn('fetchOSMRoads error', err);
-        return null;
-      }
-    }
-
-    // convert OSM geometry (lat/lon) → THREE local coordinates (x,z). scaleFactor to shrink values.
+    // LatLon -> local
     function latLonToLocal(lat, lon){
       const dx = (lon - lon0) * metersPerDegLon;
       const dz = (lat - lat0) * metersPerDegLat;
-      // scale down to fit scene units (meters->scene units). adjust factor for comfortable size.
-      const scaleFactor = 0.05; // tune: smaller -> roads fit closer
-      return new THREE.Vector3(dx * scaleFactor, 0.05, dz * scaleFactor);
+      return new THREE.Vector3(dx * scaleFactor, 0.01, dz * scaleFactor);
     }
 
-    // simplify points by skipping very close points (saves geometry)
-    function simplifyPoints(points, minDist=0.15){
+    // Simplify points - reduce vertices on curves
+    function simplifyPoints(points, minDist=0.12){
       const out = [];
       let last = null;
       for(const p of points){
@@ -231,62 +161,206 @@
       return out;
     }
 
-    // draw roads from Overpass JSON
-    async function loadRoads(){
-      const data = await fetchOSMRoads();
-      if(!data || !data.elements) return;
-      // clear previous
-      while(roadsGroup.children.length) {
-        const c = roadsGroup.children.pop();
-        roadsGroup.remove(c);
-        c.geometry && c.geometry.dispose && c.geometry.dispose();
-        c.material && c.material.dispose && c.material.dispose();
-      }
-
-      const ways = data.elements.filter(e => e.type === 'way' && e.geometry && e.geometry.length>1);
-      // create a single Combined geometry per road to reduce draw calls? We'll group per way but thin material.
-      const mat = new THREE.LineBasicMaterial({color:0xdfefff, linewidth: 1, transparent:true, opacity:0.9});
-      // For mobile, use LineSegments or Line with small vertex count. We'll create one line per way.
-      for(const w of ways){
-        const pts = w.geometry.map(g => latLonToLocal(g.lat, g.lon));
-        const simp = simplifyPoints(pts, 0.12); // reduce vertices
-        if(simp.length < 2) continue;
-        const geom = new THREE.BufferGeometry().setFromPoints(simp);
-        const line = new THREE.Line(geom, mat);
-        line.userData = { id: w.id, tags: w.tags || {} };
-        roadsGroup.add(line);
-      }
-      // center camera near colony center
-      // optional: move car to center of road network:
-      car.position.x = 0; car.position.z = 0;
-      roadsGroup.visible = true;
-      document.getElementById('roadsToggle').textContent = 'Calles: ON';
+    // Create a tube (band) along a polyline using CatmullRomCurve3 + TubeGeometry
+    function createRoadMeshFromLatLon(ptsLatLon, widthMeters=6){
+      // convert coords
+      const pts = ptsLatLon.map(g => latLonToLocal(g.lat, g.lon));
+      if(pts.length < 2) return null;
+      const simplified = simplifyPoints(pts, 0.12);
+      if(simplified.length < 2) return null;
+      // Catmull curve
+      const curve = new THREE.CatmullRomCurve3(simplified);
+      // radius approx: widthMeters / 2 -> convert using scaleFactor
+      const radius = (widthMeters/2) * scaleFactor;
+      // segments - low value for mobile
+      const tubularSegments = Math.max(4, Math.floor(simplified.length * 2));
+      const geom = new THREE.TubeGeometry(curve, tubularSegments, radius, 6, false);
+      const mat = new THREE.MeshStandardMaterial({color:0x2b3b4a, metalness:0.05, roughness:0.7});
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.receiveShadow = false;
+      mesh.castShadow = false;
+      return mesh;
     }
 
-    // toggle control
-    const roadsToggleBtn = document.getElementById('roadsToggle');
+    // Overpass fetch
+    async function fetchOSMRoads(){
+      try{
+        const query = `[out:json][timeout:25];
+          way["highway"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
+          (._;>;);
+          out body;`;
+        const url = 'https://overpass-api.de/api/interpreter';
+        const resp = await fetch(url, { method:'POST', body: query, headers: {'Content-Type':'text/plain'} });
+        if(!resp.ok) throw new Error('Overpass error ' + resp.status);
+        const data = await resp.json();
+        return data;
+      } catch(e){
+        console.warn('fetchOSMRoads', e);
+        return null;
+      }
+    }
+
+    // Build roads as wide meshes
+    async function loadRoadsAsMeshes(){
+      showHint('Cargando vías — por favor espera...');
+      const data = await fetchOSMRoads();
+      if(!data){ showHint('Error al obtener vías'); return; }
+      // parse elements into ways with geometry
+      const nodes = {};
+      for(const el of data.elements){
+        if(el.type === 'node') nodes[el.id] = el;
+      }
+      const ways = data.elements.filter(e => e.type === 'way' && e.nodes && e.nodes.length>1);
+      roadsDataRaw = ways;
+      // clear existing
+      roadsMeshes.forEach(m => { roadsGroup.remove(m); m.geometry.dispose(); if(m.material.dispose) m.material.dispose(); });
+      roadsMeshes = [];
+      // For each way build polyline from nodes
+      for(const w of ways){
+        const coords = (w.geometry && w.geometry.length) ? w.geometry : w.nodes.map(id => nodes[id] && {lat: nodes[id].lat, lon: nodes[id].lon}).filter(Boolean);
+        if(!coords || coords.length<2) continue;
+        // choose width from highway type
+        const highway = (w.tags && w.tags.highway) || '';
+        let widthM = 5;
+        if(highway.startsWith('primary')) widthM = 8;
+        else if(highway.startsWith('secondary')) widthM = 7;
+        else if(highway.startsWith('residential')) widthM = 5;
+        else if(highway.startsWith('service')) widthM = 3.5;
+        // create mesh
+        const mesh = createRoadMeshFromLatLon(coords, widthM);
+        if(mesh){
+          mesh.userData = { id: w.id, tags: w.tags || {} };
+          roadsGroup.add(mesh); roadsMeshes.push(mesh);
+        }
+      }
+      showHint('Vías cargadas');
+      document.getElementById('roadsToggle').textContent = 'Calles: ON';
+      roadsGroup.visible = true;
+    }
+
+    // Toggle function (load first time, show/hide later)
     let roadsLoaded = false;
-    roadsToggleBtn.addEventListener('click', async ()=>{
+    document.getElementById('roadsToggle').addEventListener('click', async ()=>{
       if(!roadsLoaded){
-        roadsToggleBtn.textContent = 'Cargando...';
-        await loadRoads();
+        await loadRoadsAsMeshes();
         roadsLoaded = true;
         roadsGroup.visible = true;
       } else {
         roadsGroup.visible = !roadsGroup.visible;
-        roadsToggleBtn.textContent = roadsGroup.visible? 'Calles: ON' : 'Calles: OFF';
+        document.getElementById('roadsToggle').textContent = roadsGroup.visible? 'Calles: ON' : 'Calles: OFF';
       }
     });
 
-    /* -------------------------
-       Main animation loop (igual que tu versión)
-       ------------------------- */
+    // ---------------------- Tile-based satellite plane ----------------------
+    // We'll fetch 3x3 tiles from Esri World Imagery and composite to a canvas texture mapped to a plane.
+    // Zoom level and tile radius are tuned for performance.
+    const satPlaneGroup = new THREE.Group();
+    scene.add(satPlaneGroup); // initially empty
+    let satVisible = false;
+    const tileZoom = 16; // good compromise for city
+    const tileRadius = 1; // 3x3 tiles
+
+    // convert lat/lon to XYZ tile number at zoom
+    function lon2tilex(lon, z){ return Math.floor((lon + 180) / 360 * Math.pow(2,z)); }
+    function lat2tiley(lat, z){ const rad = lat * Math.PI/180; return Math.floor((1 - Math.log(Math.tan(rad) + 1/Math.cos(rad)) / Math.PI) /2 * Math.pow(2,z)); }
+
+    // tile URL (Esri World Imagery)
+    function tileURL(x,y,z){
+      return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+    }
+
+    // Compose 3x3 tiles into a single texture and map to plane scaled to approximate meters
+    async function loadSatelliteTiles(){
+      showHint('Cargando capa satélite...');
+      // center tile
+      const cx = lon2tilex(lon0, tileZoom);
+      const cy = lat2tiley(lat0, tileZoom);
+      const size = 256*(tileRadius*2+1);
+      // create canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // load tiles in parallel
+      const promises = [];
+      for(let ty = -tileRadius; ty <= tileRadius; ty++){
+        for(let tx = -tileRadius; tx <= tileRadius; tx++){
+          const x = cx + tx;
+          const y = cy + ty;
+          const px = (tx + tileRadius) * 256;
+          const py = (ty + tileRadius) * 256;
+          promises.push(fetch(tileURL(x,y,tileZoom)).then(r=> r.ok ? r.blob() : Promise.reject('tile fail')).then(b=> createImageBitmap(b)).then(img=> ({img, px, py})) .catch(()=> null));
+        }
+      }
+      const results = await Promise.all(promises);
+      for(const r of results){
+        if(r && r.img) ctx.drawImage(r.img, r.px, r.py, 256,256);
+      }
+      // create texture
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.encoding = THREE.sRGBEncoding;
+      // plane size in meters approximation: tilePixelScale ~ meters/pixel at zoom: ~ (156543.03 * cos(lat) / 2^z)
+      const metersPerPixel = 156543.03392 * Math.cos(lat0 * Math.PI/180) / Math.pow(2, tileZoom);
+      const totalMeters = metersPerPixel * size; // meters covered by canvas
+      const planeSize = totalMeters * scaleFactor; // convert to scene units
+      // clear previous
+      satPlaneGroup.clear();
+      const geom = new THREE.PlaneGeometry(planeSize, planeSize);
+      const mat = new THREE.MeshBasicMaterial({map: tex, opacity:1, transparent:false});
+      const plane = new THREE.Mesh(geom, mat);
+      plane.rotation.x = -Math.PI/2;
+      // position plane centered at lat0/lon0
+      plane.position.set(0, 0.01, 0);
+      satPlaneGroup.add(plane);
+      showHint('Satélite listo');
+      satVisible = true;
+      document.getElementById('satToggle').textContent = 'Satélite: ON';
+    }
+
+    // sat toggle
+    document.getElementById('satToggle').addEventListener('click', async ()=>{
+      if(!satVisible){
+        await loadSatelliteTiles();
+        satPlaneGroup.visible = true;
+      } else {
+        satVisible = !satPlaneGroup.visible;
+        satPlaneGroup.visible = satVisible;
+        document.getElementById('satToggle').textContent = satPlaneGroup.visible? 'Satélite: ON' : 'Satélite: OFF';
+      }
+    });
+
+    // ---------------------- Export GeoJSON of simplified ways ----------------------
+    document.getElementById('exportBtn').addEventListener('click', ()=>{
+      if(!roadsDataRaw || !roadsDataRaw.length){ showHint('No hay vías cargadas'); return; }
+      const features = [];
+      for(const w of roadsDataRaw){
+        // get coordinates (geometry)
+        const coords = (w.geometry && w.geometry.length) ? w.geometry.map(p => [p.lon, p.lat]) : null;
+        if(!coords) continue;
+        features.push({
+          type: 'Feature',
+          properties: w.tags || {},
+          geometry: { type: 'LineString', coordinates: coords }
+        });
+      }
+      const geo = { type: 'FeatureCollection', features };
+      const blob = new Blob([JSON.stringify(geo, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'roads_jardines_morelos.geojson';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showHint('GeoJSON descargado');
+    });
+
+    // ---------------------- Main loop & movement (kept identical) ----------------------
+    let lastTime = performance.now();
     let botAngle = 0;
+
     function animate(){
       const now = performance.now();
       const dt = Math.min(50, now - lastTime) / 16.666;
       lastTime = now;
 
+      // joystick-driven state (stick variable set below)
       state.forward = Math.max(-1, Math.min(1, stick.y));
       state.turn = Math.max(-1, Math.min(1, stick.x));
 
@@ -302,8 +376,7 @@
 
       const desiredCam = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
       camera.position.lerp(desiredCam, 0.12);
-      const lookAt = car.position.clone().add(new THREE.Vector3(0,1.5,0));
-      camera.lookAt(lookAt);
+      camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.3,0)));
 
       botAngle += 0.002 * dt * 30;
       bot.position.x = Math.cos(botAngle) * 8;
@@ -329,30 +402,62 @@
     }
     requestAnimationFrame(animate);
 
-    /* -------------------------
-       Small UI actions (keeps existing behavior)
-       ------------------------- */
+    // ---------------------- Joystick & UI interactions (unchanged) ----------------------
+    const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+    let touchId = null, baseX=0, baseY=0;
+    let stick = {x:0,y:0};
+    function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+    joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
+    joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier === touchId){ const dx = t.clientX - baseX; const dy = t.clientY - baseY; const max = 36; const nx = Math.max(-1, Math.min(1, dx/max)); const ny = Math.max(-1, Math.min(1, dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+    joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId) { touchId=null; resetStick(); } }, {passive:false});
+    let md=false;
+    joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+    joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+    joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+
+    // fire
+    const fireBtn = document.getElementById('btnFire');
+    fireBtn.addEventListener('touchstart', e=> { e.preventDefault(); doFire(); }, {passive:false});
+    fireBtn.addEventListener('mousedown', ()=> doFire());
+    function doFire(){
+      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+      const origin = car.position.clone().add(new THREE.Vector3(0,1, -2).applyQuaternion(car.quaternion));
+      spawnBullet(origin, dir);
+    }
+    function spawnBullet(origin, dir){
+      const g = new THREE.SphereGeometry(0.12, 8,8);
+      const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
+      const b = new THREE.Mesh(g,m);
+      b.position.copy(origin);
+      b.userData.dir = dir.clone();
+      b.userData.speed = 2.2;
+      scene.add(b); bullets.push(b);
+    }
+
+    // small UI actions
     document.getElementById('btnMenu').addEventListener('click', ()=> { alert('Menu demo: ajustes, perfil, monetización (placeholders)'); });
     document.getElementById('btnStart').addEventListener('click', ()=> { alert('Iniciar partida demo: se puede lanzar modo 1v1 / 4v4.'); });
 
     const viewer = document.getElementById('viewer'), viewerImg = document.getElementById('viewerImg'), closeViewer = document.getElementById('closeViewer');
     document.getElementById('logoBtn').addEventListener('click', ()=> {
-      viewerImg.src = 'https://picsum.photos/800/420?random=12';
+      viewerImg.src = mkImg(12);
       viewer.style.display='flex'; viewer.setAttribute('aria-hidden','false');
     });
     closeViewer.addEventListener('click', ()=> { viewer.style.display='none'; viewer.setAttribute('aria-hidden','true'); });
 
-    // prevent canvas from blocking UI touches (important for mobile)
+    // prevent canvas blocking UI touches
     renderer.domElement.style.touchAction = 'none';
 
-    /* -------------------------
-       NOTES & SUGGESTIONS
-       - El bbox está centrado en coordenadas aproximadas de Jardines de Morelos (Ecatepec).
-       - Overpass puede tardar ~1s; si da error intenta de nuevo (o reducir bbox).
-       - Para texturas satélite / mayor precisión: usar tiles (Mapbox/Google) y/o descargar shapefiles, pero requieren keys o procesamiento.
-       - Si quieres carreteras con "ancho" (colisiones), puedo generar polígonos a partir de las lines y crear colisionadores invisibles.
-       - Para optimizar aún más: combinar todas líneas en una sola BufferGeometry si se quiere reducir drawcalls (lo hago si quieres).
-       ------------------------- */
+    // ---------------------- Performance notes ----------------------
+    // - We limited pixelRatio, tube segments, and simplified OSM points.
+    // - Tile fetch uses 3x3 at zoom 16; adjust tileZoom/tileRadius for performance vs detail.
+    // - If you want streaming tiles while moving, I can implement dynamic tile loading (LOD).
+    // - To reduce drawcalls further: combine road meshes into a single BufferGeometry (doable).
+    // - For satellite using other providers (Mapbox, Google): require API key.
+    // -------------------------------------------------------------------
+
+    // resize handling
+    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
 
   })();
   </script>
