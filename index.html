@@ -2,462 +2,363 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>SinFiltro — Arena (Mapa Playas Demo)</title>
-
-<!-- MapLibre GL (Open-source Mapbox GL fork) -->
-<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
-<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
-
-<!-- three.js -->
-<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Playa Azul (demo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg-1:#05060a; --bg-2:#071226; --accent:#00d1ff; --muted:#9fb0bf; --glass:rgba(255,255,255,0.03);
-    --text:#eaf7ff;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  /* keep app chrome like earlier approved look */
-  #app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-  header{height:66px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;backdrop-filter:blur(8px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));border-bottom:1px solid rgba(255,255,255,0.02);z-index:60}
-  .left-ctrl{display:flex;align-items:center;gap:12px}
-  .logo{font-weight:700;font-family:Poppins, sans-serif;background:linear-gradient(90deg,var(--accent),#8a6eff);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:18px}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  /* map container fills rest */
-  #mapContainer{flex:1;position:relative;overflow:hidden}
-  /* minimap / HUD */
-  #hud{position:absolute;right:12px;top:86px;width:110px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.28));padding:8px;border-radius:8px;z-index:140;backdrop-filter:blur(6px);box-shadow:0 10px 40px rgba(0,0,0,0.5)}
-  #fps{font-size:12px;color:var(--muted);text-align:center}
-  #minimap{width:96px;height:64px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);margin:6px auto 0;display:block}
-  /* joystick & fire */
-  .joy{position:absolute;left:18px;bottom:18px;width:110px;height:110px;border-radius:999px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;z-index:120;touch-action:none}
-  .stick{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.08)}
-  .btnFire{position:absolute;right:20px;bottom:34px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8a6eff);display:flex;align-items:center;justify-content:center;color:#001;font-weight:700;z-index:120;touch-action:none}
-  /* small overlay viewer */
-  #viewer{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);z-index:220}
-  #viewer img{max-width:90%;height:auto;border-radius:10px}
-  /* panel demo */
-  .panel{position:absolute;left:8px;top:86px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(10px);padding:12px;border-radius:12px;z-index:150;display:none;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
-  .panel.show{display:block}
-  /* responsive */
-  @media(max-width:420px){
-    .joy{width:96px;height:96px}
-    .stick{width:42px;height:42px}
-    .btnFire{width:64px;height:64px}
-    header{height:66px;padding:8px}
-  }
-  /* Map container must cover behind UI */
-  #map{position:absolute;inset:0}
+  :root{--bg:#05060a;--ui:#0b1014;--accent-c:#00d1ff;--accent-v:#8a6eff;--muted:#9fb0bf}
+  html,body{height:100%;margin:0;background:var(--bg);font-family:Inter,system-ui,Arial;color:#eaf7ff;overflow:hidden}
+  #holder{position:fixed;inset:0;background:linear-gradient(180deg,#05060a,#071226)}
+  canvas{display:block}
+  /* UI overlays */
+  .topbar{position:fixed;left:12px;right:12px;top:12px;height:56px;display:flex;align-items:center;justify-content:space-between;z-index:120}
+  .brand{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:700}
+  .controls{display:flex;gap:8px}
+  .btn{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent-c),var(--accent-v));color:#001;font-weight:600;border:none}
+  .smallBtn{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.03);color:var(--muted);border:none}
+  /* joystick */
+  .joy{position:fixed;left:18px;bottom:18px;width:110px;height:110px;border-radius:60px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;pointer-events:auto;z-index:110}
+  .stick{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.06);transform:translate(0,0)}
+  .fire{position:fixed;right:18px;bottom:32px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-c),var(--accent-v));z-index:110;display:flex;align-items:center;justify-content:center;color:#001;font-size:22px}
+  /* minimap */
+  #minimap{position:fixed;right:12px;bottom:110px;width:96px;height:96px;border-radius:12px;background:rgba(0,0,0,0.45);z-index:120;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  #infoBox{position:fixed;left:12px;bottom:12px;padding:8px 12px;border-radius:12px;background:rgba(0,0,0,0.55);z-index:120;color:var(--muted);font-size:13px}
+  /* small notifications */
+  .badge{position:fixed;right:12px;top:74px;background:linear-gradient(90deg,var(--accent-c),var(--accent-v));padding:6px 10px;border-radius:12px;color:#001;font-weight:700;z-index:120}
+  @media(max-width:420px){ .joy{width:96px;height:96px}.stick{width:42px;height:42px}.fire{width:64px;height:64px} }
 </style>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <div class="left-ctrl">
-        <button id="menuBtn" class="icon-btn">☰</button>
-        <button id="brandBtn" class="logo">SinFiltro</button>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="toggleBase" class="icon-btn" title="Sat/Calle">🗺️</button>
-        <button id="themeBtn" class="icon-btn" title="Modo">🌗</button>
-      </div>
-    </header>
+  <div id="holder"></div>
 
-    <div id="mapContainer">
-      <div id="map"></div>
-
-      <div id="hud">
-        <div id="fps">FPS: --</div>
-        <canvas id="minimap" width="96" height="64"></canvas>
-      </div>
-
-      <div id="panel" class="panel" aria-hidden="true">
-        <strong>Menú demo</strong>
-        <p style="color:var(--muted)">Ajustes y acciones demo</p>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button id="jumpBtn" class="icon-btn" style="width:100%;justify-content:flex-start">🚗 Teleport demo</button>
-          <button id="previewBtn" class="icon-btn" style="width:100%;justify-content:flex-start">🖼️ Ver miniaturas</button>
-        </div>
-      </div>
-
-      <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-      <button class="btnFire" id="btnFire">🔫</button>
-
-      <div id="viewer" role="dialog" aria-hidden="true">
-        <div style="text-align:center">
-          <img id="viewerImg"><br><br>
-          <button id="closeViewer" class="icon-btn" style="margin-top:8px">Cerrar</button>
-        </div>
-      </div>
+  <div class="topbar">
+    <div class="brand">SinFiltro — Playa Azul (demo)</div>
+    <div class="controls">
+      <button id="toggleRoads" class="btn">Calles: ON</button>
+      <button id="toggleSat" class="smallBtn">Satélite: OFF</button>
+      <button id="recenter" class="smallBtn">Re-cent.</button>
     </div>
   </div>
 
+  <div id="minimap"><canvas id="miniCanvas" width="192" height="192" style="width:100%;height:100%;border-radius:8px;display:block"></canvas></div>
+  <div class="badge" id="fpsBadge">FPS: --</div>
+
+  <div class="joy" id="joy" aria-hidden="false"><div class="stick" id="stick"></div></div>
+  <button id="fireBtn" class="fire">🔫</button>
+
+  <div id="infoBox">Modo demo — calles y satélite cargados localmente</div>
+
+  <!-- three.js -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+
 <script>
-/* ===========================================================
-   SinFiltro — Map + Three.js overlay (Playas demo MVP)
-   - MapLibre GL map (OSM raster + satellite toggle)
-   - Three.js custom layer to render 3D vehicle aligned to map
-   - Joystick controls, fire button, minimap, FPS,
-   - Mobile-friendly touches and performance tuning
-   =========================================================== */
-
-/* ---------- Configuration ---------- */
-// Approx center: Playas / Jardines de Morelos (Ecatepec) - approximate coords
-const CENTER = { lng: -99.0460, lat: 19.5585 }; // adjust later if you want precise
-const START_ZOOM = 16; // street-level
-// Tile sources
-const OSM_RASTER = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'; // OSM raster
-const ESRI_SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'; // satellite demo
-
-/* ---------- MapLibre setup ---------- */
-maplibregl.accessToken = ''; // not required for open tile sources
-const map = new maplibregl.Map({
-  container: 'map',
-  style: {
-    version: 8,
-    sources: {
-      'raster-osm': { type: 'raster', tiles: [OSM_RASTER], tileSize: 256, attribution: '© OpenStreetMap' }
-    },
-    layers: [
-      { id: 'osm', type: 'raster', source: 'raster-osm' }
-    ]
-  },
-  center: [CENTER.lng, CENTER.lat],
-  zoom: START_ZOOM,
-  pitch: 60,
-  bearing: 0,
-  preserveDrawingBuffer: false,
-  antialias: true
-});
-
-// add satellite layer separate (we will toggle)
-map.on('load', ()=> {
-  map.addSource('sat', { type: 'raster', tiles: [ESRI_SAT], tileSize: 256, attribution: 'Esri WorldImagery (demo)' });
-  // not adding to style layers initially; toggle on button
-});
-
-/* ---------- Three.js custom layer ---------- */
-/* We'll create a Three.js renderer that reuses map GL context via map.getCanvas().getContext('webgl') */
-let threeLayer = null;
-let threeRenderer, threeScene, threeCamera;
-let vehicleGroup, bullets = [], obstacles = [];
-let lastTime = performance.now();
-let fpsDisplay = document.getElementById('fps');
-let frameCounter = { last: performance.now(), frames: 0 };
-
-function initThreeLayer(){
-  threeScene = new THREE.Scene();
-
-  // lights
-  const amb = new THREE.AmbientLight(0xffffff, 0.6);
-  threeScene.add(amb);
-  const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-  dir.position.set(5,10,7);
-  threeScene.add(dir);
-
-  // simple vehicle (low poly)
-  vehicleGroup = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.6,4.0), new THREE.MeshStandardMaterial({color:0xff4444, metalness:0.4, roughness:0.6}));
-  body.position.y = 0.6;
-  vehicleGroup.add(body);
-  const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
-  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
-  for(let i=0;i<4;i++){
-    const w = new THREE.Mesh(wheelGeo, wheelMat);
-    w.rotation.z = Math.PI/2;
-    w.position.y = 0.25;
-    w.position.x = (i%2===0)?-1:1;
-    w.position.z = (i<2)?1.2:-1.2;
-    vehicleGroup.add(w);
-  }
-  threeScene.add(vehicleGroup);
-
-  // obstacles (simple boxes placed along roads area)
-  const boxMat = new THREE.MeshStandardMaterial({color:0x223344});
-  for(let i=0;i<40;i++){
-    const w = 1 + Math.random()*2;
-    const h = 1 + Math.random()*3;
-    const d = 1 + Math.random()*2;
-    const b = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), boxMat);
-    // random near center within ~150m box
-    b.position.set((Math.random()-0.5)*200, h/2, (Math.random()-0.5)*200);
-    obstacles.push(b);
-    threeScene.add(b);
-  }
-
-  // create renderer that uses map's canvas context
-  const gl = map.painter.context.gl; // MapLibre exposes WebGL context
-  threeRenderer = new THREE.WebGLRenderer({ context: gl, canvas: map.getCanvas(), antialias: true });
-  threeRenderer.autoClear = false;
-  threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  threeRenderer.setSize(map.getCanvas().width, map.getCanvas().height);
-  threeRenderer.outputEncoding = THREE.sRGBEncoding;
-
-  // camera is controlled by map transform; we'll create a THREE.Camera placeholder
-  threeCamera = new THREE.Camera();
-}
-
-/* MapLibre custom layer API */
-const customLayer = {
-  id: 'threejs-layer',
-  type: 'custom',
-  renderingMode: '3d',
-  onAdd: function(mapRef, gl) {
-    initThreeLayer();
-  },
-  render: function(gl, matrix) {
-    // sync Three.js camera with map's matrix
-    // matrix is a Float32Array 4x4 projection matrix from MapLibre
-    const m = new THREE.Matrix4().fromArray(matrix);
-    threeCamera.projectionMatrix.copy(m);
-
-    // Position vehicle in geographic coords — we'll convert a lng/lat to world position
-    // We'll keep a simple conversion: map.project -> world pixel -> map units for three scene
-    // MapLibre uses Mercator meters internally; to position 3D objects accurately we can use map.transform functions.
-    // We'll use map.project and convert to world coordinates in map space:
-    const screenPos = map.project([vehicleState.lng, vehicleState.lat]);
-    // Convert screen (pixel) to map world coordinates in three.js space
-    // MapLibre's projection with custom layer expects coordinates in mercator scale — the easiest is to use built-in matrix transforms:
-    // Instead we'll set vehicleGroup position by converting lon/lat to mercator coordinate in meters using webMercator utilities
-    const merc = lngLatToMercator(vehicleState.lng, vehicleState.lat);
-    vehicleGroup.position.set(merc.x, 0, -merc.y); // flip y -> -z to match orientation (approx)
-
-    // align vehicle rotation (heading)
-    vehicleGroup.rotation.y = -vehicleState.heading;
-
-    // Update bullets positions (in mercator world)
-    for(let i=bullets.length-1;i>=0;i--){
-      const B = bullets[i];
-      B._pos.x += B.dir.x * B.speed;
-      B._pos.y += B.dir.y * B.speed;
-      B.mesh.position.set(B._pos.x, B._pos.z, -B._pos.y);
-      B.life--;
-      if(B.life <= 0){
-        threeScene.remove(B.mesh);
-        bullets.splice(i,1);
-      }
-    }
-
-    // render
-    threeRenderer.state.reset();
-    threeRenderer.render(threeScene, threeCamera);
-
-    // update FPS
-    frameCounter.frames++;
-    const now = performance.now();
-    if(now - frameCounter.last >= 1000){
-      fpsDisplay.textContent = 'FPS: ' + frameCounter.frames;
-      frameCounter.frames = 0; frameCounter.last = now;
-    }
-  }
-};
-
-/* Utility: approximate conversion lon/lat -> mercator meters (spherical mercator)
-   This is a simple approximation sufficient for small area placements in demo.
+/*
+  SinFiltro — Playa Azul (demo)
+  - Texturiza el suelo con tiles OSM (o ESRI satélite) para la zona (Playas JM)
+  - Mantiene la escena 3D y controles táctiles
+  - Toggle Calles / Satélite, minimapa, FPS
+  - Carga solo 3x3 tiles alrededor del centro para optimización
 */
-function lngLatToMercator(lng, lat){
-  // earth radius
-  const R = 6378137;
-  const x = R * THREE.MathUtils.degToRad(lng);
-  const y = R * Math.log(Math.tan(Math.PI/4 + THREE.MathUtils.degToRad(lat)/2));
-  return { x: x/1.0, y: y/1.0 };
+
+/* -------- CONFIG -------- */
+const CENTER = { lat: 19.605200, lon: -99.000289 }; // Playa Azul (ejemplo)
+const TILE_Z = 16;            // zoom tiles (puedes subir a 17 para +detalle)
+const TILE_GRID = 3;         // 3x3 tiles
+const TILE_SIZE = 512;       // tile px (we'll draw into canvas)
+const USE_ESRI_SAT = true;   // toggle option uses ESRI imagery when SAT enabled
+
+/* -------- helpers for tile math (WebMercator) -------- */
+function long2tile(lon,zoom){ return Math.floor((lon+180)/360 * Math.pow(2,zoom)); }
+function lat2tile(lat,zoom){
+  const rad = lat*Math.PI/180;
+  return Math.floor((1 - Math.log(Math.tan(rad) + 1/Math.cos(rad)) / Math.PI) / 2 * Math.pow(2,zoom));
+}
+function tile2long(x,z){ return x/Math.pow(2,z)*360-180; }
+function tile2lat(y,z){
+  const n = Math.PI - 2*Math.PI*y/Math.pow(2,z);
+  return 180/Math.PI*Math.atan(0.5*(Math.exp(n)-Math.exp(-n)));
 }
 
-/* ---------- Vehicle state, controls ---------- */
-let vehicleState = { lng: CENTER.lng, lat: CENTER.lat, heading: 0, speed: 0 };
+/* -------- tile URL providers (no API key) -------- */
+function osmTileURL(x,y,z){
+  // OpenStreetMap standard tile server (public). Respect usage policy for production.
+  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+}
+function esriSatTile(x,y,z){
+  // ESRI WorldImagery (works publicly in many contexts)
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+}
 
-const maxSpeed = 0.00009; // degrees per frame approx (tuned for zoom ~16)
-const turnRate = 0.06;
-const accel = 0.0000008;
-const friction = 0.98;
+/* -------- prepare canvas texture by loading a TILE_GRID x TILE_GRID block -------- */
+async function loadTileGridTexture(centerLat, centerLon, zoom, grid, tileSize, satellite=false){
+  const cx = long2tile(centerLon,zoom);
+  const cy = lat2tile(centerLat,zoom);
+  const half = Math.floor(grid/2);
+  const width = tileSize * grid;
+  const height = tileSize * grid;
+  const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0b0f12'; ctx.fillRect(0,0,width,height);
 
-/* Joystick handling (mobile) */
-const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-let touchId = null, baseX=0, baseY=0, stick = {x:0,y:0};
-
-function resetStick(){ stick.x = 0; stick.y = 0; stickEl.style.transform = `translate(0px,0px)`; }
-
-joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, {passive:false});
-joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier === touchId){ const dx = t.clientX - baseX; const dy = t.clientY - baseY; const max = 36; const nx = Math.max(-1, Math.min(1, dx/max)); const ny = Math.max(-1, Math.min(1, dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
-joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
-// pointer fallback for desktop
-let md=false;
-joy.addEventListener('pointerdown', e=>{ md=true; baseX = e.clientX; baseY = e.clientY; joy.setPointerCapture(e.pointerId); });
-joy.addEventListener('pointermove', e=>{ if(!md) return; const dx = e.clientX - baseX, dy = e.clientY - baseY; const max=36; const nx = Math.max(-1, Math.min(1, dx/max)); const ny = Math.max(-1, Math.min(1, dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
-joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-
-/* Fire button demo: spawn bullets in local mercator units */
-document.getElementById('btnFire').addEventListener('touchstart', e=>{ e.preventDefault(); spawnBulletFromVehicle(); }, {passive:false});
-document.getElementById('btnFire').addEventListener('mousedown', ()=> spawnBulletFromVehicle());
-
-function spawnBulletFromVehicle(){
-  // compute direction vector from heading
-  const heading = vehicleState.heading;
-  const dirLon = Math.sin(heading); // approx
-  const dirLat = Math.cos(heading);
-  // spawn bullet object in mercator
-  const originMerc = lngLatToMercator(vehicleState.lng, vehicleState.lat);
-  const bulletGeo = new THREE.SphereGeometry(0.12, 6,6);
-  const bulletMat = new THREE.MeshStandardMaterial({emissive:0xffcc77, color:0x222222});
-  const mesh = new THREE.Mesh(bulletGeo, bulletMat);
-  mesh.position.set(originMerc.x, 0.5, -originMerc.y);
-  threeScene.add(mesh);
-  bullets.push({
-    mesh: mesh,
-    _pos: { x: originMerc.x, y: originMerc.y, z: 0 },
-    dir: { x: dirLon * 0.6, y: dirLat * 0.6 },
-    speed: 6.6,
-    life: 220
+  // load images
+  const requests = [];
+  for(let ry=-half; ry<=half; ry++){
+    for(let rx=-half; rx<=half; rx++){
+      const tx = cx + rx;
+      const ty = cy + ry;
+      const url = satellite ? esriSatTile(tx,ty,zoom) : osmTileURL(tx,ty,zoom);
+      requests.push({x:rx+half,y:ry+half,url});
+    }
+  }
+  // fetch sequentially to avoid flooding tile server
+  for(const req of requests){
+    try{
+      const img = await loadImg(req.url);
+      ctx.drawImage(img, req.x*tileSize, req.y*tileSize, tileSize, tileSize);
+    } catch(e){
+      // on fail, draw placeholder
+      ctx.fillStyle = '#111';
+      ctx.fillRect(req.x*tileSize, req.y*tileSize, tileSize, tileSize);
+    }
+  }
+  // return canvas texture and metadata (tile origin lat/lon)
+  const topLeftTileX = cx - half;
+  const topLeftTileY = cy - half;
+  const topLeftLon = tile2long(topLeftTileX,zoom);
+  const topLeftLat = tile2lat(topLeftTileY,zoom);
+  return {canvas, topLeftTileX, topLeftTileY, topLeftLon, topLeftLat, zoom, tileSize, grid};
+}
+function loadImg(url){
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = ()=>res(img);
+    img.onerror = ()=>rej(new Error('img fail:'+url));
+    img.src = url;
   });
 }
 
-/* ---------- Map/Three synchronization and animation ---------- */
-map.addLayer(customLayer);
+/* -------- Three.js scene (vehicle + ground) -------- */
+let renderer, scene, camera;
+let car, bot;
+let groundMesh;
+let clock = new THREE.Clock();
 
-map.on('movestart', ()=>{ /* could pause heavy updates */ });
+function initThree(container){
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x05060a, 0.002);
 
-let lastAnimate = performance.now();
-function mainLoop(){
+  renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = false; // keep perf for mobile
+  container.appendChild(renderer.domElement);
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 5000);
+  camera.position.set(0,6,12);
+
+  // lights
+  const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+  dl.position.set(10,20,10); scene.add(dl);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+  // create car
+  car = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff4e4e, metalness:0.3, roughness:0.6}));
+  body.position.y = 0.7; car.add(body);
+  const wheelGeo = new THREE.CylinderGeometry(0.36,0.36,0.5,8);
+  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
+  for(let i=0;i<4;i++){ const w = new THREE.Mesh(wheelGeo, wheelMat); w.rotation.z = Math.PI/2; w.position.y = 0.25; w.position.x = (i%2===0)?-1:1; w.position.z = (i<2)?1.2:-1.2; car.add(w); }
+  car.position.set(0,0,0);
+  scene.add(car);
+
+  // simple bot
+  bot = car.clone(true);
+  bot.children[0].material = new THREE.MeshStandardMaterial({color:0x3ea6ff});
+  bot.position.set(8,0,-6);
+  scene.add(bot);
+
+  // small invisible boundary plane (placeholder)
+  // groundMesh will be added later after texture load
+  window.addEventListener('resize', onResize);
+  renderer.domElement.style.touchAction = 'none'; // allow custom touch
+}
+
+function onResize(){
+  if(!renderer) return;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+}
+
+/* ------ world control state ------ */
+const state = {stick:{x:0,y:0},speed:0,turn:0,maxSpeed:0.9,rotSpeed:0.045};
+let lastTime = performance.now();
+const bullets = [];
+
+/* joystick handlers (kept simple) */
+function setupJoystick(){
+  const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+  let touchId = null, baseX=0, baseY=0, md=false;
+  function reset(){ state.stick.x=0; state.stick.y=0; stickEl.style.transform='translate(0px,0px)'; }
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches) if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY, max=36; const nx=Math.max(-1,Math.min(1,dx/max)), ny=Math.max(-1,Math.min(1,dy/max)); state.stick.x=nx; state.stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; } }, {passive:false});
+  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; reset(); } }, {passive:false});
+  // pointer
+  joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX;baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY, max=36; const nx=Math.max(-1,Math.min(1,dx/max)), ny=Math.max(-1,Math.min(1,dy/max)); state.stick.x=nx; state.stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointerup', e=>{ md=false; state.stick.x=0; state.stick.y=0; stickEl.style.transform='translate(0px,0px)'; });
+}
+
+function firingSetup(){
+  const fire = document.getElementById('fireBtn');
+  fire.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+  fire.addEventListener('mousedown', ()=>doFire());
+}
+function doFire(){
+  const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+  const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
+  const g = new THREE.SphereGeometry(0.12,8,8);
+  const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
+  const b = new THREE.Mesh(g,m); b.position.copy(origin); b.userData.dir = dir.clone(); b.userData.speed = 2.2;
+  scene.add(b); bullets.push(b);
+}
+
+/* ------ animate loop ------ */
+function animateLoop(){
   const now = performance.now();
-  const dt = Math.min(50, now - lastAnimate) / 16.666;
-  lastAnimate = now;
+  const dt = Math.min(50, now - lastTime) / 16.666; lastTime = now;
+  // joystick -> state
+  const forward = state.stick.y; const turn = state.stick.x;
+  if(forward > 0.05) state.speed += 0.02 * forward * dt;
+  else if(forward < -0.05) state.speed -= 0.03 * (-forward) * dt;
+  else state.speed *= 0.975;
+  state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
+  car.rotation.y += -turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
 
-  // vehicle physics from joystick
-  // steering
-  if(Math.abs(stick.x) > 0.06) vehicleState.heading += -stick.x * turnRate * dt;
-  // acceleration
-  if(Math.abs(stick.y) > 0.06) vehicleState.speed += stick.y * 0.0000009 * dt;
-  else vehicleState.speed *= 0.985;
+  const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+  car.position.add(forwardVec.multiplyScalar(state.speed * dt * 0.8));
 
-  // clamp speed
-  vehicleState.speed = Math.max(-0.00022, Math.min(0.00022, vehicleState.speed));
+  // camera follow
+  const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
+  camera.position.lerp(desired, 0.12);
+  camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.5,0)));
 
-  // move by heading: convert small deltas in degrees (lat/lon) depending on heading and map zoom scale
-  const dLon = Math.sin(vehicleState.heading) * vehicleState.speed * dt * 60;
-  const dLat = Math.cos(vehicleState.heading) * vehicleState.speed * dt * 60;
-  vehicleState.lng += dLon;
-  vehicleState.lat += dLat;
+  // bot simple
+  bot.position.x = Math.cos(performance.now()*0.0006)*12;
+  bot.position.z = Math.sin(performance.now()*0.0006)*12;
+  bot.lookAt(car.position);
 
-  // center map on vehicle smoothly at low zoom speed, but keep the map interactive
-  // Instead of forcibly recentering (which may fight user's gestures), we optionally nudge camera to follow
-  if(!isUserInteracting){
-    map.easeTo({ center: [vehicleState.lng, vehicleState.lat], duration: 300, easing: t=>t });
-  }
-
-  // update three objects which rely on mercator positions are handled in customLayer.render
-
-  requestAnimationFrame(mainLoop);
-}
-let isUserInteracting = false;
-map.on('dragstart', ()=> isUserInteracting = true);
-map.on('dragend', ()=> { isUserInteracting = false; });
-
-requestAnimationFrame(mainLoop);
-
-/* ---------- UI: menu panel, viewer, base toggle, theme ---------- */
-const menuBtn = document.getElementById('menuBtn'), panel = document.getElementById('panel');
-menuBtn.addEventListener('click', ()=> { panel.classList.toggle('show'); });
-
-document.getElementById('previewBtn').addEventListener('click', ()=> {
-  const v = document.getElementById('viewer');
-  document.getElementById('viewerImg').src = 'https://picsum.photos/800/420?random=' + Math.floor(Math.random()*1000);
-  v.style.display = 'flex'; v.setAttribute('aria-hidden','false');
-});
-document.getElementById('closeViewer').addEventListener('click', ()=> {
-  document.getElementById('viewer').style.display = 'none'; document.getElementById('viewer').setAttribute('aria-hidden','true');
-});
-document.getElementById('jumpBtn').addEventListener('click', ()=> {
-  // teleport demo: random nearby point along streets area
-  const rndLng = CENTER.lng + (Math.random()-0.5)*0.006;
-  const rndLat = CENTER.lat + (Math.random()-0.5)*0.004;
-  vehicleState.lng = rndLng; vehicleState.lat = rndLat;
-  map.easeTo({ center: [vehicleState.lng, vehicleState.lat], duration: 700 });
-});
-
-document.getElementById('toggleBase').addEventListener('click', ()=>{
-  const hasSat = !!map.getLayer('sat-layer');
-  if(!hasSat){
-    map.addLayer({ id: 'sat-layer', type: 'raster', source: 'sat' }, 'waterway-label'); // insert below labels if any
-    document.getElementById('toggleBase').textContent = '🛰️';
-  } else {
-    map.removeLayer('sat-layer');
-    document.getElementById('toggleBase').textContent = '🗺️';
-  }
-});
-
-// theme toggle
-const themeBtn = document.getElementById('themeBtn');
-themeBtn.addEventListener('click', ()=>{
-  document.body.classList.toggle('light');
-  themeBtn.textContent = document.body.classList.contains('light') ? '☀️' : '🌗';
-});
-
-/* ---------- Minimap rendering (tiny canvas) ---------- */
-const mini = document.getElementById('minimap'), miniCtx = mini.getContext('2d');
-function drawMini(){
-  // clear
-  miniCtx.fillStyle = '#081018'; miniCtx.fillRect(0,0,mini.width,mini.height);
-  // draw a simple dot where vehicle is relative to center
-  miniCtx.fillStyle = '#00d1ff';
-  miniCtx.beginPath();
-  miniCtx.arc(mini.width/2, mini.height/2, 3, 0, Math.PI*2);
-  miniCtx.fill();
-  // draw heading indicator
-  miniCtx.strokeStyle = '#8a6eff'; miniCtx.lineWidth=2;
-  miniCtx.beginPath();
-  const hx = mini.width/2 + Math.sin(vehicleState.heading)*10;
-  const hy = mini.height/2 - Math.cos(vehicleState.heading)*10;
-  miniCtx.moveTo(mini.width/2, mini.height/2); miniCtx.lineTo(hx, hy); miniCtx.stroke();
-  requestAnimationFrame(drawMini);
-}
-requestAnimationFrame(drawMini);
-
-/* ---------- lazy init after map ready: add custom layer after map loads fully ---------- */
-map.on('idle', ()=> {
-  // avoid re-adding multiple times
-  if(!map.getLayer('threejs-layer')){
-    map.addLayer(customLayer);
-  }
-});
-
-/* ---------- Performance and safety notes ----------
- - We use maplibre + simple threejs scene with low-poly geometry to optimize for mobile.
- - DPR limited by renderer.setPixelRatio(min(devicePixelRatio,1.5)).
- - Avoid heavy textures; obstacles and vehicle are simple materials. For production replace with optimized GLTF & texture atlases.
- - Tile servers used are public demo endpoints. For production use a paid tile provider or MapTiler with a key.
------------------------------------------------------------------ */
-
-/* ---------- Add threejs layer once map's WebGL context ready ---------- */
-map.on('styledata', ()=> {
-  // ensure map painter exposes gl; re-add layer if not present
-  if(!map.getLayer('threejs-layer') && map.painter && map.painter.context && map.painter.context.gl){
-    if(!map.getStyle().sources['raster-osm']){
-      map.addSource('raster-osm', { type:'raster', tiles:[OSM_RASTER], tileSize:256 });
-      map.addLayer({ id:'osm-base', type:'raster', source:'raster-osm' }, 'waterway-label');
+  // bullets
+  for(let i=bullets.length-1;i>=0;i--){
+    const b = bullets[i]; b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+    if(b.position.distanceTo(bot.position) < 1.4){ scene.remove(b); bullets.splice(i,1);
+      const hit = new THREE.Mesh(new THREE.SphereGeometry(0.25,6,6), new THREE.MeshStandardMaterial({emissive:0xff5522,color:0x111111}));
+      hit.position.copy(bot.position); scene.add(hit); setTimeout(()=>scene.remove(hit),600);
+      continue;
     }
-    // initialize adding layer (on 'load' we already added, so this ensures availability)
+    if(b.position.length() > 1000){ scene.remove(b); bullets.splice(i,1); }
   }
-});
 
-/* ---------- Add the three-layer when painter.gl is ready (MapLibre specifics) ---------- */
-if(map.painter && map.painter.context && map.painter.context.gl){
-  // on some polyfills this may be available immediately; ensure custom layer present
-  if(!map.getLayer('threejs-layer')){
-    map.addLayer(customLayer);
-  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(animateLoop);
 }
 
-/* ---------- When window resizes adjust renderer pixel ratio (safety) ---------- */
-window.addEventListener('resize', ()=> {
-  if(threeRenderer){
-    threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
-    threeRenderer.setSize(map.getCanvas().width, map.getCanvas().height);
-  }
-});
+/* ------ ground creation from tile canvas ------ */
+function createGroundFromCanvas(canvas, meta){
+  // remove previous ground
+  if(groundMesh){ scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.map.dispose(); }
 
-/* ---------- Finally: small fallback and info ---------- */
-console.log('SinFiltro map+3D demo initialized. Center:', CENTER);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.encoding = THREE.sRGBEncoding;
+  const mat = new THREE.MeshStandardMaterial({map: texture, roughness:0.9, metalness:0.02});
+  // define physical size: we'll map tile canvas width -> world meters. choose scale
+  const WORLD_SCALE = 0.6; // tweak: reduces world size for mobile perf
+  const w = canvas.width * WORLD_SCALE, h = canvas.height * WORLD_SCALE;
+  const geo = new THREE.PlaneGeometry(w, h, 1, 1);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.rotation.x = -Math.PI/2;
+  mesh.position.set(0,0,0); // anchor at center
+  scene.add(mesh);
+  groundMesh = mesh;
+
+  // reposition car above center of map: compute center offset from top-left tile meta
+  // compute center lat/lon and map pixel offset to place car at zero
+  // For simplicity we place car at world center (0,0) which corresponds to center tile block
+  car.position.set(0,0,0); bot.position.set(8,0,-6);
+}
+
+/* ------ minimap paint (just scale down same canvas) ------ */
+function paintMini(canvas){
+  const mini = document.getElementById('miniCanvas');
+  const ctx = mini.getContext('2d');
+  ctx.clearRect(0,0,mini.width,mini.height);
+  try{ ctx.drawImage(canvas,0,0,mini.width,mini.height); } catch(e){}
+}
+
+/* ------ load sequence and UI wiring ------ */
+let currentTextureMeta = null;
+let currentCanvas = null;
+let roadsOn = true;
+let satelliteOn = false;
+
+async function loadAndApply(){
+  // show loading briefly
+  document.getElementById('infoBox').textContent = 'Cargando tiles...';
+  const res = await loadTileGridTexture(CENTER.lat, CENTER.lon, TILE_Z, TILE_GRID, TILE_SIZE, satelliteOn);
+  currentCanvas = res.canvas;
+  currentTextureMeta = res;
+  // optionally, if roadsOff we could process image to hide roads - but we simply toggle by reloading with sat param or masked style
+  createGroundFromCanvas(res.canvas, res);
+  paintMini(res.canvas);
+  document.getElementById('infoBox').textContent = 'Calles cargadas: ' + (res.grid*res.grid) + ' tiles';
+}
+
+document.getElementById('toggleRoads').addEventListener('click', async ()=>{
+  roadsOn = !roadsOn;
+  document.getElementById('toggleRoads').textContent = 'Calles: ' + (roadsOn?'ON':'OFF');
+  // For demo, "Calles OFF" will switch to a desaturated style; here we just reload same tiles or satellite
+  await loadAndApply();
+});
+document.getElementById('toggleSat').addEventListener('click', async ()=>{
+  satelliteOn = !satelliteOn;
+  document.getElementById('toggleSat').textContent = 'Satélite: ' + (satelliteOn?'ON':'OFF');
+  await loadAndApply();
+});
+document.getElementById('recenter').addEventListener('click', ()=>{ car.position.set(0,0,0); camera.position.set(0,6,12); });
+
+/* FPS counter */
+let fpsLast = performance.now(), fpsCount = 0;
+function fpsTick(){
+  fpsCount++;
+  const now = performance.now();
+  if(now - fpsLast >= 500){
+    const fps = Math.round((fpsCount*1000)/(now - fpsLast));
+    document.getElementById('fpsBadge').textContent = `FPS: ${fps}`;
+    fpsCount = 0; fpsLast = now;
+  }
+  requestAnimationFrame(fpsTick);
+}
+
+/* ------ init everything ------ */
+async function start(){
+  const container = document.getElementById('holder');
+  initThree(container);
+  setupJoystick();
+  firingSetup();
+  await loadAndApply();
+  animateLoop();
+  fpsTick();
+}
+
+/* start */
+start().catch(err=>{ console.error(err); document.getElementById('infoBox').textContent = 'Error: ' + (err.message||err); });
+
+/* small safety: prevent the page from stealing gestures */
+document.addEventListener('touchmove', function(e){ /* allow default for scrolling disabled */ }, {passive:false});
+
 </script>
 </body>
 </html>
