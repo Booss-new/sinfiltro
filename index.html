@@ -60,13 +60,16 @@
    ======================= */
 const GEOJSON = 
 // --- BEGIN GEOJSON ---
-{"type":"FeatureCollection","features":[/* GEOJSON FEATURES INSERTED HERE */]}
+{"type":"FeatureCollection","features":[
+{"type":"Feature","properties":{"highway":"residential"},"geometry":{"type":"LineString","coordinates":[[-96.8406798,16.5912441],[-96.8406981,16.5912648],[-96.8407238,16.5912953],[-96.840772,16.5913506],[-96.8408226,16.5914173],[-96.8408465,16.5914562],[-96.8408668,16.5914902],[-96.8408803,16.5915152],[-96.8408906,16.5915338],[-96.8408998,16.5915494],[-96.8409072,16.5915632],[-96.8409139,16.5915758],[-96.8409187,16.5915857],[-96.8409228,16.5915941],[-96.8409265,16.5916021],[-96.8409295,16.5916086],[-96.8409322,16.5916143],[-96.8409345,16.5916194],[-96.8409366,16.591624],[-96.8409384,16.591628],[-96.8409401,16.5916318],[-96.8409415,16.5916348],[-96.8409427,16.5916375],[-96.8409438,16.59164],[-96.8409446,16.5916421],[-96.8409452,16.591644]]}},
+{"type":"Feature","properties":{"building":"yes"},"geometry":{"type":"Polygon","coordinates":[[[-96.84086,16.59148],[-96.84088,16.59146],[-96.84088,16.59145],[-96.84086,16.59147],[-96.84086,16.59148]]],"id":"node/3931641042"}},
+{"type":"Feature","properties":{"building":"yes"},"geometry":{"type":"Polygon","coordinates":[[[-96.84091,16.59157],[-96.84094,16.5916],[-96.84092,16.59162],[-96.84089,16.59159],[-96.84091,16.59157]]],"id":"node/3931641043"}}
+]}
 ;
 // --- END GEOJSON ---
 
 /* ========== Nota importante ==========
-El bloque GEOJSON arriba fue generado a partir del archivo OSM que subiste.
-Si tu archivo es muy grande, cargará los features que contienen 'highway' o 'building'.
+El bloque GEOJSON ahora contiene la única vía y los dos edificios de tu map.osm.xml, ya convertido.
 ====================================== */
 
 /* ---------- CONFIG / helpers ---------- */
@@ -111,7 +114,7 @@ for(const f of GEOJSON.features){
     }
   }
 }
-if(allLats.length===0){ document.getElementById('loading').textContent = 'GeoJSON vacío'; }
+if(allLats.length===0){ document.getElementById('loading').textContent = 'GeoJSON vacío o no hay vías/edificios'; }
 const latCenter = (Math.min(...allLats) + Math.max(...allLats)) / 2;
 const lonCenter = (Math.min(...allLons) + Math.max(...allLons)) / 2;
 const mPerDegLat = metersPerDegLat();
@@ -152,9 +155,9 @@ let roadPolylines = []; // arrays of Vector3 for road-following
 
 /* ---------- build geometry from GEOJSON ---------- */
 function buildFromGeojson(geo){
-  roadsGroup.clear?.(); roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
-  buildingsGroup.clear?.(); buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
-  lampsGroup.clear?.(); lampsGroup.children.slice().forEach(c=>lampsGroup.remove(c));
+  roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
+  buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
+  lampsGroup.children.slice().forEach(c=>lampsGroup.remove(c));
   roadPolylines = [];
 
   let segmentCount = 0, wayCount = 0, bCount = 0;
