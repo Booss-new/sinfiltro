@@ -3,74 +3,41 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Metal Streets: Battle Racers (Estilo Urbano SIN BLOOM)</title>
+<title>Metal Streets — Arena Libre (Demo Móvil)</title>
 <style>
-  /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
-    --bg:#020306;
-    --red:#e74c3c;
-    --blue:#3498db;
-    --green:#2ecc71;
-    --shadow:rgba(0,0,0,0.8);
-    --text-color:#ecf0f1;
-    --panel-bg:rgba(20,20,30,0.7);
-    --panel-border:rgba(255,255,255,0.15);
+    --bg:#04050a; --panel: rgba(20,20,30,0.7);
+    --accent1:#00d1ff; --accent2:#8a6eff; --muted:#9fb0bf;
   }
-  html,body{height:100%;margin:0;background:linear-gradient(#020306,#050a1a);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
+  html,body{height:100%;margin:0;background:linear-gradient(#02020a,#060a1a);font-family:Inter,system-ui,Arial;color:#eaf7ff;overflow:hidden;-webkit-font-smoothing:antialiased}
   #holder{width:100%;height:100%;position:relative;touch-action:none}
-  
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
-  /* HUD - Re-estilizado para ser más "AAA" */
-  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:0 0 5px var(--shadow)}
-  .panel{background:var(--panel-bg);padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--panel-border);pointer-events:auto;box-shadow:0 4px 15px var(--shadow);backdrop-filter:blur(3px)}
-  .panel h2{font-size:16px;margin:0 0 5px 0;color:#fff}
+  /* HUD */
+  .hud{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:200;pointer-events:none}
+  .panel{background:var(--panel);padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);pointer-events:auto;display:flex;align-items:center;gap:10px}
+  .panel .title{font-weight:700;color:var(--accent2);font-size:13px}
+  .bar{height:12px;background:rgba(255,255,255,0.06);border-radius:6px;width:140px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent1),var(--accent2));width:100%;transition:width .18s}
 
-  /* Health and Ammo Bars */
-  .bar-container{width:130px;height:14px;background:#1a1a2e;border-radius:3px;overflow:hidden;margin-top:5px;border:1px solid rgba(255,255,255,0.2)}
-  .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #e74c3c, #c0392b);transition:width 0.2s}
-  .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #2ecc71, #27ae60);transition:width 0.2s}
-  
-  /* Velocímetro */
-  .speedometer{
-    position:fixed;
-    right:10px; bottom:120px; 
-    width:120px;height:120px;
-    background:var(--panel-bg);
-    border-radius:50%;
-    border:1px solid var(--panel-border);
-    box-shadow:0 4px 15px var(--shadow);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    pointer-events:none;
-    z-index:115;
-    backdrop-filter:blur(3px);
-  }
-  .speed-value{font-size:36px;font-weight:800;color:#fff;text-shadow:0 0 8px rgba(255,255,255,0.4)}
-  .speed-unit{font-size:12px;color:var(--text-color)}
-  
-  /* Joystick */
-  .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:var(--shadow); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(255,255,255,0.1) }
-  .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); transform:translate(0,0) }
-  
-  /* Fire Button */
-  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
-  .fire.cooldown { background:linear-gradient(135deg, #333, #555); box-shadow:none; transform: scale(0.9); pointer-events: none; }
+  /* speed */
+  .speed{position:fixed;right:12px;bottom:120px;width:112px;height:112px;border-radius:999px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:190;pointer-events:none}
+  .speed .val{font-size:30px;font-weight:800}
 
-  /* Turbo Button */
-  .turbo { position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#00f); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 10px var(--blue); font-size:20px; border:3px solid #fff; }
-  
-  /* FPS/Loader */
-  .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px;backdrop-filter:blur(3px)}
-  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:var(--shadow);padding:14px 18px;border-radius:12px;font-weight:600}
+  /* joystick and buttons */
+  .joy{position:fixed;left:12px;bottom:12px;width:110px;height:110px;border-radius:999px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;z-index:190;pointer-events:auto;border:1px solid rgba(255,255,255,0.03)}
+  .stick{width:48px;height:48px;border-radius:999px;background:rgba(255,255,255,0.07)}
+  .fire{position:fixed;right:18px;bottom:18px;width:76px;height:76px;border-radius:999px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:30px;color:#001;z-index:190;pointer-events:auto;border:1px solid rgba(255,255,255,0.06);box-shadow:0 18px 60px rgba(0,0,0,0.55)}
+  .fire.cool{opacity:.6;transform:scale(.96);pointer-events:none}
+  .turbo{position:fixed;right:110px;bottom:28px;width:64px;height:64px;border-radius:12px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;z-index:190;pointer-events:auto;border:1px solid rgba(255,255,255,0.03)}
 
-  /* small responsive adjustments */
-  @media (max-width:420px){ 
-    .joy{width:90px;height:90px;left:8px;bottom:8px;} 
-    .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
-    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:16px}
-    .fps{left:8px;bottom:100px;} 
-    .speedometer{width:100px;height:100px;right:8px;bottom:100px;}
-    .speed-value{font-size:30px}
+  /* fps/info */
+  .fps{position:fixed;left:12px;bottom:140px;background:var(--panel);padding:6px 8px;border-radius:8px;font-weight:700;z-index:190}
+  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:300;background:rgba(0,0,0,0.6);padding:12px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  @media(max-width:420px){
+    .joy{width:92px;height:92px}
+    .stick{width:40px;height:40px}
+    .fire{width:64px;height:64px}
+    .speed{right:8px;bottom:100px}
   }
 </style>
 </head>
@@ -78,514 +45,358 @@
   <div id="holder"></div>
 
   <div class="hud">
-    <div class="panel">
-      <h2>VEHÍCULO: <span id="carType">Sport</span></h2>
-      Salud:
-      <div class="bar-container"><div id="healthBar" class="health-bar"></div></div>
+    <div class="panel" style="gap:12px">
+      <div style="display:flex;flex-direction:column">
+        <div class="title">SALUD</div>
+        <div class="bar" style="margin-top:6px"><i id="healthBar" style="width:100%"></i></div>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <div class="title">MUNICIÓN</div>
+        <div class="bar" style="margin-top:6px"><i id="ammoBar" style="width:100%"></i></div>
+      </div>
     </div>
 
-    <div class="panel">
-      <h2>ARENA DE COMBATE</h2>
-      Munición: <span id="ammoCount">15</span>
-      <div class="bar-container"><div id="ammoBar" class="ammo-bar"></div></div>
+    <div class="panel" style="gap:10px">
+      <div class="title" id="carLabel">MUSCLE • DEMO</div>
+      <div style="font-weight:700;color:var(--muted)">ARENA: LIBRE</div>
     </div>
   </div>
-  
-  <div class="speedometer">
-    <div class="speed-value" id="speedDisplay">0</div>
-    <div class="speed-unit">KM/H</div>
-  </div>
 
-  <div id="loading">Cargando Metal Streets...</div>
-
+  <div class="speed"><div style="font-size:12px;color:var(--muted)">VELOCIDAD</div><div class="val" id="speedVal">0</div></div>
+  <div id="loading">Cargando escena…</div>
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="fire" id="fire">💥</div>
-  <div class="turbo" id="turbo">🚀</div>
+  <div class="fire" id="fire">🔫</div>
+  <div class="turbo" id="turbo">🏁</div>
   <div class="fps" id="fps">FPS: --</div>
 
-<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+  <!-- Three.js + postprocessing (CDN) -->
+  <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+  <script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+  <script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
+/*
+  Metal Streets - Arena Libre (versión móvil-optimizada)
+  - Arena cerrado
+  - Carro tipo Muscle (básico, low-poly)
+  - Joystick/touch, fire, turbo
+  - Bullets object pool
+  - Basic AI cars
+  - Soft collisions with arena bounds
+  - FPS counter, HUD updates
+  - Lightweight: no heavy textures, suitable for mobile testing
+*/
 (async function(){
-  // ---------- CONFIGURACIÓN GENERAL ----------
+  // ---------- escena / renderer ----------
   const holder = document.getElementById('holder');
-  const ARENA_SIZE = 100;
-  const START_POS = new THREE.Vector3(0, 0, 0); 
-  const BULLET_COOLDOWN_MS = 400; 
-  const AI_CARS = [];
-  const POWER_UPS = [];
-
-  // Definiciones de vehículos 
-  const VEHICLE_STATS = {
-      'Muscle Car': { color: 0xff5555, width: 2.8, length: 5.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
-      'Sport': { color: 0x5555ff, width: 2.2, length: 4.0, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
-      'Pickup': { color: 0x55ff55, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 }
-  };
-  let CURRENT_CAR_TYPE = 'Sport'; 
-
-  // ---------- THREEJS SETUP (SIN BLOOM) ----------
+  const W = window.innerWidth, H = window.innerHeight;
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x020306); 
-  scene.fog = new THREE.Fog(scene.background, 10, 150); 
-  
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  scene.background = new THREE.Color(0x03040a);
+  scene.fog = new THREE.Fog(0x03040a, 30, 200);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = false; 
+  renderer.setSize(W,H);
+  renderer.shadowMap.enabled = false;
+  renderer.domElement.style.touchAction = 'none';
   holder.appendChild(renderer.domElement);
-  
-  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-  camera.position.set(0, 12, 24);
 
-  // lights (Ajustadas para un Low-Poly limpio)
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.4)); 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.2)); 
+  const camera = new THREE.PerspectiveCamera(60, W/H, 0.1, 2000);
+  camera.position.set(0, 8, 18);
 
-  // Luces de neón/ambientales (mantienen el color, pero sin efecto Bloom)
-  const neonLight = new THREE.PointLight(0x00ffff, 1.5, 50); neonLight.position.set(40, 5, 40); scene.add(neonLight);
-  const neonLight2 = new THREE.PointLight(0xff00ff, 1.5, 50); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
+  // composer + bloom (soft)
+  const composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(W,H), 0.6, 0.4, 0.85);
+  composer.addPass(bloom);
 
+  // lights
+  const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(4,10,3); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+  const neon = new THREE.PointLight(0x00d1ff, 1.2, 40); neon.position.set(8,4,8); scene.add(neon);
+  const neon2 = new THREE.PointLight(0xff6eff, 1.2, 40); neon2.position.set(-8,4,-8); scene.add(neon2);
 
-  // ---------- ARENA DE COMBATE ESTILIZADA ----------
-  
-  // Suelo (Asfalto Brillante)
-  const groundMat = new THREE.MeshStandardMaterial({color:0x151525, roughness:0.8, metalness:0.3});
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(ARENA_SIZE * 2, ARENA_SIZE * 2, 1, 1), groundMat);
-  ground.rotation.x = -Math.PI/2;
-  ground.position.y = 0;
-  scene.add(ground);
-  
-  // Edificios/Obstáculos (Estilo Low-Poly)
-  const wallHeight = 15; 
-  const buildingMat = new THREE.MeshStandardMaterial({color:0x1e1e2e, roughness:0.7, metalness:0.3});
-  // Usamos BasicMaterial solo para el color de las ventanas, sin el emissive intensity del Bloom
-  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff}); 
+  // ---------- ARENA ----------
+  const ARENA = 90;
+  const groundMat = new THREE.MeshStandardMaterial({color:0x11121a, roughness:0.85, metalness:0.06});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(ARENA*2, ARENA*2, 1, 1), groundMat);
+  ground.rotation.x = -Math.PI/2; ground.position.y = 0; scene.add(ground);
 
-  function createBuilding(x, z, w, d, h = wallHeight){
-      const group = new THREE.Group();
-      const bodyGeo = new THREE.BoxGeometry(w, h, d);
-      const body = new THREE.Mesh(bodyGeo, buildingMat);
-      body.position.set(x, h/2, z);
-      group.add(body);
-      
-      // Simular algunas ventanas 
-      for(let i=0; i<3; i++){
-          const windowGeo = new THREE.BoxGeometry(w*0.1, h*0.1, 0.05);
-          const windowMesh = new THREE.Mesh(windowGeo, windowMat);
-          windowMesh.position.set(x + Math.random()*w*0.5 - w*0.25, h*0.5 + Math.random()*h*0.4 - h*0.2, z + d/2 + 0.05);
-          group.add(windowMesh);
-      }
-      scene.add(group);
-      return body; 
+  // arena borders (tall walls)
+  const wallMat = new THREE.MeshStandardMaterial({color:0x0e0f16});
+  const wallThickness = 3;
+  function makeWall(x,z, w, h){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, wallThickness), wallMat);
+    m.position.set(x, h/2, z); scene.add(m);
   }
-  
-  // Bordes del mapa (Arena)
-  createBuilding(0, ARENA_SIZE - 2, ARENA_SIZE * 2, 5, 20); // Norte
-  createBuilding(0, -ARENA_SIZE + 2, ARENA_SIZE * 2, 5, 20); // Sur
-  createBuilding(ARENA_SIZE - 2, 0, 5, ARENA_SIZE * 2, 20); // Este
-  createBuilding(-ARENA_SIZE + 2, 0, 5, ARENA_SIZE * 2, 20); // Oeste
-  
-  // Obstáculos/Bloques de Combate
-  createBuilding(ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
-  createBuilding(-ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
+  makeWall(0, ARENA, ARENA*2, 18); // norte
+  makeWall(0, -ARENA, ARENA*2, 18); // sur
+  makeWall(ARENA, 0, wallThickness, ARENA*2); // este
+  makeWall(-ARENA, 0, wallThickness, ARENA*2); // oeste
 
-
-  // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
-  
-  function createCar(type, isAI = false){
-    const stats = VEHICLE_STATS[type];
-    const carGroup = new THREE.Group();
-    
-    // Cuerpo del vehículo (Low-Poly con materiales metálicos)
-    const bodyGeo = new THREE.BoxGeometry(stats.width, 0.7, stats.length);
-    const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 0.7; 
-    carGroup.add(body);
-    
-    // Alerón trasero 
-    if (type !== 'Pickup' && !isAI) { 
-        const spoilerGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.8);
-        const spoilerMat = new THREE.MeshStandardMaterial({color: 0x222222, metalness:0.8, roughness:0.2});
-        const spoiler = new THREE.Mesh(spoilerGeo, spoilerMat);
-        spoiler.position.set(0, 1.3, -stats.length / 2 + 0.5);
-        carGroup.add(spoiler);
+  // low-poly buildings (decor)
+  function createBuilding(x,z,w,d,h){
+    const geo = new THREE.BoxGeometry(w,h,d);
+    const mat = new THREE.MeshStandardMaterial({color: 0x1b1d28, roughness:0.85});
+    const b = new THREE.Mesh(geo, mat); b.position.set(x,h/2,z);
+    scene.add(b);
+    // add a few window planes (light)
+    for(let i=0;i<Math.min(6,Math.floor(w));i++){
+      if(Math.random()>0.6) continue;
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.4), new THREE.MeshBasicMaterial({color:0x00ffff,emissive:0x00ffff,emissiveIntensity:Math.random()*0.7+0.6}));
+      win.position.set(x + (Math.random()-0.5)*w*0.6, h*0.4 + (Math.random()-0.5)*h*0.6, z + d/2 + 0.01);
+      scene.add(win);
     }
-    
-    // Luces Traseras (Ahora solo Basic, no Emissive)
-    const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000}); 
-    const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
-    const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
-    tailLights.position.set(0, 0.8, stats.length/2 - 0.05); 
-    carGroup.add(tailLights);
+    return b;
+  }
+  // scatter some
+  for(let i=0;i<16;i++){
+    const x = (Math.random()*2-1) * (ARENA-18);
+    const z = (Math.random()*2-1) * (ARENA-18);
+    createBuilding(x, z, 6+Math.random()*12, 6+Math.random()*12, 8+Math.random()*14);
+  }
 
-    // Lógica interna del vehículo
-    carGroup.userData.isAI = isAI;
-    carGroup.userData.type = type;
-    carGroup.userData.maxHealth = stats.health;
-    carGroup.userData.health = stats.health;
-    carGroup.userData.maxAmmo = stats.maxAmmo;
-    carGroup.userData.ammo = stats.maxAmmo;
-    carGroup.userData.maxSpeed = stats.maxSpeed;
-    carGroup.userData.rotSpeed = stats.rotSpeed;
-    
-    // Barra de salud visible (IA)
-    if(isAI){
-        const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00});
-        const hbGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.1);
-        const healthBar = new THREE.Mesh(hbGeo, hbMat);
-        healthBar.position.y = 2.5;
-        healthBar.rotation.y = Math.PI/2;
-        carGroup.userData.healthBar = healthBar;
-        carGroup.add(healthBar);
+  // ---------- VEHICLE FACTORY ----------
+  function makeCar(color=0xff4444, width=2.6, length=4.6){
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(width, 0.8, length), new THREE.MeshStandardMaterial({color: color, metalness:0.6, roughness:0.18}));
+    body.position.y = 0.6; g.add(body);
+    // wheels (simple)
+    const wheelGeo = new THREE.CylinderGeometry(0.36,0.36,0.5,8);
+    const wheelMat = new THREE.MeshStandardMaterial({color:0x0c0c0c});
+    for(let i=0;i<4;i++){
+      const w = new THREE.Mesh(wheelGeo, wheelMat);
+      w.rotation.z = Math.PI/2;
+      w.position.y = 0.25;
+      w.position.x = (i%2===0)? -width/2 + 0.3 : width/2 - 0.3;
+      w.position.z = (i<2)? length/2 - 0.6 : -length/2 + 0.6;
+      g.add(w);
     }
-    
-    // HEADLIGHTS (Player)
-    if (!isAI) {
-        const headlightL = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
-        headlightL.position.set(stats.width/2 - 0.2, 0.8, -stats.length/2 + 0.5);
-        headlightL.target.position.set(stats.width/2 - 0.2, 0.8, -100);
-        carGroup.add(headlightL); carGroup.add(headlightL.target);
-        
-        const headlightR = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
-        headlightR.position.set(-stats.width/2 + 0.2, 0.8, -stats.length/2 + 0.5);
-        headlightR.target.position.set(-stats.width/2 + 0.2, 0.8, -100);
-        carGroup.add(headlightR); carGroup.add(headlightR.target);
-
-        // Efecto de neón/turbo en la parte trasera (solo como luz PointLight)
-        const neon = new THREE.PointLight(0xff00ff, 3, 5); 
-        neon.position.set(0, 0.5, stats.length/2 + 0.5);
-        carGroup.userData.neonLight = neon;
-        carGroup.add(neon);
-    }
-
-    return carGroup;
+    // small neon back
+    const neon = new THREE.PointLight(0xff66dd, 1.2, 6); neon.position.set(0,0.6, length/2 + 0.6); g.add(neon); g.userData.neon = neon;
+    // metadata
+    g.userData = {health:100, maxHealth:100, ammo:15, maxAmmo:15, maxSpeed:1.4, rotSpeed: 0.055};
+    return g;
   }
 
   // Player car
-  const car = createCar(CURRENT_CAR_TYPE, false);
-  car.position.copy(START_POS);
-  scene.add(car);
+  const player = makeCar(0xff4444);
+  player.position.set(0,0,6); scene.add(player);
 
-  // IA Cars (2 enemigos)
-  const ai1 = createCar('Muscle Car', true);
-  ai1.position.set(30, 0, 0);
-  scene.add(ai1); AI_CARS.push(ai1);
+  // AI cars
+  const aiCars = [];
+  for(let i=0;i<2;i++){
+    const c = makeCar(i===0?0x55aaff:0x55ff88);
+    c.position.set((i+1)*8*(i%2? -1:1),0, -8 + i*6);
+    scene.add(c); aiCars.push(c);
+  }
 
-  const ai2 = createCar('Pickup', true);
-  ai2.position.set(-30, 0, 0);
-  scene.add(ai2); AI_CARS.push(ai2);
-
-
-  // Estado del jugador
-  const state = {forward:0, turn:0, speed:0, turbo:false, health: car.userData.health, ammo: car.userData.ammo};
-  
-  // ---------- SISTEMA DE ARMAS Y POWER-UPS ----------
-  
-  // Object Pooling para balas (Ahora solo Basic, no Emissive)
+  // ---------- BULLET POOL ----------
   const bulletPool = [];
-  const maxBullets = 20;
-  
   function getBullet(){
-      for(const b of bulletPool){
-          if(!b.visible){
-              b.visible = true;
-              return b;
-          }
-      }
-      if(bulletPool.length < maxBullets){
-          const g = new THREE.SphereGeometry(0.2,8,8); 
-          const m = new THREE.MeshBasicMaterial({color:0xffcc77}); // Balas sin emissive
-          const b = new THREE.Mesh(g,m);
-          b.userData.dir = new THREE.Vector3();
-          b.userData.speed = 4.0;
-          b.userData.damage = 10;
-          b.userData.isBullet = true;
-          b.visible = false;
-          scene.add(b);
-          bulletPool.push(b);
-          return b;
-      }
-      return null;
+    for(const b of bulletPool) if(!b.visible) return b;
+    if(bulletPool.length < 30){
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.12,8,8), new THREE.MeshStandardMaterial({emissive:0xffcc66, color:0x222222}));
+      b.visible = false; b.userData = {dir: new THREE.Vector3(), speed: 3.2, dmg:12};
+      scene.add(b); bulletPool.push(b); return b;
+    }
+    return null;
   }
-  
-  function releaseBullet(b){
-      b.visible = false;
-      b.position.set(0, -100, 0); 
-  }
-  
-  // Generación de Power-Ups (Ahora solo Basic, no Emissive)
-  function createPowerUp(type, position){
-      let color, scale;
-      if(type === 'Ammo'){ color = 0x00ff00; scale = 0.8; }
-      else if(type === 'Health'){ color = 0xffa500; scale = 1.0; }
-      
-      const g = new THREE.BoxGeometry(scale, scale, scale);
-      const m = new THREE.MeshBasicMaterial({color:color}); 
-      const pu = new THREE.Mesh(g, m);
-      pu.position.copy(position);
-      pu.position.y = scale / 2 + 0.1;
-      pu.userData.type = type;
-      pu.userData.active = true;
-      scene.add(pu);
-      POWER_UPS.push(pu);
-  }
-  
-  // Inicializar Power-Ups
-  createPowerUp('Ammo', new THREE.Vector3(20, 0, 20));
-  createPowerUp('Health', new THREE.Vector3(-20, 0, -20));
-  
-  // ---------- LÓGICA DE JUEGO PRINCIPAL ----------
-  
-  function applyDamage(target, amount){
-      if(target.userData.health <= 0) return;
-      target.userData.health = Math.max(0, target.userData.health - amount);
-      
-      // Feedback visual: color rojo por impacto 
-      target.children[0].material.color.setHex(0xaaaaaa); 
-      setTimeout(() => {
-          if(target.userData.health > 0){
-             target.children[0].material.color.setHex(VEHICLE_STATS[target.userData.type].color);
-          }
-      }, 50);
-
-      // Lógica de Muerte/Reinicio (con "explosion" visual simulada)
-      if(target.userData.health <= 0){
-          const explosionLight = new THREE.PointLight(0xff8800, 5, 20);
-          explosionLight.position.copy(target.position);
-          scene.add(explosionLight);
-          
-          setTimeout(()=>{
-              scene.remove(explosionLight); 
-              target.position.set(Math.random() * 50 - 25, 0, Math.random() * 50 - 25);
-              target.rotation.y = Math.random() * Math.PI * 2;
-              target.userData.health = target.userData.maxHealth;
-              target.children[0].material.color.setHex(VEHICLE_STATS[target.userData.type].color);
-          }, 500);
-      }
+  function spawnBullet(pos, dir){
+    const b = getBullet(); if(!b) return;
+    b.position.copy(pos); b.visible = true; b.userData.dir.copy(dir);
   }
 
-  // Colisión de Balas/Power-Ups/Paredes
-  function checkCollisions(dt){
-      // 1. Balas vs. Enemigos/Jugador
-      for(let i=bulletPool.length-1;i>=0;i--){
-          const bullet = bulletPool[i];
-          if(!bullet.visible) continue;
-          let hit = false;
-          
-          const targets = [car, ...AI_CARS];
-          for(const target of targets){
-              if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
-                  applyDamage(target, bullet.userData.damage);
-                  hit = true;
-                  break;
-              }
-          }
-
-          if(hit || bullet.position.length() > ARENA_SIZE * 2){ 
-              releaseBullet(bullet);
-          } else {
-              bullet.position.add(bullet.userData.dir.clone().multiplyScalar(bullet.userData.speed * dt));
-          }
-      }
-      
-      // 2. Jugador vs. Power-Ups
-      for(let i=POWER_UPS.length-1;i>=0;i--){
-          const pu = POWER_UPS[i];
-          if(!pu.userData.active) continue;
-          
-          if(car.position.distanceTo(pu.position) < 2.0){ 
-              pu.userData.active = false;
-              pu.visible = false;
-              
-              if(pu.userData.type === 'Ammo'){
-                  state.ammo = Math.min(car.userData.maxAmmo, state.ammo + 5);
-                  car.userData.ammo = state.ammo;
-              } else if(pu.userData.type === 'Health'){
-                  state.health = Math.min(car.userData.maxHealth, state.health + 20);
-                  car.userData.health = state.health;
-              }
-              
-              // Re-spawnear
-              setTimeout(() => {
-                  pu.position.set(Math.random() * 80 - 40, 0, Math.random() * 80 - 40);
-                  pu.userData.active = true;
-                  pu.visible = true;
-              }, 5000);
-          }
-      }
-      
-      // 3. Jugador vs. Paredes/Edificios
-      if(car.position.x > ARENA_SIZE - 2 || car.position.x < -ARENA_SIZE + 2){
-          car.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.x));
-          state.speed *= -0.5; 
-          applyDamage(car, 5);
-      }
-      if(car.position.z > ARENA_SIZE - 2 || car.position.z < -ARENA_SIZE + 2){
-          car.position.z = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.z));
-          state.speed *= -0.5; 
-          applyDamage(car, 5);
-      }
-      state.health = car.userData.health; 
-  }
-  
-  // Camera Follow
-  function updateCamera(){
-    const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
-    camera.position.lerp(desired, 0.15);
-    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
-  }
-
-  // Actualización del HUD
-  function updateHUD(){
-      document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
-      document.getElementById('ammoBar').style.width = (state.ammo / car.userData.maxAmmo * 100) + '%';
-      document.getElementById('ammoCount').textContent = state.ammo;
-      document.getElementById('carType').textContent = CURRENT_CAR_TYPE;
-      
-      const kmh = Math.round(Math.abs(state.speed) / car.userData.maxSpeed * 200);
-      document.getElementById('speedDisplay').textContent = kmh;
-  }
-
-  // ---------- INPUTS Y CONTROLES (Misma Lógica) ----------
-  
+  // ---------- INPUT / JOYSTICK ----------
   const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-  let touchId = null, baseX=0, baseY=0;
+  let baseX=0, baseY=0, touchId=null, md=false;
   let stick = {x:0,y:0};
-  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform='translate(0px,0px)'; }
 
-  // Touch/Joystick Handlers
-  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
-  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
-  
-  // Mouse/Pointer Handlers (para testing en PC)
-  let md=false;
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId=t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=38; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===touchId){ touchId=null; resetStick(); } }, {passive:false});
+
   joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=38; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
-
+  // fire button
   const fireBtn = document.getElementById('fire');
+  let lastFire = 0, FIRE_COOLDOWN = 380;
   fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
   fireBtn.addEventListener('mousedown', doFire);
-  
-  const turboBtn = document.getElementById('turbo');
-  turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); state.turbo = true; }, {passive:false});
-  turboBtn.addEventListener('touchend', e=>{ e.preventDefault(); state.turbo = false; }, {passive:false});
-  
+
   function doFire(){
-      const now = performance.now();
-      if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0) return;
-
-      lastFireTime = now;
-      state.ammo--;
-      car.userData.ammo = state.ammo;
-      
-      fireBtn.classList.add('cooldown');
-      setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
-
-      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-      const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-3.0).applyQuaternion(car.quaternion));
-      spawnBullet(origin, dir); 
+    const now = performance.now();
+    if(now - lastFire < FIRE_COOLDOWN || player.userData.ammo <= 0) return;
+    lastFire = now; player.userData.ammo--;
+    fireBtn.classList.add('cool'); setTimeout(()=>fireBtn.classList.remove('cool'), 220);
+    const dir = new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion).normalize();
+    const origin = player.position.clone().add(new THREE.Vector3(0,0.6,-2).applyQuaternion(player.quaternion));
+    spawnBullet(origin, dir);
   }
-  
-  function spawnBullet(pos, dir){
-    const b = getBullet();
-    if(b){
-        b.position.copy(pos);
-        b.userData.dir.copy(dir);
+
+  // turbo
+  const turboBtn = document.getElementById('turbo'); let turbo=false;
+  turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); turbo=true; }, {passive:false});
+  turboBtn.addEventListener('touchend', e=>{ e.preventDefault(); turbo=false; }, {passive:false});
+
+  // ---------- HUD elements ----------
+  const healthBar = document.getElementById('healthBar');
+  const ammoBar = document.getElementById('ammoBar');
+  const speedVal = document.getElementById('speedVal');
+  const fpsEl = document.getElementById('fps');
+  const loadingEl = document.getElementById('loading');
+
+  // ---------- GAME STATE ----------
+  let state = {speed:0, forward:0, turn:0};
+  player.userData.health = 120; player.userData.maxHealth = 120; player.userData.ammo = 20; player.userData.maxAmmo = 20;
+  player.userData.maxSpeed = 1.4; player.userData.rotSpeed = 0.055;
+
+  // place player at center
+  player.position.set(0,0,6);
+
+  // ---------- INITIALIZATION DELAY (remove loading) ----------
+  setTimeout(()=>{ loadingEl.style.display='none'; }, 700);
+
+  // ---------- UTILS ----------
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+  // ---------- SIMPLE AI behavior ----------
+  function updateAI(dt){
+    for(const ai of aiCars){
+      // rotate slowly towards center
+      const target = player.position.clone();
+      const dirTo = target.clone().sub(ai.position).normalize();
+      const forward = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion).normalize();
+      const angle = forward.angleTo(dirTo);
+      const cross = new THREE.Vector3().crossVectors(forward, dirTo);
+      let turn = 0;
+      if(angle > 0.02) turn = (cross.y < 0) ? -1 : 1;
+      ai.rotation.y += turn * 0.02 * dt;
+      // move forward constant
+      const fwdV = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion);
+      ai.position.add(fwdV.multiplyScalar(0.6 * dt));
+      // keep inside arena
+      ai.position.x = clamp(ai.position.x, -ARENA+4, ARENA-4);
+      ai.position.z = clamp(ai.position.z, -ARENA+4, ARENA-4);
     }
   }
 
-  // ---------- RENDER LOOP ----------
-  let last = performance.now(); let lastFireTime = 0; let frames = 0; let fpsNow = 0;
+  // ---------- COLLISIONS / CONSTRAINTS ----------
+  function checkCollisions(dt){
+    // update bullets
+    for(const b of bulletPool){
+      if(!b.visible) continue;
+      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
+      // vs ai cars
+      for(const ai of aiCars){
+        if(ai.position.distanceTo(b.position) < 2.2){
+          ai.userData.health = (ai.userData.health||100) - b.userData.dmg;
+          b.visible = false;
+        }
+      }
+      // vs player (friendly fire disabled in demo)
+      if(b.position.length() > ARENA*2) b.visible = false;
+    }
+
+    // player vs walls
+    player.position.x = clamp(player.position.x, -ARENA+3, ARENA-3);
+    player.position.z = clamp(player.position.z, -ARENA+3, ARENA-3);
+
+    // player vs powerups/buildings (not heavy)
+    // simulate damage if colliding with building boxes: basic bounding
+    // (omitted heavy checks for perf)
+  }
+
+  // ---------- MAIN LOOP ----------
+  let last = performance.now(), frames=0, fpsNow=0, fpsLast = performance.now();
   function animate(){
     const now = performance.now();
-    const dt = Math.min(50, now-last) / 16.666;
+    const dt = Math.min(50, now - last) / 16.666;
     last = now;
-    
-    if(state.health > 0){
-        // Player movement
-        state.forward = Math.max(-1, Math.min(1, stick.y));
-        state.turn = Math.max(-1, Math.min(1, stick.x));
-        
-        let maxSpeed = car.userData.maxSpeed * (state.turbo ? 1.8 : 1.0); 
-        
-        if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
-        else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
-        else state.speed *= 0.96;
-        
-        state.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, state.speed));
-        
-        const currentSpeedFactor = Math.abs(state.speed / car.userData.maxSpeed);
-        
-        // Simulación de derrape/giro
-        let rotationMultiplier = 1;
-        if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4){
-            rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
-        }
 
-        car.rotation.y += -state.turn * car.userData.rotSpeed * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
-        
-        const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-        car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
+    // input -> state
+    state.forward = clamp(stick.y, -1, 1);
+    state.turn = clamp(stick.x, -1, 1);
 
-        // Actualizar luz de neón (sigue siendo más brillante con turbo)
-        car.userData.neonLight.intensity = state.turbo ? 5 : 1.5;
-        
-        // IA MOVEMENT (Buscar punto central)
-        for(const ai of AI_CARS){
-            const targetPos = START_POS;
-            const targetDir = targetPos.clone().sub(ai.position).normalize();
-            const currentDir = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion).normalize();
-            
-            const angle = currentDir.angleTo(targetDir);
-            const cross = new THREE.Vector3().crossVectors(currentDir, targetDir);
-            let turnAmount = 0;
-            if(angle > 0.1){
-                turnAmount = Math.min(1, angle / Math.PI * 2); 
-                if(cross.y < 0) turnAmount *= -1; 
-            }
-            
-            ai.rotation.y -= turnAmount * 0.03 * dt;
-            ai.userData.speed = ai.userData.maxSpeed * 0.8; 
+    // speed update
+    const accel = 0.018;
+    if(state.forward > 0.05) state.speed += accel * state.forward * dt;
+    else if(state.forward < -0.05) state.speed -= accel * (-state.forward) * dt;
+    else state.speed *= 0.96;
 
-            const aiFwd = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion);
-            ai.position.add(aiFwd.multiplyScalar(ai.userData.speed * dt * 0.82));
-            
-            // Colisión IA vs Paredes (Borde simple)
-            if(Math.abs(ai.position.x) > ARENA_SIZE - 2 || Math.abs(ai.position.z) > ARENA_SIZE - 2){
-                ai.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, ai.position.x));
-                ai.position.z = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, ai.position.z));
-                ai.userData.speed *= -0.5; 
-            }
-            
-            // Actualizar barra de salud de la IA
-            ai.userData.healthBar.scale.x = ai.userData.health / ai.userData.maxHealth;
-        }
+    // turbo effect
+    let maxSpeed = player.userData.maxSpeed * (turbo ? 1.7 : 1.0);
+    state.speed = clamp(state.speed, -maxSpeed*0.6, maxSpeed);
 
-        checkCollisions(dt);
+    // rotation and movement
+    player.rotation.y += -state.turn * player.userData.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+    const forwardVec = new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion);
+    player.position.add(forwardVec.multiplyScalar(state.speed * dt * 0.82));
+
+    // bulbs/neon intensity
+    player.userData.neon.intensity = turbo ? 6 : 1.5;
+
+    // AI
+    updateAI(dt);
+
+    // bullets and collisions
+    checkCollisions(dt);
+
+    // camera smooth follow
+    const desiredCam = player.position.clone().add(new THREE.Vector3(0,6,14).applyQuaternion(player.quaternion));
+    camera.position.lerp(desiredCam, 0.12);
+    camera.lookAt(player.position.clone().add(new THREE.Vector3(0,1.4,0)));
+
+    // HUD
+    healthBar.style.width = (player.userData.health / player.userData.maxHealth * 100) + '%';
+    ammoBar.style.width = (player.userData.ammo / player.userData.maxAmmo * 100) + '%';
+    speedVal.textContent = Math.round(Math.abs(state.speed) / player.userData.maxSpeed * 200);
+
+    // bullets visibility update (simple)
+    for(const b of bulletPool){
+      if(b.visible){
+        // optional glow scale
+        b.material.emissiveIntensity = 1.8;
+      }
     }
-    
-    updateCamera();
-    updateHUD();
-    
-    renderer.render(scene, camera); // Renderiza sin el Composer
-    
-    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+
+    // render
+    composer.render();
+
+    // fps calc
+    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames=0; fpsLast = now; fpsEl.textContent = 'FPS: ' + fpsNow; }
+
     requestAnimationFrame(animate);
   }
-  let fpsLast = performance.now();
-
-  // ---------- INITIALIZATION ----------
-  document.getElementById('loading').style.display = 'none';
   requestAnimationFrame(animate);
 
-  window.addEventListener('resize', ()=>{ 
-    renderer.setSize(window.innerWidth, window.innerHeight); 
-    camera.aspect = innerWidth/innerHeight; 
-    camera.updateProjectionMatrix(); 
+  // ---------- spawn management for bullets pool visually (pre-warm) ----------
+  for(let i=0;i<10;i++) getBullet();
+
+  // adjust on resize
+  window.addEventListener('resize', ()=> {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+    composer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // developer helpers: allow keyboard for desktop testing
+  window.addEventListener('keydown', e=>{
+    if(e.key === 'w') stick.y = 1;
+    if(e.key === 's') stick.y = -1;
+    if(e.key === 'a') stick.x = -1;
+    if(e.key === 'd') stick.x = 1;
+    if(e.key === ' ') doFire();
+    if(e.key === 'Shift') turbo = true;
+  });
+  window.addEventListener('keyup', e=>{
+    if(['w','s'].includes(e.key)) stick.y = 0;
+    if(['a','d'].includes(e.key)) stick.x = 0;
+    if(e.key === 'Shift') turbo = false;
   });
 
 })();
