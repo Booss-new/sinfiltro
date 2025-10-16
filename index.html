@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Jardines de Morelos (VELOCIDAD MÁXIMA)</title>
+<title>SinFiltro — Circuito de Carreras ARCADE (OPTIMIZADO)</title>
 <style>
   /* AJUSTES DE DISEÑO GAMER */
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#ff3333;--accent2:#ff8833;--shadow:rgba(0,0,0,0.6)}
@@ -20,10 +20,10 @@
   .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:var(--shadow); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(255,255,255,0.1) }
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); transform:translate(0,0) }
   
-  /* fire button - CORRECCIÓN DE POSICIÓN Y Z-INDEX */
+  /* fire button */
   .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 20px #ff0000; font-size:30px; border:3px solid #fff }
   
-  /* minimap - TAMAÑO CORRECTO (PEQUEÑO) */
+  /* minimap */
   .minimap{position:fixed;right:12px;bottom:12px;width:88px;height:88px;border-radius:8px;background:var(--shadow);z-index:100;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 6px 15px var(--shadow); border:1px solid rgba(255,255,255,0.1)}
   
   /* Info/FPS */
@@ -48,55 +48,54 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">Jardines de Morelos (Ecatepec)</div>
-      <div id="statusTiles" class="badge" style="display:none">Vías: <span id="tilesCount">0</span></div>
+      <div class="badge">Carreras ARCADE (OPTIMIZADO)</div>
     </div>
     <div class="controls">
-      <div id="btnToggleRoads" class="chip">MAPA: ON</div>
-      <div id="btnToggleSat" class="chip">SAT: OFF</div>
-      <div id="btnRecenter" class="chip">RESET</div>
+      <div id="btnToggleRoads" class="chip" style="background:linear-gradient(90deg, #333, #666); color:#fff">CIRCUITO</div>
+      <div id="btnRecenter" class="chip">RESET CAR</div>
     </div>
   </div>
 
-  <div id="loading">Cargando calles y edificios...</div>
+  <div id="loading">Cargando circuito...</div>
 
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
   <div class="fire" id="fire">🎯</div>
   <div class="minimap" id="minimap">Mini</div>
   <div class="fps" id="fps">FPS: --</div>
-  <div class="info" id="info">Modo DEMO — Optimizando</div>
+  <div class="info" id="info">Enemigos eliminados: <span id="eliminations">0</span></div>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <script>
 (async function(){
   // ---------- CONFIG ----------
   const holder = document.getElementById('holder');
-  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul)
-  const BBOX = [19.593, -99.002, 19.613, -98.982]; 
-  const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-  const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-
-  // --- AJUSTES DE ESCALA Y COLOR ---
-  const SCENE_SCALE = 0.08; 
   const CAR_WIDTH = 2.4;    
   const STREET_COLOR = 0x282c35; 
-  const BUILDING_COLOR_BASE = 0x3d414a; 
-  const BUILDING_COLOR_ACCENT = 0x5a6068; 
   const BULB_COLOR = 0xffe9a1; 
-  // ----------------------------------------
+  const TRACK_WIDTH = 12; // Ancho de la pista
+  const AI_CARS = [];
+  const startPosition = new THREE.Vector3(0, 0, 80); 
 
+  // Puntos del circuito de carreras (simple óvalo/rectángulo redondeado)
+  const trackPoints = [
+      new THREE.Vector3(0, 0, 80), 
+      new THREE.Vector3(120, 0, 80),
+      new THREE.Vector3(120, 0, -80),
+      new THREE.Vector3(-120, 0, -80),
+      new THREE.Vector3(-120, 0, 80),
+      new THREE.Vector3(0, 0, 80) // Cierre
+  ];
+  
   // ---------- THREEJS basic scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060a);
-  scene.fog = new THREE.Fog(scene.background, 10, 150); 
+  scene.fog = new THREE.Fog(scene.background, 10, 200); 
   
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
-  
-  // ** [SOLUCIÓN DE RENDIMIENTO CRÍTICA: Desactivar Sombras] **
-  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.enabled = false; // MÁXIMO RENDIMIENTO
   holder.appendChild(renderer.domElement);
   
   // camera
@@ -105,62 +104,65 @@
 
   // lights
   const dir = new THREE.DirectionalLight(0xffffff, 0.9);
-  dir.position.set(5,10,7); 
-  // Las sombras de la luz direccional están desactivadas (por el renderer.shadowMap.enabled = false)
-  scene.add(dir);
+  dir.position.set(5,10,7); scene.add(dir);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6)); // MUCHA LUZ AMBIENTAL para ver bien
   
-  // ** [SOLUCIÓN DE COLOR/VISIBILIDAD: Más luz ambiental] **
-  scene.add(new THREE.AmbientLight(0xffffff, 0.45)); // De 0.15 a 0.45
-
   // ground plane base 
   const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000,1,1), groundMat);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000,1000,1,1), groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
-  // Ya no recibe sombra
   scene.add(ground);
 
-  // world transform
-  const latCenter = (BBOX[0] + BBOX[2]) / 2;
-  const lonCenter = (BBOX[1] + BBOX[3]) / 2;
-  const EARTH_RADIUS = 6378137;
-
-  function metersPerDegLat(){ return (Math.PI/180) * EARTH_RADIUS; }
-  function metersPerDegLon(lat){ return (Math.PI/180) * EARTH_RADIUS * Math.cos(lat * Math.PI/180); }
-
-  const mPerDegLat = metersPerDegLat();
-  const mPerDegLon = metersPerDegLon(latCenter);
-
-  function ll2xy(lat, lon){
-    const dx = (lon - lonCenter) * mPerDegLon;
-    const dz = (lat - latCenter) * mPerDegLat;
-    const SCALE = SCENE_SCALE; 
-    return new THREE.Vector3(dx * SCALE, 0, -dz * SCALE);
+  // Generador de carro (Player y IA)
+  function createCar(color, isAI = false){
+    const carGroup = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH,0.7,4.2), new THREE.MeshStandardMaterial({color:color}));
+    body.position.y = 0.7; 
+    carGroup.add(body);
+    const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
+    const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
+    for(let i=0;i<4;i++){
+      const w = new THREE.Mesh(wheelGeo, wheelMat);
+      w.rotation.z = Math.PI/2; w.position.y = 0.25;
+      w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.2): (CAR_WIDTH/2 - 0.2);
+      w.position.z = (i<2)?1.2:-1.2;
+      carGroup.add(w);
+    }
+    carGroup.userData.isAI = isAI;
+    if(isAI){
+        // Propiedades de la IA
+        carGroup.userData.targetIndex = 1;
+        carGroup.userData.speed = 0.7 + Math.random() * 0.2;
+        carGroup.userData.maxSpeed = carGroup.userData.speed;
+        carGroup.userData.health = 1; // Para el combate
+        carGroup.userData.respawnPos = startPosition.clone().add(new THREE.Vector3(Math.random()*4 - 2, 0, Math.random()*4 - 2));
+    }
+    return carGroup;
   }
-
-  // Player car 
-  const car = new THREE.Group();
-  const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555}));
-  body.position.y = 0.7; 
-  // Ya no proyecta sombra
-  car.add(body);
-  const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
-  const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
-  for(let i=0;i<4;i++){
-    const w = new THREE.Mesh(wheelGeo, wheelMat);
-    w.rotation.z = Math.PI/2; w.position.y = 0.25;
-    w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.2): (CAR_WIDTH/2 - 0.2);
-    w.position.z = (i<2)?1.2:-1.2;
-    car.add(w);
-  }
-  car.position.set(0,0,0);
+  
+  // Player car
+  const car = createCar(0xff5555, false);
+  car.position.copy(startPosition);
   scene.add(car);
 
-  // movement state (joystick)
+  // IA Cars
+  const ai1 = createCar(0x5555ff, true);
+  ai1.position.copy(startPosition).add(new THREE.Vector3(-4, 0, 0));
+  scene.add(ai1); AI_CARS.push(ai1);
+
+  const ai2 = createCar(0x55ff55, true);
+  ai2.position.copy(startPosition).add(new THREE.Vector3(4, 0, 0));
+  scene.add(ai2); AI_CARS.push(ai2);
+
+
+  // Movimiento y estado del jugador
   const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
   
   // sistema de disparo
   const bullets = [];
+  let eliminations = 0;
+
   function spawnBullet(origin, dir){
     const g = new THREE.SphereGeometry(0.12,8,8);
     const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
@@ -168,6 +170,7 @@
     b.position.copy(origin);
     b.userData.dir = dir.clone();
     b.userData.speed = 2.4;
+    b.userData.isBullet = true;
     scene.add(b); bullets.push(b);
   }
 
@@ -177,220 +180,99 @@
     camera.position.lerp(desired, 0.12);
     camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
   }
-
-  // ---------- fetch OSM via Overpass (roads + buildings) ----------
-  function overpassQuery(bbox){
-    const [s,w,n,e] = bbox;
-    const q = `
-      [out:json][timeout:25];
-      (
-        way["highway"](${s},${w},${n},${e});
-        way["building"](${s},${w},${n},${e});
-      );
-      (._;>;);
-      out body;
-    `;
-    return q;
-  }
-
-  async function fetchOSM(){
-    const query = overpassQuery(BBOX);
-    const res = await fetch(OVERPASS_URL, {method:'POST',body:query});
-    if(!res.ok) throw new Error('Overpass error');
-    const data = await res.json();
-    return data;
-  }
-
-  function parseOverpass(data){
-    const nodes = new Map();
-    const ways = [];
-    for(const el of data.elements){
-      if(el.type === 'node'){
-        nodes.set(el.id, el);
-      }
-    }
-    for(const el of data.elements){
-      if(el.type === 'way'){
-        const tags = el.tags || {};
-        ways.push({id:el.id, nodes: el.nodes, tags});
-      }
-    }
-    return {nodes, ways};
-  }
-
-  // build scene geometry for roads + buildings
-  const roadsGroup = new THREE.Group();
-  const buildingsGroup = new THREE.Group();
-  scene.add(roadsGroup); scene.add(buildingsGroup);
-
-  const roadPolylines = []; 
-
-  // Add simple lamp posts to scene (for visual)
-  function addLampAt(pos){
-    // ** [Farola más brillante para simular resplandor con la luz ambiental alta] **
-    const pointLight = new THREE.PointLight(BULB_COLOR, 15, 15, 2); // Intensidad ajustada
-    pointLight.position.copy(pos).add(new THREE.Vector3(0, 2.2, 0));
-    scene.add(pointLight);
-
-    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2,6), new THREE.MeshStandardMaterial({color:0x111111}));
-    stick.position.copy(pos).add(new THREE.Vector3(0,1,0));
-    scene.add(stick);
-    
-    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), new THREE.MeshBasicMaterial({color:BULB_COLOR}));
-    bulb.position.copy(pos).add(new THREE.Vector3(0,2,0));
-    scene.add(bulb);
-  }
-
-  function buildRoads(nodes, ways){
-    const keep = new Set(['motorway','trunk','primary','secondary','tertiary','unclassified','residential','service','living_street']);
-    let segmentCount = 0, wayCount = 0;
-    roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
-
-    for(const w of ways){
-      if(!w.tags || !w.tags.highway) continue;
-      if(!keep.has(w.tags.highway) && w.tags.highway!=='residential') continue;
-      const pts = [];
-      for(const nid of w.nodes){
-        const n = nodes.get(nid);
-        if(!n) continue;
-        pts.push(ll2xy(n.lat, n.lon));
-      }
-      if(pts.length < 2) continue;
-      const simplified = [];
-      for(let i=0;i<pts.length;i+=1){ simplified.push(pts[i]); }
+  
+  // ---------- Construir el Circuito ----------
+  function buildTrack(){
+      const curve = new THREE.CatmullRomCurve3(trackPoints.slice(0, trackPoints.length-1)); // Sin el último punto
+      curve.closed = true; // Hace que el óvalo se cierre
       
-      for(let i=0;i<simplified.length-1;i++){
-        const a = simplified[i], b = simplified[i+1];
-        const seg = new THREE.Vector3().copy(b).sub(a);
-        const len = seg.length();
-        const mid = a.clone().add(b).multiplyScalar(0.5);
-        const width = (w.tags.highway === 'motorway' || w.tags.highway === 'trunk') ? 4.5 : 3.0;
-        const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
-        const mat = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.9});
-        const m = new THREE.Mesh(geom, mat);
-        m.position.copy(mid); m.position.y = 0.01;
-        m.lookAt(b); m.rotateX(Math.PI/2); 
-        roadsGroup.add(m);
-        segmentCount++;
+      const geometry = new THREE.TubeGeometry(curve, 64, TRACK_WIDTH, 8, true);
+      const material = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.8, metalness:0.2});
+      const trackMesh = new THREE.Mesh(geometry, material);
+      trackMesh.position.y = 0.01;
+      scene.add(trackMesh);
 
-        // Farolas solo en segmentos largos
-        if (len > 12 && i % 4 === 0) { 
-             addLampAt(a);
-        }
-      }
-      const poly = simplified.map(p=> new THREE.Vector3(p.x,0,p.z));
-      roadPolylines.push(poly);
-      wayCount++;
-    }
-    return {segmentCount, wayCount};
+      // Límites de la pista (para el minimapa)
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffaa44, linewidth: 4 });
+      const points = curve.getPoints( 50 );
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints( points );
+      const trackLine = new THREE.Line( lineGeometry, lineMaterial );
+      trackLine.position.y = 0.02;
+      scene.add(trackLine);
   }
-
-  function buildBuildings(nodes, ways){
-    buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
-    let count = 0;
-    for(const w of ways){
-      if(!w.tags || !w.tags.building) continue;
-      const pts = [];
-      for(const nid of w.nodes){
-        const n = nodes.get(nid);
-        if(!n) continue;
-        pts.push(ll2xy(n.lat, n.lon));
-      }
-      if(pts.length < 3) continue;
-      let minx=1e9,minz=1e9,maxx=-1e9,maxz=-1e9;
-      for(const p of pts){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
-      const wth = Math.max(1.0, (maxx-minx));
-      const lng = Math.max(1.0, (maxz-minz));
-      const height = (w.tags['building:levels'] ? Math.max(2, +w.tags['building:levels']) : Math.floor(2 + Math.random()*4)) * 1.8;
-      const g = new THREE.BoxGeometry(wth, height, lng);
+  
+  // ---------- Lógica de la IA ----------
+  function updateAI(aiCar, dt){
+      const targetPos = trackPoints[aiCar.userData.targetIndex];
+      const distance = aiCar.position.distanceTo(targetPos);
       
-      const color = count % 2 === 0 ? BUILDING_COLOR_BASE : BUILDING_COLOR_ACCENT;
-      const mat = new THREE.MeshStandardMaterial({color:color, roughness:0.9});
-      
-      const b = new THREE.Mesh(g, mat);
-      b.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
-      buildingsGroup.add(b);
-      count++;
-    }
-    return count;
-  }
-
-  // ---------- Load OSM, build scene ----------
-  async function initMapData(){
-    try{
-      const raw = await fetchOSM();
-      const {nodes, ways} = parseOverpass(raw);
-      const roadsInfo = buildRoads(nodes, ways);
-      const bcount = buildBuildings(nodes, ways);
-      
-      document.getElementById('tilesCount').textContent = roadPolylines.length;
-      document.getElementById('statusTiles').style.display = 'inline-block';
-      document.getElementById('info').textContent = `Calles: ${roadPolylines.length} | Edificios: ${bcount}`;
-      document.getElementById('loading').style.display = 'none';
-      return true;
-    }catch(err){
-      console.error(err);
-      document.getElementById('loading').textContent = 'Error cargando mapa. Intenta recargar o ajustar el BBOX.';
-      return false;
-    }
-  }
-
-  // ---------- Road-following / soft collision constraint (Edificios) ----------
-  function constrainToRoad(pos){
-    let best = {dist:1e9, nearest:null};
-    for(const poly of roadPolylines){
-      for(let i=0;i<poly.length-1;i++){
-        const a = poly[i], b = poly[i+1];
-        const ap = pos.clone().sub(a);
-        const ab = b.clone().sub(a);
-        const t = Math.max(0, Math.min(1, ap.dot(ab)/ab.lengthSq()));
-        const proj = a.clone().add(ab.multiplyScalar(t));
-        const d = proj.distanceTo(pos);
-        if(d < best.dist){ best.dist = d; best.nearest = proj; }
+      // Chequeo de waypoint
+      if(distance < 10){ // Umbral de proximidad
+          aiCar.userData.targetIndex = (aiCar.userData.targetIndex + 1) % trackPoints.length;
       }
-    }
-    if(!best.nearest) return {constrained:false};
-    const maxLat = 1.6; 
-    if(best.dist > maxLat){
-      const dir = best.nearest.clone().sub(pos).multiplyScalar(0.22);
-      pos.add(dir);
-      return {constrained:true};
-    }
-    return {constrained:false};
+      
+      // Movimiento: Rotar hacia el target
+      const targetDir = targetPos.clone().sub(aiCar.position).normalize();
+      const currentDir = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion).normalize();
+      
+      // Calcular el ángulo entre la dirección actual y la meta
+      const angle = currentDir.angleTo(targetDir);
+      const cross = new THREE.Vector3().crossVectors(currentDir, targetDir);
+      
+      let turnAmount = 0;
+      if(angle > 0.1){
+          turnAmount = Math.min(1, angle / Math.PI * 4); 
+          if(cross.y < 0) turnAmount *= -1; // Ajuste de dirección de giro
+      }
+      
+      // Aplicar rotación y avance
+      aiCar.rotation.y -= turnAmount * 0.04 * dt;
+      
+      // Si el carro apunta bien, acelera
+      aiCar.userData.speed += 0.01 * (1 - Math.abs(turnAmount)) * dt;
+      aiCar.userData.speed = Math.min(aiCar.userData.maxSpeed, aiCar.userData.speed);
+
+      const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
+      aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
+
+      // Simple LOD (Level of Detail): Ocultar si está muy lejos
+      aiCar.visible = car.position.distanceTo(aiCar.position) < 300;
+  }
+  
+  // ---------- Colisión Bala / Carro IA ----------
+  function checkCollisions(dt){
+      for(let i=bullets.length-1;i>=0;i--){
+          const bullet = bullets[i];
+          let hit = false;
+          
+          for(const aiCar of AI_CARS){
+              if(aiCar.position.distanceTo(bullet.position) < 2.5){ // Hitbox simple
+                  hit = true;
+                  aiCar.userData.health--;
+                  if(aiCar.userData.health <= 0){
+                      // Eliminar y reaparecer el enemigo
+                      aiCar.position.copy(aiCar.userData.respawnPos);
+                      aiCar.rotation.y = 0;
+                      aiCar.userData.health = 1;
+                      eliminations++;
+                      document.getElementById('eliminations').textContent = eliminations;
+                      // Efecto visual simple
+                      aiCar.children[0].material.color.setHex(0xff0000);
+                      setTimeout(()=>{aiCar.children[0].material.color.setHex(aiCar.userData.isAI ? 0x5555ff : 0xff5555);}, 150);
+                  }
+                  break;
+              }
+          }
+
+          if(hit || bullet.position.length() > 500){ 
+              scene.remove(bullet); bullets.splice(i,1);
+          } else {
+              bullet.position.add(bullet.userData.dir.clone().multiplyScalar(bullet.userData.speed * dt));
+          }
+      }
   }
 
-  // ---------- Satellite texture (single tile approximation) ----------
-  let satTexture = null, satEnabled = false;
-  async function loadSatellite(){
-    try{
-      const z = 16;
-      function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
-      function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2 * Math.pow(2,z)); }
-      const tx = lon2tile(lonCenter, z);
-      const ty = lat2tile(latCenter, z);
-      const url = ESRI_TILE.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
-      const img = await new Promise((res,rej)=>{ const i=new Image(); i.crossOrigin='anonymous'; i.onload=()=>res(i); i.onerror=rej; i.src=url; });
-      const tex = new THREE.CanvasTexture(img);
-      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.encoding = THREE.sRGBEncoding;
-      satTexture = tex;
-      return true;
-    }catch(e){ console.warn('sat load failed', e); return false; }
-  }
-
-  function enableSatellite(on){
-    if(on && satTexture){
-      ground.material = new THREE.MeshBasicMaterial({map: satTexture});
-      satEnabled = true;
-      document.getElementById('btnToggleSat').textContent = 'SAT: ON';
-    } else {
-      ground.material = groundMat;
-      satEnabled = false;
-      document.getElementById('btnToggleSat').textContent = 'SAT: OFF';
-    }
-  }
-
-  // ---------- Minimap (Optimizado) ----------
+  // ---------- Minimap (Círculo/Óvalo) ----------
   const minimap = document.getElementById('minimap');
   const mmCanvas = document.createElement('canvas');
   mmCanvas.width = mmCanvas.height = 256;
@@ -398,25 +280,34 @@
   const mmCtx = mmCanvas.getContext('2d');
 
   function updateMinimap(){
-    const scale = 0.35; 
+    const scale = 1.0; 
     mmCtx.clearRect(0,0,256,256);
     mmCtx.fillStyle = '#07101a'; 
     mmCtx.fillRect(0,0,256,256);
+    
+    // Dibujar pista simple (rectángulo redondeado)
     mmCtx.strokeStyle = '#ffaa44'; 
-    mmCtx.lineWidth = 4;
+    mmCtx.lineWidth = 15;
+    mmCtx.lineCap = 'round';
+    mmCtx.lineJoin = 'round';
     mmCtx.beginPath();
-    for(const poly of roadPolylines){
-      if(poly.length<2) continue;
-      for(let i=0;i<poly.length;i++){
-        const p = poly[i];
-        const x = 128 + p.x * scale;
-        const y = 128 + p.z * scale;
-        if(i===0) mmCtx.moveTo(x,y); else mmCtx.lineTo(x,y);
-      }
+    mmCtx.moveTo(128 + trackPoints[0].x * scale * 0.5, 128 + trackPoints[0].z * scale * 0.5);
+    for(let i=1; i<trackPoints.length; i++){
+        mmCtx.lineTo(128 + trackPoints[i].x * scale * 0.5, 128 + trackPoints[i].z * scale * 0.5);
     }
     mmCtx.stroke();
-    const px = 128 + car.position.x * scale;
-    const py = 128 + car.position.z * scale;
+
+    // Dibujar carros IA
+    for(const aiCar of AI_CARS){
+        const px = 128 + aiCar.position.x * scale * 0.5;
+        const py = 128 + aiCar.position.z * scale * 0.5;
+        mmCtx.fillStyle = '#5555ff'; 
+        mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
+    }
+    
+    // Dibujar jugador
+    const px = 128 + car.position.x * scale * 0.5;
+    const py = 128 + car.position.z * scale * 0.5;
     mmCtx.fillStyle = '#ff3333'; 
     mmCtx.beginPath(); mmCtx.arc(px,py,6,0,Math.PI*2); mmCtx.fill();
   }
@@ -442,25 +333,14 @@
 
   function doFire(){
     const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-    const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
+    // Dispara desde el frente del carro
+    const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.5).applyQuaternion(car.quaternion));
     spawnBullet(origin, dir);
   }
 
   // ---------- UI toggles ----------
-  let roadsVisible = true;
-  document.getElementById('btnToggleRoads').addEventListener('click', ()=>{
-    roadsVisible = !roadsVisible;
-    roadsGroup.visible = roadsVisible;
-    document.getElementById('btnToggleRoads').textContent = `MAPA: ${roadsVisible ? 'ON' : 'OFF'}`;
-  });
-
-  document.getElementById('btnToggleSat').addEventListener('click', async ()=>{
-    if(!satTexture){ document.getElementById('btnToggleSat').textContent = 'SAT: Cargando...'; await loadSatellite(); }
-    enableSatellite(!satEnabled);
-  });
-
   document.getElementById('btnRecenter').addEventListener('click', ()=> {
-    car.position.set(0,0,0); car.rotation.set(0,0,0);
+    car.position.copy(startPosition); car.rotation.set(0,0,0); state.speed = 0;
     camera.position.set(0,12,24);
   });
 
@@ -471,6 +351,7 @@
     const dt = Math.min(50, now-last) / 16.666;
     last = now;
     
+    // PLAYER MOVEMENT
     state.forward = Math.max(-1, Math.min(1, stick.y));
     state.turn = Math.max(-1, Math.min(1, stick.x));
     
@@ -484,19 +365,15 @@
     const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
     car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
     
-    constrainToRoad(car.position);
-
-    // Actualización de balas
-    for(let i=bullets.length-1;i>=0;i--){
-      const b = bullets[i];
-      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
-      if(b.position.length() > 800) { scene.remove(b); bullets.splice(i,1); }
-    }
+    // IA MOVEMENT
+    AI_CARS.forEach(ai => updateAI(ai, dt));
+    
+    // COMBATE
+    checkCollisions(dt);
     
     updateCamera();
     updateMinimap();
     
-    // RENDERIZADO DIRECTO
     renderer.render(scene, camera);
     
     // fps
@@ -506,22 +383,19 @@
   let fpsLast = performance.now();
 
   // ---------- initialization ----------
-  const ok = await initMapData();
-  loadSatellite().then(()=>{ /*sat preloaded*/ }).catch(()=>{/*ignore*/});
+  buildTrack();
+  document.getElementById('loading').style.display = 'none';
   requestAnimationFrame(animate);
-
+  
+  // Centrar el carro inicial
+  car.position.copy(startPosition);
+  
   // ---------- simple cleanup / resize ----------
   window.addEventListener('resize', ()=>{ 
     renderer.setSize(window.innerWidth, window.innerHeight); 
     camera.aspect = innerWidth/innerHeight; 
     camera.updateProjectionMatrix(); 
   });
-
-  if(roadPolylines.length && roadPolylines[0].length){
-    car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ]);
-  }
-
-  document.getElementById('tilesCount').textContent = roadPolylines.length;
 
 })();
 </script>
