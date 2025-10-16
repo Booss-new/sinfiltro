@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Circuito de Carreras ARCADE (OPTIMIZADO)</title>
+<title>Mustang ARCADE — Circuito Alpha</title>
 <style>
   /* AJUSTES DE DISEÑO GAMER */
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#ff3333;--accent2:#ff8833;--shadow:rgba(0,0,0,0.6)}
@@ -21,7 +21,20 @@
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); transform:translate(0,0) }
   
   /* fire button */
-  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 20px #ff0000; font-size:30px; border:3px solid #fff }
+  .fire { 
+    position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; 
+    background:linear-gradient(135deg,var(--accent1),#ff0000); 
+    display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;
+    box-shadow:0 0 20px #ff0000; font-size:30px; border:3px solid #fff;
+    /* Cooldown visual */
+    transition: transform 0.05s ease-out;
+  }
+  .fire.cooldown {
+    background:linear-gradient(135deg, #333, #555);
+    box-shadow:none;
+    transform: scale(0.9);
+    pointer-events: none;
+  }
   
   /* minimap */
   .minimap{position:fixed;right:12px;bottom:12px;width:88px;height:88px;border-radius:8px;background:var(--shadow);z-index:100;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 6px 15px var(--shadow); border:1px solid rgba(255,255,255,0.1)}
@@ -48,7 +61,8 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">Carreras ARCADE (OPTIMIZADO)</div>
+      <div class="badge">Mustang ARCADE</div>
+      <div class="badge" style="background:#555">Vueltas: <span id="lapsCount">0 / 3</span></div>
     </div>
     <div class="controls">
       <div id="btnToggleRoads" class="chip" style="background:linear-gradient(90deg, #333, #666); color:#fff">CIRCUITO</div>
@@ -62,7 +76,7 @@
   <div class="fire" id="fire">🎯</div>
   <div class="minimap" id="minimap">Mini</div>
   <div class="fps" id="fps">FPS: --</div>
-  <div class="info" id="info">Enemigos eliminados: <span id="eliminations">0</span></div>
+  <div class="info" id="info">Eliminaciones: <span id="eliminations">0</span></div>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <script>
@@ -72,24 +86,25 @@
   const CAR_WIDTH = 2.4;    
   const STREET_COLOR = 0x282c35; 
   const BULB_COLOR = 0xffe9a1; 
-  const TRACK_WIDTH = 12; // Ancho de la pista
+  const TRACK_WIDTH = 15; // Ancho de la pista
   const AI_CARS = [];
   const startPosition = new THREE.Vector3(0, 0, 80); 
+  const BULLET_COOLDOWN_MS = 300; // Cooldown de 0.3 segundos
 
-  // Puntos del circuito de carreras (simple óvalo/rectángulo redondeado)
+  // Puntos del circuito (inspirado en un diseño de juego simple)
   const trackPoints = [
       new THREE.Vector3(0, 0, 80), 
-      new THREE.Vector3(120, 0, 80),
-      new THREE.Vector3(120, 0, -80),
-      new THREE.Vector3(-120, 0, -80),
-      new THREE.Vector3(-120, 0, 80),
+      new THREE.Vector3(130, 0, 80),
+      new THREE.Vector3(130, 0, -80),
+      new THREE.Vector3(-130, 0, -80),
+      new THREE.Vector3(-130, 0, 80),
       new THREE.Vector3(0, 0, 80) // Cierre
   ];
   
   // ---------- THREEJS basic scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060a);
-  scene.fog = new THREE.Fog(scene.background, 10, 200); 
+  scene.fog = new THREE.Fog(scene.background, 10, 250); 
   
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -105,7 +120,7 @@
   // lights
   const dir = new THREE.DirectionalLight(0xffffff, 0.9);
   dir.position.set(5,10,7); scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6)); // MUCHA LUZ AMBIENTAL para ver bien
+  scene.add(new THREE.AmbientLight(0xffffff, 0.6)); 
   
   // ground plane base 
   const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
@@ -113,78 +128,127 @@
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
   scene.add(ground);
+  
+  // ---------- OBJECT POOLING para Balas ----------
+  const bulletPool = [];
+  const maxBullets = 20;
+  
+  function getBullet(){
+      for(const b of bulletPool){
+          if(!b.visible){
+              b.visible = true;
+              return b;
+          }
+      }
+      if(bulletPool.length < maxBullets){
+          const g = new THREE.SphereGeometry(0.12,8,8);
+          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
+          const b = new THREE.Mesh(g,m);
+          b.userData.dir = new THREE.Vector3();
+          b.userData.speed = 2.8;
+          b.userData.isBullet = true;
+          b.visible = false;
+          scene.add(b);
+          bulletPool.push(b);
+          return b;
+      }
+      return null;
+  }
+  
+  function releaseBullet(b){
+      b.visible = false;
+      b.position.set(0, -100, 0); // Lo mueves fuera de vista
+  }
+  // ----------------------------------------------
 
   // Generador de carro (Player y IA)
   function createCar(color, isAI = false){
     const carGroup = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH,0.7,4.2), new THREE.MeshStandardMaterial({color:color}));
+    // Diseño tipo Mustang/Muscle Car: más largo y ancho en el cuerpo principal
+    const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH + 0.5, 0.7, 4.8), new THREE.MeshStandardMaterial({color:color}));
     body.position.y = 0.7; 
     carGroup.add(body);
+    
+    // Ventana (simulación)
+    const windowGeo = new THREE.BoxGeometry(CAR_WIDTH - 0.2, 0.5, 1.8);
+    const windowMat = new THREE.MeshStandardMaterial({color: 0x333344, metalness: 0.1});
+    const windows = new THREE.Mesh(windowGeo, windowMat);
+    windows.position.set(0, 1.25, 0);
+    carGroup.add(windows);
+    
     const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
     const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
     for(let i=0;i<4;i++){
       const w = new THREE.Mesh(wheelGeo, wheelMat);
       w.rotation.z = Math.PI/2; w.position.y = 0.25;
-      w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.2): (CAR_WIDTH/2 - 0.2);
-      w.position.z = (i<2)?1.2:-1.2;
+      w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.05): (CAR_WIDTH/2 - 0.05);
+      w.position.z = (i<2)?1.5:-1.5;
       carGroup.add(w);
     }
     carGroup.userData.isAI = isAI;
     if(isAI){
         // Propiedades de la IA
         carGroup.userData.targetIndex = 1;
-        carGroup.userData.speed = 0.7 + Math.random() * 0.2;
+        carGroup.userData.speed = 0.65 + Math.random() * 0.25; // Velocidad base ligeramente más lenta
         carGroup.userData.maxSpeed = carGroup.userData.speed;
-        carGroup.userData.health = 1; // Para el combate
+        carGroup.userData.health = 1; 
         carGroup.userData.respawnPos = startPosition.clone().add(new THREE.Vector3(Math.random()*4 - 2, 0, Math.random()*4 - 2));
     }
     return carGroup;
   }
   
-  // Player car
+  // Player car (Mustang)
   const car = createCar(0xff5555, false);
   car.position.copy(startPosition);
   scene.add(car);
+  
+  // ** HEADLIGHTS **
+  const headlightL = new THREE.SpotLight(0xffffff, 40, 50, Math.PI/6, 0.5, 0.5);
+  headlightL.position.set(1.1, 0.8, -2.4);
+  headlightL.target.position.set(1.1, 0.8, -100);
+  car.add(headlightL); car.add(headlightL.target);
+  
+  const headlightR = new THREE.SpotLight(0xffffff, 40, 50, Math.PI/6, 0.5, 0.5);
+  headlightR.position.set(-1.1, 0.8, -2.4);
+  headlightR.target.position.set(-1.1, 0.8, -100);
+  car.add(headlightR); car.add(headlightR.target);
 
   // IA Cars
   const ai1 = createCar(0x5555ff, true);
-  ai1.position.copy(startPosition).add(new THREE.Vector3(-4, 0, 0));
+  ai1.position.copy(startPosition).add(new THREE.Vector3(-5, 0, 0));
   scene.add(ai1); AI_CARS.push(ai1);
 
   const ai2 = createCar(0x55ff55, true);
-  ai2.position.copy(startPosition).add(new THREE.Vector3(4, 0, 0));
+  ai2.position.copy(startPosition).add(new THREE.Vector3(5, 0, 0));
   scene.add(ai2); AI_CARS.push(ai2);
 
 
   // Movimiento y estado del jugador
-  const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
+  const state = {forward:0, turn:0, speed:0, maxSpeed:1.1, rotSpeed:0.045, laps:0, checkpoint:0};
   
-  // sistema de disparo
-  const bullets = [];
-  let eliminations = 0;
-
+  // Cooldown de disparo
+  let lastFireTime = 0;
+  
   function spawnBullet(origin, dir){
-    const g = new THREE.SphereGeometry(0.12,8,8);
-    const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
-    const b = new THREE.Mesh(g,m);
-    b.position.copy(origin);
-    b.userData.dir = dir.clone();
-    b.userData.speed = 2.4;
-    b.userData.isBullet = true;
-    scene.add(b); bullets.push(b);
+    const b = getBullet();
+    if(b){
+        b.position.copy(origin);
+        b.userData.dir.copy(dir);
+        scene.add(b); // Ya está en la escena, solo lo hacemos visible
+    }
   }
 
   // camera follow
   function updateCamera(){
-    const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
-    camera.position.lerp(desired, 0.12);
+    const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); // Cámara ligeramente más atrás
+    camera.position.lerp(desired, 0.15);
     camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
   }
   
   // ---------- Construir el Circuito ----------
   function buildTrack(){
-      const curve = new THREE.CatmullRomCurve3(trackPoints.slice(0, trackPoints.length-1)); // Sin el último punto
-      curve.closed = true; // Hace que el óvalo se cierre
+      const curve = new THREE.CatmullRomCurve3(trackPoints.slice(0, trackPoints.length-1)); 
+      curve.closed = true; 
       
       const geometry = new THREE.TubeGeometry(curve, 64, TRACK_WIDTH, 8, true);
       const material = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.8, metalness:0.2});
@@ -206,69 +270,89 @@
       const targetPos = trackPoints[aiCar.userData.targetIndex];
       const distance = aiCar.position.distanceTo(targetPos);
       
-      // Chequeo de waypoint
-      if(distance < 10){ // Umbral de proximidad
+      if(distance < 10){ 
           aiCar.userData.targetIndex = (aiCar.userData.targetIndex + 1) % trackPoints.length;
       }
       
-      // Movimiento: Rotar hacia el target
       const targetDir = targetPos.clone().sub(aiCar.position).normalize();
       const currentDir = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion).normalize();
       
-      // Calcular el ángulo entre la dirección actual y la meta
       const angle = currentDir.angleTo(targetDir);
       const cross = new THREE.Vector3().crossVectors(currentDir, targetDir);
       
       let turnAmount = 0;
       if(angle > 0.1){
           turnAmount = Math.min(1, angle / Math.PI * 4); 
-          if(cross.y < 0) turnAmount *= -1; // Ajuste de dirección de giro
+          if(cross.y < 0) turnAmount *= -1; 
       }
       
-      // Aplicar rotación y avance
       aiCar.rotation.y -= turnAmount * 0.04 * dt;
       
-      // Si el carro apunta bien, acelera
       aiCar.userData.speed += 0.01 * (1 - Math.abs(turnAmount)) * dt;
       aiCar.userData.speed = Math.min(aiCar.userData.maxSpeed, aiCar.userData.speed);
 
       const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
       aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
-
-      // Simple LOD (Level of Detail): Ocultar si está muy lejos
-      aiCar.visible = car.position.distanceTo(aiCar.position) < 300;
   }
   
-  // ---------- Colisión Bala / Carro IA ----------
+  // ---------- Colisión/Combate ----------
+  let eliminations = 0;
   function checkCollisions(dt){
-      for(let i=bullets.length-1;i>=0;i--){
-          const bullet = bullets[i];
+      for(let i=bulletPool.length-1;i>=0;i--){
+          const bullet = bulletPool[i];
+          if(!bullet.visible) continue;
           let hit = false;
           
           for(const aiCar of AI_CARS){
-              if(aiCar.position.distanceTo(bullet.position) < 2.5){ // Hitbox simple
+              if(aiCar.position.distanceTo(bullet.position) < 2.5){ 
                   hit = true;
-                  aiCar.userData.health--;
-                  if(aiCar.userData.health <= 0){
-                      // Eliminar y reaparecer el enemigo
-                      aiCar.position.copy(aiCar.userData.respawnPos);
-                      aiCar.rotation.y = 0;
-                      aiCar.userData.health = 1;
-                      eliminations++;
-                      document.getElementById('eliminations').textContent = eliminations;
-                      // Efecto visual simple
-                      aiCar.children[0].material.color.setHex(0xff0000);
-                      setTimeout(()=>{aiCar.children[0].material.color.setHex(aiCar.userData.isAI ? 0x5555ff : 0xff5555);}, 150);
-                  }
+                  // Efecto de impacto visual (partículas serían mejor, pero simple es más rápido)
+                  aiCar.children[0].material.color.setHex(0xff0000); 
+                  
+                  // Reinicio con breve desaceleración (stagger)
+                  aiCar.position.copy(aiCar.userData.respawnPos);
+                  aiCar.rotation.y = 0;
+                  aiCar.userData.speed *= 0.3; 
+                  aiCar.userData.targetIndex = 1;
+                  
+                  eliminations++;
+                  document.getElementById('eliminations').textContent = eliminations;
+                  
+                  setTimeout(()=>{aiCar.children[0].material.color.setHex(aiCar.userData.isAI ? 0x5555ff : 0xff5555);}, 150);
                   break;
               }
           }
 
           if(hit || bullet.position.length() > 500){ 
-              scene.remove(bullet); bullets.splice(i,1);
+              releaseBullet(bullet);
           } else {
               bullet.position.add(bullet.userData.dir.clone().multiplyScalar(bullet.userData.speed * dt));
           }
+      }
+  }
+
+  // ---------- Logica de Vueltas ----------
+  function checkLaps(){
+      // El punto de control es la línea de salida/meta (trackPoints[0])
+      const gatePosition = trackPoints[0];
+      const distanceToGate = car.position.distanceTo(gatePosition);
+      
+      // Chequeo de paso de la meta (usamos una bandera invisible simple)
+      if(distanceToGate < 10 && state.checkpoint === trackPoints.length - 1){
+          state.laps++;
+          state.checkpoint = 0; // Reinicia el punto de control
+          document.getElementById('lapsCount').textContent = `${state.laps} / 3`;
+          
+          if(state.laps >= 3){
+             document.getElementById('info').textContent = "¡CARRERA TERMINADA! ¡VICTORIA!";
+             state.maxSpeed = 0;
+          }
+      }
+      
+      // Chequeo de puntos de control intermedios (simplificado: solo si se acercó al siguiente punto de IA)
+      const nextPoint = trackPoints[(state.checkpoint + 1) % trackPoints.length];
+      if(car.position.distanceTo(nextPoint) < 15 && state.checkpoint < trackPoints.length - 1){
+          state.checkpoint = (state.checkpoint + 1) % trackPoints.length;
       }
   }
 
@@ -285,7 +369,7 @@
     mmCtx.fillStyle = '#07101a'; 
     mmCtx.fillRect(0,0,256,256);
     
-    // Dibujar pista simple (rectángulo redondeado)
+    // Dibujar pista simple 
     mmCtx.strokeStyle = '#ffaa44'; 
     mmCtx.lineWidth = 15;
     mmCtx.lineCap = 'round';
@@ -332,16 +416,25 @@
   fireBtn.addEventListener('mousedown', doFire);
 
   function doFire(){
-    const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-    // Dispara desde el frente del carro
-    const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.5).applyQuaternion(car.quaternion));
-    spawnBullet(origin, dir);
+      const now = performance.now();
+      if(now - lastFireTime < BULLET_COOLDOWN_MS) return;
+
+      lastFireTime = now;
+      fireBtn.classList.add('cooldown');
+      setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
+
+      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+      const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.5).applyQuaternion(car.quaternion));
+      spawnBullet(origin, dir);
   }
 
   // ---------- UI toggles ----------
   document.getElementById('btnRecenter').addEventListener('click', ()=> {
     car.position.copy(startPosition); car.rotation.set(0,0,0); state.speed = 0;
     camera.position.set(0,12,24);
+    state.laps = 0; state.checkpoint = 0;
+    document.getElementById('lapsCount').textContent = `0 / 3`;
+    document.getElementById('info').textContent = "Eliminaciones: " + eliminations;
   });
 
   // ---------- render loop ----------
@@ -351,16 +444,25 @@
     const dt = Math.min(50, now-last) / 16.666;
     last = now;
     
-    // PLAYER MOVEMENT
+    // PLAYER MOVEMENT (con lógica de derrape simple)
     state.forward = Math.max(-1, Math.min(1, stick.y));
     state.turn = Math.max(-1, Math.min(1, stick.x));
     
     if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
     else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
     else state.speed *= 0.96;
+
+    const currentSpeedFactor = Math.abs(state.speed / state.maxSpeed);
+    
+    // Simulación de derrape (menos agarre al girar fuerte y rápido)
+    let rotationMultiplier = 1;
+    if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4){
+        rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); // Reduce la rotación y simula el deslizamiento
+    }
+
     state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
     
-    car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
+    car.rotation.y += -state.turn * state.rotSpeed * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
     
     const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
     car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
@@ -368,8 +470,9 @@
     // IA MOVEMENT
     AI_CARS.forEach(ai => updateAI(ai, dt));
     
-    // COMBATE
+    // COMBATE Y VUELTAS
     checkCollisions(dt);
+    checkLaps();
     
     updateCamera();
     updateMinimap();
@@ -387,7 +490,6 @@
   document.getElementById('loading').style.display = 'none';
   requestAnimationFrame(animate);
   
-  // Centrar el carro inicial
   car.position.copy(startPosition);
   
   // ---------- simple cleanup / resize ----------
