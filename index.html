@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Metal Streets: Battle Arena (Estilo Neón)</title>
+<title>Metal Streets: Cyber City</title>
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -70,7 +70,7 @@
     </div>
 
     <div class="panel">
-      <h2>ARENA DE COMBATE</h2>
+      <h2>MUNICIÓN</h2>
       Munición: <span id="ammoCount">10</span>
       <div class="bar-container"><div id="ammoBar" class="ammo-bar"></div></div>
     </div>
@@ -81,7 +81,7 @@
     <div class="speed-unit">KM/H</div>
   </div>
 
-  <div id="loading">Cargando Metal Streets Arena...</div>
+  <div id="loading">Cargando Cyber City...</div>
 
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
   <div class="fire" id="fire">💥</div>
@@ -104,17 +104,23 @@ function hasBloomSupport() {
 (async function(){
   // ---------- CONFIGURACIÓN GENERAL ----------
   const holder = document.getElementById('holder');
-  const ARENA_SIZE = 100;
+  const CITY_SIZE = 200; // Tamaño de la ciudad
+  const ROAD_WIDTH = 12; // Ancho de la calle
+  const SIDEWALK_WIDTH = 3; // Ancho de la acera a cada lado
+  const BUILDING_SPACING = 2; // Espacio entre edificios
+  const CAR_LANES = 2; // Número de carriles por dirección
   const START_POS = new THREE.Vector3(0, 0, 0); 
   const BULLET_COOLDOWN_MS = 400; 
   const AI_CARS = [];
+  const TRAFFIC_CARS = []; // Para el tráfico pasivo
   const POWER_UPS = [];
 
   // Definiciones de vehículos 
   const VEHICLE_STATS = {
       'Muscle Car': { color: 0xff5555, width: 2.8, length: 5.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
       'Sport': { color: 0x5555ff, width: 2.2, length: 4.0, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
-      'Pickup': { color: 0x55ff55, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 }
+      'Pickup': { color: 0x55ff55, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 },
+      'Traffic': { color: 0x888888, width: 2.5, length: 4.5, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
   };
   let CURRENT_CAR_TYPE = 'Sport'; 
   const BLOOM_ENABLED = hasBloomSupport(); 
@@ -123,13 +129,14 @@ function hasBloomSupport() {
 
   // ---------- THREEJS SETUP CON FALLBACK DE BLOOM ----------
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x020306); 
-  scene.fog = new THREE.Fog(scene.background, 10, 150); 
+  scene.background = new THREE.Color(0x0a0a1a); // Cielo nocturno azul oscuro
+  scene.fog = new THREE.Fog(scene.background, 50, 400); // Niebla más extensa
   
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = false; 
+  renderer.shadowMap.enabled = true; // Habilitar sombras para realismo
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
   holder.appendChild(renderer.domElement);
   
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
@@ -137,69 +144,157 @@ function hasBloomSupport() {
 
   let composer = null;
   if(BLOOM_ENABLED){
-      // INICIALIZACIÓN DEL BLOOM
       composer = new EffectComposer(renderer);
       composer.addPass(new RenderPass(scene, camera));
-      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.4, 0.85); // Bloom más sutil
       bloomPass.renderToScreen = true;
       composer.addPass(bloomPass);
   }
 
-  // Lights (Ambiente Nocturno)
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.2)); 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.05)); 
+  // Luces (General)
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.1); 
+  dirLight.position.set(0, 50, 100);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 200;
+  dirLight.shadow.camera.left = -CITY_SIZE/2;
+  dirLight.shadow.camera.right = CITY_SIZE/2;
+  dirLight.shadow.camera.top = CITY_SIZE/2;
+  dirLight.shadow.camera.bottom = -CITY_SIZE/2;
+  scene.add(dirLight);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.08)); 
 
-  // Luces de neón/ambientales para el estilo urbano - AUMENTADAS
-  const neonLight = new THREE.PointLight(0x00ffff, 3.5, 60); neonLight.position.set(40, 5, 40); scene.add(neonLight);
-  const neonLight2 = new THREE.PointLight(0xff00ff, 3.5, 60); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
-
-
-  // ---------- ARENA DE COMBATE ESTILIZADA ----------
+  // ---------- CIUDAD FUTURISTA NOCTURNA ----------
   
-  // Suelo (Asfalto Brillante/Metálico)
-  const groundMat = new THREE.MeshStandardMaterial({color:0x101015, roughness:0.7, metalness:0.4}); // Más oscuro y metálico
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(ARENA_SIZE * 2, ARENA_SIZE * 2, 1, 1), groundMat);
+  // Suelo (Carretera principal)
+  const roadMat = new THREE.MeshStandardMaterial({color:0x181825, roughness:0.7, metalness:0.3});
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
+  ground.receiveShadow = true; // El suelo recibe sombras
   scene.add(ground);
-  
-  // Edificios/Obstáculos (Estilo Low-Poly)
-  const wallHeight = 15; 
-  const buildingMat = new THREE.MeshStandardMaterial({color:0x12121e, roughness:0.8, metalness:0.1}); // Aún más oscuros
-  
-  const windowColor = 0x00ffcc; // Un cian/verde eléctrico
-  // Usamos BasicMaterial con Emissive si BLOOM está activado, si no, solo Basic
-  const windowMat = BLOOM_ENABLED 
-      ? new THREE.MeshBasicMaterial({color:windowColor, emissive:windowColor, emissiveIntensity:2.0}) // Emisión más alta
-      : new THREE.MeshBasicMaterial({color:windowColor}); 
 
-  function createBuilding(x, z, w, d, h = wallHeight){
-      const group = new THREE.Group();
-      const bodyGeo = new THREE.BoxGeometry(w, h, d);
-      const body = new THREE.Mesh(bodyGeo, buildingMat);
-      body.position.set(x, h/2, z);
-      group.add(body);
+  // Líneas de la carretera
+  const lineMat = new THREE.MeshBasicMaterial({color:0xcccccc, emissive:0xcccccc, emissiveIntensity:1});
+  const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
+  const solidLineGeo = new THREE.PlaneGeometry(0.2, CITY_SIZE);
+
+  // Líneas centrales
+  for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
+      const line = new THREE.Mesh(dashedLineGeo, lineMat);
+      line.position.set(0, 0.01, i);
+      line.rotation.x = -Math.PI/2;
+      scene.add(line);
+  }
+
+  // Aceras (más grises y un poco emisivas para destacar)
+  const sidewalkMat = new THREE.MeshStandardMaterial({color:0x303030, roughness:0.6, metalness:0.1, emissive:0x202020, emissiveIntensity:0.2});
+  const sidewalkLeft = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
+  sidewalkLeft.position.set(-ROAD_WIDTH/2 - SIDEWALK_WIDTH/2, 0.25, 0);
+  sidewalkLeft.receiveShadow = true;
+  scene.add(sidewalkLeft);
+
+  const sidewalkRight = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
+  sidewalkRight.position.set(ROAD_WIDTH/2 + SIDEWALK_WIDTH/2, 0.25, 0);
+  sidewalkRight.receiveShadow = true;
+  scene.add(sidewalkRight);
+
+
+  // Edificios (generación procedural)
+  const buildingColors = [0x1a1a2e, 0x1e1e3a, 0x15152a]; // Colores oscuros para los edificios
+  const windowColors = [0x00ffff, 0xff00ff, 0xffff00]; // Colores de neón para las ventanas
+
+  function createBuilding(x, z, sizeX, sizeZ, height){
+      const buildingGroup = new THREE.Group();
+
+      const bodyMat = new THREE.MeshStandardMaterial({color: buildingColors[Math.floor(Math.random()*buildingColors.length)], roughness:0.7, metalness:0.2});
+      const bodyGeo = new THREE.BoxGeometry(sizeX, height, sizeZ);
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.position.y = height / 2 + 0.5; // Ajuste para el suelo de la acera
+      body.castShadow = true; // Los edificios proyectan sombras
+      buildingGroup.add(body);
+
+      // Ventanas emisivas (cuadrados o líneas)
+      const numWindowsX = Math.floor(sizeX / 4);
+      const numWindowsY = Math.floor(height / 4);
+      const chosenWindowColor = windowColors[Math.floor(Math.random()*windowColors.length)];
+      const windowMat = BLOOM_ENABLED
+        ? new THREE.MeshBasicMaterial({color:chosenWindowColor, emissive:chosenWindowColor, emissiveIntensity:1.5})
+        : new THREE.MeshBasicMaterial({color:chosenWindowColor}); 
       
-      // Simular algunas ventanas brillantes
-      for(let i=0; i<3; i++){
-          const windowGeo = new THREE.BoxGeometry(w*0.1, h*0.1, 0.05);
-          const windowMesh = new THREE.Mesh(windowGeo, windowMat);
-          windowMesh.position.set(x + Math.random()*w*0.5 - w*0.25, h*0.5 + Math.random()*h*0.4 - h*0.2, z + d/2 + 0.05);
-          group.add(windowMesh);
+      for(let i = 0; i < numWindowsX; i++){
+          for(let j = 0; j < numWindowsY; j++){
+              if(Math.random() < 0.7){ // Probabilidad de tener ventana
+                  const windowGeo = new THREE.PlaneGeometry(sizeX * 0.1, height * 0.1);
+                  const windowMesh = new THREE.Mesh(windowGeo, windowMat);
+                  
+                  // Posición de la ventana en la fachada frontal
+                  windowMesh.position.set(
+                      body.position.x - sizeX/2 + (i + 0.5) * (sizeX/numWindowsX),
+                      body.position.y - height/2 + (j + 0.5) * (height/numWindowsY),
+                      body.position.z + sizeZ/2 + 0.01 // Un poco hacia afuera para evitar z-fighting
+                  );
+                  buildingGroup.add(windowMesh);
+              }
+          }
       }
-      scene.add(group);
-      return body; 
+      
+      buildingGroup.position.set(x, 0, z); // Posición final del grupo
+      scene.add(buildingGroup);
+  }
+
+  // Generar edificios a lo largo de los lados de la carretera
+  const numBuildingsX = Math.floor(CITY_SIZE / (ROAD_WIDTH + SIDEWALK_WIDTH * 2 + BUILDING_SPACING * 2)); // Esto no es exacto
+  const numBuildingsZ = Math.floor(CITY_SIZE / 15); // Edificios cada ~15 unidades en Z
+
+  for(let i = -numBuildingsZ; i <= numBuildingsZ; i++){
+      const zPos = i * (15 + BUILDING_SPACING); // Espaciado en Z
+      
+      // Lado izquierdo de la carretera
+      const xPosLeft = -ROAD_WIDTH/2 - SIDEWALK_WIDTH - (Math.random() * 20 + 10) / 2 - BUILDING_SPACING;
+      createBuilding(
+          xPosLeft, zPos, 
+          Math.random() * 10 + 10, // Ancho
+          Math.random() * 8 + 8,   // Profundidad
+          Math.random() * 30 + 15  // Altura
+      );
+
+      // Lado derecho de la carretera
+      const xPosRight = ROAD_WIDTH/2 + SIDEWALK_WIDTH + (Math.random() * 20 + 10) / 2 + BUILDING_SPACING;
+      createBuilding(
+          xPosRight, zPos,
+          Math.random() * 10 + 10,
+          Math.random() * 8 + 8,
+          Math.random() * 30 + 15
+      );
   }
   
-  // Bordes del mapa (Arena)
-  createBuilding(0, ARENA_SIZE - 2, ARENA_SIZE * 2, 5, 20); // Norte
-  createBuilding(0, -ARENA_SIZE + 2, ARENA_SIZE * 2, 5, 20); // Sur
-  createBuilding(ARENA_SIZE - 2, 0, 5, ARENA_SIZE * 2, 20); // Este
-  createBuilding(-ARENA_SIZE + 2, 0, 5, ARENA_SIZE * 2, 20); // Oeste
-  
-  // Obstáculos/Bloques de Combate
-  createBuilding(ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
-  createBuilding(-ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
+  // Farolas
+  const streetLightMat = new THREE.MeshBasicMaterial({color:0xffffff, emissive:0xffffff, emissiveIntensity:2});
+  const poleMat = new THREE.MeshStandardMaterial({color:0x333333, roughness:0.8, metalness:0.1});
+  function createStreetLight(x, z){
+      const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 8, 8);
+      const pole = new THREE.Mesh(poleGeo, poleMat);
+      pole.position.set(x, 4, z);
+      pole.castShadow = true;
+      scene.add(pole);
+
+      const lightBulb = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), streetLightMat);
+      lightBulb.position.set(x, 7.5, z);
+      scene.add(lightBulb);
+
+      const light = new THREE.PointLight(0xffffff, 0.8, 30);
+      light.position.set(x, 7, z);
+      light.castShadow = true;
+      scene.add(light);
+  }
+
+  for(let i = -CITY_SIZE/2 + 20; i < CITY_SIZE/2 - 20; i += 40){
+      createStreetLight(ROAD_WIDTH/2 + SIDEWALK_WIDTH/2 + 1, i);
+      createStreetLight(-ROAD_WIDTH/2 - SIDEWALK_WIDTH/2 - 1, i);
+  }
 
 
   // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
@@ -213,10 +308,12 @@ function hasBloomSupport() {
     const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 0.7; 
+    body.castShadow = true; // Los coches proyectan sombras
+    body.receiveShadow = true;
     carGroup.add(body);
     
     // Alerón trasero 
-    if (type !== 'Pickup' && !isAI) { 
+    if (type !== 'Pickup' && type !== 'Traffic' && !isAI) { 
         const spoilerGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.8);
         const spoilerMat = new THREE.MeshStandardMaterial({color: 0x222222, metalness:0.8, roughness:0.2});
         const spoiler = new THREE.Mesh(spoilerGeo, spoilerMat);
@@ -224,7 +321,7 @@ function hasBloomSupport() {
         carGroup.add(spoiler);
     }
     
-    // Luces Traseras (Emissivas si BLOOM está activo)
+    // Luces Traseras (Emissivas)
     const tailLightMat = BLOOM_ENABLED 
         ? new THREE.MeshBasicMaterial({color:0xff0000, emissive:0xff0000, emissiveIntensity:1.5})
         : new THREE.MeshBasicMaterial({color:0xff0000});
@@ -255,20 +352,22 @@ function hasBloomSupport() {
         carGroup.add(healthBar);
     }
     
-    // HEADLIGHTS (Player)
-    if (!isAI) {
-        const headlightL = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
-        headlightL.position.set(stats.width/2 - 0.2, 0.8, -stats.length/2 + 0.5);
-        headlightL.target.position.set(stats.width/2 - 0.2, 0.8, -100);
-        carGroup.add(headlightL); carGroup.add(headlightL.target);
-        
-        const headlightR = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
-        headlightR.position.set(-stats.width/2 + 0.2, 0.8, -stats.length/2 + 0.5);
-        headlightR.target.position.set(-stats.width/2 + 0.2, 0.8, -100);
-        carGroup.add(headlightR); carGroup.add(headlightR.target);
+    // HEADLIGHTS (Player & AI)
+    // Todos los coches tienen focos, pero el jugador tiene el efecto de neón trasero
+    const headlightIntensity = isAI ? 40 : 80;
+    const headlightL = new THREE.SpotLight(0xffffff, headlightIntensity, 50, Math.PI/6, 0.5, 0.5); 
+    headlightL.position.set(stats.width/2 - 0.2, 0.8, -stats.length/2 + 0.5);
+    headlightL.target.position.set(stats.width/2 - 0.2, 0.8, -100);
+    carGroup.add(headlightL); carGroup.add(headlightL.target);
+    
+    const headlightR = new THREE.SpotLight(0xffffff, headlightIntensity, 50, Math.PI/6, 0.5, 0.5); 
+    headlightR.position.set(-stats.width/2 + 0.2, 0.8, -stats.length/2 + 0.5);
+    headlightR.target.position.set(-stats.width/2 + 0.2, 0.8, -100);
+    carGroup.add(headlightR); carGroup.add(headlightR.target);
 
-        // Efecto de neón/turbo en la parte trasera
-        const neon = new THREE.PointLight(0xff00ff, BLOOM_ENABLED ? 6 : 4, 5); // Intensidad más alta
+    // Efecto de neón/turbo en la parte trasera (solo para el jugador)
+    if (!isAI) {
+        const neon = new THREE.PointLight(0xff00ff, BLOOM_ENABLED ? 6 : 4, 5); 
         neon.position.set(0, 0.5, stats.length/2 + 0.5);
         carGroup.userData.neonLight = neon;
         carGroup.add(neon);
@@ -284,13 +383,28 @@ function hasBloomSupport() {
 
   // IA Cars (2 enemigos)
   const ai1 = createCar('Muscle Car', true);
-  ai1.position.set(30, 0, 0);
+  ai1.position.set(20, 0, 50); // Posición inicial en la ciudad
+  ai1.rotation.y = Math.PI; // Mirando en dirección opuesta
   scene.add(ai1); AI_CARS.push(ai1);
 
   const ai2 = createCar('Pickup', true);
-  ai2.position.set(-30, 0, 0);
+  ai2.position.set(-20, 0, -50);
+  ai2.rotation.y = 0;
   scene.add(ai2); AI_CARS.push(ai2);
 
+  // Tráfico (vehículos pasivos)
+  for(let i = 0; i < 5; i++){
+      const traffic = createCar('Traffic', true);
+      traffic.position.set(
+          (Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), // Carriles
+          0,
+          Math.random() * CITY_SIZE - CITY_SIZE/2
+      );
+      traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI; // Dirección
+      traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4); // Velocidad variada
+      TRAFFIC_CARS.push(traffic);
+      scene.add(traffic);
+  }
 
   // Estado del jugador
   const state = {forward:0, turn:0, speed:0, turbo:false, health: car.userData.health, ammo: car.userData.ammo || VEHICLE_STATS[CURRENT_CAR_TYPE].maxAmmo};
@@ -355,15 +469,16 @@ function hasBloomSupport() {
   }
   
   // Inicializar Power-Ups
-  createPowerUp('Ammo', new THREE.Vector3(20, 0, 20));
-  createPowerUp('Health', new THREE.Vector3(-20, 0, -20));
+  createPowerUp('Ammo', new THREE.Vector3(10, 0, 10));
+  createPowerUp('Health', new THREE.Vector3(-10, 0, -10));
   
-  // ---------- LÓGICA DE JUEGO PRINCIPAL (No modificada) ----------
+  // ---------- LÓGICA DE JUEGO PRINCIPAL ----------
   
   function applyDamage(target, amount){
       if(target.userData.health <= 0) return;
       target.userData.health = Math.max(0, target.userData.health - amount);
       
+      // Feedback visual: color rojo por impacto 
       target.children[0].material.color.setHex(0xaaaaaa); 
       setTimeout(() => {
           if(target.userData.health > 0){
@@ -371,6 +486,7 @@ function hasBloomSupport() {
           }
       }, 50);
 
+      // Lógica de Muerte/Reinicio 
       if(target.userData.health <= 0){
           const explosionLight = new THREE.PointLight(0xff8800, 5, 20);
           explosionLight.position.copy(target.position);
@@ -378,7 +494,11 @@ function hasBloomSupport() {
           
           setTimeout(()=>{
               scene.remove(explosionLight); 
-              target.position.set(Math.random() * 50 - 25, 0, Math.random() * 50 - 25);
+              target.position.set(
+                  (Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), // Carriles
+                  0,
+                  Math.random() * CITY_SIZE - CITY_SIZE/2
+              );
               target.rotation.y = Math.random() * Math.PI * 2;
               target.userData.health = target.userData.maxHealth;
               target.children[0].material.color.setHex(VEHICLE_STATS[target.userData.type].color);
@@ -386,13 +506,15 @@ function hasBloomSupport() {
       }
   }
 
+  // Colisión de Balas/Power-Ups/Coches
   function checkCollisions(dt){
+      // 1. Balas vs. Enemigos/Jugador/Tráfico
       for(let i=bulletPool.length-1;i>=0;i--){
           const bullet = bulletPool[i];
           if(!bullet.visible) continue;
           let hit = false;
           
-          const targets = [car, ...AI_CARS];
+          const targets = [car, ...AI_CARS, ...TRAFFIC_CARS];
           for(const target of targets){
               if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
                   applyDamage(target, bullet.userData.damage);
@@ -401,13 +523,14 @@ function hasBloomSupport() {
               }
           }
 
-          if(hit || bullet.position.length() > ARENA_SIZE * 2){ 
+          if(hit || bullet.position.length() > CITY_SIZE * 2){ // Si la bala se va muy lejos
               releaseBullet(bullet);
           } else {
               bullet.position.add(bullet.userData.dir.clone().multiplyScalar(bullet.userData.speed * dt));
           }
       }
       
+      // 2. Jugador vs. Power-Ups
       for(let i=POWER_UPS.length-1;i>=0;i--){
           const pu = POWER_UPS[i];
           if(!pu.userData.active) continue;
@@ -424,21 +547,24 @@ function hasBloomSupport() {
                   car.userData.health = state.health;
               }
               
+              // Re-spawnear
               setTimeout(() => {
-                  pu.position.set(Math.random() * 80 - 40, 0, Math.random() * 80 - 40);
+                  pu.position.set(Math.random() * (CITY_SIZE - 20) - (CITY_SIZE/2 - 10), 0, Math.random() * (CITY_SIZE - 20) - (CITY_SIZE/2 - 10));
                   pu.userData.active = true;
                   pu.visible = true;
               }, 5000);
           }
       }
       
-      if(car.position.x > ARENA_SIZE - 2 || car.position.x < -ARENA_SIZE + 2){
-          car.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.x));
+      // 3. Jugador vs. Bordes del mapa (para una ciudad "infinita", esto podría cambiar)
+      // Por ahora, lo mantenemos dentro de un límite para simplificar.
+      if(car.position.x > CITY_SIZE/2 - 2 || car.position.x < -CITY_SIZE/2 + 2){
+          car.position.x = Math.min(CITY_SIZE/2 - 2, Math.max(-CITY_SIZE/2 + 2, car.position.x));
           state.speed *= -0.5; 
           applyDamage(car, 5);
       }
-      if(car.position.z > ARENA_SIZE - 2 || car.position.z < -ARENA_SIZE + 2){
-          car.position.z = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.z));
+      if(car.position.z > CITY_SIZE/2 - 2 || car.position.z < -CITY_SIZE/2 + 2){
+          car.position.z = Math.min(CITY_SIZE/2 - 2, Math.max(-CITY_SIZE/2 + 2, car.position.z));
           state.speed *= -0.5; 
           applyDamage(car, 5);
       }
@@ -516,7 +642,7 @@ function hasBloomSupport() {
     last = now;
     
     if(state.health > 0){
-        // Player movement/AI logic (omitted for brevity, same as previous working code)
+        // Player movement
         state.forward = Math.max(-1, Math.min(1, stick.y));
         state.turn = Math.max(-1, Math.min(1, stick.x));
         let maxSpeed = car.userData.maxSpeed * (state.turbo ? 1.8 : 1.0); 
@@ -532,25 +658,40 @@ function hasBloomSupport() {
         car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
         car.userData.neonLight.intensity = state.turbo ? (BLOOM_ENABLED ? 8 : 5) : (BLOOM_ENABLED ? 2 : 1.5);
         
-        // IA MOVEMENT (Same as before)
+        // IA MOVEMENT (ENEMIGOS)
         for(const ai of AI_CARS){
-            const targetPos = START_POS;
+            // Sigue al jugador (o a un punto si el jugador no está visible)
+            const targetPos = car.position.clone();
             const targetDir = targetPos.clone().sub(ai.position).normalize();
             const currentDir = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion).normalize();
             const angle = currentDir.angleTo(targetDir);
             const cross = new THREE.Vector3().crossVectors(currentDir, targetDir);
             let turnAmount = 0;
             if(angle > 0.1){ turnAmount = Math.min(1, angle / Math.PI * 2); if(cross.y < 0) turnAmount *= -1; }
-            ai.rotation.y -= turnAmount * 0.03 * dt;
+            ai.rotation.y += -turnAmount * ai.userData.rotSpeed * 0.8 * dt; // Ajustar la velocidad de giro
             ai.userData.speed = ai.userData.maxSpeed * 0.8; 
             const aiFwd = new THREE.Vector3(0,0,-1).applyQuaternion(ai.quaternion);
             ai.position.add(aiFwd.multiplyScalar(ai.userData.speed * dt * 0.82));
-            if(Math.abs(ai.position.x) > ARENA_SIZE - 2 || Math.abs(ai.position.z) > ARENA_SIZE - 2){
-                ai.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, ai.position.x));
-                ai.position.z = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, ai.position.z));
-                ai.userData.speed *= -0.5; 
+            
+            // Reaparecer si se sale de la ciudad
+            if(Math.abs(ai.position.x) > CITY_SIZE/2 || Math.abs(ai.position.z) > CITY_SIZE/2){
+                ai.position.set(
+                    (Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4),
+                    0,
+                    (car.position.z > 0 ? -1 : 1) * CITY_SIZE/2 * 0.8 + (Math.random() * 20 - 10) // Aparecer lejos del jugador
+                );
             }
             ai.userData.healthBar.scale.x = ai.userData.health / ai.userData.maxHealth;
+        }
+
+        // TRAFFIC MOVEMENT
+        for(const traffic of TRAFFIC_CARS){
+            const fwdVec = new THREE.Vector3(0,0,-1).applyQuaternion(traffic.quaternion);
+            traffic.position.add(fwdVec.multiplyScalar(traffic.userData.maxSpeed * dt * 0.8));
+            
+            // Loop traffic (reaparecer al final de la ciudad)
+            if(traffic.position.z > CITY_SIZE/2 + 20){ traffic.position.z = -CITY_SIZE/2 - 20; }
+            if(traffic.position.z < -CITY_SIZE/2 - 20){ traffic.position.z = CITY_SIZE/2 + 20; }
         }
 
         checkCollisions(dt);
