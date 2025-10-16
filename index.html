@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Jardines de Morelos (Ecatepec) — Calles Reales</title>
+<title>SinFiltro — Jardines de Morelos (Ecatepec) — Calles Reales v2</title>
 <style>
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
@@ -13,16 +13,15 @@
   .badge{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:12px;font-weight:600}
   .controls{display:flex;gap:8px}
   .chip{padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
-  /* joystick + fire */
+  /* joystick */
   .joy { position:fixed; left:18px; bottom:18px; width:110px; height:110px; border-radius:60px; background:rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100 }
   .stick { width:48px; height:48px; border-radius:50%; background:rgba(255,255,255,0.06); transform:translate(0,0) }
-  .fire { position:fixed; right:18px; bottom:26px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),var(--accent2)); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 18px 60px rgba(0,0,0,0.6) }
   /* minimap */
-  .minimap{position:fixed;right:12px;bottom:120px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
-  .fps{position:fixed;left:12px;bottom:120px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110}
-  .info{position:fixed;left:12px;bottom:80px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110}
+  .minimap{position:fixed;right:12px;bottom:20px;width:110px;height:110px;border-radius:12px;background:rgba(0,0,0,0.6);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,0.6)}
+  .fps{position:fixed;left:12px;bottom:140px;background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:10px;font-weight:600;z-index:110}
+  .info{position:fixed;left:12px;bottom:100px;background:rgba(0,0,0,0.4);padding:8px 10px;border-radius:10px;z-index:110}
   /* small responsive adjustments */
-  @media (max-width:420px){ .joy{width:92px;height:92px} .stick{width:40px;height:40px} .fire{width:60px;height:60px} .minimap{width:88px;height:88px} }
+  @media (max-width:420px){ .joy{width:92px;height:92px} .stick{width:40px;height:40px} .minimap{width:88px;height:88px} }
   /* loader */
   #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.6);padding:14px 18px;border-radius:12px}
 </style>
@@ -45,7 +44,6 @@
   <div id="loading">Cargando datos de mapa…</div>
 
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="fire" id="fire">🔫</div>
   <div class="minimap" id="minimap">Mini</div>
   <div class="fps" id="fps">FPS: --</div>
   <div class="info" id="info">Modo demo — calles cargadas: 0 vías · segmentos: 0</div>
@@ -57,15 +55,15 @@
   const holder = document.getElementById('holder');
   // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul, Nicolás Bravo)
   // Format: [south, west, north, east]
-  const BBOX = [19.593, -99.002, 19.613, -98.982]; // ** NUEVAS COORDENADAS: Ecatepec **
+  const BBOX = [19.593, -99.002, 19.613, -98.982]; // ** COORDENADAS: Ecatepec (Zona Playa Azul) **
   const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
   const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
   // --- AJUSTES DE ESCALA Y COLOR SOLICITADOS ---
-  const SCENE_SCALE = 0.08; // Escala global (Ajuste de Proporción 1)
-  const CAR_WIDTH = 2.4;    // Ancho del vehículo (Ajuste de Proporción 2)
-  const STREET_COLOR = 0x282c35; // Color del asfalto (Ajuste de Color 1)
-  const BUILDING_COLOR_BASE = 0x3d414a; // Color base de edificios (Ajuste de Color 2)
+  const SCENE_SCALE = 0.08; // Escala global
+  const CAR_WIDTH = 2.4;    // Ancho del vehículo
+  const STREET_COLOR = 0x282c35; // Color del asfalto
+  const BUILDING_COLOR_BASE = 0x3d414a; // Color base de edificios
   const BUILDING_COLOR_ACCENT = 0x5a6068; // Color alterno para edificios
   // ----------------------------------------
 
@@ -85,7 +83,8 @@
   // lights
   const dir = new THREE.DirectionalLight(0xffffff, 0.9);
   dir.position.set(5,10,7); scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+  // ** [AJUSTE: Reducción de luz ambiental para mayor contraste y dramatismo] **
+  scene.add(new THREE.AmbientLight(0xffffff, 0.15));
 
   // ground plane base (This remains FLAT, fulfilling the requirement for flat streets)
   const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
@@ -135,20 +134,12 @@
   // movement state (joystick)
   const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
 
-  // bullets array (keep for demo, but no heavy use)
-  const bullets = [];
+  // ** [AJUSTE: Se elimina el array de balas] **
+  // const bullets = [];
 
-  // helper: spawn bullet
-  function spawnBullet(origin, dir){
-    const g = new THREE.SphereGeometry(0.12,8,8);
-    const m = new THREE.MeshStandardMaterial({emissive:0xffcc77,color:0x222222});
-    const b = new THREE.Mesh(g,m);
-    b.position.copy(origin);
-    b.userData.dir = dir.clone();
-    b.userData.speed = 2.4;
-    scene.add(b); bullets.push(b);
-  }
-
+  // ** [AJUSTE: Se elimina la función de disparo] **
+  // function spawnBullet(origin, dir){ ... }
+  
   // camera follow
   function updateCamera(){
     const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
@@ -247,10 +238,10 @@
         const len = seg.length();
         const mid = a.clone().add(b).multiplyScalar(0.5);
         // create a thin box
-        // *** AJUSTE DE ANCHO DE CALLE (Proporción 3) ***
+        // *** AJUSTE DE ANCHO DE CALLE ***
         const width = (w.tags.highway === 'motorway' || w.tags.highway === 'trunk') ? 4.5 : 3.0;
         const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
-        // *** AJUSTE DE COLOR DE ASFALTO (Color 1) ***
+        // *** AJUSTE DE COLOR DE ASFALTO ***
         const mat = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.9});
         const m = new THREE.Mesh(geom, mat);
         m.position.copy(mid); m.position.y = 0.01;
@@ -289,7 +280,7 @@
       const height = (w.tags['building:levels'] ? Math.max(2, +w.tags['building:levels']) : Math.floor(2 + Math.random()*4)) * 1.8;
       const g = new THREE.BoxGeometry(wth, height, lng);
       
-      // *** AJUSTE DE COLOR DE EDIFICIOS (Color 2) ***
+      // *** AJUSTE DE COLOR DE EDIFICIOS ***
       const color = count % 2 === 0 ? BUILDING_COLOR_BASE : BUILDING_COLOR_ACCENT;
       const mat = new THREE.MeshStandardMaterial({color:color, roughness:0.9});
       
@@ -438,16 +429,11 @@
   joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
-  // fire button
-  const fireBtn = document.getElementById('fire');
-  fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-  fireBtn.addEventListener('mousedown', doFire);
-
-  function doFire(){
-    const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-    const origin = car.position.clone().add(new THREE.Vector3(0,1,-2).applyQuaternion(car.quaternion));
-    spawnBullet(origin, dir);
-  }
+  // ** [AJUSTE: Eliminada la lógica de disparo (fire button) ] **
+  // const fireBtn = document.getElementById('fire');
+  // fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+  // fireBtn.addEventListener('mousedown', doFire);
+  // function doFire(){ ... }
 
   // ---------- UI toggles ----------
   let roadsVisible = true;
@@ -489,12 +475,9 @@
     car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
     // soft constrain to roads
     constrainToRoad(car.position);
-    // bullets update
-    for(let i=bullets.length-1;i>=0;i--){
-      const b = bullets[i];
-      b.position.add(b.userData.dir.clone().multiplyScalar(b.userData.speed * dt));
-      if(b.position.length() > 800) { scene.remove(b); bullets.splice(i,1); }
-    }
+    // ** [AJUSTE: Eliminado el bucle de actualización de balas] **
+    // for(let i=bullets.length-1;i>=0;i--){ ... }
+    
     updateCamera();
     updateMinimap();
     renderer.render(scene, camera);
@@ -523,9 +506,6 @@
 
   // hide debug tile count until loaded
   document.getElementById('tilesCount').textContent = roadPolylines.length;
-
-  // Provide ability to toggle roads/sat by tapping mini UI (already wired)
-  // All done.
 
 })();
 </script>
