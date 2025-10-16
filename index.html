@@ -80,7 +80,7 @@
 
   <div class="hud">
     <div class="panel">
-      <h2>VEHÍCULO: <span id="carType">Muscle Car</span></h2>
+      <h2>VEHÍCULO: <span id="carType">Sport</span></h2>
       Salud:
       <div class="bar-container"><div id="healthBar" class="health-bar"></div></div>
     </div>
@@ -127,7 +127,7 @@
       'Sport': { color: 0x5555ff, width: 2.2, length: 4.0, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
       'Pickup': { color: 0x55ff55, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 }
   };
-  let CURRENT_CAR_TYPE = 'Sport'; // Cambiamos a Sport por defecto para el look & feel
+  let CURRENT_CAR_TYPE = 'Sport'; 
 
   // ---------- THREEJS SETUP ----------
   const scene = new THREE.Scene();
@@ -172,7 +172,7 @@
   // Edificios/Obstáculos (Estilo Low-Poly)
   const wallHeight = 15; 
   const buildingMat = new THREE.MeshStandardMaterial({color:0x1e1e2e, roughness:0.7, metalness:0.3});
-  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff, emissive:0x00ffff, emissiveIntensity:1.5}); // Ventanas Brillantes
+  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff, emissive:0x00ffff, emissiveIntensity:1.5}); 
 
   function createBuilding(x, z, w, d, h = wallHeight){
       const group = new THREE.Group();
@@ -211,7 +211,7 @@
     
     // Cuerpo del vehículo (Low-Poly con materiales metálicos)
     const bodyGeo = new THREE.BoxGeometry(stats.width, 0.7, stats.length);
-    const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); // MUY brillante y reflectante
+    const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 0.7; 
     carGroup.add(body);
@@ -308,7 +308,7 @@
       }
       if(bulletPool.length < maxBullets){
           const g = new THREE.SphereGeometry(0.2,8,8); 
-          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:3, color:0x222222}); // Emissive para brillar con Bloom
+          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:3, color:0x222222}); 
           const b = new THREE.Mesh(g,m);
           b.userData.dir = new THREE.Vector3();
           b.userData.speed = 4.0;
@@ -431,15 +431,15 @@
       // 3. Jugador vs. Paredes/Edificios
       if(car.position.x > ARENA_SIZE - 2 || car.position.x < -ARENA_SIZE + 2){
           car.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.x));
-          state.speed *= -0.5; // Rebote
+          state.speed *= -0.5; 
           applyDamage(car, 5);
       }
       if(car.position.z > ARENA_SIZE - 2 || car.position.z < -ARENA_SIZE + 2){
           car.position.z = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.z));
-          state.speed *= -0.5; // Rebote
+          state.speed *= -0.5; 
           applyDamage(car, 5);
       }
-      state.health = car.userData.health; // Sincroniza la salud del HUD
+      state.health = car.userData.health; 
   }
   
   // Camera Follow
@@ -475,7 +475,7 @@
   // Mouse/Pointer Handlers (para testing en PC)
   let md=false;
   joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-dy; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
 
@@ -500,7 +500,16 @@
 
       const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
       const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-3.0).applyQuaternion(car.quaternion));
-      spawnBullet(origin, dir);
+      getBullet().position.copy(origin);
+      getBullet().userData.dir.copy(dir);
+  }
+  
+  function spawnBullet(pos, dir){
+    const b = getBullet();
+    if(b){
+        b.position.copy(pos);
+        b.userData.dir.copy(dir);
+    }
   }
 
   // ---------- RENDER LOOP ----------
@@ -576,7 +585,7 @@
     updateCamera();
     updateHUD();
     
-    composer.render(); // Renderiza la escena con post-procesado (Bloom)
+    composer.render(); 
     
     frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
     requestAnimationFrame(animate);
