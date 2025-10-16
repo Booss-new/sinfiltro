@@ -118,6 +118,8 @@ function hasBloomSupport() {
   };
   let CURRENT_CAR_TYPE = 'Sport'; 
   const BLOOM_ENABLED = hasBloomSupport(); 
+  if(!BLOOM_ENABLED) console.warn("BLOOM DISABLED: UnrealBloomPass no cargó. Renderizando sin efecto Neón. Asegúrate de que los enlaces Three.js no estén bloqueados.");
+
 
   // ---------- THREEJS SETUP CON FALLBACK DE BLOOM ----------
   const scene = new THREE.Scene();
@@ -136,30 +138,26 @@ function hasBloomSupport() {
   let composer = null;
   if(BLOOM_ENABLED){
       // INICIALIZACIÓN DEL BLOOM
-      console.log("BLOOM ENABLED: Inicializando EffectComposer.");
       composer = new EffectComposer(renderer);
       composer.addPass(new RenderPass(scene, camera));
       const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
       bloomPass.renderToScreen = true;
       composer.addPass(bloomPass);
-  } else {
-      console.warn("BLOOM DISABLED: UnrealBloomPass no cargó. Renderizando sin efecto Neón.");
   }
-
 
   // Lights (Ambiente Nocturno)
   scene.add(new THREE.DirectionalLight(0xffffff, 0.2)); 
   scene.add(new THREE.AmbientLight(0xffffff, 0.05)); 
 
-  // Luces de neón/ambientales para el estilo urbano
-  const neonLight = new THREE.PointLight(0x00ffff, 2, 50); neonLight.position.set(40, 5, 40); scene.add(neonLight);
-  const neonLight2 = new THREE.PointLight(0xff00ff, 2, 50); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
+  // Luces de neón/ambientales para el estilo urbano - AUMENTADAS
+  const neonLight = new THREE.PointLight(0x00ffff, 3.5, 60); neonLight.position.set(40, 5, 40); scene.add(neonLight);
+  const neonLight2 = new THREE.PointLight(0xff00ff, 3.5, 60); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
 
 
   // ---------- ARENA DE COMBATE ESTILIZADA ----------
   
-  // Suelo (Asfalto Brillante)
-  const groundMat = new THREE.MeshStandardMaterial({color:0x151525, roughness:0.8, metalness:0.3});
+  // Suelo (Asfalto Brillante/Metálico)
+  const groundMat = new THREE.MeshStandardMaterial({color:0x101015, roughness:0.7, metalness:0.4}); // Más oscuro y metálico
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(ARENA_SIZE * 2, ARENA_SIZE * 2, 1, 1), groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
@@ -167,11 +165,13 @@ function hasBloomSupport() {
   
   // Edificios/Obstáculos (Estilo Low-Poly)
   const wallHeight = 15; 
-  const buildingMat = new THREE.MeshStandardMaterial({color:0x1e1e2e, roughness:0.7, metalness:0.3});
+  const buildingMat = new THREE.MeshStandardMaterial({color:0x12121e, roughness:0.8, metalness:0.1}); // Aún más oscuros
+  
+  const windowColor = 0x00ffcc; // Un cian/verde eléctrico
   // Usamos BasicMaterial con Emissive si BLOOM está activado, si no, solo Basic
   const windowMat = BLOOM_ENABLED 
-      ? new THREE.MeshBasicMaterial({color:0x00ffff, emissive:0x00ffff, emissiveIntensity:1.5})
-      : new THREE.MeshBasicMaterial({color:0x00ffff}); 
+      ? new THREE.MeshBasicMaterial({color:windowColor, emissive:windowColor, emissiveIntensity:2.0}) // Emisión más alta
+      : new THREE.MeshBasicMaterial({color:windowColor}); 
 
   function createBuilding(x, z, w, d, h = wallHeight){
       const group = new THREE.Group();
@@ -268,7 +268,7 @@ function hasBloomSupport() {
         carGroup.add(headlightR); carGroup.add(headlightR.target);
 
         // Efecto de neón/turbo en la parte trasera
-        const neon = new THREE.PointLight(0xff00ff, BLOOM_ENABLED ? 5 : 3, 5); 
+        const neon = new THREE.PointLight(0xff00ff, BLOOM_ENABLED ? 6 : 4, 5); // Intensidad más alta
         neon.position.set(0, 0.5, stats.length/2 + 0.5);
         carGroup.userData.neonLight = neon;
         carGroup.add(neon);
@@ -310,10 +310,11 @@ function hasBloomSupport() {
       }
       if(bulletPool.length < maxBullets){
           const g = new THREE.SphereGeometry(0.2,8,8); 
+          const bulletColor = 0xffa500; // Naranja brillante
           // Material de bala brillante si hay Bloom
           const m = BLOOM_ENABLED
-            ? new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:3, color:0x222222})
-            : new THREE.MeshBasicMaterial({color:0xffcc77}); 
+            ? new THREE.MeshStandardMaterial({emissive:bulletColor, emissiveIntensity:4, color:0x222222}) // Emisión más alta
+            : new THREE.MeshBasicMaterial({color:bulletColor}); 
           const b = new THREE.Mesh(g,m);
           b.userData.dir = new THREE.Vector3();
           b.userData.speed = 4.0;
@@ -341,7 +342,7 @@ function hasBloomSupport() {
       const g = new THREE.BoxGeometry(scale, scale, scale);
       // Power-Ups Emissivos si hay Bloom
       const m = BLOOM_ENABLED
-        ? new THREE.MeshStandardMaterial({color:color, emissive:color, emissiveIntensity:1.5})
+        ? new THREE.MeshStandardMaterial({color:color, emissive:color, emissiveIntensity:2.0}) 
         : new THREE.MeshBasicMaterial({color:color}); 
         
       const pu = new THREE.Mesh(g, m);
@@ -357,13 +358,12 @@ function hasBloomSupport() {
   createPowerUp('Ammo', new THREE.Vector3(20, 0, 20));
   createPowerUp('Health', new THREE.Vector3(-20, 0, -20));
   
-  // ---------- LÓGICA DE JUEGO PRINCIPAL ----------
+  // ---------- LÓGICA DE JUEGO PRINCIPAL (No modificada) ----------
   
   function applyDamage(target, amount){
       if(target.userData.health <= 0) return;
       target.userData.health = Math.max(0, target.userData.health - amount);
       
-      // Feedback visual: color rojo por impacto 
       target.children[0].material.color.setHex(0xaaaaaa); 
       setTimeout(() => {
           if(target.userData.health > 0){
@@ -371,7 +371,6 @@ function hasBloomSupport() {
           }
       }, 50);
 
-      // Lógica de Muerte/Reinicio 
       if(target.userData.health <= 0){
           const explosionLight = new THREE.PointLight(0xff8800, 5, 20);
           explosionLight.position.copy(target.position);
@@ -387,9 +386,7 @@ function hasBloomSupport() {
       }
   }
 
-  // Colisión de Balas/Power-Ups/Paredes
   function checkCollisions(dt){
-      // 1. Balas vs. Enemigos/Jugador (Simplificado)
       for(let i=bulletPool.length-1;i>=0;i--){
           const bullet = bulletPool[i];
           if(!bullet.visible) continue;
@@ -411,7 +408,6 @@ function hasBloomSupport() {
           }
       }
       
-      // 2. Jugador vs. Power-Ups
       for(let i=POWER_UPS.length-1;i>=0;i--){
           const pu = POWER_UPS[i];
           if(!pu.userData.active) continue;
@@ -428,7 +424,6 @@ function hasBloomSupport() {
                   car.userData.health = state.health;
               }
               
-              // Re-spawnear
               setTimeout(() => {
                   pu.position.set(Math.random() * 80 - 40, 0, Math.random() * 80 - 40);
                   pu.userData.active = true;
@@ -437,7 +432,6 @@ function hasBloomSupport() {
           }
       }
       
-      // 3. Jugador vs. Paredes/Bordes
       if(car.position.x > ARENA_SIZE - 2 || car.position.x < -ARENA_SIZE + 2){
           car.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.x));
           state.speed *= -0.5; 
@@ -469,7 +463,7 @@ function hasBloomSupport() {
       document.getElementById('speedDisplay').textContent = kmh;
   }
 
-  // ---------- INPUTS Y CONTROLES (Misma Lógica) ----------
+  // ---------- INPUTS Y CONTROLES (No modificados) ----------
   const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
   let touchId = null, baseX=0, baseY=0;
   let stick = {x:0,y:0};
