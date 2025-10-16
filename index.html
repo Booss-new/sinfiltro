@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Jardines de Morelos (OPTIMIZADO para Móvil)</title>
+<title>SinFiltro — Jardines de Morelos (VELOCIDAD MÁXIMA)</title>
 <style>
   /* AJUSTES DE DISEÑO GAMER */
-  :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#ff3333;--accent2:#ff8833;--shadow:rgba(0,0,0,0.8)}
+  :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#ff3333;--accent2:#ff8833;--shadow:rgba(0,0,0,0.6)}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
   #holder{width:100%;height:100%;position:relative;touch-action:none}
   
@@ -20,11 +20,11 @@
   .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:var(--shadow); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(255,255,255,0.1) }
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); transform:translate(0,0) }
   
-  /* fire button - MÁS GRANDE Y CENTRAL */
-  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),#ff0000); display:flex;align-items:center;justify-content:center;z-index:100;pointer-events:auto;box-shadow:0 0 20px #ff0000; font-size:30px; border:3px solid #fff }
+  /* fire button - CORRECCIÓN DE POSICIÓN Y Z-INDEX */
+  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--accent1),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 20px #ff0000; font-size:30px; border:3px solid #fff }
   
-  /* minimap - MÁS PEQUEÑO */
-  .minimap{position:fixed;right:12px;bottom:12px;width:88px;height:88px;border-radius:8px;background:var(--shadow);z-index:110;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 6px 15px var(--shadow); border:1px solid rgba(255,255,255,0.1)}
+  /* minimap - TAMAÑO CORRECTO (PEQUEÑO) */
+  .minimap{position:fixed;right:12px;bottom:12px;width:88px;height:88px;border-radius:8px;background:var(--shadow);z-index:100;display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 6px 15px var(--shadow); border:1px solid rgba(255,255,255,0.1)}
   
   /* Info/FPS */
   .fps{position:fixed;left:12px;bottom:120px;background:var(--shadow);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px}
@@ -71,7 +71,7 @@
 (async function(){
   // ---------- CONFIG ----------
   const holder = document.getElementById('holder');
-  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul, Nicolás Bravo)
+  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul)
   const BBOX = [19.593, -99.002, 19.613, -98.982]; 
   const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
   const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -82,22 +82,21 @@
   const STREET_COLOR = 0x282c35; 
   const BUILDING_COLOR_BASE = 0x3d414a; 
   const BUILDING_COLOR_ACCENT = 0x5a6068; 
-  const BULB_COLOR = 0xffe9a1; // Color cálido de farola
+  const BULB_COLOR = 0xffe9a1; 
   // ----------------------------------------
 
   // ---------- THREEJS basic scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060a);
-  // NIEBLA DE BAJO COSTO (Sin Post-FX)
   scene.fog = new THREE.Fog(scene.background, 10, 150); 
   
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
-  // ** [OPTIMIZACIÓN: Sombra de bajo costo] **
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // PCF para sombras suaves
+  
+  // ** [SOLUCIÓN DE RENDIMIENTO CRÍTICA: Desactivar Sombras] **
+  renderer.shadowMap.enabled = false;
   holder.appendChild(renderer.domElement);
   
   // camera
@@ -107,24 +106,18 @@
   // lights
   const dir = new THREE.DirectionalLight(0xffffff, 0.9);
   dir.position.set(5,10,7); 
-  dir.castShadow = true;
-  dir.shadow.mapSize.width = 1024;
-  dir.shadow.mapSize.height = 1024;
-  dir.shadow.camera.near = 0.5;
-  dir.shadow.camera.far = 50;
-  dir.shadow.camera.left = -50;
-  dir.shadow.camera.right = 50;
-  dir.shadow.camera.top = 50;
-  dir.shadow.camera.bottom = -50;
+  // Las sombras de la luz direccional están desactivadas (por el renderer.shadowMap.enabled = false)
   scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.15)); 
+  
+  // ** [SOLUCIÓN DE COLOR/VISIBILIDAD: Más luz ambiental] **
+  scene.add(new THREE.AmbientLight(0xffffff, 0.45)); // De 0.15 a 0.45
 
-  // ground plane base (Recibe sombras)
+  // ground plane base 
   const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000,2000,1,1), groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
-  ground.receiveShadow = true; 
+  // Ya no recibe sombra
   scene.add(ground);
 
   // world transform
@@ -149,7 +142,7 @@
   const car = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555}));
   body.position.y = 0.7; 
-  body.castShadow = true; // El carro proyecta sombras
+  // Ya no proyecta sombra
   car.add(body);
   const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
   const wheelMat = new THREE.MeshStandardMaterial({color:0x111111});
@@ -158,7 +151,6 @@
     w.rotation.z = Math.PI/2; w.position.y = 0.25;
     w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.2): (CAR_WIDTH/2 - 0.2);
     w.position.z = (i<2)?1.2:-1.2;
-    w.castShadow = true;
     car.add(w);
   }
   car.position.set(0,0,0);
@@ -167,7 +159,7 @@
   // movement state (joystick)
   const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
   
-  // ** [MEJORA: Vuelve el sistema de "disparo" simple] **
+  // sistema de disparo
   const bullets = [];
   function spawnBullet(origin, dir){
     const g = new THREE.SphereGeometry(0.12,8,8);
@@ -235,17 +227,15 @@
 
   // Add simple lamp posts to scene (for visual)
   function addLampAt(pos){
-    // ** [OPTIMIZACIÓN: Punto de luz para simular Bloom] **
-    const pointLight = new THREE.PointLight(BULB_COLOR, 10, 15, 2);
+    // ** [Farola más brillante para simular resplandor con la luz ambiental alta] **
+    const pointLight = new THREE.PointLight(BULB_COLOR, 15, 15, 2); // Intensidad ajustada
     pointLight.position.copy(pos).add(new THREE.Vector3(0, 2.2, 0));
     scene.add(pointLight);
 
     const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2,6), new THREE.MeshStandardMaterial({color:0x111111}));
     stick.position.copy(pos).add(new THREE.Vector3(0,1,0));
-    stick.castShadow = true;
     scene.add(stick);
     
-    // ** [OPTIMIZACIÓN: MeshBasicMaterial para el bulbo (más eficiente)] **
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), new THREE.MeshBasicMaterial({color:BULB_COLOR}));
     bulb.position.copy(pos).add(new THREE.Vector3(0,2,0));
     scene.add(bulb);
@@ -280,11 +270,10 @@
         const m = new THREE.Mesh(geom, mat);
         m.position.copy(mid); m.position.y = 0.01;
         m.lookAt(b); m.rotateX(Math.PI/2); 
-        m.receiveShadow = true;
         roadsGroup.add(m);
         segmentCount++;
 
-        // ** [OPTIMIZACIÓN: Farolas sólo en segmentos largos] **
+        // Farolas solo en segmentos largos
         if (len > 12 && i % 4 === 0) { 
              addLampAt(a);
         }
@@ -320,8 +309,6 @@
       
       const b = new THREE.Mesh(g, mat);
       b.position.set((minx+maxx)/2, height/2, (minz+maxz)/2);
-      b.castShadow = true; // Los edificios proyectan sombras
-      b.receiveShadow = true;
       buildingsGroup.add(b);
       count++;
     }
@@ -348,7 +335,7 @@
     }
   }
 
-  // ---------- Road-following / soft collision constraint ----------
+  // ---------- Road-following / soft collision constraint (Edificios) ----------
   function constrainToRoad(pos){
     let best = {dist:1e9, nearest:null};
     for(const poly of roadPolylines){
@@ -413,8 +400,9 @@
   function updateMinimap(){
     const scale = 0.35; 
     mmCtx.clearRect(0,0,256,256);
-    mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
-    mmCtx.strokeStyle = '#ffaa44'; // Color de ruta más visible
+    mmCtx.fillStyle = '#07101a'; 
+    mmCtx.fillRect(0,0,256,256);
+    mmCtx.strokeStyle = '#ffaa44'; 
     mmCtx.lineWidth = 4;
     mmCtx.beginPath();
     for(const poly of roadPolylines){
@@ -429,7 +417,7 @@
     mmCtx.stroke();
     const px = 128 + car.position.x * scale;
     const py = 128 + car.position.z * scale;
-    mmCtx.fillStyle = '#ff3333'; // Marcador de carro rojo
+    mmCtx.fillStyle = '#ff3333'; 
     mmCtx.beginPath(); mmCtx.arc(px,py,6,0,Math.PI*2); mmCtx.fill();
   }
 
@@ -447,7 +435,7 @@
   joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
   
-  // ** [MEJORA: Botón de disparo funcional] **
+  // Botón de disparo funcional
   const fireBtn = document.getElementById('fire');
   fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
   fireBtn.addEventListener('mousedown', doFire);
@@ -508,7 +496,7 @@
     updateCamera();
     updateMinimap();
     
-    // ** [RENDERIZADO DIRECTO para Máximo Rendimiento] **
+    // RENDERIZADO DIRECTO
     renderer.render(scene, camera);
     
     // fps
