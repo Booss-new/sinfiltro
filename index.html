@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Metal Streets: Battle Racers (Estilo Urbano Corregido)</title>
+<title>Metal Streets: Battle Racers (Estilo Urbano SIN BLOOM)</title>
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -104,11 +104,6 @@
   <div class="fps" id="fps">FPS: --</div>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
 (async function(){
@@ -128,7 +123,7 @@
   };
   let CURRENT_CAR_TYPE = 'Sport'; 
 
-  // ---------- THREEJS SETUP ----------
+  // ---------- THREEJS SETUP (SIN BLOOM) ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x020306); 
   scene.fog = new THREE.Fog(scene.background, 10, 150); 
@@ -139,22 +134,16 @@
   renderer.shadowMap.enabled = false; 
   holder.appendChild(renderer.domElement);
   
-  // POST-PROCESADO: EFFECT COMPOSER Y BLOOM
-  const composer = new EffectComposer(renderer);
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
   camera.position.set(0, 12, 24);
-  composer.addPass(new RenderPass(scene, camera));
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
-  bloomPass.renderToScreen = true;
-  composer.addPass(bloomPass);
 
-  // lights (Ambiente Nocturno)
-  scene.add(new THREE.DirectionalLight(0xffffff, 0.2)); 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.05)); 
+  // lights (Ajustadas para un Low-Poly limpio)
+  scene.add(new THREE.DirectionalLight(0xffffff, 0.4)); 
+  scene.add(new THREE.AmbientLight(0xffffff, 0.2)); 
 
-  // Luces de neón/ambientales para el estilo urbano
-  const neonLight = new THREE.PointLight(0x00ffff, 2, 50); neonLight.position.set(40, 5, 40); scene.add(neonLight);
-  const neonLight2 = new THREE.PointLight(0xff00ff, 2, 50); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
+  // Luces de neón/ambientales (mantienen el color, pero sin efecto Bloom)
+  const neonLight = new THREE.PointLight(0x00ffff, 1.5, 50); neonLight.position.set(40, 5, 40); scene.add(neonLight);
+  const neonLight2 = new THREE.PointLight(0xff00ff, 1.5, 50); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
 
 
   // ---------- ARENA DE COMBATE ESTILIZADA ----------
@@ -169,7 +158,8 @@
   // Edificios/Obstáculos (Estilo Low-Poly)
   const wallHeight = 15; 
   const buildingMat = new THREE.MeshStandardMaterial({color:0x1e1e2e, roughness:0.7, metalness:0.3});
-  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff, emissive:0x00ffff, emissiveIntensity:1.5}); 
+  // Usamos BasicMaterial solo para el color de las ventanas, sin el emissive intensity del Bloom
+  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff}); 
 
   function createBuilding(x, z, w, d, h = wallHeight){
       const group = new THREE.Group();
@@ -178,7 +168,7 @@
       body.position.set(x, h/2, z);
       group.add(body);
       
-      // Simular algunas ventanas brillantes
+      // Simular algunas ventanas 
       for(let i=0; i<3; i++){
           const windowGeo = new THREE.BoxGeometry(w*0.1, h*0.1, 0.05);
           const windowMesh = new THREE.Mesh(windowGeo, windowMat);
@@ -213,7 +203,7 @@
     body.position.y = 0.7; 
     carGroup.add(body);
     
-    // Alerón trasero (solo Sport/Muscle para look)
+    // Alerón trasero 
     if (type !== 'Pickup' && !isAI) { 
         const spoilerGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.8);
         const spoilerMat = new THREE.MeshStandardMaterial({color: 0x222222, metalness:0.8, roughness:0.2});
@@ -222,8 +212,8 @@
         carGroup.add(spoiler);
     }
     
-    // Luces Traseras (Emissivas para Bloom)
-    const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive:0xff0000, emissiveIntensity:1.5});
+    // Luces Traseras (Ahora solo Basic, no Emissive)
+    const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000}); 
     const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
     const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
     tailLights.position.set(0, 0.8, stats.length/2 - 0.05); 
@@ -262,8 +252,8 @@
         headlightR.target.position.set(-stats.width/2 + 0.2, 0.8, -100);
         carGroup.add(headlightR); carGroup.add(headlightR.target);
 
-        // Efecto de neón/turbo en la parte trasera
-        const neon = new THREE.PointLight(0xff00ff, 5, 5); 
+        // Efecto de neón/turbo en la parte trasera (solo como luz PointLight)
+        const neon = new THREE.PointLight(0xff00ff, 3, 5); 
         neon.position.set(0, 0.5, stats.length/2 + 0.5);
         carGroup.userData.neonLight = neon;
         carGroup.add(neon);
@@ -292,7 +282,7 @@
   
   // ---------- SISTEMA DE ARMAS Y POWER-UPS ----------
   
-  // Object Pooling para balas (con un material brillante para el Bloom)
+  // Object Pooling para balas (Ahora solo Basic, no Emissive)
   const bulletPool = [];
   const maxBullets = 20;
   
@@ -305,7 +295,7 @@
       }
       if(bulletPool.length < maxBullets){
           const g = new THREE.SphereGeometry(0.2,8,8); 
-          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:3, color:0x222222}); 
+          const m = new THREE.MeshBasicMaterial({color:0xffcc77}); // Balas sin emissive
           const b = new THREE.Mesh(g,m);
           b.userData.dir = new THREE.Vector3();
           b.userData.speed = 4.0;
@@ -324,14 +314,14 @@
       b.position.set(0, -100, 0); 
   }
   
-  // Generación de Power-Ups (brillan con Bloom)
+  // Generación de Power-Ups (Ahora solo Basic, no Emissive)
   function createPowerUp(type, position){
       let color, scale;
       if(type === 'Ammo'){ color = 0x00ff00; scale = 0.8; }
       else if(type === 'Health'){ color = 0xffa500; scale = 1.0; }
       
       const g = new THREE.BoxGeometry(scale, scale, scale);
-      const m = new THREE.MeshStandardMaterial({color:color, emissive:color, emissiveIntensity:1.5}); 
+      const m = new THREE.MeshBasicMaterial({color:color}); 
       const pu = new THREE.Mesh(g, m);
       pu.position.copy(position);
       pu.position.y = scale / 2 + 0.1;
@@ -497,7 +487,7 @@
 
       const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
       const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-3.0).applyQuaternion(car.quaternion));
-      spawnBullet(origin, dir); // Usamos spawnBullet para la lógica de pool
+      spawnBullet(origin, dir); 
   }
   
   function spawnBullet(pos, dir){
@@ -541,8 +531,8 @@
         const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
         car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
 
-        // Actualizar brillo de neón (más intenso con turbo)
-        car.userData.neonLight.intensity = state.turbo ? 8 : 2;
+        // Actualizar luz de neón (sigue siendo más brillante con turbo)
+        car.userData.neonLight.intensity = state.turbo ? 5 : 1.5;
         
         // IA MOVEMENT (Buscar punto central)
         for(const ai of AI_CARS){
@@ -581,7 +571,7 @@
     updateCamera();
     updateHUD();
     
-    composer.render(); 
+    renderer.render(scene, camera); // Renderiza sin el Composer
     
     frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
     requestAnimationFrame(animate);
@@ -596,7 +586,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight); 
     camera.aspect = innerWidth/innerHeight; 
     camera.updateProjectionMatrix(); 
-    composer.setSize(window.innerWidth, window.innerHeight); 
   });
 
 })();
