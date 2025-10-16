@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>CENIT DE ACERO: Arena de Combate Extremo - Playas JM</title>
+<title>CENIT DE ACERO: Arena de Combate Extremo</title>
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -113,12 +113,14 @@
 
 <script>
 
-function hasBloomSupport() {
-    return true; 
-}
+// ** OPINIÓN DE RENDIMIENTO **
+// Se recomienda mantener SHADOWS_ENABLED y BLOOM_ENABLED a 'true' y que el código
+// maneje los fallos de forma suave, lo cual hacemos con el try/catch.
+const BLOOM_ENABLED = true; 
+const SHADOWS_ENABLED = true; 
 
 // =========================================================================
-// == CLASE CARCONTROLLER (CON ARMAS DELANTERAS Y OFFSETS)                ==
+// == CLASE CARCONTROLLER (SIN CAMBIOS EN LÓGICA DE JUEGO)                ==
 // =========================================================================
 
 const VEHICLE_STATS = {
@@ -144,7 +146,6 @@ class CarController extends THREE.Group {
         this.userData.speed = 0; 
         this.userData.isDestroyed = false;
 
-        // offsets locales de los cañones (se usan luego para spawn de balas)
         this.userData.gunOffsets = []; 
 
         this.componentes = {
@@ -167,6 +168,7 @@ class CarController extends THREE.Group {
             healthBar.rotation.y = Math.PI/2;
             this.userData.healthBar = healthBar;
             this.add(healthBar);
+            if(SHADOWS_ENABLED) healthBar.receiveShadow = false;
         }
     }
 
@@ -177,8 +179,7 @@ class CarController extends THREE.Group {
         body.scale.set(1.5, 0.8, 1);
         body.rotation.y = Math.PI / 2;
         body.position.y = 1.0; 
-        body.castShadow = true;
-        body.receiveShadow = true;
+        if(SHADOWS_ENABLED){ body.castShadow = true; body.receiveShadow = true; }
         this.add(body);
         
         const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
@@ -190,18 +191,16 @@ class CarController extends THREE.Group {
         this.userData.body = body;
         this.userData.tailLights = tailLights;
         
-        // ** INTEGRACIÓN: Cañones delanteros **
+        // Cañones delanteros
         if (this.userData.type !== 'Traffic') {
             const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.95, roughness: 0.15 });
             const barrelGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8);
 
-            const frontZ = -stats.length / 2 + 0.7; // coordenada Z frontal (aprox)
-            // Posiciones simétricas a los lados del vehículo, cerca de las ruedas delanteras
+            const frontZ = -stats.length / 2 + 0.7;
             const leftX = -stats.width / 2 - 0.1;
             const rightX = stats.width / 2 + 0.1;
             const gunY = 1.2;
 
-            // Cañón Derecho
             const barrelR = new THREE.Mesh(barrelGeo, gunMat);
             barrelR.rotation.z = Math.PI / 2;
             barrelR.position.set(rightX, gunY, frontZ);
@@ -210,7 +209,6 @@ class CarController extends THREE.Group {
             baseR.position.set(rightX, gunY - 0.08, frontZ + 0.28);
             this.add(baseR);
 
-            // Cañón Izquierdo
             const barrelL = barrelR.clone();
             barrelL.position.x = leftX;
             this.add(barrelL);
@@ -218,7 +216,6 @@ class CarController extends THREE.Group {
             baseL.position.x = leftX;
             this.add(baseL);
 
-            // Guardamos offsets locales para el disparo doble
             this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ));
             this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ));
         }
@@ -241,7 +238,7 @@ class CarController extends THREE.Group {
             const wheel = new THREE.Mesh(wheelGeo, wheelMat);
             wheel.rotation.z = Math.PI / 2;
             wheel.position.set(pos.x, 0.5, pos.z);
-            wheel.castShadow = true;
+            if(SHADOWS_ENABLED) wheel.castShadow = true;
             this.add(wheel);
         }
     }
@@ -338,6 +335,9 @@ class CarController extends THREE.Group {
 // == FUNCIÓN DE INICIALIZACIÓN PRINCIPAL (init)                          ==
 // =========================================================================
 
+let renderer = null; // Declaración global
+let composer = null; // Declaración global
+
 function init() {
     (function(){
       const holder = document.getElementById('holder');
@@ -347,69 +347,76 @@ function init() {
       const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
       let CURRENT_CAR_TYPE = 'Muscle Car'; 
-      const BLOOM_ENABLED = hasBloomSupport(); 
       
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
       scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, CITY_SIZE * 2); 
       
-      // ** APLICACIÓN DEL PARCHE DE RENDERIZADO **
-      const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
-
-      // Reducir shadow map para móviles (evita fallos por memoria)
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.shadowMap.autoUpdate = true;
-      
-      // Forzamos tamaño y estilo del canvas para evitar que quede oculto por CSS
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.domElement.style.position = 'absolute';
-      renderer.domElement.style.top = '0';
-      renderer.domElement.style.left = '0';
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.domElement.style.zIndex = '0';
-      
-      // Insertamos el canvas al holder y solo entonces ocultamos el loader
+      // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
       try {
+        renderer = new THREE.WebGLRenderer({
+            antialias: true, 
+            alpha: false,
+            powerPreference: "low-power", // Sugiere usar GPU de bajo consumo (mejor en móviles)
+            failIfMajorPerformanceCaveat: true // Falla si no se puede iniciar con rendimiento mínimo
+        });
+        
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        renderer.shadowMap.enabled = SHADOWS_ENABLED;
+        if(SHADOWS_ENABLED) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Forzamos CSS para asegurar la visibilidad del canvas (z-index: 0)
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '0';
+        renderer.domElement.style.left = '0';
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.domElement.style.zIndex = '0'; 
+        
         holder.appendChild(renderer.domElement);
-        // Aseguramos que el fondo del renderer se corresponda con la escena
-        if (scene && scene.background) {
-          renderer.setClearColor(scene.background);
-        } else {
-          renderer.setClearColor(0x6e8ca0);
-        }
+        renderer.setClearColor(scene.background); 
+        
         const loadingEl = document.getElementById('loading');
         if (loadingEl) loadingEl.style.display = 'none';
+        
       } catch (err) {
-        console.error('Error al crear o insertar renderer:', err);
+        console.error('Error FATAL al crear el contexto WebGL:', err);
         const loadingEl = document.getElementById('loading');
-        if (loadingEl) loadingEl.textContent = 'WebGL no disponible. Intente en otro dispositivo.';
-        return; // Detener la ejecución si el renderer falla
+        if (loadingEl) loadingEl.textContent = '¡Error! WebGL no soportado o falló la inicialización. Intenta con otro dispositivo/navegador.';
+        return; // Detener la ejecución si falla el renderer
       }
-      // ** FIN DEL PARCHE **
       
-      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+      // ** AJUSTE DE FRUSTUM (Optimización) **
+      // Reduce la distancia de visión para menor carga de draw-calls.
+      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24);
 
-      let composer = null;
+      // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
       if(BLOOM_ENABLED){
-          composer = new EffectComposer(renderer);
-          composer.addPass(new RenderPass(scene, camera));
-          const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
-          bloomPass.renderToScreen = true;
-          composer.addPass(bloomPass);
+        try{
+            composer = new EffectComposer(renderer);
+            composer.addPass(new RenderPass(scene, camera));
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
+            bloomPass.renderToScreen = true;
+            composer.addPass(bloomPass);
+            console.log("Efecto Bloom inicializado correctamente.");
+        } catch(e){
+            console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
+            composer = null; // Fuerza el fallback a renderizado simple
+        }
       }
 
-      // Luces (THREE.DirectionalLight con shadowMap reducido)
+      // Luces
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
       dirLight.position.set(200, 400, 300);
-      dirLight.castShadow = true;
-      // ** CORRECCIÓN: Shadow Map Reducido **
-      dirLight.shadow.mapSize.width = 1024; 
-      dirLight.shadow.mapSize.height = 1024;
-      // ** FIN CORRECCIÓN **
+      dirLight.castShadow = SHADOWS_ENABLED;
+      if(SHADOWS_ENABLED){
+        // ** Sombra de Baja Resolución (Optimizada) **
+        dirLight.shadow.mapSize.width = 1024; 
+        dirLight.shadow.mapSize.height = 1024;
+      }
       dirLight.shadow.camera.left = -CITY_SIZE;
       dirLight.shadow.camera.right = CITY_SIZE;
       dirLight.shadow.camera.top = CITY_SIZE;
@@ -426,12 +433,11 @@ function init() {
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
       try {
-        // Usamos una URL genérica de asfalto (requiere internet)
         asphaltMap = texLoader.load('https://cdn.pixabay.com/photo/2017/01/14/12/59/asphalt-1971367_1280.jpg');
         asphaltMap.wrapS = asphaltMap.wrapT = THREE.RepeatWrapping;
         asphaltMap.repeat.set(60,60);
       } catch(e){
-        console.warn('Fallo al cargar textura de asfalto. Usando color sólido.');
+        console.warn('Fallo al cargar textura de asfalto.');
         asphaltMap = null;
       }
       const roadMat = new THREE.MeshStandardMaterial({
@@ -443,7 +449,7 @@ function init() {
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
       ground.position.y = 0;
-      ground.receiveShadow = true;
+      if(SHADOWS_ENABLED) ground.receiveShadow = true;
       scene.add(ground);
 
       const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); 
@@ -468,22 +474,18 @@ function init() {
       function createWall(x, z, sizeX, sizeZ) {
         const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, WALL_HEIGHT, sizeZ), arenaMat);
         wall.position.set(x, WALL_HEIGHT / 2 + 0.5, z);
-        wall.castShadow = true;
-        wall.receiveShadow = true;
+        if(SHADOWS_ENABLED){ wall.castShadow = true; wall.receiveShadow = true; }
         scene.add(wall);
 
-        // Ventanas simples (simulación geométrica)
         const windowMat = new THREE.MeshStandardMaterial({color: 0x222a33, emissive: 0x111122, emissiveIntensity: 0.12, roughness: 0.9});
         const cols = Math.max(2, Math.floor(sizeX / 20));
         const rows = 6;
         for(let r=0; r<rows; r++){
             for(let c=0; c<cols; c++){
                 const wx = x - sizeX/2 + (c + 0.5) * (sizeX / cols);
-                const wz = z + sizeZ/2 - 0.6; // fachada frontal
+                const wz = z + sizeZ/2 - 0.6; 
                 const wy = 30 + r * (WALL_HEIGHT / (rows+1));
                 const win = new THREE.Mesh(new THREE.BoxGeometry(sizeX/cols * 0.6, WALL_HEIGHT/(rows+1) * 0.5, 0.4), windowMat);
-                win.position.set(wx, wy, wz);
-                // Si la pared es horizontal (lados Z), las ventanas van en X
                 if(sizeZ > sizeX){ 
                     win.position.set(wz, wy, wx); 
                     win.rotation.y = Math.PI/2;
@@ -532,7 +534,6 @@ function init() {
           turbo: false, 
           speed: 0,
           health: car.userData.health, 
-          // MUNICIÓN INFINITA
           ammo: Infinity 
       };
       
@@ -550,7 +551,7 @@ function init() {
               bullet.userData.speed = 3.0; 
               bullet.userData.damage = 15;
               bullet.visible = false;
-              bullet.castShadow = true;
+              if(SHADOWS_ENABLED) bullet.castShadow = true;
               scene.add(bullet);
               bulletPool.push(bullet);
           }
@@ -568,11 +569,9 @@ function init() {
           if (index > -1) activeBullets.splice(index, 1);
       }
 
-      // ** INTEGRACIÓN: Spawn de múltiples balas (Disparo doble) **
       function spawnBulletsFromCar(targetCar, dir, offsets = null){
           const offs = offsets || (targetCar.userData.gunOffsets || []);
           if(!offs.length){
-              // Fallback para vehículos sin offsets de cañón (ej. Traffic, o si falla la carga)
               const b = getBullet();
               if(b){
                   const origin = targetCar.position.clone().add(new THREE.Vector3(0, 1.2, -1.8).applyQuaternion(targetCar.quaternion));
@@ -583,19 +582,13 @@ function init() {
           }
           for(const off of offs){
               const b = getBullet();
-              if(!b) break; // Si no hay balas en el pool, rompemos
-              // Transformar offset local a posición global
+              if(!b) break; 
               const origin = targetCar.position.clone().add(off.clone().applyQuaternion(targetCar.quaternion));
               b.position.copy(origin);
               b.userData.dir.copy(dir);
           }
       }
 
-      function spawnBullet(pos, dir) {
-          // Mantener compatibilidad con llamadas antiguas si fuera necesario
-          const b = getBullet();
-          if (b) { b.position.copy(pos); b.userData.dir.copy(dir); }
-      }
       setupBulletPool(); 
 
       function applyDamage(target, amount, component = 'chasis_frontal'){
@@ -651,7 +644,6 @@ function init() {
 
       function updateHUD(){
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
-          // Munición infinita: mostrar ∞
           document.getElementById('ammoCount').textContent = state.ammo === Infinity ? '∞' : state.ammo;
           
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
@@ -702,12 +694,10 @@ function init() {
           if(now - lastFireTime < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
           lastFireTime = now;
           
-          // Mantenemos el estado de la munición como infinito (no decrementa)
           fireBtn.classList.add('cooldown');
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
 
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-          // Disparo doble: usa offsets guardados en car.userData.gunOffsets
           spawnBulletsFromCar(car, dir);
       }
       
@@ -753,6 +743,7 @@ function init() {
         updateCamera();
         updateHUD();
         
+        // ** RENDERIZADO CON FALLBACK **
         if(composer){
             composer.render();
         } else {
@@ -773,17 +764,18 @@ function init() {
       animate(); 
 
       window.addEventListener('resize', ()=>{ 
-        renderer.setSize(window.innerWidth, window.innerHeight); 
-        camera.aspect = innerWidth/innerHeight; 
-        camera.updateProjectionMatrix(); 
-        if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+        if(renderer){
+            renderer.setSize(window.innerWidth, window.innerHeight); 
+            camera.aspect = innerWidth/innerHeight; 
+            camera.updateProjectionMatrix(); 
+            if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+        }
       });
 
     })();
 }
 
 // LLAMADA DE INICIALIZACIÓN DE SEGURIDAD
-// Utilizamos window.onload para asegurar que *todos* los scripts externos (EffectComposer, etc.) carguen.
 window.onload = init; 
 </script>
 </body>
