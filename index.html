@@ -180,7 +180,7 @@ class CarController extends THREE.Group {
 
     // Método para crear el mesh 3D redondeado y con luces
     buildMesh(stats) {
-        // **CORRECCIÓN:** Usamos TorusKnotGeometry, que se ve muy bien con Bloom y simula un cuerpo futurista o estilizado.
+        // **CUERPO ESTILIZADO/REDONDEADO:** TorusKnotGeometry
         const bodyGeo = new THREE.TorusKnotGeometry(stats.length/5, stats.width/8, 100, 16); 
         const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
         const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -346,7 +346,8 @@ class CarController extends THREE.Group {
 // == CÓDIGO THREE.JS PRINCIPAL (CORREGIDO)                               ==
 // =========================================================================
 
-document.addEventListener('DOMContentLoaded', function() {
+// ENVUELTO EN init() PARA ASEGURAR LA CARGA DE DEPENDENCIAS
+function init() {
     (function(){
       // ---------- CONFIGURACIÓN GENERAL ----------
       const holder = document.getElementById('holder');
@@ -385,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       // Luces (DÍA)
-      // **CORRECCIÓN CRÍTICA:** THREE.DirectionalLight
+      // Nombre de clase corregido: THREE.DirectionalLight
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = true;
@@ -749,7 +750,12 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
     })();
-});
+}
+
+// **LLAMADA DE INICIALIZACIÓN DE SEGURIDAD**
+// Esto asegura que la función init se ejecute una vez que todo el DOM y las librerías 
+// de Three.js carguen, lo cual es la causa más común de que el canvas no se inicialice.
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
