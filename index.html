@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Jardines de Morelos (Ecatepec) — Calles Reales v2</title>
+<title>SinFiltro — Jardines de Morelos (Ecatepec) — High Effort DEMO</title>
 <style>
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
@@ -31,7 +31,7 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">SinFiltro — Jardines de Morelos (demo)</div>
+      <div class="badge">SinFiltro — Jardines de Morelos (DEMO AVANZADO)</div>
       <div id="statusTiles" class="badge" style="display:none">Calles: <span id="tilesCount">0</span></div>
     </div>
     <div class="controls">
@@ -49,32 +49,51 @@
   <div class="info" id="info">Modo demo — calles cargadas: 0 vías · segmentos: 0</div>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
 <script>
 (async function(){
   // ---------- CONFIG ----------
   const holder = document.getElementById('holder');
-  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul, Nicolás Bravo)
-  // Format: [south, west, north, east]
-  const BBOX = [19.593, -99.002, 19.613, -98.982]; // ** COORDENADAS: Ecatepec (Zona Playa Azul) **
+  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul)
+  const BBOX = [19.593, -99.002, 19.613, -98.982]; 
   const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
   const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
   // --- AJUSTES DE ESCALA Y COLOR SOLICITADOS ---
-  const SCENE_SCALE = 0.08; // Escala global
-  const CAR_WIDTH = 2.4;    // Ancho del vehículo
-  const STREET_COLOR = 0x282c35; // Color del asfalto
-  const BUILDING_COLOR_BASE = 0x3d414a; // Color base de edificios
-  const BUILDING_COLOR_ACCENT = 0x5a6068; // Color alterno para edificios
+  const SCENE_SCALE = 0.08; 
+  const CAR_WIDTH = 2.4;    
+  const STREET_COLOR = 0x282c35; 
+  const BUILDING_COLOR_BASE = 0x3d414a; 
+  const BUILDING_COLOR_ACCENT = 0x5a6068; 
   // ----------------------------------------
 
   // ---------- THREEJS basic scene ----------
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x05060a);
+  // ** [MEJORA: Niebla Atmosférica para profundidad] **
+  scene.fog = new THREE.Fog(scene.background, 10, 150); 
+  
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
   holder.appendChild(renderer.domElement);
+  
+  // ** [MEJORA: Configuración del EffectComposer para Post-FX] **
+  const composer = new THREE.EffectComposer(renderer);
+  composer.addPass(new THREE.RenderPass(scene, camera));
+  
+  const bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.8, // Fuerza del Bloom (Intensity)
+    0.4, // Radio (Radius)
+    0.5  // Umbral (Threshold)
+  );
+  composer.addPass(bloomPass);
 
   // camera
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
@@ -83,8 +102,7 @@
   // lights
   const dir = new THREE.DirectionalLight(0xffffff, 0.9);
   dir.position.set(5,10,7); scene.add(dir);
-  // ** [AJUSTE: Reducción de luz ambiental para mayor contraste y dramatismo] **
-  scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.15)); // Luz Ambiental con bajo contraste
 
   // ground plane base (This remains FLAT, fulfilling the requirement for flat streets)
   const groundMat = new THREE.MeshStandardMaterial({color:0x111217, roughness:0.9, metalness:0.1});
@@ -109,13 +127,12 @@
     const dx = (lon - lonCenter) * mPerDegLon;
     const dz = (lat - latCenter) * mPerDegLat;
     // scaling down to keep world manageable for mobile (divide by factor)
-    const SCALE = SCENE_SCALE; // *** APLICA ESCALA GLOBAL ***
+    const SCALE = SCENE_SCALE; 
     return new THREE.Vector3(dx * SCALE, 0, -dz * SCALE);
   }
 
   // Player car (low-poly box)
   const car = new THREE.Group();
-  // *** APLICA ANCHO DE CARRO ***
   const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_WIDTH,0.7,4.2), new THREE.MeshStandardMaterial({color:0xff5555}));
   body.position.y = 0.7; car.add(body);
   const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.5,8);
@@ -123,7 +140,6 @@
   for(let i=0;i<4;i++){
     const w = new THREE.Mesh(wheelGeo, wheelMat);
     w.rotation.z = Math.PI/2; w.position.y = 0.25;
-    // *** APLICA POSICIÓN DE RUEDA EN RELACIÓN AL NUEVO ANCHO ***
     w.position.x = (i%2===0)?-(CAR_WIDTH/2 - 0.2): (CAR_WIDTH/2 - 0.2);
     w.position.z = (i<2)?1.2:-1.2;
     car.add(w);
@@ -134,12 +150,6 @@
   // movement state (joystick)
   const state = {forward:0, turn:0, speed:0, maxSpeed:0.9, rotSpeed:0.045};
 
-  // ** [AJUSTE: Se elimina el array de balas] **
-  // const bullets = [];
-
-  // ** [AJUSTE: Se elimina la función de disparo] **
-  // function spawnBullet(origin, dir){ ... }
-  
   // camera follow
   function updateCamera(){
     const desired = car.position.clone().add(new THREE.Vector3(0,4,10).applyQuaternion(car.quaternion));
@@ -148,10 +158,8 @@
   }
 
   // ---------- fetch OSM via Overpass (roads + buildings) ----------
-  // Build Overpass query for highways and building ways inside bbox
   function overpassQuery(bbox){
     const [s,w,n,e] = bbox;
-    // limit some highway types to improve performance
     const q = `
       [out:json][timeout:25];
       (
@@ -164,7 +172,6 @@
     return q;
   }
 
-  // fetch and parse
   async function fetchOSM(){
     const query = overpassQuery(BBOX);
     const res = await fetch(OVERPASS_URL, {method:'POST',body:query});
@@ -173,7 +180,6 @@
     return data;
   }
 
-  // parse Overpass JSON into nodes + ways
   function parseOverpass(data){
     const nodes = new Map();
     const ways = [];
@@ -184,7 +190,6 @@
     }
     for(const el of data.elements){
       if(el.type === 'way'){
-        // classify
         const tags = el.tags || {};
         ways.push({id:el.id, nodes: el.nodes, tags});
       }
@@ -197,11 +202,11 @@
   const buildingsGroup = new THREE.Group();
   scene.add(roadsGroup); scene.add(buildingsGroup);
 
-  // store polylines for collision logic
-  const roadPolylines = []; // each = array of Vector3 points
+  const roadPolylines = []; 
 
   // Add simple lamp posts to scene (for visual)
   function addLampAt(pos){
+    // ** [MEJORA: Se usa MeshBasicMaterial en el bulbo para que haga Bloom] **
     const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,2,6), new THREE.MeshStandardMaterial({color:0x111111}));
     stick.position.copy(pos).add(new THREE.Vector3(0,1,0));
     scene.add(stick);
@@ -210,12 +215,9 @@
     scene.add(bulb);
   }
 
-  // Create road geometry by connecting node segments -> thin boxes to approximate road surface
   function buildRoads(nodes, ways){
-    // small filter: only highway tags we want (exclude footway, cycleway maybe)
     const keep = new Set(['motorway','trunk','primary','secondary','tertiary','unclassified','residential','service','living_street']);
     let segmentCount = 0, wayCount = 0;
-    roadsGroup.clear?.(); // if THREE r150+
     roadsGroup.children.slice().forEach(c=>roadsGroup.remove(c));
 
     for(const w of ways){
@@ -228,29 +230,22 @@
         pts.push(ll2xy(n.lat, n.lon));
       }
       if(pts.length < 2) continue;
-      // reduce precision (skip every Nth to keep light)
       const simplified = [];
       for(let i=0;i<pts.length;i+=1){ simplified.push(pts[i]); }
-      // add visual polyline (thin extruded strips) and record for collisions
       for(let i=0;i<simplified.length-1;i++){
         const a = simplified[i], b = simplified[i+1];
         const seg = new THREE.Vector3().copy(b).sub(a);
         const len = seg.length();
         const mid = a.clone().add(b).multiplyScalar(0.5);
-        // create a thin box
-        // *** AJUSTE DE ANCHO DE CALLE ***
         const width = (w.tags.highway === 'motorway' || w.tags.highway === 'trunk') ? 4.5 : 3.0;
         const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
-        // *** AJUSTE DE COLOR DE ASFALTO ***
         const mat = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.9});
         const m = new THREE.Mesh(geom, mat);
         m.position.copy(mid); m.position.y = 0.01;
-        // rotate to match segment
-        m.lookAt(b); m.rotateX(Math.PI/2); // align geometry plane
+        m.lookAt(b); m.rotateX(Math.PI/2); 
         roadsGroup.add(m);
         segmentCount++;
       }
-      // store polyline for path collision/constraints
       const poly = simplified.map(p=> new THREE.Vector3(p.x,0,p.z));
       roadPolylines.push(poly);
       wayCount++;
@@ -258,13 +253,11 @@
     return {segmentCount, wayCount};
   }
 
-  // Create simple buildings: extrude vertical boxes from building footprints
   function buildBuildings(nodes, ways){
-    buildingsGroup.clear?.(); buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
+    buildingsGroup.children.slice().forEach(c=>buildingsGroup.remove(c));
     let count = 0;
     for(const w of ways){
       if(!w.tags || !w.tags.building) continue;
-      // compute centroid and rough area -> height
       const pts = [];
       for(const nid of w.nodes){
         const n = nodes.get(nid);
@@ -272,7 +265,6 @@
         pts.push(ll2xy(n.lat, n.lon));
       }
       if(pts.length < 3) continue;
-      // compute bounding box
       let minx=1e9,minz=1e9,maxx=-1e9,maxz=-1e9;
       for(const p of pts){ minx=Math.min(minx,p.x); maxx=Math.max(maxx,p.x); minz=Math.min(minz,p.z); maxz=Math.max(maxz,p.z); }
       const wth = Math.max(1.0, (maxx-minx));
@@ -280,7 +272,6 @@
       const height = (w.tags['building:levels'] ? Math.max(2, +w.tags['building:levels']) : Math.floor(2 + Math.random()*4)) * 1.8;
       const g = new THREE.BoxGeometry(wth, height, lng);
       
-      // *** AJUSTE DE COLOR DE EDIFICIOS ***
       const color = count % 2 === 0 ? BUILDING_COLOR_BASE : BUILDING_COLOR_ACCENT;
       const mat = new THREE.MeshStandardMaterial({color:color, roughness:0.9});
       
@@ -297,11 +288,8 @@
     try{
       const raw = await fetchOSM();
       const {nodes, ways} = parseOverpass(raw);
-      // build roads + buildings
       const roadsInfo = buildRoads(nodes, ways);
       const bcount = buildBuildings(nodes, ways);
-      // add some lamp posts along roads (sparse)
-      // add lamp posts: for each road polyline pick some points
       let lampCount = 0;
       for(const poly of roadPolylines){
         for(let i=0;i<poly.length;i+=Math.max(2,Math.floor(poly.length/6))){
@@ -322,15 +310,11 @@
   }
 
   // ---------- Road-following / soft collision constraint ----------
-  // We want the car to remain roughly on roads. Implement "soft confinement": find nearest polyline point
-  // and if lateral distance > allowed, slide it back toward nearest point.
   function constrainToRoad(pos){
-    // find nearest point among all road segments
     let best = {dist:1e9, nearest:null};
     for(const poly of roadPolylines){
       for(let i=0;i<poly.length-1;i++){
         const a = poly[i], b = poly[i+1];
-        // project pos onto segment ab
         const ap = pos.clone().sub(a);
         const ab = b.clone().sub(a);
         const t = Math.max(0, Math.min(1, ap.dot(ab)/ab.lengthSq()));
@@ -340,9 +324,8 @@
       }
     }
     if(!best.nearest) return {constrained:false};
-    const maxLat = 1.6; // allowed lateral distance (meters in scene units)
+    const maxLat = 1.6; 
     if(best.dist > maxLat){
-      // pull position softly
       const dir = best.nearest.clone().sub(pos).multiplyScalar(0.22);
       pos.add(dir);
       return {constrained:true};
@@ -354,7 +337,6 @@
   let satTexture = null, satEnabled = false;
   async function loadSatellite(){
     try{
-      // get center tile at zoom 16
       const z = 16;
       function lon2tile(lon,z){ return Math.floor((lon+180)/360*Math.pow(2,z)); }
       function lat2tile(lat,z){ return Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2 * Math.pow(2,z)); }
@@ -366,7 +348,6 @@
       tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.encoding = THREE.sRGBEncoding;
       satTexture = tex;
-      // apply as ground overlay
       return true;
     }catch(e){ console.warn('sat load failed', e); return false; }
   }
@@ -391,11 +372,9 @@
   const mmCtx = mmCanvas.getContext('2d');
 
   function updateMinimap(){
-    const scale = 0.35; // scale down world to minimap
+    const scale = 0.35; 
     mmCtx.clearRect(0,0,256,256);
-    // background
     mmCtx.fillStyle = '#07101a'; mmCtx.fillRect(0,0,256,256);
-    // draw roads
     mmCtx.strokeStyle = '#bfe9ff'; mmCtx.lineWidth = 2;
     mmCtx.beginPath();
     for(const poly of roadPolylines){
@@ -408,7 +387,6 @@
       }
     }
     mmCtx.stroke();
-    // draw player marker
     const px = 128 + car.position.x * scale;
     const py = 128 + car.position.z * scale;
     mmCtx.fillStyle = '#ff6666'; mmCtx.beginPath(); mmCtx.arc(px,py,4,0,Math.PI*2); mmCtx.fill();
@@ -423,17 +401,10 @@
   joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
   joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
   joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
-  // pointer events for desktop testing
   let md=false;
   joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
   joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-
-  // ** [AJUSTE: Eliminada la lógica de disparo (fire button) ] **
-  // const fireBtn = document.getElementById('fire');
-  // fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-  // fireBtn.addEventListener('mousedown', doFire);
-  // function doFire(){ ... }
 
   // ---------- UI toggles ----------
   let roadsVisible = true;
@@ -449,7 +420,6 @@
   });
 
   document.getElementById('btnRecenter').addEventListener('click', ()=> {
-    // recenter car to scene center (initial)
     car.position.set(0,0,0); car.rotation.set(0,0,0);
     camera.position.set(0,12,24);
   });
@@ -460,27 +430,28 @@
     const now = performance.now();
     const dt = Math.min(50, now-last) / 16.666;
     last = now;
-    // joystick -> state
+    
     state.forward = Math.max(-1, Math.min(1, stick.y));
     state.turn = Math.max(-1, Math.min(1, stick.x));
-    // speed update
+    
     if(state.forward > 0.05) state.speed += 0.018 * state.forward * dt;
     else if(state.forward < -0.05) state.speed -= 0.03 * (-state.forward) * dt;
     else state.speed *= 0.96;
     state.speed = Math.max(-state.maxSpeed, Math.min(state.maxSpeed, state.speed));
-    // rotation
+    
     car.rotation.y += -state.turn * state.rotSpeed * (0.9 + Math.abs(state.speed)) * dt;
-    // movement in local z
+    
     const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
     car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
-    // soft constrain to roads
+    
     constrainToRoad(car.position);
-    // ** [AJUSTE: Eliminado el bucle de actualización de balas] **
-    // for(let i=bullets.length-1;i>=0;i--){ ... }
     
     updateCamera();
     updateMinimap();
-    renderer.render(scene, camera);
+    
+    // ** [MEJORA: Renderizado vía EffectComposer para Bloom] **
+    composer.render();
+    
     // fps
     frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
     requestAnimationFrame(animate);
@@ -489,22 +460,22 @@
 
   // ---------- initialization ----------
   const ok = await initMapData();
-  // load sat asynchronously (but optional)
   loadSatellite().then(()=>{ /*sat preloaded*/ }).catch(()=>{/*ignore*/});
-  // start loop
   requestAnimationFrame(animate);
 
   // ---------- simple cleanup / resize ----------
-  window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); });
+  window.addEventListener('resize', ()=>{ 
+    renderer.setSize(window.innerWidth, window.innerHeight); 
+    composer.setSize(window.innerWidth, window.innerHeight); // ** [IMPORTANTE: Redimensionar también el composer] **
+    camera.aspect = innerWidth/innerHeight; 
+    camera.updateProjectionMatrix(); 
+  });
 
-  // ---------- helpers for developer debug (optional) ----------
   // center car at first road point if available
   if(roadPolylines.length && roadPolylines[0].length){
-    // Utiliza el punto medio de la primera vía cargada para empezar
     car.position.copy(roadPolylines[0][ Math.floor(roadPolylines[0].length/2) ]);
   }
 
-  // hide debug tile count until loaded
   document.getElementById('tilesCount').textContent = roadPolylines.length;
 
 })();
