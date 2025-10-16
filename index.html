@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Metal Streets: Battle Racers (Visual Aspiration)</title>
+<title>Metal Streets: Battle Racers (Estilo Urbano)</title>
 <style>
-  /* Base Style - Actualizado para un look más "AAA" */
+  /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
     --bg:#020306;
     --red:#e74c3c;
@@ -35,7 +35,7 @@
   /* Velocímetro */
   .speedometer{
     position:fixed;
-    right:10px; bottom:120px; /* Posición similar a la imagen de referencia */
+    right:10px; bottom:120px; 
     width:120px;height:120px;
     background:var(--panel-bg);
     border-radius:50%;
@@ -121,17 +121,17 @@
   const AI_CARS = [];
   const POWER_UPS = [];
 
-  // Definiciones de vehículos (Mustang por defecto)
+  // Definiciones de vehículos 
   const VEHICLE_STATS = {
       'Muscle Car': { color: 0xff5555, width: 2.8, length: 5.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
       'Sport': { color: 0x5555ff, width: 2.2, length: 4.0, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
       'Pickup': { color: 0x55ff55, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 }
   };
-  let CURRENT_CAR_TYPE = 'Muscle Car'; // Por defecto
+  let CURRENT_CAR_TYPE = 'Sport'; // Cambiamos a Sport por defecto para el look & feel
 
   // ---------- THREEJS SETUP ----------
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x020306); // Fondo más oscuro
+  scene.background = new THREE.Color(0x020306); 
   scene.fog = new THREE.Fog(scene.background, 10, 150); 
   
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
@@ -140,11 +140,10 @@
   renderer.shadowMap.enabled = false; 
   holder.appendChild(renderer.domElement);
   
-  // POST-PROCESADO: EFFECT COMPOSER Y BLOOM (simula brillos de la imagen)
+  // POST-PROCESADO: EFFECT COMPOSER Y BLOOM
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); // strength, radius, threshold
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
   bloomPass.renderToScreen = true;
   composer.addPass(bloomPass);
 
@@ -152,52 +151,57 @@
   const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
   camera.position.set(0, 12, 24);
 
-  // lights (Ajustados para un ambiente más dramático)
-  const dir = new THREE.DirectionalLight(0xffffff, 0.6); // Luz direccional más suave
-  dir.position.set(50, 100, 70); 
-  scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.15)); // Luz ambiental más tenue
+  // lights (Ambiente Nocturno)
+  scene.add(new THREE.DirectionalLight(0xffffff, 0.2)); 
+  scene.add(new THREE.AmbientLight(0xffffff, 0.05)); 
 
-  // Luces de puntos para simular farolas o luces de edificios
-  const pointLight1 = new THREE.PointLight(0xffaaff, 1, 50); pointLight1.position.set(40, 5, 40); scene.add(pointLight1);
-  const pointLight2 = new THREE.PointLight(0xaaffff, 1, 50); pointLight2.position.set(-40, 5, -40); scene.add(pointLight2);
-  const pointLight3 = new THREE.PointLight(0xffffaa, 1, 50); pointLight3.position.set(40, 5, -40); scene.add(pointLight3);
+  // Luces de neón/ambientales para el estilo urbano
+  const neonLight = new THREE.PointLight(0x00ffff, 2, 50); neonLight.position.set(40, 5, 40); scene.add(neonLight);
+  const neonLight2 = new THREE.PointLight(0xff00ff, 2, 50); neonLight2.position.set(-40, 5, -40); scene.add(neonLight2);
 
-  // ---------- GEOMETRÍA DE LA ARENA (Con elementos urbanos sugeridos) ----------
+
+  // ---------- ARENA DE COMBATE ESTILIZADA ----------
   
-  // Suelo con textura (Placeholder: color oscuro, simular asfalto)
-  const groundMat = new THREE.MeshStandardMaterial({color:0x1a1a2e, roughness:0.9, metalness:0.1});
+  // Suelo (Asfalto Brillante)
+  const groundMat = new THREE.MeshStandardMaterial({color:0x151525, roughness:0.8, metalness:0.3});
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(ARENA_SIZE * 2, ARENA_SIZE * 2, 1, 1), groundMat);
   ground.rotation.x = -Math.PI/2;
   ground.position.y = 0;
   scene.add(ground);
   
-  // Paredes de edificios (simulan los bordes del entorno urbano)
-  const buildingMat = new THREE.MeshStandardMaterial({color:0x505060, roughness:0.7, metalness:0.3});
-  const wallHeight = 15; // Más alto para simular edificios
-  const walls = new THREE.Group();
-  
-  function createBuildingWall(x, z, w, d, h = wallHeight){
-      const g = new THREE.BoxGeometry(w, h, d);
-      const m = new THREE.Mesh(g, buildingMat);
-      m.position.set(x, h/2, z);
-      walls.add(m);
-      return m;
+  // Edificios/Obstáculos (Estilo Low-Poly)
+  const wallHeight = 15; 
+  const buildingMat = new THREE.MeshStandardMaterial({color:0x1e1e2e, roughness:0.7, metalness:0.3});
+  const windowMat = new THREE.MeshBasicMaterial({color:0x00ffff, emissive:0x00ffff, emissiveIntensity:1.5}); // Ventanas Brillantes
+
+  function createBuilding(x, z, w, d, h = wallHeight){
+      const group = new THREE.Group();
+      const bodyGeo = new THREE.BoxGeometry(w, h, d);
+      const body = new THREE.Mesh(bodyGeo, buildingMat);
+      body.position.set(x, h/2, z);
+      group.add(body);
+      
+      // Simular algunas ventanas brillantes
+      for(let i=0; i<3; i++){
+          const windowGeo = new THREE.BoxGeometry(w*0.1, h*0.1, 0.05);
+          const windowMesh = new THREE.Mesh(windowGeo, windowMat);
+          windowMesh.position.set(x + Math.random()*w*0.5 - w*0.25, h*0.5 + Math.random()*h*0.4 - h*0.2, z + d/2 + 0.05);
+          group.add(windowMesh);
+      }
+      scene.add(group);
+      return body; 
   }
   
-  // Borde exterior como edificios
-  createBuildingWall(0, ARENA_SIZE + 10, ARENA_SIZE * 2 + 20, 20, 20); // Norte
-  createBuildingWall(0, -ARENA_SIZE - 10, ARENA_SIZE * 2 + 20, 20, 20); // Sur
-  createBuildingWall(ARENA_SIZE + 10, 0, 20, ARENA_SIZE * 2 + 20, 20); // Este
-  createBuildingWall(-ARENA_SIZE - 10, 0, 20, ARENA_SIZE * 2 + 20, 20); // Oeste
+  // Bordes del mapa (Arena)
+  createBuilding(0, ARENA_SIZE - 2, ARENA_SIZE * 2, 5, 20); // Norte
+  createBuilding(0, -ARENA_SIZE + 2, ARENA_SIZE * 2, 5, 20); // Sur
+  createBuilding(ARENA_SIZE - 2, 0, 5, ARENA_SIZE * 2, 20); // Este
+  createBuilding(-ARENA_SIZE + 2, 0, 5, ARENA_SIZE * 2, 20); // Oeste
   
-  // Obstáculos/Edificios interiores (simulando esquinas o bloques)
-  createBuildingWall(ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
-  createBuildingWall(-ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
-  createBuildingWall(ARENA_SIZE / 2, -ARENA_SIZE / 2, 10, 10, 10);
-  createBuildingWall(-ARENA_SIZE / 2, -ARENA_SIZE / 2, 10, 10, 10);
+  // Obstáculos/Bloques de Combate
+  createBuilding(ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
+  createBuilding(-ARENA_SIZE / 2, ARENA_SIZE / 2, 10, 10, 10);
 
-  scene.add(walls);
 
   // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
   
@@ -205,21 +209,28 @@
     const stats = VEHICLE_STATS[type];
     const carGroup = new THREE.Group();
     
-    // Cuerpo del vehículo (modelado simple, pero con materiales para más realismo)
+    // Cuerpo del vehículo (Low-Poly con materiales metálicos)
     const bodyGeo = new THREE.BoxGeometry(stats.width, 0.7, stats.length);
-    const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.8, roughness:0.3}); // Material metálico
+    const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); // MUY brillante y reflectante
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 0.7; 
     carGroup.add(body);
     
-    // Alerón trasero (simulación para el coche deportivo)
-    if (type === 'Sport' && !isAI) { // Solo jugador Sport tiene alerón
+    // Alerón trasero (solo Sport/Muscle para look)
+    if (type !== 'Pickup' && !isAI) { 
         const spoilerGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.8);
         const spoilerMat = new THREE.MeshStandardMaterial({color: 0x222222, metalness:0.8, roughness:0.2});
         const spoiler = new THREE.Mesh(spoilerGeo, spoilerMat);
         spoiler.position.set(0, 1.3, -stats.length / 2 + 0.5);
         carGroup.add(spoiler);
     }
+    
+    // Luces Traseras (Emissivas para Bloom)
+    const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive:0xff0000, emissiveIntensity:1.5});
+    const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
+    const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
+    tailLights.position.set(0, 0.8, stats.length/2 - 0.05); 
+    carGroup.add(tailLights);
 
     // Lógica interna del vehículo
     carGroup.userData.isAI = isAI;
@@ -231,7 +242,7 @@
     carGroup.userData.maxSpeed = stats.maxSpeed;
     carGroup.userData.rotSpeed = stats.rotSpeed;
     
-    // Barra de salud visible (solo para IA, simplificado)
+    // Barra de salud visible (IA)
     if(isAI){
         const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00});
         const hbGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.1);
@@ -242,17 +253,23 @@
         carGroup.add(healthBar);
     }
     
-    // HEADLIGHTS
+    // HEADLIGHTS (Player)
     if (!isAI) {
-        const headlightL = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); // Más brillante
+        const headlightL = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
         headlightL.position.set(stats.width/2 - 0.2, 0.8, -stats.length/2 + 0.5);
         headlightL.target.position.set(stats.width/2 - 0.2, 0.8, -100);
         carGroup.add(headlightL); carGroup.add(headlightL.target);
         
-        const headlightR = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); // Más brillante
+        const headlightR = new THREE.SpotLight(0xffffff, 80, 50, Math.PI/6, 0.5, 0.5); 
         headlightR.position.set(-stats.width/2 + 0.2, 0.8, -stats.length/2 + 0.5);
         headlightR.target.position.set(-stats.width/2 + 0.2, 0.8, -100);
         carGroup.add(headlightR); carGroup.add(headlightR.target);
+
+        // Efecto de neón/turbo en la parte trasera
+        const neon = new THREE.PointLight(0xff00ff, 5, 5); 
+        neon.position.set(0, 0.5, stats.length/2 + 0.5);
+        carGroup.userData.neonLight = neon;
+        carGroup.add(neon);
     }
 
     return carGroup;
@@ -264,7 +281,7 @@
   scene.add(car);
 
   // IA Cars (2 enemigos)
-  const ai1 = createCar('Sport', true);
+  const ai1 = createCar('Muscle Car', true);
   ai1.position.set(30, 0, 0);
   scene.add(ai1); AI_CARS.push(ai1);
 
@@ -291,7 +308,7 @@
       }
       if(bulletPool.length < maxBullets){
           const g = new THREE.SphereGeometry(0.2,8,8); 
-          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:2, color:0x222222}); // Emissive para brillar con Bloom
+          const m = new THREE.MeshStandardMaterial({emissive:0xffcc77, emissiveIntensity:3, color:0x222222}); // Emissive para brillar con Bloom
           const b = new THREE.Mesh(g,m);
           b.userData.dir = new THREE.Vector3();
           b.userData.speed = 4.0;
@@ -310,14 +327,14 @@
       b.position.set(0, -100, 0); 
   }
   
-  // Generación de Power-Ups (con materiales más visibles)
+  // Generación de Power-Ups (brillan con Bloom)
   function createPowerUp(type, position){
       let color, scale;
       if(type === 'Ammo'){ color = 0x00ff00; scale = 0.8; }
       else if(type === 'Health'){ color = 0xffa500; scale = 1.0; }
       
       const g = new THREE.BoxGeometry(scale, scale, scale);
-      const m = new THREE.MeshStandardMaterial({color:color, emissive:color, emissiveIntensity:0.8}); // Brillan con Bloom
+      const m = new THREE.MeshStandardMaterial({color:color, emissive:color, emissiveIntensity:1.5}); 
       const pu = new THREE.Mesh(g, m);
       pu.position.copy(position);
       pu.position.y = scale / 2 + 0.1;
@@ -347,13 +364,12 @@
 
       // Lógica de Muerte/Reinicio (con "explosion" visual simulada)
       if(target.userData.health <= 0){
-          // Simulación de una explosión con un flash de luz
           const explosionLight = new THREE.PointLight(0xff8800, 5, 20);
           explosionLight.position.copy(target.position);
           scene.add(explosionLight);
           
           setTimeout(()=>{
-              scene.remove(explosionLight); // Eliminar la luz de la explosión
+              scene.remove(explosionLight); 
               target.position.set(Math.random() * 50 - 25, 0, Math.random() * 50 - 25);
               target.rotation.y = Math.random() * Math.PI * 2;
               target.userData.health = target.userData.maxHealth;
@@ -364,13 +380,14 @@
 
   // Colisión de Balas/Power-Ups/Paredes
   function checkCollisions(dt){
-      // 1. Balas vs. Enemigos
+      // 1. Balas vs. Enemigos/Jugador
       for(let i=bulletPool.length-1;i>=0;i--){
           const bullet = bulletPool[i];
           if(!bullet.visible) continue;
           let hit = false;
           
-          for(const target of AI_CARS){
+          const targets = [car, ...AI_CARS];
+          for(const target of targets){
               if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
                   applyDamage(target, bullet.userData.damage);
                   hit = true;
@@ -411,7 +428,7 @@
           }
       }
       
-      // 3. Jugador vs. Paredes 
+      // 3. Jugador vs. Paredes/Edificios
       if(car.position.x > ARENA_SIZE - 2 || car.position.x < -ARENA_SIZE + 2){
           car.position.x = Math.min(ARENA_SIZE - 2, Math.max(-ARENA_SIZE + 2, car.position.x));
           state.speed *= -0.5; // Rebote
@@ -443,7 +460,7 @@
       document.getElementById('speedDisplay').textContent = kmh;
   }
 
-  // ---------- INPUTS Y CONTROLES (RESTAURADOS) ----------
+  // ---------- INPUTS Y CONTROLES (Misma Lógica) ----------
   
   const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
   let touchId = null, baseX=0, baseY=0;
@@ -458,7 +475,7 @@
   // Mouse/Pointer Handlers (para testing en PC)
   let md=false;
   joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; joy.setPointerCapture(e.pointerId); });
-  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-dy; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
+  joy.addEventListener('pointermove', e=>{ if(!md) return; const dx=e.clientX-baseX, dy=e.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x=nx; stick.y=-ny; stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; });
   joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
 
 
@@ -518,6 +535,9 @@
         
         const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
         car.position.add(fwd.multiplyScalar(state.speed * dt * 0.82));
+
+        // Actualizar brillo de neón (más intenso con turbo)
+        car.userData.neonLight.intensity = state.turbo ? 8 : 2;
         
         // IA MOVEMENT (Buscar punto central)
         for(const ai of AI_CARS){
@@ -556,7 +576,7 @@
     updateCamera();
     updateHUD();
     
-    composer.render(); // Renderiza la escena con post-procesado
+    composer.render(); // Renderiza la escena con post-procesado (Bloom)
     
     frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
     requestAnimationFrame(animate);
@@ -571,7 +591,7 @@
     renderer.setSize(window.innerWidth, window.innerHeight); 
     camera.aspect = innerWidth/innerHeight; 
     camera.updateProjectionMatrix(); 
-    composer.setSize(window.innerWidth, window.innerHeight); // Asegura que el compositor se redimensione
+    composer.setSize(window.innerWidth, window.innerHeight); 
   });
 
 })();
