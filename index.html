@@ -163,7 +163,7 @@ class CarController extends THREE.Group {
             this.componentes = { chasis: { vida: 100, max: 100, estado: 'OK', efecto: 'Estructura' } };
         }
 
-        // --- 2. MODELO VISUAL 3D (ESTILIZADO Y REDONDEADO) ---
+        // --- 2. MODELO VISUAL 3D (CORREGIDO Y ESTILIZADO CON TORUSKNOT) ---
         this.buildMesh(stats);
 
         // Barra de salud visible (IA)
@@ -180,11 +180,13 @@ class CarController extends THREE.Group {
 
     // Método para crear el mesh 3D redondeado y con luces
     buildMesh(stats) {
-        // Body (usamos un BoxGeometry con subdivisiones para simular redondez o un 'BufferGeometry' si fuera un modelo real)
-        const bodyGeo = new THREE.BoxGeometry(stats.width, stats.height, stats.length, 2, 2, 2); 
+        // **CORRECCIÓN:** Usamos TorusKnotGeometry, que se ve muy bien con Bloom y simula un cuerpo futurista o estilizado.
+        const bodyGeo = new THREE.TorusKnotGeometry(stats.length/5, stats.width/8, 100, 16); 
         const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
         const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = stats.height / 2 + 0.5; 
+        body.scale.set(1.5, 0.8, 1);
+        body.rotation.y = Math.PI / 2; // Orientar hacia adelante
+        body.position.y = 1.0; 
         body.castShadow = true;
         body.receiveShadow = true;
         this.add(body);
@@ -193,24 +195,24 @@ class CarController extends THREE.Group {
         const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
         const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
         const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
-        tailLights.position.set(0, stats.height / 2 + 0.5, stats.length/2 - 0.05); 
+        tailLights.position.set(0, 1.0, stats.length/2 - 0.05); 
         this.add(tailLights);
 
         this.userData.body = body;
         this.userData.tailLights = tailLights;
         
-        // **NUEVO: Agregar Modelos de Armas (Simulación AK/M4)**
+        // **Agregar Modelos de Armas (Simulación AK/M4)**
         if (!this.userData.isAI || this.userData.type !== 'Traffic') {
             const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
             // Cañón (Cilindro)
-            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.0, 8), gunMat);
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.0, 8), gunMat);
             barrel.rotation.z = Math.PI / 2;
-            barrel.position.set(stats.width/2 + 0.5, stats.height / 2 + 0.8, -stats.length/2 + 0.5); 
+            barrel.position.set(stats.width/2 + 0.3, 1.0, -stats.length/2 + 0.5); 
             this.add(barrel);
             
             // Cuerpo (Caja)
-            const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.8), gunMat);
-            receiver.position.set(stats.width/2 + 0.5, stats.height / 2 + 0.8, -stats.length/2 + 1.2); 
+            const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.4, 0.7), gunMat);
+            receiver.position.set(stats.width/2 + 0.3, 1.0, -stats.length/2 + 1.2); 
             this.add(receiver);
 
             // Duplicar para el otro lado
@@ -341,28 +343,27 @@ class CarController extends THREE.Group {
 }
 
 // =========================================================================
-// == CÓDIGO THREE.JS PRINCIPAL                                            ==
+// == CÓDIGO THREE.JS PRINCIPAL (CORREGIDO)                               ==
 // =========================================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     (function(){
       // ---------- CONFIGURACIÓN GENERAL ----------
       const holder = document.getElementById('holder');
-      const CITY_SIZE = 400; // Aumentado para la Arena
+      const CITY_SIZE = 400; 
       const ROAD_WIDTH = 12; 
-      const SIDEWALK_WIDTH = 3; 
-      const BULLET_COOLDOWN_MS = 300; // Cooldown más rápido
+      const BULLET_COOLDOWN_MS = 300; 
       const AI_CARS = [];
       const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
 
-      let CURRENT_CAR_TYPE = 'Muscle Car'; // Cambiado a Muscle Car para reflejar la calidad
+      let CURRENT_CAR_TYPE = 'Muscle Car'; 
       const BLOOM_ENABLED = hasBloomSupport(); 
       
       // ---------- THREEJS SETUP CON AMBIENTE DE DÍA y BLOOM ----------
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
-      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, CITY_SIZE * 2); // Niebla más suave
+      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, CITY_SIZE * 2); 
       
       const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -378,17 +379,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if(BLOOM_ENABLED){
           composer = new EffectComposer(renderer);
           composer.addPass(new RenderPass(scene, camera));
-          // Configuración del Bloom para un efecto de "Neón/Boom" de alta calidad
           const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
           bloomPass.renderToScreen = true;
           composer.addPass(bloomPass);
       }
 
       // Luces (DÍA)
-      const dirLight = new THREE.DirectionionalLight(0xffffff, 0.6); 
+      // **CORRECCIÓN CRÍTICA:** THREE.DirectionalLight
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = true;
-      dirLight.shadow.mapSize.width = 4096; // Más calidad de sombra
+      dirLight.shadow.mapSize.width = 4096; 
       dirLight.shadow.mapSize.height = 4096;
       dirLight.shadow.camera.left = -CITY_SIZE;
       dirLight.shadow.camera.right = CITY_SIZE;
@@ -669,7 +670,8 @@ document.addEventListener('DOMContentLoaded', function() {
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
 
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-          const origin = car.position.clone().add(new THREE.Vector3(0,car.userData.body.position.y, -car.userData.body.geometry.parameters.depth/2 - 0.5).applyQuaternion(car.quaternion));
+          // Origen de disparo ajustado (un poco más alto para el arma)
+          const origin = car.position.clone().add(new THREE.Vector3(0, 1.2, -1.8).applyQuaternion(car.quaternion));
           
           spawnBullet(origin, dir); 
       }
@@ -727,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // FPS
         frames++; 
-        if(now - (fpsNow || now) >= 1000){ // Optimización del cálculo de FPS
+        if(now - (fpsNow || now) >= 1000){ 
             fpsNow = now;
             document.getElementById('fps').textContent = `FPS: ${frames}`;
             frames = 0;
