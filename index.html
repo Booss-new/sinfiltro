@@ -22,14 +22,14 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
   /* HUD - Estilo de consola de juego */
-  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:none} /* Quitamos text-shadow */
+  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:none} 
   .panel{background:var(--panel-bg);padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--panel-border);pointer-events:auto;box-shadow:0 4px 15px rgba(0,0,0,0.3);backdrop-filter:blur(3px)}
   .panel h2{font-size:16px;margin:0 0 5px 0;color:#000}
 
   /* NUEVA INTERFAZ DE DIAGNÓSTICO DE COMPONENTES */
   #diagnostico{
     flex-direction: column;
-    width: 200px; /* Ancho fijo para el panel de diagnóstico */
+    width: 200px; 
     pointer-events: none;
     line-height: 1.4;
   }
@@ -185,7 +185,6 @@ class CarController extends THREE.Group {
 
     // Método para crear el mesh 3D
     buildMesh(stats) {
-        const BLOOM_ENABLED = hasBloomSupport(); 
         // Cuerpo del vehículo (Low-Poly con materiales metálicos)
         const bodyGeo = new THREE.BoxGeometry(stats.width, 0.7, stats.length);
         const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
@@ -195,7 +194,7 @@ class CarController extends THREE.Group {
         body.receiveShadow = true;
         this.add(body);
         
-        // Luces Traseras (Sólo visual, no emisivas para día)
+        // Luces Traseras (Sólo visual)
         const tailLightMat = new THREE.MeshBasicMaterial({color:0x990000});
         const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
         const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
@@ -291,373 +290,391 @@ class CarController extends THREE.Group {
 // == CÓDIGO THREE.JS PRINCIPAL (Modificado)                               ==
 // =========================================================================
 
-(async function(){
-  // ---------- CONFIGURACIÓN GENERAL ----------
-  const holder = document.getElementById('holder');
-  const CITY_SIZE = 200; 
-  const ROAD_WIDTH = 12; 
-  const SIDEWALK_WIDTH = 3; 
-  const BUILDING_SPACING = 2; 
-  const BULLET_COOLDOWN_MS = 400; 
-  const AI_CARS = [];
-  const TRAFFIC_CARS = [];
-  const POWER_UPS = [];
-  const UI_COMP_EL = document.getElementById('componentes'); 
+// **CORRECCIÓN DE INICIALIZACIÓN: Usamos un evento de DOMContentLoaded para asegurar que THREE esté cargado**
+document.addEventListener('DOMContentLoaded', function() {
+    (function(){
+      // ---------- CONFIGURACIÓN GENERAL ----------
+      const holder = document.getElementById('holder');
+      const CITY_SIZE = 200; 
+      const ROAD_WIDTH = 12; 
+      const SIDEWALK_WIDTH = 3; 
+      const BUILDING_SPACING = 2; 
+      const BULLET_COOLDOWN_MS = 400; 
+      const AI_CARS = [];
+      const TRAFFIC_CARS = [];
+      const POWER_UPS = [];
+      const UI_COMP_EL = document.getElementById('componentes'); 
 
-  let CURRENT_CAR_TYPE = 'Sport'; 
-  const BLOOM_ENABLED = hasBloomSupport(); 
-  
-  // ---------- THREEJS SETUP CON AMBIENTE DE DÍA ----------
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x6e8ca0); // Cielo azul claro
-  scene.fog = new THREE.Fog(scene.background, 200, 800); 
-  
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-  holder.appendChild(renderer.domElement);
-  
-  const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
-  camera.position.set(0, 12, 24);
-
-  let composer = null;
-  // Sin BLOOM por defecto en ambiente de día
-  if(BLOOM_ENABLED){
-      composer = new EffectComposer(renderer);
-      composer.addPass(new RenderPass(scene, camera));
-      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.4, 0.85); 
-      bloomPass.renderToScreen = true;
-      composer.addPass(bloomPass);
-  }
-
-  // Luces (DÍA)
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); // Luz del sol brillante
-  dirLight.position.set(200, 400, 300); // Sol alto
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.width = 2048; // Aumentar calidad de sombra
-  dirLight.shadow.mapSize.height = 2048;
-  dirLight.shadow.camera.left = -CITY_SIZE/2;
-  dirLight.shadow.camera.right = CITY_SIZE/2;
-  dirLight.shadow.camera.top = CITY_SIZE/2;
-  dirLight.shadow.camera.bottom = -CITY_SIZE/2;
-  scene.add(dirLight);
-  
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.4); // Luz del cielo
-  scene.add(hemiLight);
-  
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4)); // Luz ambiente
-
-  // --- GENERACIÓN DE CIUDAD (Colores ajustados para el día) ---
-  const roadMat = new THREE.MeshStandardMaterial({color:0x444444, roughness:0.7, metalness:0.3});
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
-  ground.rotation.x = -Math.PI/2;
-  ground.position.y = 0;
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); // Líneas amarillas de día
-  const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
-  for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
-      const line = new THREE.Mesh(dashedLineGeo, lineMat);
-      line.position.set(0, 0.01, i);
-      line.rotation.x = -Math.PI/2;
-      scene.add(line);
-  }
-
-  const sidewalkMat = new THREE.MeshStandardMaterial({color:0x888888, roughness:0.6, metalness:0.1});
-  const sidewalkLeft = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
-  sidewalkLeft.position.set(-ROAD_WIDTH/2 - SIDEWALK_WIDTH/2, 0.25, 0);
-  scene.add(sidewalkLeft);
-  const sidewalkRight = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
-  sidewalkRight.position.set(ROAD_WIDTH/2 + SIDEWALK_WIDTH/2, 0.25, 0);
-  scene.add(sidewalkRight);
-
-  function createBuilding(x, z, sizeX, sizeZ, height){
-      const buildingGroup = new THREE.Group();
-      const bodyMat = new THREE.MeshStandardMaterial({color: [0x555555, 0x666666, 0x777777][Math.floor(Math.random()*3)], roughness:0.7, metalness:0.2});
-      const bodyGeo = new THREE.BoxGeometry(sizeX, height, sizeZ);
-      const body = new THREE.Mesh(bodyGeo, bodyMat);
-      body.position.y = height / 2 + 0.5;
-      body.castShadow = true;
-      buildingGroup.add(body);
-      buildingGroup.position.set(x, 0, z);
-      scene.add(buildingGroup);
-  }
-
-  const numBuildingsZ = Math.floor(CITY_SIZE / 15);
-  for(let i = -numBuildingsZ; i <= numBuildingsZ; i++){
-      const zPos = i * (15 + BUILDING_SPACING);
-      const xPosLeft = -ROAD_WIDTH/2 - SIDEWALK_WIDTH - (Math.random() * 20 + 10) / 2 - BUILDING_SPACING;
-      createBuilding(xPosLeft, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
-      const xPosRight = ROAD_WIDTH/2 + SIDEWALK_WIDTH + (Math.random() * 20 + 10) / 2 + BUILDING_SPACING;
-      createBuilding(xPosRight, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
-  }
-
-  // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
-  
-  // Player car
-  const car = new CarController(CURRENT_CAR_TYPE, false);
-  car.position.set(0, 0, 0);
-  scene.add(car);
-
-  // IA Cars
-  const ai1 = new CarController('Muscle Car', true);
-  ai1.position.set(20, 0, 50);
-  ai1.rotation.y = Math.PI;
-  scene.add(ai1); AI_CARS.push(ai1);
-
-  const ai2 = new CarController('Pickup', true);
-  ai2.position.set(-20, 0, -50);
-  ai2.rotation.y = 0;
-  scene.add(ai2); AI_CARS.push(ai2);
-
-  // Tráfico (vehículos pasivos)
-  for(let i = 0; i < 5; i++){
-      const traffic = new CarController('Traffic', true);
-      traffic.position.set((Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), 0, Math.random() * CITY_SIZE - CITY_SIZE/2);
-      traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
-      traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
-      TRAFFIC_CARS.push(traffic);
-      scene.add(traffic);
-  }
-
-  // Estado del jugador
-  const state = {
-      forward:0, turn:0, turbo:false, 
-      speed: car.userData.speed, 
-      health: car.userData.health, 
-      ammo: car.userData.ammo || VEHICLE_STATS[CURRENT_CAR_TYPE].maxAmmo
-  };
-  
-  // ---------- SISTEMA DE ARMAS (Visible y Funcional) ----------
-  const bulletPool = [];
-  const activeBullets = [];
-  const maxBullets = 20;
-
-  function setupBulletPool() {
-      const bulletGeo = new THREE.SphereGeometry(0.2, 8, 8);
-      // Balas amarillas con brillo para visibilidad
-      const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 2 });
-      for (let i = 0; i < maxBullets; i++) {
-          const bullet = new THREE.Mesh(bulletGeo, bulletMat);
-          bullet.userData.dir = new THREE.Vector3();
-          bullet.userData.speed = 1.8; // Velocidad de bala rápida
-          bullet.userData.damage = 15;
-          bullet.visible = false;
-          bullet.castShadow = true;
-          scene.add(bullet);
-          bulletPool.push(bullet);
-      }
-  }
-
-  function getBullet() {
-      const bullet = bulletPool.find(b => !b.visible);
-      if (bullet) {
-          bullet.visible = true;
-          activeBullets.push(bullet);
-      }
-      return bullet;
-  }
-
-  function releaseBullet(b) {
-      b.visible = false;
-      const index = activeBullets.indexOf(b);
-      if (index > -1) activeBullets.splice(index, 1);
-  }
-  
-  function spawnBullet(pos, dir) {
-      const b = getBullet();
-      if (b) {
-          b.position.copy(pos);
-          b.userData.dir.copy(dir);
-      }
-  }
-
-  setupBulletPool(); // Inicializar el pool
-
-  // --- LÓGICA DE DAÑO: AHORA UTILIZA EL MÉTODO DEL CONTROLADOR ---
-  function applyDamage(target, amount, component = 'chasis_frontal'){
-      const isDead = target.applyDamage(amount, component);
+      let CURRENT_CAR_TYPE = 'Sport'; 
+      const BLOOM_ENABLED = hasBloomSupport(); 
       
-      if(target === car) state.health = car.userData.health;
+      // ---------- THREEJS SETUP CON AMBIENTE DE DÍA ----------
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x6e8ca0); // Cielo azul claro
+      scene.fog = new THREE.Fog(scene.background, 200, 800); 
+      
+      const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+      holder.appendChild(renderer.domElement);
+      
+      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
+      camera.position.set(0, 12, 24);
 
-      if(isDead){
-          // ... Lógica de reinicio
+      let composer = null;
+      if(BLOOM_ENABLED){
+          composer = new EffectComposer(renderer);
+          composer.addPass(new RenderPass(scene, camera));
+          const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.4, 0.85); 
+          bloomPass.renderToScreen = true;
+          composer.addPass(bloomPass);
       }
-  }
 
-  // Colisión de Balas/Power-Ups/Coches
-  function checkCollisions(dt){
-      // 1. Balas vs. Enemigos/Tráfico
-      for(let i=activeBullets.length-1;i>=0;i--){
-          const bullet = activeBullets[i];
-          let hit = false;
+      // Luces (DÍA)
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); // Luz del sol brillante
+      dirLight.position.set(200, 400, 300); // Sol alto
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048; // Aumentar calidad de sombra
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.camera.left = -CITY_SIZE/2;
+      dirLight.shadow.camera.right = CITY_SIZE/2;
+      dirLight.shadow.camera.top = CITY_SIZE/2;
+      dirLight.shadow.camera.bottom = -CITY_SIZE/2;
+      scene.add(dirLight);
+      
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.4); // Luz del cielo
+      scene.add(hemiLight);
+      
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4)); // Luz ambiente
+
+      // --- GENERACIÓN DE CIUDAD (Calles de Playas JM - Base) ---
+      const roadMat = new THREE.MeshStandardMaterial({color:0x444444, roughness:0.7, metalness:0.3});
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
+      ground.rotation.x = -Math.PI/2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); // Líneas amarillas de día
+      const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
+      for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
+          const line = new THREE.Mesh(dashedLineGeo, lineMat);
+          line.position.set(0, 0.01, i);
+          line.rotation.x = -Math.PI/2;
+          scene.add(line);
+      }
+
+      const sidewalkMat = new THREE.MeshStandardMaterial({color:0x888888, roughness:0.6, metalness:0.1});
+      const sidewalkLeft = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
+      sidewalkLeft.position.set(-ROAD_WIDTH/2 - SIDEWALK_WIDTH/2, 0.25, 0);
+      scene.add(sidewalkLeft);
+      const sidewalkRight = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
+      sidewalkRight.position.set(ROAD_WIDTH/2 + SIDEWALK_WIDTH/2, 0.25, 0);
+      scene.add(sidewalkRight);
+
+      function createBuilding(x, z, sizeX, sizeZ, height){
+          const buildingGroup = new THREE.Group();
+          const bodyMat = new THREE.MeshStandardMaterial({color: [0x555555, 0x666666, 0x777777][Math.floor(Math.random()*3)], roughness:0.7, metalness:0.2});
+          const bodyGeo = new THREE.BoxGeometry(sizeX, height, sizeZ);
+          const body = new THREE.Mesh(bodyGeo, bodyMat);
+          body.position.y = height / 2 + 0.5;
+          body.castShadow = true;
+          buildingGroup.add(body);
+          buildingGroup.position.set(x, 0, z);
+          scene.add(buildingGroup);
+      }
+
+      const numBuildingsZ = Math.floor(CITY_SIZE / 15);
+      for(let i = -numBuildingsZ; i <= numBuildingsZ; i++){
+          const zPos = i * (15 + BUILDING_SPACING);
+          const xPosLeft = -ROAD_WIDTH/2 - SIDEWALK_WIDTH - (Math.random() * 20 + 10) / 2 - BUILDING_SPACING;
+          createBuilding(xPosLeft, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
+          const xPosRight = ROAD_WIDTH/2 + SIDEWALK_WIDTH + (Math.random() * 20 + 10) / 2 + BUILDING_SPACING;
+          createBuilding(xPosRight, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
+      }
+
+      // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
+      
+      // Player car
+      const car = new CarController(CURRENT_CAR_TYPE, false);
+      car.position.set(0, 0, 0);
+      scene.add(car);
+
+      // IA Cars
+      const ai1 = new CarController('Muscle Car', true);
+      ai1.position.set(20, 0, 50);
+      ai1.rotation.y = Math.PI;
+      scene.add(ai1); AI_CARS.push(ai1);
+
+      const ai2 = new CarController('Pickup', true);
+      ai2.position.set(-20, 0, -50);
+      ai2.rotation.y = 0;
+      scene.add(ai2); AI_CARS.push(ai2);
+
+      // Tráfico (vehículos pasivos)
+      for(let i = 0; i < 5; i++){
+          const traffic = new CarController('Traffic', true);
+          traffic.position.set((Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), 0, Math.random() * CITY_SIZE - CITY_SIZE/2);
+          traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
+          traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
+          TRAFFIC_CARS.push(traffic);
+          scene.add(traffic);
+      }
+
+      // Estado del jugador
+      const state = {
+          forward:0, turn:0, turbo:false, 
+          speed: car.userData.speed, 
+          health: car.userData.health, 
+          ammo: car.userData.ammo || VEHICLE_STATS[CURRENT_CAR_TYPE].maxAmmo
+      };
+      
+      // ---------- SISTEMA DE ARMAS (Visible y Funcional) ----------
+      const bulletPool = [];
+      const activeBullets = [];
+      const maxBullets = 20;
+
+      function setupBulletPool() {
+          const bulletGeo = new THREE.SphereGeometry(0.2, 8, 8);
+          const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 2 });
+          for (let i = 0; i < maxBullets; i++) {
+              const bullet = new THREE.Mesh(bulletGeo, bulletMat);
+              bullet.userData.dir = new THREE.Vector3();
+              bullet.userData.speed = 1.8; // Velocidad de bala rápida
+              bullet.userData.damage = 15;
+              bullet.visible = false;
+              bullet.castShadow = true;
+              scene.add(bullet);
+              bulletPool.push(bullet);
+          }
+      }
+
+      function getBullet() {
+          const bullet = bulletPool.find(b => !b.visible);
+          if (bullet) {
+              bullet.visible = true;
+              activeBullets.push(bullet);
+          }
+          return bullet;
+      }
+
+      function releaseBullet(b) {
+          b.visible = false;
+          const index = activeBullets.indexOf(b);
+          if (index > -1) activeBullets.splice(index, 1);
+      }
+      
+      function spawnBullet(pos, dir) {
+          const b = getBullet();
+          if (b) {
+              b.position.copy(pos);
+              b.userData.dir.copy(dir);
+          }
+      }
+
+      setupBulletPool(); // Inicializar el pool
+
+      // --- LÓGICA DE DAÑO ---
+      function applyDamage(target, amount, component = 'chasis_frontal'){
+          const isDead = target.applyDamage(amount, component);
           
-          const targets = [...AI_CARS, ...TRAFFIC_CARS];
-          for(const target of targets){
-              if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
-                  // **SIMULACIÓN DE IMPACTO LOCALIZADO**
-                  const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
-                  
-                  let componentHit = 'chasis_frontal';
-                  if (target.componentes.motor && dot < -0.5) { // Impacto por detrás
-                      componentHit = 'motor';
-                  } else if (target.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { // Impacto lateral (simulado como ruedas/chasis)
-                       componentHit = 'ruedas_traseras';
-                  }
+          if(target === car) state.health = car.userData.health;
 
-                  applyDamage(target, bullet.userData.damage, componentHit);
-                  hit = true;
-                  break;
+          if(isDead){
+              // ... Lógica de reinicio
+          }
+      }
+
+      // Colisión de Balas/Power-Ups/Coches
+      function checkCollisions(dt){
+          // 1. Balas vs. Enemigos/Tráfico
+          for(let i=activeBullets.length-1;i>=0;i--){
+              const bullet = activeBullets[i];
+              let hit = false;
+              
+              const targets = [...AI_CARS, ...TRAFFIC_CARS];
+              for(const target of targets){
+                  if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
+                      // **SIMULACIÓN DE IMPACTO LOCALIZADO**
+                      const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
+                      
+                      let componentHit = 'chasis_frontal';
+                      if (target.componentes.motor && dot < -0.5) { // Impacto por detrás
+                          componentHit = 'motor';
+                      } else if (target.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { // Impacto lateral (simulado como ruedas/chasis)
+                           componentHit = 'ruedas_traseras';
+                      }
+
+                      applyDamage(target, bullet.userData.damage, componentHit);
+                      hit = true;
+                      break;
+                  }
+              }
+              
+              // Eliminar la bala si impactó o salió del mapa
+              if (hit || Math.abs(bullet.position.x) > CITY_SIZE/2 || Math.abs(bullet.position.z) > CITY_SIZE/2){
+                  releaseBullet(bullet);
               }
           }
           
-          // Eliminar la bala si impactó o salió del mapa
-          if (hit || Math.abs(bullet.position.x) > CITY_SIZE/2 || Math.abs(bullet.position.z) > CITY_SIZE/2){
-              releaseBullet(bullet);
+          // ... Lógica de Power-Ups y Bordes
+          state.health = car.userData.health; 
+      }
+      
+      // Camera Follow
+      function updateCamera(){
+        const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
+        camera.position.lerp(desired, 0.15);
+        camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
+      }
+
+      // Actualización del HUD
+      function updateHUD(){
+          document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
+          document.getElementById('ammoCount').textContent = state.ammo;
+          
+          const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
+          document.getElementById('speedDisplay').textContent = kmh;
+          
+          // **ACTUALIZACIÓN DEL DIAGNÓSTICO DE COMPONENTES**
+          let html = '';
+          for (const key in car.componentes) {
+              const comp = car.componentes[key];
+              let className = 'estado-ok';
+              if (comp.estado === 'CRÍTICO') className = 'estado-critico';
+              else if (comp.estado === 'DAÑADO') className = 'estado-danado';
+
+              html += `<p class="componente-estado"><strong>${comp.efecto.toUpperCase()}:</strong> <span class="${className}">${comp.estado} (${Math.round(comp.vida)}%)</span></p>`;
           }
+          UI_COMP_EL.innerHTML = html;
+      }
+
+      // ---------- INPUTS Y CONTROLES ----------
+      const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
+      let touchId = null, baseX=0, baseY=0;
+      let stick = {x:0,y:0};
+      function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
+      joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
+      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+      joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
+      
+      let md=false;
+      joy.addEventListener('pointerdown', e=>{ 
+          md=true; 
+          baseX=e.clientX; 
+          baseY=e.clientY; 
+          if (e.pointerType === 'mouse') joy.setPointerCapture(e.pointerId); 
+      });
+      joy.addEventListener('pointermove', e=>{ 
+          if(!md) return; 
+          const dx=e.clientX-baseX, dy=e.clientY-baseY; 
+          const max=36; 
+          const nx=Math.max(-1,Math.min(1,dx/max)); 
+          const ny=Math.max(-1,Math.min(1,dy/max)); 
+          stick.x=nx; 
+          stick.y=-ny; 
+          stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
+      });
+      joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+      
+      const fireBtn = document.getElementById('fire');
+      fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+      fireBtn.addEventListener('mousedown', doFire);
+      
+      const turboBtn = document.getElementById('turbo');
+      turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); state.turbo = true; }, {passive:false});
+      turboBtn.addEventListener('touchend', e=>{ e.preventDefault(); state.turbo = false; }, {passive:false});
+      
+      let lastFireTime = 0;
+      function doFire(){
+          const now = performance.now();
+          if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0) return;
+
+          lastFireTime = now;
+          state.ammo--;
+          car.userData.ammo = state.ammo;
+          
+          fireBtn.classList.add('cooldown');
+          setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
+
+          const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+          const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.8).applyQuaternion(car.quaternion));
+          
+          spawnBullet(origin, dir); 
       }
       
-      // ... Lógica de Power-Ups y Bordes
-      state.health = car.userData.health; 
-  }
-  
-  // Camera Follow
-  function updateCamera(){
-    const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
-    camera.position.lerp(desired, 0.15);
-    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
-  }
-
-  // Actualización del HUD
-  function updateHUD(){
-      document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
-      document.getElementById('ammoCount').textContent = state.ammo;
-      
-      const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
-      document.getElementById('speedDisplay').textContent = kmh;
-      
-      // **ACTUALIZACIÓN DEL DIAGNÓSTICO DE COMPONENTES**
-      let html = '';
-      for (const key in car.componentes) {
-          const comp = car.componentes[key];
-          let className = 'estado-ok';
-          if (comp.estado === 'CRÍTICO') className = 'estado-critico';
-          else if (comp.estado === 'DAÑADO') className = 'estado-danado';
-
-          html += `<p class="componente-estado"><strong>${comp.efecto.toUpperCase()}:</strong> <span class="${className}">${comp.estado} (${Math.round(comp.vida)}%)</span></p>`;
+      // ---------- RENDER LOOP ----------
+      let last = performance.now(); let frames = 0; let fpsNow = 0;
+      function animate(){
+        const now = performance.now();
+        const dt = Math.min(50, now-last) / 16.666;
+        last = now;
+        
+        // Player movement
+        if(state.health > 0){
+            state.forward = Math.max(-1, Math.min(1, stick.y));
+            state.turn = Math.max(-1, Math.min(1, stick.x));
+            
+            const physicsMod = car.getPhysicsModifier();
+            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod * (state.turbo ? 1.8 : 1.0); 
+            
+            if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
+            else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
+            else car.userData.speed *= 0.96;
+            
+            car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
+            
+            const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
+            let rotationMultiplier = 1;
+            if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
+            
+            car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
+            
+            const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+            car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
+            
+            // ... Lógica de IA y Tráfico
+            
+            checkCollisions(dt);
+        }
+        
+        // **Actualización de balas**
+        for(let i = activeBullets.length - 1; i >= 0; i--){
+            const bullet = activeBullets[i];
+            bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
+        }
+        
+        updateCamera();
+        updateHUD();
+        
+        // RENDERIZADO 
+        if(composer){
+            composer.render();
+        } else {
+            renderer.render(scene, camera);
+        }
+        
+        // FPS
+        let fpsLast = performance.now();
+        frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+        requestAnimationFrame(animate);
       }
-      UI_COMP_EL.innerHTML = html;
-  }
 
-  // ---------- INPUTS Y CONTROLES ----------
-  const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-  let touchId = null, baseX=0, baseY=0;
-  let stick = {x:0,y:0};
-  function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-  joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
-  joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
-  
-  let md=false;
-  joy.addEventListener('pointerdown', e=>{ 
-      md=true; 
-      baseX=e.clientX; 
-      baseY=e.clientY; 
-      if (e.pointerType === 'mouse') joy.setPointerCapture(e.pointerId); 
-  });
-  joy.addEventListener('pointermove', e=>{ 
-      if(!md) return; 
-      const dx=e.clientX-baseX, dy=e.clientY-baseY; 
-      const max=36; 
-      const nx=Math.max(-1,Math.min(1,dx/max)); 
-      const ny=Math.max(-1,Math.min(1,dy/max)); 
-      stick.x=nx; 
-      stick.y=-ny; 
-      stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
-  });
-  joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-  
-  const fireBtn = document.getElementById('fire');
-  fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
-  fireBtn.addEventListener('mousedown', doFire);
-  
-  const turboBtn = document.getElementById('turbo');
-  turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); state.turbo = true; }, {passive:false});
-  turboBtn.addEventListener('touchend', e=>{ e.preventDefault(); state.turbo = false; }, {passive:false});
-  
-  let lastFireTime = 0;
-  function doFire(){
-      const now = performance.now();
-      if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0) return;
+      // **CORRECCIÓN DEL LOOP:**
+      // ---------- INITIALIZATION ----------
+      animate(); // Llamada inicial dentro del scope de la función principal.
 
-      lastFireTime = now;
-      state.ammo--;
-      car.userData.ammo = state.ammo;
-      
-      fireBtn.classList.add('cooldown');
-      setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
+      window.addEventListener('resize', ()=>{ 
+        renderer.setSize(window.innerWidth, window.innerHeight); 
+        camera.aspect = innerWidth/innerHeight; 
+        camera.updateProjectionMatrix(); 
+        if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+      });
 
-      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-      // Origen de la bala ligeramente elevado y delante del coche
-      const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.8).applyQuaternion(car.quaternion));
-      
-      spawnBullet(origin, dir); 
-  }
-  
-  // ---------- RENDER LOOP ----------
-  let last = performance.now(); let frames = 0; let fpsNow = 0;
-  function animate(){
-    const now = performance.now();
-    const dt = Math.min(50, now-last) / 16.666;
-    last = now;
-    
-    // Player movement
-    if(state.health > 0){
-        state.forward = Math.max(-1, Math.min(1, stick.y));
-        state.turn = Math.max(-1, Math.min(1, stick.x));
-        
-        const physicsMod = car.getPhysicsModifier();
-        let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod * (state.turbo ? 1.8 : 1.0); 
-        
-        if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
-        else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
-        else car.userData.speed *= 0.96;
-        
-        car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
-        
-        const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
-        let rotationMultiplier = 1;
-        if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
-        
-        car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
-        
-        const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-        car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
-        
-        // ... Lógica de IA y Tráfico
-        
-        checkCollisions(dt);
-    }
-    
-    // **Actualización de balas**
-    for(let i = activeBullets.length - 1; i >= 0; i--){
-        const bullet = activeBullets[i];
-        bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
-    }
-    
-    updateCamera();
-    updateHUD();
-    
-    // RENDERIZADO 
-    if(composer){
-        composer.render();
-    } else {
-        renderer.render(scene, camera);
-    }
-    
-    // FPS
-    let fpsLast = performance.now();
-    frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*
+    })();
+});
+</script>
+</body>
+</html>
