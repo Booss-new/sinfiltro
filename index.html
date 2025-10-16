@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>CENIT DE ACERO: Simulador de Combate Extremo</title>
+<title>CENIT DE ACERO: Arena de Combate Extremo - Playas JM</title>
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -12,8 +12,8 @@
     --blue:#3498db;
     --green:#2ecc71;
     --shadow:rgba(0,0,0,0.8);
-    --text-color:#111111; /* Oscuro para contraste con el día */
-    --panel-bg:rgba(255,255,255,0.85); /* Claro para día */
+    --text-color:#111111;
+    --panel-bg:rgba(255,255,255,0.85); 
     --panel-border:rgba(0,0,0,0.15);
   }
   html,body{height:100%;margin:0;background:linear-gradient(#6e8ca0,#a0c0e0);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
@@ -26,21 +26,21 @@
   .panel{background:var(--panel-bg);padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--panel-border);pointer-events:auto;box-shadow:0 4px 15px rgba(0,0,0,0.3);backdrop-filter:blur(3px)}
   .panel h2{font-size:16px;margin:0 0 5px 0;color:#000}
 
-  /* NUEVA INTERFAZ DE DIAGNÓSTICO DE COMPONENTES */
+  /* PANEL DE DIAGNÓSTICO (Más Pequeño) */
   #diagnostico{
     flex-direction: column;
-    width: 200px; 
+    width: 170px; /* Reducido */
     pointer-events: none;
-    line-height: 1.4;
+    line-height: 1.2; /* Reducido */
   }
-  #diagnostico h2{ color: #007777; }
-  .componente-estado{ font-size: 11px; margin-top: 3px; }
+  #diagnostico h2{ font-size: 14px; margin: 0 0 3px 0; color: #007777; }
+  .componente-estado{ font-size: 10px; margin-top: 1px; }
   .estado-ok{ color: var(--green); }
   .estado-danado{ color: #cc6600; }
   .estado-critico{ color: var(--red); font-weight: 700; }
 
   /* Health and Ammo Bars */
-  .bar-container{width:130px;height:14px;background:#dddddd;border-radius:3px;overflow:hidden;margin-top:5px;border:1px solid rgba(0,0,0,0.2)}
+  .bar-container{width:100px;height:12px;background:#dddddd;border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid rgba(0,0,0,0.2)}
   .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #c0392b, #e74c3c);transition:width 0.2s}
   .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #27ae60, #2ecc71);transition:width 0.2s}
   
@@ -69,8 +69,7 @@
     .fps{left:8px;bottom:100px;} 
     .speedometer{width:100px;height:100px;right:8px;bottom:100px;}
     .speed-value{font-size:30px}
-    /* Mover el diagnóstico en móvil */
-    #diagnostico{ top: 70px; right: 10px; left: auto; width: 150px; }
+    #diagnostico{ top: 70px; right: 10px; left: auto; width: 140px; }
   }
 </style>
 </head>
@@ -85,7 +84,7 @@
     </div>
 
     <div class="panel" id="diagnostico">
-        <h2>DIAGNÓSTICO ESTRUCTURAL</h2>
+        <h2>DIAGNÓSTICO</h2>
         <div id="componentes">
             </div>
     </div>
@@ -117,10 +116,9 @@
 <script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
-// Función para verificar si el EffectComposer se cargó
+// La función Bloom ya no verifica si está definida, la definimos como activa
 function hasBloomSupport() {
-    // Desactivamos el Bloom por defecto ya que estamos en ambiente de día
-    return false; // return typeof EffectComposer !== 'undefined';
+    return true; 
 }
 
 // **OCULTAR el loader**
@@ -132,10 +130,10 @@ document.getElementById('loading').style.display = 'none';
 
 // Definiciones de vehículos 
 const VEHICLE_STATS = {
-    'Muscle Car': { color: 0x880000, width: 2.8, length: 5.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
-    'Sport': { color: 0x223388, width: 2.2, length: 4.0, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
-    'Pickup': { color: 0x336633, width: 3.2, length: 5.5, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 },
-    'Traffic': { color: 0xaaaaaa, width: 2.5, length: 4.5, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
+    'Muscle Car': { color: 0x880000, width: 2.8, length: 5.0, height: 1.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
+    'Sport': { color: 0x223388, width: 2.2, length: 4.0, height: 0.8, health: 80, maxSpeed: 1.4, rotSpeed: 0.055, maxAmmo: 10 },
+    'Pickup': { color: 0x336633, width: 3.2, length: 5.5, height: 1.2, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 },
+    'Traffic': { color: 0xaaaaaa, width: 2.5, length: 4.5, height: 1.0, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
 };
 
 class CarController extends THREE.Group {
@@ -143,7 +141,6 @@ class CarController extends THREE.Group {
         super();
         const stats = VEHICLE_STATS[type];
 
-        // --- 1. DATOS DE ESTADO Y COMPONENTES (LUJO DE DETALLE) ---
         this.userData.isAI = isAI;
         this.userData.type = type;
         this.userData.maxHealth = stats.health;
@@ -153,27 +150,25 @@ class CarController extends THREE.Group {
         this.userData.maxSpeed = stats.maxSpeed;
         this.userData.rotSpeed = stats.rotSpeed;
         this.userData.speed = 0;
+        this.userData.isDestroyed = false;
 
         // **INTEGRACIÓN DE COMPONENTES DE CENIT DE ACERO**
         this.componentes = {
-            motor: { vida: 100, max: 100, estado: 'OK', efecto: 'Potencia/Velocidad' },
-            ruedas_traseras: { vida: 100, max: 100, estado: 'OK', efecto: 'Tracción/Giro' },
+            motor: { vida: 100, max: 100, estado: 'OK', efecto: 'Potencia' },
+            ruedas_traseras: { vida: 100, max: 100, estado: 'OK', efecto: 'Tracción' },
             sistema_punteria: { vida: 100, max: 100, estado: 'OK', efecto: 'Precisión' },
-            chasis_frontal: { vida: 100, max: 100, estado: 'OK', efecto: 'Blindaje Frontal' }
+            chasis_frontal: { vida: 100, max: 100, estado: 'OK', efecto: 'Blindaje' }
         };
-        // Para vehículos de tráfico, hacerlos más sencillos
         if (type === 'Traffic') {
-            this.componentes = {
-                 chasis: { vida: 100, max: 100, estado: 'OK', efecto: 'Estructura' }
-            };
+            this.componentes = { chasis: { vida: 100, max: 100, estado: 'OK', efecto: 'Estructura' } };
         }
 
-        // --- 2. MODELO VISUAL 3D ---
+        // --- 2. MODELO VISUAL 3D (ESTILIZADO Y REDONDEADO) ---
         this.buildMesh(stats);
 
         // Barra de salud visible (IA)
         if(isAI){
-            const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00});
+            const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00, transparent: true, opacity: 0.8});
             const hbGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.1);
             const healthBar = new THREE.Mesh(hbGeo, hbMat);
             healthBar.position.y = 2.5;
@@ -183,85 +178,145 @@ class CarController extends THREE.Group {
         }
     }
 
-    // Método para crear el mesh 3D
+    // Método para crear el mesh 3D redondeado y con luces
     buildMesh(stats) {
-        // Cuerpo del vehículo (Low-Poly con materiales metálicos)
-        const bodyGeo = new THREE.BoxGeometry(stats.width, 0.7, stats.length);
+        // Body (usamos un BoxGeometry con subdivisiones para simular redondez o un 'BufferGeometry' si fuera un modelo real)
+        const bodyGeo = new THREE.BoxGeometry(stats.width, stats.height, stats.length, 2, 2, 2); 
         const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
         const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 0.7; 
+        body.position.y = stats.height / 2 + 0.5; 
         body.castShadow = true;
         body.receiveShadow = true;
         this.add(body);
         
-        // Luces Traseras (Sólo visual)
-        const tailLightMat = new THREE.MeshBasicMaterial({color:0x990000});
+        // Luces Traseras (Emisivas para Bloom/Neón)
+        const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
         const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
         const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
-        tailLights.position.set(0, 0.8, stats.length/2 - 0.05); 
+        tailLights.position.set(0, stats.height / 2 + 0.5, stats.length/2 - 0.05); 
         this.add(tailLights);
-        
-        // **NUEVO: Agregar Ruedas**
-        this.createWheels(stats);
 
-        this.userData.mainMesh = body;
+        this.userData.body = body;
+        this.userData.tailLights = tailLights;
+        
+        // **NUEVO: Agregar Modelos de Armas (Simulación AK/M4)**
+        if (!this.userData.isAI || this.userData.type !== 'Traffic') {
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
+            // Cañón (Cilindro)
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2.0, 8), gunMat);
+            barrel.rotation.z = Math.PI / 2;
+            barrel.position.set(stats.width/2 + 0.5, stats.height / 2 + 0.8, -stats.length/2 + 0.5); 
+            this.add(barrel);
+            
+            // Cuerpo (Caja)
+            const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.8), gunMat);
+            receiver.position.set(stats.width/2 + 0.5, stats.height / 2 + 0.8, -stats.length/2 + 1.2); 
+            this.add(receiver);
+
+            // Duplicar para el otro lado
+            const barrel2 = barrel.clone();
+            barrel2.position.x *= -1;
+            const receiver2 = receiver.clone();
+            receiver2.position.x *= -1;
+            this.add(barrel2);
+            this.add(receiver2);
+        }
+
+        // Agregar Ruedas
+        this.createWheels(stats);
     }
     
-    // **NUEVO: Función para crear Ruedas (Cilindros)**
+    // Función para crear Ruedas (Cilindros)
     createWheels(stats){
         const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, stats.width * 0.25, 12);
         const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
         
         const wheelData = [
-            { x: stats.width / 2 + 0.1, z: stats.length / 2 - 0.7 }, // Front Right
-            { x: -stats.width / 2 - 0.1, z: stats.length / 2 - 0.7 }, // Front Left
-            { x: stats.width / 2 + 0.1, z: -stats.length / 2 + 0.7 }, // Back Right
-            { x: -stats.width / 2 - 0.1, z: -stats.length / 2 + 0.7 }  // Back Left
+            { x: stats.width / 2 + 0.1, z: stats.length / 2 - 0.7 },
+            { x: -stats.width / 2 - 0.1, z: stats.length / 2 - 0.7 },
+            { x: stats.width / 2 + 0.1, z: -stats.length / 2 + 0.7 },
+            { x: -stats.width / 2 - 0.1, z: -stats.length / 2 + 0.7 }
         ];
         
         for (const pos of wheelData) {
             const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-            wheel.rotation.z = Math.PI / 2; // Rota el cilindro para que quede plano como rueda
-            wheel.position.set(pos.x, 0.5, pos.z); // Altura de 0.5 (radio de la rueda)
+            wheel.rotation.z = Math.PI / 2;
+            wheel.position.set(pos.x, 0.5, pos.z);
             wheel.castShadow = true;
             this.add(wheel);
         }
     }
 
-    // --- 3. FUNCIÓN CRÍTICA DE DAÑO (LUJO DE DETALLE) ---
+    // --- 3. FUNCIÓN CRÍTICA DE DAÑO (DESTRUCCIÓN) ---
     applyDamage(amount, componentKey = 'chasis_frontal') {
         if (this.userData.health <= 0) return;
         
-        // A. Daño al componente específico
         const comp = this.componentes[componentKey];
         if (comp && comp.vida > 0) {
             comp.vida -= amount;
             comp.vida = Math.max(0, comp.vida);
 
-            // Determinar nuevo estado
             if (comp.vida <= 0) comp.estado = 'DESTRUIDO';
             else if (comp.vida <= 30) comp.estado = 'CRÍTICO';
             else if (comp.vida <= 60) comp.estado = 'DAÑADO';
             else comp.estado = 'OK';
         }
 
-        // B. Daño al Integridad Estructural general (Daño total)
         this.userData.health -= amount * 0.5;
         this.userData.health = Math.max(0, this.userData.health);
 
-        // Feedback visual
-        this.userData.mainMesh.material.color.setHex(0xaaaaaa); 
-        setTimeout(() => {
-            if(this.userData.health > 0){
-                this.userData.mainMesh.material.color.setHex(VEHICLE_STATS[this.userData.type].color);
-            }
-        }, 50);
+        // Feedback visual (parpadeo)
+        if (this.userData.body.material.opacity > 0) {
+             this.userData.body.material.color.setHex(0xaaaaaa); 
+             this.userData.tailLights.material.emissiveIntensity = 5; // Aumenta el brillo al recibir daño
+             setTimeout(() => {
+                if(this.userData.health > 0){
+                    this.userData.body.material.color.setHex(VEHICLE_STATS[this.userData.type].color);
+                    this.userData.tailLights.material.emissiveIntensity = 1.5; 
+                }
+            }, 80);
+        }
         
-        return this.userData.health <= 0;
+        if (this.userData.health <= 0 && !this.userData.isDestroyed) {
+             this.destroyVehicle();
+             return true;
+        }
+
+        return false;
+    }
+    
+    // Nuevo método para destruir el vehículo (simulación de desintegración)
+    destroyVehicle() {
+        this.userData.isDestroyed = true;
+        this.userData.speed = 0; // Detener movimiento
+
+        // Habilitar transparencia para desintegración
+        this.userData.body.material.transparent = true;
+        this.userData.body.material.opacity = 0.5;
+        this.userData.body.material.color.setHex(0x333333); // Color quemado
+        this.userData.tailLights.material.emissiveIntensity = 0.1; // Apagar luces
+
+        // Ocultar la barra de salud de la IA
+        if(this.userData.healthBar) this.userData.healthBar.visible = false;
+
+        // Desintegración gradual
+        const decayInterval = setInterval(() => {
+            if (this.userData.body.material.opacity > 0.01) {
+                this.userData.body.material.opacity *= 0.98;
+                // Dejar de recibir colisiones cuando la transparencia es alta
+                if(this.userData.body.material.opacity < 0.1) this.position.y = -100; 
+            } else {
+                clearInterval(decayInterval);
+                this.userData.body.visible = false;
+                // Mantenemos el objeto en la escena para evitar bugs
+            }
+        }, 100);
     }
 
-    // --- 4. CÁLCULO DE EFECTOS DEL DAÑO (FÍSICA AFECTADA) ---
+    // CÁLCULO DE EFECTOS DEL DAÑO (FÍSICA AFECTADA)
     getPhysicsModifier() {
+        if(this.userData.isDestroyed) return { maxSpeedMod: 0, rotSpeedMod: 0 };
+        
         let maxSpeedMod = 1.0;
         let rotSpeedMod = 1.0;
         
@@ -277,7 +332,6 @@ class CarController extends THREE.Group {
              rotSpeedMod *= 0.3 + (ruedas.vida / 100) * 0.7;
         }
 
-        // Efecto de chasis (fricción adicional)
         if (chasis && (chasis.estado === 'CRÍTICO' || chasis.estado === 'DESTRUIDO')) {
             this.userData.speed *= 0.95; 
         }
@@ -287,31 +341,28 @@ class CarController extends THREE.Group {
 }
 
 // =========================================================================
-// == CÓDIGO THREE.JS PRINCIPAL (Modificado)                               ==
+// == CÓDIGO THREE.JS PRINCIPAL                                            ==
 // =========================================================================
 
-// **CORRECCIÓN DE INICIALIZACIÓN: Usamos un evento de DOMContentLoaded para asegurar que THREE esté cargado**
 document.addEventListener('DOMContentLoaded', function() {
     (function(){
       // ---------- CONFIGURACIÓN GENERAL ----------
       const holder = document.getElementById('holder');
-      const CITY_SIZE = 200; 
+      const CITY_SIZE = 400; // Aumentado para la Arena
       const ROAD_WIDTH = 12; 
       const SIDEWALK_WIDTH = 3; 
-      const BUILDING_SPACING = 2; 
-      const BULLET_COOLDOWN_MS = 400; 
+      const BULLET_COOLDOWN_MS = 300; // Cooldown más rápido
       const AI_CARS = [];
       const TRAFFIC_CARS = [];
-      const POWER_UPS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
 
-      let CURRENT_CAR_TYPE = 'Sport'; 
+      let CURRENT_CAR_TYPE = 'Muscle Car'; // Cambiado a Muscle Car para reflejar la calidad
       const BLOOM_ENABLED = hasBloomSupport(); 
       
-      // ---------- THREEJS SETUP CON AMBIENTE DE DÍA ----------
+      // ---------- THREEJS SETUP CON AMBIENTE DE DÍA y BLOOM ----------
       const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x6e8ca0); // Cielo azul claro
-      scene.fog = new THREE.Fog(scene.background, 200, 800); 
+      scene.background = new THREE.Color(0x6e8ca0); 
+      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, CITY_SIZE * 2); // Niebla más suave
       
       const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -327,29 +378,31 @@ document.addEventListener('DOMContentLoaded', function() {
       if(BLOOM_ENABLED){
           composer = new EffectComposer(renderer);
           composer.addPass(new RenderPass(scene, camera));
-          const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.8, 0.4, 0.85); 
+          // Configuración del Bloom para un efecto de "Neón/Boom" de alta calidad
+          const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
           bloomPass.renderToScreen = true;
           composer.addPass(bloomPass);
       }
 
       // Luces (DÍA)
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8); // Luz del sol brillante
-      dirLight.position.set(200, 400, 300); // Sol alto
+      const dirLight = new THREE.DirectionionalLight(0xffffff, 0.6); 
+      dirLight.position.set(200, 400, 300);
       dirLight.castShadow = true;
-      dirLight.shadow.mapSize.width = 2048; // Aumentar calidad de sombra
-      dirLight.shadow.mapSize.height = 2048;
-      dirLight.shadow.camera.left = -CITY_SIZE/2;
-      dirLight.shadow.camera.right = CITY_SIZE/2;
-      dirLight.shadow.camera.top = CITY_SIZE/2;
-      dirLight.shadow.camera.bottom = -CITY_SIZE/2;
+      dirLight.shadow.mapSize.width = 4096; // Más calidad de sombra
+      dirLight.shadow.mapSize.height = 4096;
+      dirLight.shadow.camera.left = -CITY_SIZE;
+      dirLight.shadow.camera.right = CITY_SIZE;
+      dirLight.shadow.camera.top = CITY_SIZE;
+      dirLight.shadow.camera.bottom = -CITY_SIZE;
+      dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.4); // Luz del cielo
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.5); 
       scene.add(hemiLight);
       
-      scene.add(new THREE.AmbientLight(0xffffff, 0.4)); // Luz ambiente
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
-      // --- GENERACIÓN DE CIUDAD (Calles de Playas JM - Base) ---
+      // --- GENERACIÓN DE ARENA (Muros de Edificios) ---
       const roadMat = new THREE.MeshStandardMaterial({color:0x444444, roughness:0.7, metalness:0.3});
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
@@ -357,7 +410,8 @@ document.addEventListener('DOMContentLoaded', function() {
       ground.receiveShadow = true;
       scene.add(ground);
 
-      const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); // Líneas amarillas de día
+      // Calles centrales (Mismo diseño de Playas JM)
+      const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); 
       const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
       for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
           const line = new THREE.Mesh(dashedLineGeo, lineMat);
@@ -366,34 +420,29 @@ document.addEventListener('DOMContentLoaded', function() {
           scene.add(line);
       }
 
-      const sidewalkMat = new THREE.MeshStandardMaterial({color:0x888888, roughness:0.6, metalness:0.1});
-      const sidewalkLeft = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
-      sidewalkLeft.position.set(-ROAD_WIDTH/2 - SIDEWALK_WIDTH/2, 0.25, 0);
-      scene.add(sidewalkLeft);
-      const sidewalkRight = new THREE.Mesh(new THREE.BoxGeometry(SIDEWALK_WIDTH, 0.5, CITY_SIZE), sidewalkMat);
-      sidewalkRight.position.set(ROAD_WIDTH/2 + SIDEWALK_WIDTH/2, 0.25, 0);
-      scene.add(sidewalkRight);
+      // Muros de Edificios para formar la Arena (4 lados)
+      const WALL_THICKNESS = 10;
+      const WALL_HEIGHT = 100;
+      const arenaMat = new THREE.MeshStandardMaterial({color: 0x555555, roughness: 0.8, metalness: 0.3});
 
-      function createBuilding(x, z, sizeX, sizeZ, height){
-          const buildingGroup = new THREE.Group();
-          const bodyMat = new THREE.MeshStandardMaterial({color: [0x555555, 0x666666, 0x777777][Math.floor(Math.random()*3)], roughness:0.7, metalness:0.2});
-          const bodyGeo = new THREE.BoxGeometry(sizeX, height, sizeZ);
-          const body = new THREE.Mesh(bodyGeo, bodyMat);
-          body.position.y = height / 2 + 0.5;
-          body.castShadow = true;
-          buildingGroup.add(body);
-          buildingGroup.position.set(x, 0, z);
-          scene.add(buildingGroup);
+      function createWall(x, z, sizeX, sizeZ) {
+        const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, WALL_HEIGHT, sizeZ), arenaMat);
+        wall.position.set(x, WALL_HEIGHT / 2 + 0.5, z);
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        scene.add(wall);
+        return wall;
       }
+      
+      // Muro Norte
+      createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
+      // Muro Sur
+      createWall(0, CITY_SIZE/2 + WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
+      // Muro Este
+      createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
+      // Muro Oeste
+      createWall(-CITY_SIZE/2 - WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
 
-      const numBuildingsZ = Math.floor(CITY_SIZE / 15);
-      for(let i = -numBuildingsZ; i <= numBuildingsZ; i++){
-          const zPos = i * (15 + BUILDING_SPACING);
-          const xPosLeft = -ROAD_WIDTH/2 - SIDEWALK_WIDTH - (Math.random() * 20 + 10) / 2 - BUILDING_SPACING;
-          createBuilding(xPosLeft, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
-          const xPosRight = ROAD_WIDTH/2 + SIDEWALK_WIDTH + (Math.random() * 20 + 10) / 2 + BUILDING_SPACING;
-          createBuilding(xPosRight, zPos, Math.random() * 10 + 10, Math.random() * 8 + 8, Math.random() * 30 + 15);
-      }
 
       // ---------- VEHÍCULOS Y LÓGICA DE JUEGO ----------
       
@@ -403,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
       scene.add(car);
 
       // IA Cars
-      const ai1 = new CarController('Muscle Car', true);
+      const ai1 = new CarController('Sport', true);
       ai1.position.set(20, 0, 50);
       ai1.rotation.y = Math.PI;
       scene.add(ai1); AI_CARS.push(ai1);
@@ -416,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Tráfico (vehículos pasivos)
       for(let i = 0; i < 5; i++){
           const traffic = new CarController('Traffic', true);
-          traffic.position.set((Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), 0, Math.random() * CITY_SIZE - CITY_SIZE/2);
+          traffic.position.set((Math.random() < 0.5 ? 1 : -1) * (ROAD_WIDTH/4 + Math.random() * ROAD_WIDTH/4), 0, Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4);
           traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
           traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
           TRAFFIC_CARS.push(traffic);
@@ -431,18 +480,19 @@ document.addEventListener('DOMContentLoaded', function() {
           ammo: car.userData.ammo || VEHICLE_STATS[CURRENT_CAR_TYPE].maxAmmo
       };
       
-      // ---------- SISTEMA DE ARMAS (Visible y Funcional) ----------
+      // ---------- SISTEMA DE ARMAS (Visible y Funcional con Bloom) ----------
       const bulletPool = [];
       const activeBullets = [];
       const maxBullets = 20;
 
       function setupBulletPool() {
           const bulletGeo = new THREE.SphereGeometry(0.2, 8, 8);
-          const bulletMat = new THREE.MeshBasicMaterial({ color: 0xffff00, emissive: 0xffff00, emissiveIntensity: 2 });
+          // Balas Rojas con Bloom de alta intensidad (tipo láser)
+          const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff4444, emissive: 0xff0000, emissiveIntensity: 5 }); 
           for (let i = 0; i < maxBullets; i++) {
               const bullet = new THREE.Mesh(bulletGeo, bulletMat);
               bullet.userData.dir = new THREE.Vector3();
-              bullet.userData.speed = 1.8; // Velocidad de bala rápida
+              bullet.userData.speed = 2.5; // Velocidad de bala muy rápida
               bullet.userData.damage = 15;
               bullet.visible = false;
               bullet.castShadow = true;
@@ -474,7 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
       }
 
-      setupBulletPool(); // Inicializar el pool
+      setupBulletPool(); 
 
       // --- LÓGICA DE DAÑO ---
       function applyDamage(target, amount, component = 'chasis_frontal'){
@@ -483,43 +533,62 @@ document.addEventListener('DOMContentLoaded', function() {
           if(target === car) state.health = car.userData.health;
 
           if(isDead){
-              // ... Lógica de reinicio
+               console.log(`${target.userData.type} DESTRUIDO!`);
           }
       }
 
-      // Colisión de Balas/Power-Ups/Coches
+      // Colisión de Balas/Arena
+      const halfCity = CITY_SIZE / 2;
       function checkCollisions(dt){
           // 1. Balas vs. Enemigos/Tráfico
           for(let i=activeBullets.length-1;i>=0;i--){
               const bullet = activeBullets[i];
               let hit = false;
               
-              const targets = [...AI_CARS, ...TRAFFIC_CARS];
-              for(const target of targets){
-                  if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
-                      // **SIMULACIÓN DE IMPACTO LOCALIZADO**
-                      const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
-                      
-                      let componentHit = 'chasis_frontal';
-                      if (target.componentes.motor && dot < -0.5) { // Impacto por detrás
-                          componentHit = 'motor';
-                      } else if (target.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { // Impacto lateral (simulado como ruedas/chasis)
-                           componentHit = 'ruedas_traseras';
-                      }
+              // Colisión con la Arena (Muros)
+              if (Math.abs(bullet.position.x) > halfCity || Math.abs(bullet.position.z) > halfCity) {
+                   hit = true;
+              } else {
+                  // Colisión con vehículos
+                  const targets = [...AI_CARS, ...TRAFFIC_CARS];
+                  for(const target of targets){
+                      if(target.userData.isDestroyed) continue; // No disparar a coches destruidos
 
-                      applyDamage(target, bullet.userData.damage, componentHit);
-                      hit = true;
-                      break;
+                      if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
+                          // Simulación de impacto localizado
+                          const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
+                          
+                          let componentHit = 'chasis_frontal';
+                          if (target.componentes.motor && dot < -0.5) { // Impacto por detrás
+                              componentHit = 'motor';
+                          } else if (target.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { // Impacto lateral 
+                               componentHit = 'ruedas_traseras';
+                          }
+
+                          applyDamage(target, bullet.userData.damage, componentHit);
+                          hit = true;
+                          break;
+                      }
                   }
               }
               
-              // Eliminar la bala si impactó o salió del mapa
-              if (hit || Math.abs(bullet.position.x) > CITY_SIZE/2 || Math.abs(bullet.position.z) > CITY_SIZE/2){
+              if (hit){
                   releaseBullet(bullet);
               }
           }
           
-          // ... Lógica de Power-Ups y Bordes
+          // 2. Jugador vs. Bordes de Arena (Rebote y Daño)
+          if(Math.abs(car.position.x) > halfCity){
+              car.userData.speed *= -0.5; // Rebote
+              car.position.x = car.position.x > 0 ? halfCity : -halfCity;
+              applyDamage(car, 5, 'chasis_frontal'); // Daño al chocar
+          }
+          if(Math.abs(car.position.z) > halfCity){
+              car.userData.speed *= -0.5; // Rebote
+              car.position.z = car.position.z > 0 ? halfCity : -halfCity;
+              applyDamage(car, 5, 'chasis_frontal'); // Daño al chocar
+          }
+          
           state.health = car.userData.health; 
       }
       
@@ -538,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
           document.getElementById('speedDisplay').textContent = kmh;
           
-          // **ACTUALIZACIÓN DEL DIAGNÓSTICO DE COMPONENTES**
+          // ACTUALIZACIÓN DEL DIAGNÓSTICO
           let html = '';
           for (const key in car.componentes) {
               const comp = car.componentes[key];
@@ -590,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
       let lastFireTime = 0;
       function doFire(){
           const now = performance.now();
-          if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0) return;
+          if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0 || car.userData.isDestroyed) return;
 
           lastFireTime = now;
           state.ammo--;
@@ -600,7 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
 
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-          const origin = car.position.clone().add(new THREE.Vector3(0,0.7,-2.8).applyQuaternion(car.quaternion));
+          const origin = car.position.clone().add(new THREE.Vector3(0,car.userData.body.position.y, -car.userData.body.geometry.parameters.depth/2 - 0.5).applyQuaternion(car.quaternion));
           
           spawnBullet(origin, dir); 
       }
@@ -635,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
             car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
             
-            // ... Lógica de IA y Tráfico
+            // ... Lógica de IA y Tráfico (Básica)
             
             checkCollisions(dt);
         }
@@ -649,7 +718,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO 
+        // RENDERIZADO (Con o sin Bloom)
         if(composer){
             composer.render();
         } else {
@@ -657,14 +726,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // FPS
-        let fpsLast = performance.now();
-        frames++; if(now - fpsLast >= 500){ fpsNow = Math.round((frames*1000)/(now-fpsLast)); frames = 0; fpsLast = now; document.getElementById('fps').textContent = `FPS: ${fpsNow}`; }
+        frames++; 
+        if(now - (fpsNow || now) >= 1000){ // Optimización del cálculo de FPS
+            fpsNow = now;
+            document.getElementById('fps').textContent = `FPS: ${frames}`;
+            frames = 0;
+        }
+
         requestAnimationFrame(animate);
       }
 
-      // **CORRECCIÓN DEL LOOP:**
       // ---------- INITIALIZATION ----------
-      animate(); // Llamada inicial dentro del scope de la función principal.
+      animate(); 
 
       window.addEventListener('resize', ()=>{ 
         renderer.setSize(window.innerWidth, window.innerHeight); 
