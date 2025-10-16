@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>CENIT DE ACERO: Arena de Combate Extremo - Playas JM</title>
 <style>
-  /* Base Style - ESTILO AAA ESTILIZADO */
+  /* ... (mantengo tu CSS sin cambios para ahorrar espacio) ... */
   :root{
     --bg:#020306;
     --red:#e74c3c;
@@ -18,59 +18,30 @@
   }
   html,body{height:100%;margin:0;background:linear-gradient(#6e8ca0,#a0c0e0);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
   #holder{width:100%;height:100%;position:relative;touch-action:none}
-  
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
-
-  /* HUD - Estilo de consola de juego */
-  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:none} 
+  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:none}
   .panel{background:var(--panel-bg);padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--panel-border);pointer-events:auto;box-shadow:0 4px 15px rgba(0,0,0,0.3);backdrop-filter:blur(3px)}
   .panel h2{font-size:16px;margin:0 0 5px 0;color:#000}
-
-  /* PANEL DE DIAGNÓSTICO (Más Pequeño) */
-  #diagnostico{
-    flex-direction: column;
-    width: 170px; /* Reducido */
-    pointer-events: none;
-    line-height: 1.2; /* Reducido */
-  }
+  #diagnostico{ flex-direction: column; width: 170px; pointer-events: none; line-height: 1.2; }
   #diagnostico h2{ font-size: 14px; margin: 0 0 3px 0; color: #007777; }
   .componente-estado{ font-size: 10px; margin-top: 1px; }
   .estado-ok{ color: var(--green); }
   .estado-danado{ color: #cc6600; }
   .estado-critico{ color: var(--red); font-weight: 700; }
-
-  /* Health and Ammo Bars */
   .bar-container{width:100px;height:12px;background:#dddddd;border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid rgba(0,0,0,0.2)}
   .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #c0392b, #e74c3c);transition:width 0.2s}
   .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #27ae60, #2ecc71);transition:width 0.2s}
-  
-  /* Velocímetro */
-  .speedometer{
-    position:fixed;right:10px; bottom:120px; width:120px;height:120px; background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); box-shadow:0 4px 15px rgba(0,0,0,0.3); display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
-  }
+  .speedometer{ position:fixed;right:10px; bottom:120px; width:120px;height:120px; background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); box-shadow:0 4px 15px rgba(0,0,0,0.3); display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px); }
   .speed-value{font-size:36px;font-weight:800;color:#000;text-shadow:0 0 8px rgba(0,0,0,0.2)}
   .speed-unit{font-size:12px;color:var(--text-color)}
-  
-  /* Controles */
   .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(255,255,255,0.1) }
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.25); transform:translate(0,0) }
   .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
   .fire.cooldown { background:linear-gradient(135deg, #aaa, #ccc); box-shadow:none; transform: scale(0.9); pointer-events: none; }
   .turbo { position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#00f); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 10px var(--blue); font-size:20px; border:3px solid #fff; }
-  
-  /* FPS/Loader */
   .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px;backdrop-filter:blur(3px)}
   #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.8);color:#fff;padding:14px 18px;border-radius:12px;font-weight:600}
-
-  @media (max-width:420px){ 
-    .joy{width:90px;height:90px;left:8px;bottom:8px;} 
-    .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
-    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:16px}
-    .fps{left:8px;bottom:100px;} 
-    .speedometer{width:100px;height:100px;right:8px;bottom:100px;}
-    .speed-value{font-size:30px}
-    #diagnostico{ top: 70px; right: 10px; left: auto; width: 140px; }
-  }
+  @media (max-width:420px){ .joy{width:90px;height:90px;left:8px;bottom:8px;} .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px} .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:16px} .fps{left:8px;bottom:100px;} .speedometer{width:100px;height:100px;right:8px;bottom:100px;} .speed-value{font-size:30px} #diagnostico{ top: 70px; right: 10px; left: auto; width: 140px; } }
 </style>
 </head>
 <body>
@@ -85,8 +56,7 @@
 
     <div class="panel" id="diagnostico">
         <h2>DIAGNÓSTICO</h2>
-        <div id="componentes">
-            </div>
+        <div id="componentes"></div>
     </div>
     
     <div class="panel">
@@ -117,15 +87,11 @@
 
 <script>
 function hasBloomSupport() {
-    return true; 
+    return true;
 }
 
-// Ocultamos el loader después de cargar las dependencias (antes de init)
+// Ocultamos el loader después de cargar las dependencias
 document.getElementById('loading').style.display = 'none';
-
-// =========================================================================
-// == CLASE CARCONTROLLER (SIN CAMBIOS FUNCIONALES)                       ==
-// =========================================================================
 
 const VEHICLE_STATS = {
     'Muscle Car': { color: 0x880000, width: 2.8, length: 5.0, height: 1.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
@@ -138,7 +104,6 @@ class CarController extends THREE.Group {
     constructor(type, isAI) {
         super();
         const stats = VEHICLE_STATS[type];
-
         this.userData.isAI = isAI;
         this.userData.type = type;
         this.userData.maxHealth = stats.health;
@@ -147,7 +112,7 @@ class CarController extends THREE.Group {
         this.userData.ammo = stats.maxAmmo;
         this.userData.maxSpeed = stats.maxSpeed;
         this.userData.rotSpeed = stats.rotSpeed;
-        this.userData.speed = 0; // Importante: Inicializado a 0 aquí.
+        this.userData.speed = 0;
         this.userData.isDestroyed = false;
 
         this.componentes = {
@@ -183,8 +148,8 @@ class CarController extends THREE.Group {
         body.castShadow = true;
         body.receiveShadow = true;
         this.add(body);
-        
-        const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
+
+        const tailLightMat = new THREE.MeshStandardMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
         const tailLightGeo = new THREE.BoxGeometry(stats.width * 0.7, 0.3, 0.1);
         const tailLights = new THREE.Mesh(tailLightGeo, tailLightMat);
         tailLights.position.set(0, 1.0, stats.length/2 - 0.05); 
@@ -193,7 +158,8 @@ class CarController extends THREE.Group {
         this.userData.body = body;
         this.userData.tailLights = tailLights;
         
-        if (!this.userData.isAI || this.userData.type !== 'Traffic') {
+        // CORRECCIÓN: ponemos armas salvo si es un vehículo 'Traffic'
+        if (this.userData.type !== 'Traffic') {
             const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
             const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.0, 8), gunMat);
             barrel.rotation.z = Math.PI / 2;
@@ -218,14 +184,12 @@ class CarController extends THREE.Group {
     createWheels(stats){
         const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, stats.width * 0.25, 12);
         const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
-        
         const wheelData = [
             { x: stats.width / 2 + 0.1, z: stats.length / 2 - 0.7 },
             { x: -stats.width / 2 - 0.1, z: stats.length / 2 - 0.7 },
             { x: stats.width / 2 + 0.1, z: -stats.length / 2 + 0.7 },
             { x: -stats.width / 2 - 0.1, z: -stats.length / 2 + 0.7 }
         ];
-        
         for (const pos of wheelData) {
             const wheel = new THREE.Mesh(wheelGeo, wheelMat);
             wheel.rotation.z = Math.PI / 2;
@@ -236,7 +200,7 @@ class CarController extends THREE.Group {
     }
 
     applyDamage(amount, componentKey = 'chasis_frontal') {
-        if (this.userData.health <= 0) return;
+        if (this.userData.health <= 0 || this.userData.isDestroyed) return false;
         
         const comp = this.componentes[componentKey];
         if (comp && comp.vida > 0) {
@@ -252,40 +216,49 @@ class CarController extends THREE.Group {
         this.userData.health -= amount * 0.5;
         this.userData.health = Math.max(0, this.userData.health);
 
-        if (this.userData.body.material.opacity > 0) {
-             this.userData.body.material.color.setHex(0xaaaaaa); 
-             this.userData.tailLights.material.emissiveIntensity = 5; 
-             setTimeout(() => {
-                if(this.userData.health > 0){
-                    this.userData.body.material.color.setHex(VEHICLE_STATS[this.userData.type].color);
-                    this.userData.tailLights.material.emissiveIntensity = 1.5; 
-                }
-            }, 80);
+        // Aseguramos propiedades antes de usarlas
+        if (this.userData.body && this.userData.body.material) {
+            if (typeof this.userData.body.material.opacity === 'undefined') {
+                this.userData.body.material.transparent = true;
+                this.userData.body.material.opacity = 1.0;
+            }
+            if (this.userData.body.material.opacity > 0) {
+                 this.userData.body.material.color.setHex(0xaaaaaa); 
+                 if(this.userData.tailLights && this.userData.tailLights.material) this.userData.tailLights.material.emissiveIntensity = 5; 
+                 setTimeout(() => {
+                    if(this.userData.health > 0){
+                        this.userData.body.material.color.setHex(VEHICLE_STATS[this.userData.type].color);
+                        if(this.userData.tailLights && this.userData.tailLights.material) this.userData.tailLights.material.emissiveIntensity = 1.5; 
+                    }
+                }, 80);
+            }
         }
         
         if (this.userData.health <= 0 && !this.userData.isDestroyed) {
              this.destroyVehicle();
              return true;
         }
-
         return false;
     }
     
     destroyVehicle() {
         this.userData.isDestroyed = true;
-        this.userData.speed = 0; 
+        this.userData.speed = 0;
 
-        this.userData.body.material.transparent = true;
-        this.userData.body.material.opacity = 0.5;
-        this.userData.body.material.color.setHex(0x333333); 
-        this.userData.tailLights.material.emissiveIntensity = 0.1; 
+        if (this.userData.body && this.userData.body.material) {
+            this.userData.body.material.transparent = true;
+            this.userData.body.material.opacity = 0.5;
+            this.userData.body.material.color.setHex(0x333333); 
+        }
+        if(this.userData.tailLights && this.userData.tailLights.material) this.userData.tailLights.material.emissiveIntensity = 0.1; 
 
         if(this.userData.healthBar) this.userData.healthBar.visible = false;
 
         const decayInterval = setInterval(() => {
+            if (!this.userData.body || !this.userData.body.material) { clearInterval(decayInterval); return; }
             if (this.userData.body.material.opacity > 0.01) {
                 this.userData.body.material.opacity *= 0.98;
-                if(this.userData.body.material.opacity < 0.1) this.position.y = -100; 
+                if(this.userData.body.material.opacity < 0.1) this.position.y = -100;
             } else {
                 clearInterval(decayInterval);
                 this.userData.body.visible = false;
@@ -295,33 +268,23 @@ class CarController extends THREE.Group {
 
     getPhysicsModifier() {
         if(this.userData.isDestroyed) return { maxSpeedMod: 0, rotSpeedMod: 0 };
-        
         let maxSpeedMod = 1.0;
         let rotSpeedMod = 1.0;
-        
         const motor = this.componentes.motor;
         const ruedas = this.componentes.ruedas_traseras;
         const chasis = this.componentes.chasis_frontal;
-
         if (motor && motor.estado !== 'OK') {
             maxSpeedMod *= 0.5 + (motor.vida / 100) * 0.5;
         }
-        
         if (ruedas && ruedas.estado !== 'OK') {
              rotSpeedMod *= 0.3 + (ruedas.vida / 100) * 0.7;
         }
-
         if (chasis && (chasis.estado === 'CRÍTICO' || chasis.estado === 'DESTRUIDO')) {
-            this.userData.speed *= 0.95; 
+            this.userData.speed *= 0.95;
         }
-
         return { maxSpeedMod, rotSpeedMod };
     }
 }
-
-// =========================================================================
-// == FUNCIÓN DE INICIALIZACIÓN PRINCIPAL (init)                          ==
-// =========================================================================
 
 function init() {
     (function(){
@@ -344,23 +307,28 @@ function init() {
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
       
-      // *** PUNTO CRÍTICO DE INSERCIÓN ***
-      // Aseguramos que el canvas se inserta antes de cualquier otra lógica
+      // insertar canvas
       holder.appendChild(renderer.domElement);
       
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 5000);
       camera.position.set(0, 12, 24);
 
       let composer = null;
-      if(BLOOM_ENABLED){
-          composer = new EffectComposer(renderer);
-          composer.addPass(new RenderPass(scene, camera));
-          const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
-          bloomPass.renderToScreen = true;
-          composer.addPass(bloomPass);
+      try {
+          if (BLOOM_ENABLED && typeof EffectComposer !== 'undefined') {
+              composer = new EffectComposer(renderer);
+              composer.addPass(new RenderPass(scene, camera));
+              if (typeof UnrealBloomPass !== 'undefined') {
+                  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85);
+                  bloomPass.renderToScreen = true;
+                  composer.addPass(bloomPass);
+              }
+          }
+      } catch (e) {
+          console.warn('Bloom composer no disponible o fallo al crear: ', e);
+          composer = null;
       }
 
-      // Luces (THREE.DirectionalLight corregido)
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = true;
@@ -376,7 +344,6 @@ function init() {
       scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.5)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
-      // Geometría del suelo y paredes
       const roadMat = new THREE.MeshStandardMaterial({color:0x444444, roughness:0.7, metalness:0.3});
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
@@ -410,9 +377,6 @@ function init() {
       createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
       createWall(-CITY_SIZE/2 - WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
 
-
-      // ---------- VEHÍCULOS ----------
-      
       const car = new CarController(CURRENT_CAR_TYPE, false);
       car.position.set(0, 0, 0);
       scene.add(car);
@@ -436,17 +400,15 @@ function init() {
           scene.add(traffic);
       }
 
-      // **CORRECCIÓN DE SEGURIDAD:** Aseguramos valores numéricos iniciales.
       const state = {
           forward: 0, 
           turn: 0, 
           turbo: false, 
-          speed: 0, // <-- Corregido para ser 0, no un valor potencial 'undefined'
+          speed: 0,
           health: car.userData.health, 
           ammo: car.userData.ammo || VEHICLE_STATS[CURRENT_CAR_TYPE].maxAmmo
       };
       
-      // SISTEMA DE ARMAS (Bullet Pool)
       const bulletPool = [];
       const activeBullets = [];
       const maxBullets = 20;
@@ -467,11 +429,13 @@ function init() {
       }
       function getBullet() {
           const bullet = bulletPool.find(b => !b.visible);
-          if (bullet) { bullet.visible = true; activeBullets.push(bullet); }
+          if (bullet) { bullet.visible = true; bullet.userData._spawnTime = performance.now(); activeBullets.push(bullet); }
           return bullet;
       }
       function releaseBullet(b) {
           b.visible = false;
+          b.position.set(0, -9999, 0);
+          b.userData.dir.set(0,0,0);
           const index = activeBullets.indexOf(b);
           if (index > -1) activeBullets.splice(index, 1);
       }
@@ -533,7 +497,8 @@ function init() {
       }
 
       function updateHUD(){
-          document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
+          const hb = document.getElementById('healthBar');
+          if (hb) hb.style.width = (state.health / car.userData.maxHealth * 100) + '%';
           document.getElementById('ammoCount').textContent = state.ammo;
           
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
@@ -548,7 +513,7 @@ function init() {
           UI_COMP_EL.innerHTML = html;
       }
 
-      // ---------- INPUTS Y CONTROLES (Sin Cambios) ----------
+      // INPUTS
       const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
       let touchId = null, baseX=0, baseY=0;
       let stick = {x:0,y:0};
@@ -582,7 +547,6 @@ function init() {
       function doFire(){
           const now = performance.now();
           if(now - lastFireTime < BULLET_COOLDOWN_MS || state.ammo <= 0 || car.userData.isDestroyed) return;
-
           lastFireTime = now;
           state.ammo--;
           car.userData.ammo = state.ammo;
@@ -596,14 +560,13 @@ function init() {
           spawnBullet(origin, dir); 
       }
       
-      // ---------- RENDER LOOP ----------
-      let last = performance.now(); let frames = 0; let fpsNow = 0;
+      // RENDER LOOP
+      let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
       function animate(){
         const now = performance.now();
         const dt = Math.min(50, now-last) / 16.666;
         last = now;
         
-        // Player movement
         if(state.health > 0){
             state.forward = Math.max(-1, Math.min(1, stick.y));
             state.turn = Math.max(-1, Math.min(1, stick.x));
@@ -616,11 +579,11 @@ function init() {
             else car.userData.speed *= 0.96;
             
             car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
-            state.speed = car.userData.speed; // Actualizar estado de velocidad
+            state.speed = car.userData.speed;
             
             const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
             let rotationMultiplier = 1;
-            if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
+            if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn));
             
             car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
             
@@ -639,36 +602,33 @@ function init() {
         updateHUD();
         
         if(composer){
-            composer.render();
+            try { composer.render(); } catch(e) { renderer.render(scene, camera); }
         } else {
             renderer.render(scene, camera);
         }
         
         frames++; 
-        if(now - (fpsNow || now) >= 1000){ 
-            fpsNow = now;
+        if (now - lastFpsTime >= 1000) {
             document.getElementById('fps').textContent = `FPS: ${frames}`;
             frames = 0;
+            lastFpsTime = now;
         }
 
         requestAnimationFrame(animate);
       }
 
-      // INICIO DEL BUCLE
       animate(); 
 
       window.addEventListener('resize', ()=>{ 
         renderer.setSize(window.innerWidth, window.innerHeight); 
         camera.aspect = innerWidth/innerHeight; 
         camera.updateProjectionMatrix(); 
-        if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+        if(composer && composer.setSize) composer.setSize(window.innerWidth, window.innerHeight);
       });
 
     })();
 }
 
-// LLAMADA DE INICIALIZACIÓN DE SEGURIDAD
-// Asegura que init se ejecute después de que todo el DOM y scripts estén cargados.
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
