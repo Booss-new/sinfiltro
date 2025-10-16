@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Playas JM (demo) — Calles Reales (AJUSTADO)</title>
+<title>SinFiltro — Jardines de Morelos (Ecatepec) — Calles Reales</title>
 <style>
   :root{--bg:#05060a;--muted:#9fb0bf;--accent1:#00d1ff;--accent2:#8a6eff}
   html,body{height:100%;margin:0;background:linear-gradient(#05060a,#071226);font-family:Inter,system-ui,-apple-system,Arial;color:#eaf7ff;overflow:hidden}
@@ -32,7 +32,7 @@
 
   <div class="topbar">
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="badge">SinFiltro — Playas JM (demo)</div>
+      <div class="badge">SinFiltro — Jardines de Morelos (demo)</div>
       <div id="statusTiles" class="badge" style="display:none">Calles: <span id="tilesCount">0</span></div>
     </div>
     <div class="controls">
@@ -55,18 +55,17 @@
 (async function(){
   // ---------- CONFIG ----------
   const holder = document.getElementById('holder');
-  // Bounding box for Playas Jardines de Morelos, Coacalco (approx. 1.5km x 1.5km area)
+  // Bounding box for JARDINES DE MORELOS, ECATEPEC (Zona Playa Azul, Nicolás Bravo)
   // Format: [south, west, north, east]
-  // ESTA ES LA ZONA DE PLAYAS JARDINES DE MORELOS:
-  const BBOX = [19.615, -99.04, 19.625, -99.02];
+  const BBOX = [19.593, -99.002, 19.613, -98.982]; // ** NUEVAS COORDENADAS: Ecatepec **
   const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
   const ESRI_TILE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
   // --- AJUSTES DE ESCALA Y COLOR SOLICITADOS ---
-  const SCENE_SCALE = 0.08; // Escala global del mapa (ajustada de 0.06)
-  const CAR_WIDTH = 2.4;    // Ancho del vehículo (ajustado de 2.2)
-  const STREET_COLOR = 0x282c35; // Color del asfalto (gris oscuro)
-  const BUILDING_COLOR_BASE = 0x3d414a; // Color base de edificios
+  const SCENE_SCALE = 0.08; // Escala global (Ajuste de Proporción 1)
+  const CAR_WIDTH = 2.4;    // Ancho del vehículo (Ajuste de Proporción 2)
+  const STREET_COLOR = 0x282c35; // Color del asfalto (Ajuste de Color 1)
+  const BUILDING_COLOR_BASE = 0x3d414a; // Color base de edificios (Ajuste de Color 2)
   const BUILDING_COLOR_ACCENT = 0x5a6068; // Color alterno para edificios
   // ----------------------------------------
 
@@ -248,10 +247,10 @@
         const len = seg.length();
         const mid = a.clone().add(b).multiplyScalar(0.5);
         // create a thin box
-        // *** AJUSTE DE ANCHO DE CALLE ***
+        // *** AJUSTE DE ANCHO DE CALLE (Proporción 3) ***
         const width = (w.tags.highway === 'motorway' || w.tags.highway === 'trunk') ? 4.5 : 3.0;
         const geom = new THREE.BoxGeometry(width, 0.02, Math.max(len,0.1));
-        // *** AJUSTE DE COLOR DE ASFALTO ***
+        // *** AJUSTE DE COLOR DE ASFALTO (Color 1) ***
         const mat = new THREE.MeshStandardMaterial({color:STREET_COLOR, roughness:0.9});
         const m = new THREE.Mesh(geom, mat);
         m.position.copy(mid); m.position.y = 0.01;
@@ -290,7 +289,7 @@
       const height = (w.tags['building:levels'] ? Math.max(2, +w.tags['building:levels']) : Math.floor(2 + Math.random()*4)) * 1.8;
       const g = new THREE.BoxGeometry(wth, height, lng);
       
-      // *** AJUSTE DE COLOR DE EDIFICIOS ***
+      // *** AJUSTE DE COLOR DE EDIFICIOS (Color 2) ***
       const color = count % 2 === 0 ? BUILDING_COLOR_BASE : BUILDING_COLOR_ACCENT;
       const mat = new THREE.MeshStandardMaterial({color:color, roughness:0.9});
       
