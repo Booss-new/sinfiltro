@@ -392,7 +392,7 @@ function init() {
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
       
-      // *** CAMBIO IMPLEMENTADO: QUITAR LA NIEBLA ***
+      // *** AJUSTE DE LUZ/ATMÓSFERA: NIEBLA QUITADA (NULL) ***
       scene.fog = null; 
       
       // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
@@ -464,13 +464,12 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      // *** CAMBIO IMPLEMENTADO: LUZ AMBIENTAL A MEDIA (0.5) ***
-      // Ajustamos el Hemisferio para no dominar la escena
+      // *** AJUSTE DE LUZ/ATMÓSFERA: LUZ AMBIENTAL A MEDIA (0.5) ***
       scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.2)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // Suelo tipo metal CLARO (gris casi blanco)
+      // Suelo tipo CONCRETO (Gris mate y áspero)
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
@@ -482,13 +481,16 @@ function init() {
         console.warn('Fallo al cargar textura de asfalto.');
         asphaltMap = null;
       }
-      // CAMBIO: Asfalto BLANCO metálico
+      
+      // *** CAMBIO IMPLEMENTADO: Material de Concreto ***
       const roadMat = new THREE.MeshStandardMaterial({
-        color: 0xececec, // Gris extremadamente claro (casi blanco)
-        metalness: 0.9, // Alto valor metálico
-        roughness: 0.15, // Bajo valor de rugosidad (brillante/pulido)
+        color: 0x4a4a4a, // Gris concreto oscuro
+        metalness: 0.05, // Muy bajo, no es metal
+        roughness: 0.85, // Alto, es áspero y mate
         map: asphaltMap || null
       });
+      // **********************************************
+      
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
       ground.position.y = 0;
