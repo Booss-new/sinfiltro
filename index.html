@@ -16,6 +16,9 @@
     --panel-bg:rgba(0,0,0,0.7); 
     --panel-border:rgba(51, 204, 255, 0.4); /* Borde neón sutil */
     --header-color: #33ccff; /* Color de títulos */
+    --estado-critico: #ff3333;
+    --estado-danado: #ffaa33;
+    --estado-ok: #33ff33;
   }
   html,body{height:100%;margin:0;background:linear-gradient(#6e8ca0,#a0c0e0);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
   /* CRÍTICO: Aseguramos que el contenedor del renderizado ocupe todo */
@@ -57,6 +60,11 @@
   }
   .comp-section { display: flex; flex-direction: column; line-height: 1.0; gap: 0px; }
   .componente-estado{ font-size: 8px; margin: 0px; color: #fff; line-height: 1.0; }
+  .estado-ok { color: var(--estado-ok); }
+  .estado-danado { color: var(--estado-danado); }
+  .estado-critico { color: var(--estado-critico); }
+  .estado-destruido { color: #888; }
+
 
   /* Health and Ammo Bars - BARRAS AÚN MÁS DELGADAS */
   .bar-container{width:50px;height:6px; /* Barras ultra-pequeñas */ background:#333333;border-radius:2px;overflow:hidden;margin-top:1px;border:1px solid rgba(255,255,255,0.1)}
@@ -170,6 +178,16 @@ class CarController extends THREE.Group {
         this.userData.speed = 0; 
         this.userData.isDestroyed = false;
 
+        // Nuevos campos para la IA
+        this.userData.gunCooldown = 0; 
+        this.userData.fireRate = isAI && type !== 'Traffic' ? 250 + Math.random() * 100 : 99999;
+        this.userData.target = null; // Target del AI
+        this.userData.aiState = type === 'Traffic' ? 'CRUISE' : 'CHASE'; // Estados AI
+        this.userData.lastTurn = 0; // Para la lógica de giro
+        this.userData.aiForward = 0;
+        this.userData.aiTurn = 0;
+
+
         this.userData.gunOffsets = []; 
 
         this.componentes = {
@@ -198,6 +216,7 @@ class CarController extends THREE.Group {
     }
 
     buildMesh(stats) {
+        // Modelo del vehículo: Se mantiene el TorusKnot
         const bodyGeo = new THREE.TorusKnotGeometry(stats.length/5, stats.width/8, 100, 16); 
         const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
         const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -299,6 +318,13 @@ class CarController extends THREE.Group {
 
         this.userData.health -= amount * 0.5;
         this.userData.health = Math.max(0, this.userData.health);
+        
+        // Actualizar barra de salud AI
+        if(this.userData.healthBar && this.userData.health > 0){
+            const scaleX = this.userData.health / this.userData.maxHealth;
+            this.userData.healthBar.scale.setX(scaleX);
+            this.userData.healthBar.material.color.setHex(scaleX > 0.4 ? 0x00ff00 : scaleX > 0.2 ? 0xffff00 : 0xff0000);
+        }
 
         if (this.userData.body && this.userData.body.material) {
             if (typeof this.userData.body.material.opacity === 'undefined') {
@@ -327,6 +353,8 @@ class CarController extends THREE.Group {
     destroyVehicle() {
         this.userData.isDestroyed = true;
         this.userData.speed = 0; 
+        this.userData.aiForward = 0;
+        this.userData.aiTurn = 0;
 
         this.userData.body.material.transparent = true;
         this.userData.body.material.opacity = 0.5;
@@ -380,11 +408,9 @@ let renderer = null;
 let composer = null; 
 let isFiring = false; 
 let fireInterval = null; 
-
-// --- Variables de Cámara Fijas (RESTAURADAS) ---
-const CAMERA_OFFSET = new THREE.Vector3(0, 12, 24);
-const CAMERA_LOOKAT = new THREE.Vector3(0, 1.2, 0);
-
+let playerCar = null; 
+const TEMP_VECTOR = new THREE.Vector3(); 
+const TEMP_QUATERNION = new THREE.Quaternion();
 
 function init() {
     (function(){
@@ -435,7 +461,7 @@ function init() {
       }
       
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
-      camera.position.set(0, 12, 24); // Posición inicial
+      camera.position.set(0, 12, 24);
 
       // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
       if(BLOOM_ENABLED){
@@ -542,19 +568,24 @@ function init() {
       // ---------- VEHÍCULOS ----------
       
       const car = new CarController(CURRENT_CAR_TYPE, false);
+      playerCar = car; // Referencia global al jugador
       car.position.set(0, 0, 0);
       scene.add(car);
 
+      // AI cars 
       const ai1 = new CarController('Sport', true);
       ai1.position.set(20, 0, 50);
       ai1.rotation.y = Math.PI;
+      ai1.userData.target = car; // Establecer objetivo al jugador
       scene.add(ai1); AI_CARS.push(ai1);
 
       const ai2 = new CarController('Pickup', true);
       ai2.position.set(-20, 0, -50);
       ai2.rotation.y = 0;
+      ai2.userData.target = car; // Establecer objetivo al jugador
       scene.add(ai2); AI_CARS.push(ai2);
 
+      // Traffic cars
       for(let i = 0; i < 5; i++){
           const traffic = new CarController('Traffic', true);
           traffic.position.set((Math.random() < 0.5 ? 1 : -1) * 3, 0, Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4);
@@ -587,29 +618,38 @@ function init() {
               bullet.userData.dir = new THREE.Vector3();
               bullet.userData.speed = 3.0; 
               bullet.userData.damage = 15;
+              bullet.userData.owner = null; // Quien disparó
               bullet.visible = false;
               if(SHADOWS_ENABLED) bullet.castShadow = true;
               scene.add(bullet);
               bulletPool.push(bullet);
           }
       }
-      function getBullet() {
+      function getBullet(owner) {
           const bullet = bulletPool.find(b => !b.visible);
-          if (bullet) { bullet.visible = true; bullet.userData._spawnTime = performance.now(); activeBullets.push(bullet); }
+          if (bullet) { 
+              bullet.visible = true; 
+              bullet.userData._spawnTime = performance.now(); 
+              bullet.userData.owner = owner; // Asignar el dueño
+              activeBullets.push(bullet); 
+          }
           return bullet;
       }
       function releaseBullet(b) {
           b.visible = false;
           b.position.set(0, -9999, 0);
           b.userData.dir.set(0,0,0);
+          b.userData.owner = null;
           const index = activeBullets.indexOf(b);
           if (index > -1) activeBullets.splice(index, 1);
       }
 
       function spawnBulletsFromCar(targetCar, dir, offsets = null){
           const offs = offsets || (targetCar.userData.gunOffsets || []);
+          if(targetCar.userData.isDestroyed) return;
+
           if(!offs.length){
-              const b = getBullet();
+              const b = getBullet(targetCar);
               if(b){
                   const origin = targetCar.position.clone().add(new THREE.Vector3(0, 1.2, -1.8).applyQuaternion(targetCar.quaternion));
                   b.position.copy(origin);
@@ -618,7 +658,7 @@ function init() {
               return;
           }
           for(const off of offs){
-              const b = getBullet();
+              const b = getBullet(targetCar);
               if(!b) break; 
               const origin = targetCar.position.clone().add(off.clone().applyQuaternion(targetCar.quaternion));
               b.position.copy(origin);
@@ -687,7 +727,25 @@ function init() {
       function applyDamage(target, amount, component = 'chasis_frontal'){
           const isDead = target.applyDamage(amount, component);
           if(target === car) state.health = car.userData.health;
-          if(isDead){ console.log(`${target.userData.type} DESTRUIDO!`); }
+          if(isDead){ 
+              console.log(`${target.userData.type} DESTRUIDO!`); 
+              if (target.userData.type === 'Traffic') {
+                  // Respawn de auto de tráfico
+                  setTimeout(() => {
+                      target.userData.health = VEHICLE_STATS[target.userData.type].health;
+                      target.userData.isDestroyed = false;
+                      target.userData.body.material.opacity = 1.0;
+                      target.userData.body.material.color.setHex(VEHICLE_STATS[target.userData.type].color);
+                      target.userData.tailLights.material.emissiveIntensity = 1.5;
+                      // Posición aleatoria en un borde
+                      if (Math.random() < 0.5) {
+                          target.position.set((Math.random() < 0.5 ? 1 : -1) * (CITY_SIZE/2 - 5), 0, Math.random() * CITY_SIZE * 0.8 - CITY_SIZE * 0.4);
+                      } else {
+                          target.position.set(Math.random() * CITY_SIZE * 0.8 - CITY_SIZE * 0.4, 0, (Math.random() < 0.5 ? 1 : -1) * (CITY_SIZE/2 - 5));
+                      }
+                  }, 5000); // 5 segundos para reaparecer
+              }
+          }
       }
 
       const halfCity = CITY_SIZE / 2;
@@ -697,9 +755,26 @@ function init() {
               let hit = false;
               if (Math.abs(bullet.position.x) > halfCity || Math.abs(bullet.position.z) > halfCity) { hit = true; } 
               else {
+                  // Verificar colisión con el jugador si la bala no es del jugador
+                  if(bullet.userData.owner !== playerCar && !playerCar.userData.isDestroyed){
+                      if(playerCar.position.distanceTo(bullet.position) < 3.0){
+                          const dot = new THREE.Vector3().subVectors(playerCar.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(playerCar.quaternion));
+                          let componentHit = 'chasis_frontal';
+                          if (playerCar.componentes.motor && dot < -0.5) { componentHit = 'motor'; } 
+                          else if (playerCar.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { componentHit = 'ruedas_traseras'; }
+                          
+                          createImpact(bullet.position.clone()); 
+                          applyDamage(playerCar, bullet.userData.damage, componentHit);
+                          hit = true;
+                      }
+                  }
+
+                  // Verificar colisión con AIs/Traffic si la bala es del jugador
                   const targets = [...AI_CARS, ...TRAFFIC_CARS];
                   for(const target of targets){
-                      if(target.userData.isDestroyed) continue;
+                      // Solo procesar balas que NO son del target y que SÍ son del jugador
+                      if(target.userData.isDestroyed || bullet.userData.owner === target || bullet.userData.owner !== playerCar) continue;
+                      
                       if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){ 
                           const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
                           
@@ -732,51 +807,143 @@ function init() {
           state.health = car.userData.health; 
       }
       
-      // ---------- LÓGICA DE CÁMARA FIJA (RESTAURADA) ----------
+      // ---------- LÓGICA DE CÁMARA (Vista Baja Inmersiva) ----------
       function updateCamera(){
-        
-        // La posición deseada es el centro del carro más un desplazamiento (offset)
-        // que es rotado por la orientación del carro (car.quaternion).
-        const desiredPosition = car.position.clone().add(CAMERA_OFFSET.clone().applyQuaternion(car.quaternion)); 
-        
-        // El punto de mira deseado es el centro del carro más un pequeño offset vertical (lookAt).
-        const desiredLookAt = car.position.clone().add(CAMERA_LOOKAT.clone().applyQuaternion(car.quaternion));
-
-        // Aplicar interpolación (lerp) para un movimiento suave de la cámara
-        camera.position.lerp(desiredPosition, 0.15);
-        camera.lookAt(desiredLookAt);
+        const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
+        camera.position.lerp(desired, 0.15);
+        camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
       }
-      // ------------------------------------------------------------
-
 
       function updateHUD(){
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
           document.getElementById('carType').textContent = car.userData.type;
           
-          // Munición infinita visual: 
           document.getElementById('ammoCount').textContent = '∞';
-          document.getElementById('ammoBar').style.width = '100%'; // Siempre lleno
+          document.getElementById('ammoBar').style.width = '100%'; 
           
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
           document.getElementById('speedDisplay').textContent = kmh;
           
           let html = '';
-          // Se muestra solo el estado (OK, DAÑADO, CRÍTICO)
           for (const key in car.componentes) {
               const comp = car.componentes[key];
-              let className = comp.estado === 'CRÍTICO' ? 'estado-critico' : comp.estado === 'DAÑADO' ? 'estado-danado' : 'estado-ok';
-              // Diseño ultra-compacto: EFECTO: ESTADO: (HP)
+              let className = comp.estado === 'CRÍTICO' ? 'estado-critico' : comp.estado === 'DAÑADO' ? 'estado-danado' : comp.estado === 'DESTRUIDO' ? 'estado-destruido' : 'estado-ok';
               html += `<p class="componente-estado"><strong>${comp.efecto.toUpperCase()}:</strong> <span class="${className}">${comp.estado} (${Math.round(comp.vida)}%)</span></p>`;
           }
           UI_COMP_EL.innerHTML = html;
       }
+      
+      // ---------- LÓGICA DE AI - NUEVA FUNCIÓN ----------
+      function updateAI(aiCar, target, dt){
+          if(aiCar.userData.isDestroyed) return;
 
-      // ---------- LÓGICA DE DISPARO AUTOMÁTICO ----------
+          const distance = aiCar.position.distanceTo(target.position);
+          const aiCarDirection = TEMP_VECTOR.set(0, 0, -1).applyQuaternion(aiCar.quaternion);
+          const toTarget = target.position.clone().sub(aiCar.position).normalize();
+
+          const dot = aiCarDirection.dot(toTarget); // Alineación: 1 es directo, -1 es espalda
+          const cross = aiCarDirection.clone().cross(toTarget).y; // Giro: >0 derecha, <0 izquierda
+
+          const physicsMod = aiCar.getPhysicsModifier();
+          const maxSpeed = aiCar.userData.maxSpeed * physicsMod.maxSpeedMod;
+          let turn = 0;
+          let forward = 0;
+          
+          // Lógica de Tráfico (CRUISE)
+          if(aiCar.userData.aiState === 'CRUISE'){
+              if(Math.abs(aiCar.position.x) > halfCity - 5 || Math.abs(aiCar.position.z) > halfCity - 5){
+                  aiCar.userData.speed = -0.05; // Reversa
+              } else {
+                  forward = 1;
+              }
+              // Girar levemente para corregir rumbo si se sale
+              if(aiCar.position.x > halfCity - 10 && cross > 0) turn = -1;
+              else if(aiCar.position.x < -halfCity + 10 && cross < 0) turn = 1;
+              else if(aiCar.position.z > halfCity - 10 && dot < 0) turn = -1;
+              else if(aiCar.position.z < -halfCity + 10 && dot > 0) turn = 1;
+
+              aiCar.userData.aiForward = forward;
+              aiCar.userData.aiTurn = turn;
+
+          } 
+          // Lógica de Combate (CHASE)
+          else if(aiCar.userData.aiState === 'CHASE' && !target.userData.isDestroyed){
+              const idealDistance = 30; // Distancia ideal para atacar
+
+              // 1. Control de Giro
+              if (Math.abs(cross) > 0.05) {
+                  // Girar hacia el objetivo
+                  turn = cross > 0 ? 1 : -1;
+              } else {
+                  turn = 0;
+              }
+              
+              // 2. Control de Velocidad (FORWARD)
+              if (distance > idealDistance * 1.1) {
+                  forward = 1; // Acelerar
+              } else if (distance < idealDistance * 0.9) {
+                  forward = -1; // Frenar/Reversa
+              } else {
+                  // Mantener velocidad de crucero
+                  forward = 0.3; 
+              }
+
+              // 3. Control de Disparo
+              if (distance < 50 && dot > 0.8) { // Si está cerca y bien alineado
+                  aiCar.userData.gunCooldown -= dt * 16.666;
+                  if (aiCar.userData.gunCooldown <= 0) {
+                      const fireDir = toTarget.clone().add(new THREE.Vector3((Math.random()-0.5)*0.1, 0, (Math.random()-0.5)*0.1)).normalize(); // Apuntar ligeramente a donde va el jugador
+                      spawnBulletsFromCar(aiCar, fireDir);
+                      aiCar.userData.gunCooldown = aiCar.userData.fireRate;
+                  }
+              }
+
+              // Lógica para evitar quedarse atascado en el borde
+              if(Math.abs(aiCar.position.x) > halfCity - 10 || Math.abs(aiCar.position.z) > halfCity - 10){
+                  forward = -1; // Reversa
+                  turn = Math.random() < 0.5 ? 1 : -1; // Giro aleatorio
+              }
+
+
+              aiCar.userData.aiForward = forward;
+              aiCar.userData.aiTurn = turn;
+          }
+
+          // Aplicar movimiento del AI
+          let currentForward = aiCar.userData.aiForward;
+          let currentTurn = aiCar.userData.aiTurn;
+
+          if(currentForward > 0.05) aiCar.userData.speed += 0.018 * currentForward * dt;
+          else if(currentForward < -0.05) aiCar.userData.speed -= 0.03 * (-currentForward) * dt;
+          else aiCar.userData.speed *= 0.96;
+          
+          aiCar.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, aiCar.userData.speed));
+
+          const currentSpeedFactor = Math.abs(aiCar.userData.speed / aiCar.userData.maxSpeed);
+          let rotationMultiplier = 1;
+          if(currentSpeedFactor > 0.6 && Math.abs(currentTurn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(currentTurn)); 
+          
+          aiCar.rotation.y += -currentTurn * aiCar.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
+          
+          const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
+          aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
+          
+          // Chequeo de colisión con muros para AI
+          if(Math.abs(aiCar.position.x) > halfCity){
+              aiCar.userData.speed *= -0.5; 
+              aiCar.position.x = aiCar.position.x > 0 ? halfCity : -halfCity;
+          }
+          if(Math.abs(aiCar.position.z) > halfCity){
+              aiCar.userData.speed *= -0.5;
+              aiCar.position.z = aiCar.position.z > 0 ? halfCity : -halfCity;
+          }
+      }
+      
+      // ---------- LÓGICA DE DISPARO AUTOMÁTICO (JUGADOR) ----------
 
       function fireLoop() {
           if (car.userData.isDestroyed) { stopFire(); return; }
           
-          // Efecto visual de cooldown
           fireBtn.classList.add('cooldown');
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS - 20);
 
@@ -787,9 +954,7 @@ function init() {
       function doFire(){
           if (isFiring || car.userData.isDestroyed) return;
           isFiring = true;
-          // Dispara inmediatamente
           fireLoop(); 
-          // Configura el disparo continuo
           fireInterval = setInterval(fireLoop, BULLET_COOLDOWN_MS);
       }
       
@@ -798,23 +963,23 @@ function init() {
           isFiring = false;
           clearInterval(fireInterval);
           fireInterval = null;
-          fireBtn.classList.remove('cooldown'); // Asegura que el botón se vea activo si se soltó
+          fireBtn.classList.remove('cooldown'); 
       }
 
-      // ---------- INPUTS Y CONTROLES ----------
+      // ---------- INPUTS Y CONTROLES (Sin cambios) ----------
       const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
       let touchId = null, baseX=0, baseY=0;
       let stick = {x:0,y:0};
       function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-by; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
       joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
       
       let md=false;
       joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; if (e.pointerType === 'mouse') joy.setPointerCapture(e.pointerId); });
       joy.addEventListener('pointermove', e=>{ 
           if(!md) return; 
-          const dx=e.clientX-baseX, dy=e.clientY-by; 
+          const dx=e.clientX-baseX, dy=e.clientY-baseY; 
           const max=36; 
           const nx=Math.max(-1,Math.min(1,dx/max)); 
           const ny=Math.max(-1,Math.min(1,dy/max)); 
@@ -824,12 +989,10 @@ function init() {
       joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
       
       const fireBtn = document.getElementById('fire');
-      // ** Modificación de eventos de disparo **
       fireBtn.addEventListener('touchstart', e => { e.preventDefault(); doFire(); }, {passive:false});
       fireBtn.addEventListener('touchend', e => { e.preventDefault(); stopFire(); }, {passive:false});
       fireBtn.addEventListener('mousedown', doFire);
       fireBtn.addEventListener('mouseup', stopFire);
-      // ** Fin de Modificación **
       
       const turboBtn = document.getElementById('turbo');
       turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); state.turbo = true; }, {passive:false});
@@ -842,7 +1005,7 @@ function init() {
         const dt = Math.min(50, now-last) / 16.666;
         last = now;
         
-        // Player movement
+        // 1. Movimiento del Jugador
         if(state.health > 0){
             state.forward = Math.max(-1, Math.min(1, stick.y));
             state.turn = Math.max(-1, Math.min(1, stick.x));
@@ -865,24 +1028,26 @@ function init() {
             
             const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
             car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
-            
-            checkCollisions(dt);
         }
         
+        // 2. Movimiento de la IA
+        for(const aiCar of AI_CARS) updateAI(aiCar, playerCar, dt);
+        for(const trafficCar of TRAFFIC_CARS) updateAI(trafficCar, playerCar, dt);
+        
+        // 3. Bullets y Colisiones
         for(let i = activeBullets.length - 1; i >= 0; i--){
             const bullet = activeBullets[i];
             bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
         }
         
-        // ** Actualizar impactos **
+        checkCollisions(dt);
+        
+        // 4. Visuales y UI
         updateImpacts(now);
-        
-        // ** Actualizar cámara **
         updateCamera();
-        
         updateHUD();
         
-        // ** RENDERIZADO CON FALLBACK **
+        // 5. Renderizado
         if(composer){
             composer.render();
         } else {
