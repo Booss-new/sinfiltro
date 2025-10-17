@@ -381,7 +381,7 @@ let composer = null;
 let isFiring = false; 
 let fireInterval = null; 
 
-// --- Variables de Control de Cámara ---
+// --- Variables de Control de Cámara (CORREGIDAS) ---
 const CAM_CHASE = { 
     offset: new THREE.Vector3(0, 12, 24), // Posición Detrás (Normal)
     lookAt: new THREE.Vector3(0, 1.2, 0)
@@ -390,8 +390,11 @@ const CAM_REVERSE = {
     offset: new THREE.Vector3(0, 4, -8), // Posición Delante (Reversa)
     lookAt: new THREE.Vector3(0, 0.8, 0)
 };
-let currentCameraMode = CAM_CHASE;
-let targetCameraMode = CAM_CHASE;
+let targetCameraData = CAM_CHASE; 
+let interpolatedCamera = {
+    offset: CAM_CHASE.offset.clone(), 
+    lookAt: CAM_CHASE.lookAt.clone()
+};
 
 let reverseTimer = 0;
 const reverseThreshold = 20; // 20 frames / ticks (aprox 330ms)
@@ -446,8 +449,7 @@ function init() {
       
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24); // Posición inicial
-      currentCameraMode.offset.copy(CAM_CHASE.offset); // Sincroniza el offset inicial
-      currentCameraMode.lookAt.copy(CAM_CHASE.lookAt); // Sincroniza el lookAt inicial
+      // La cámara interpolada ya está configurada a CAM_CHASE en las declaraciones globales.
 
       // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
       if(BLOOM_ENABLED){
@@ -466,7 +468,7 @@ function init() {
       }
 
       // Luces (Se mantienen los ajustes para que el suelo no se vea negro)
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); 
+      const dirLight = new THREE.DirectionionalLight(0xffffff, 0.7); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
@@ -744,41 +746,41 @@ function init() {
           state.health = car.userData.health; 
       }
       
-      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (Basada en INPUT) ----------
+      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (CORREGIDA) ----------
       function updateCamera(){
         
         // 1. Detección de input (reverseTimer)
         // El jugador está en reversa si state.forward es menor a -0.05
         if(state.forward < -0.05){ 
-            // Si la cámara está en persecución, incrementamos el tiempo de espera
-            if(targetCameraMode === CAM_CHASE) reverseTimer++;
+            // Si el MODO OBJETIVO es CHASE, incrementamos el tiempo de espera
+            if(targetCameraData === CAM_CHASE) reverseTimer++;
         } else {
             // Si el jugador suelta el control o acelera, reinicia el contador inmediatamente
             reverseTimer = 0;
         }
 
         // 2. Transición de modo de cámara
-        if(targetCameraMode === CAM_CHASE && reverseTimer > reverseThreshold){
+        if(targetCameraData === CAM_CHASE && reverseTimer > reverseThreshold){
             // ACTIVAR REVERSA: Si se cumple el umbral de tiempo de reversa (sostuvo el input)
-            targetCameraMode = CAM_REVERSE;
+            targetCameraData = CAM_REVERSE;
         } 
         
-        // CONDICIÓN DE RETORNO CLAVE: Vuelve a normal si el jugador NO está en reversa (state.forward > -0.05)
-        // Esto incluye soltar el stick (state.forward = 0) o ir hacia adelante (state.forward > 0)
-        if (targetCameraMode === CAM_REVERSE && state.forward > -0.05) { 
-            targetCameraMode = CAM_CHASE;
+        // CONDICIÓN DE RETORNO CLAVE: Vuelve a normal si el jugador NO está en reversa (reverseTimer === 0)
+        if (targetCameraData === CAM_REVERSE && reverseTimer === 0) { 
+            targetCameraData = CAM_CHASE;
         } 
 
-        // 3. Suavizar la transición 
-        const lerpFactor = 0.15;
-        currentCameraMode.offset.lerp(targetCameraMode.offset, lerpFactor);
-        currentCameraMode.lookAt.lerp(targetCameraMode.lookAt, lerpFactor);
+        // 3. Suavizar la transición (Usando el objeto INTERPOLADO)
+        const lerpFactor = 0.1; 
+        interpolatedCamera.offset.lerp(targetCameraData.offset, lerpFactor);
+        interpolatedCamera.lookAt.lerp(targetCameraData.lookAt, lerpFactor);
 
         // 4. Aplicar la posición y orientación de la cámara
-        const desiredPosition = car.position.clone().add(currentCameraMode.offset.clone().applyQuaternion(car.quaternion)); 
-        const desiredLookAt = car.position.clone().add(currentCameraMode.lookAt.clone().applyQuaternion(car.quaternion));
+        // CRÍTICO: Usamos las propiedades interpoladas (offset y lookAt)
+        const desiredPosition = car.position.clone().add(interpolatedCamera.offset.clone().applyQuaternion(car.quaternion)); 
+        const desiredLookAt = car.position.clone().add(interpolatedCamera.lookAt.clone().applyQuaternion(car.quaternion));
 
-        camera.position.lerp(desiredPosition, 0.15);
+        camera.position.lerp(desiredPosition, 0.15); // Suavidad de la posición final
         camera.lookAt(desiredLookAt);
       }
       // ------------------------------------------------------------
