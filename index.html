@@ -464,9 +464,13 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      // *** AJUSTE DE LUZ/ATMÓSFERA: LUZ AMBIENTAL A MEDIA (0.5) ***
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.2)); 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
+      // ----------------------------------------------------------------------------------
+      // *** SOLUCIÓN DE LUZ: Aumentamos la intensidad de las luces de relleno para evitar que el suelo se vea negro. ***
+      // ----------------------------------------------------------------------------------
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, **0.5**)); // Subido de 0.2 a 0.5
+      scene.add(new THREE.AmbientLight(0xffffff, **1.0**));             // Subido de 0.5 a 1.0
+      // ----------------------------------------------------------------------------------
+
 
       // ---------------------------------------------------------
       // Suelo tipo CONCRETO (Gris mate y áspero)
@@ -482,14 +486,12 @@ function init() {
         asphaltMap = null;
       }
       
-      // *** CAMBIO IMPLEMENTADO: Material de Concreto ***
       const roadMat = new THREE.MeshStandardMaterial({
         color: 0x4a4a4a, // Gris concreto oscuro
         metalness: 0.05, // Muy bajo, no es metal
         roughness: 0.85, // Alto, es áspero y mate
         map: asphaltMap || null
       });
-      // **********************************************
       
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
