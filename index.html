@@ -744,27 +744,32 @@ function init() {
           state.health = car.userData.health; 
       }
       
-      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (AJUSTADA) ----------
+      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (VERSIÓN FINAL) ----------
       function updateCamera(){
         
-        // 1. Detección de reversa para cambiar el objetivo (targetCameraMode)
-        // Usamos el input del jugador (state.forward) para una detección más rápida
+        // 1. Detección de input (reverseTimer)
         if(state.forward < -0.05){ 
+            // Si el jugador está en reversa, incrementa el contador.
             if(targetCameraMode === CAM_CHASE) reverseTimer++;
         } else {
+            // Si el jugador está avanzando (o neutral), reinicia el contador.
             reverseTimer = 0;
         }
 
         // 2. Transición de modo de cámara
         if(targetCameraMode === CAM_CHASE && reverseTimer > reverseThreshold){
-            // ACTIVAR: Si estamos en vista de persecución Y el jugador ha estado en reversa por un tiempo.
+            // ACTIVAR REVERSA: Si se cumple el umbral de tiempo de reversa.
             targetCameraMode = CAM_REVERSE;
-        } else if (targetCameraMode === CAM_REVERSE && (state.forward > 0.05 || car.userData.speed > 0.1)) {
-            // DESACTIVAR: Si estamos en vista de reversa Y el jugador acelera hacia adelante, o si el coche ya tiene velocidad positiva.
+        } 
+        
+        // CONDICIÓN DE RETORNO MEJORADA: Vuelve a normal si el jugador acelera O si suelta el stick (o frena)
+        if (targetCameraMode === CAM_REVERSE && state.forward > -0.05) { 
+            // DESACTIVAR REVERSA: Si el jugador empuja hacia adelante (state.forward > 0.05) 
+            // O si el jugador simplemente suelta el stick (state.forward es ~0).
             targetCameraMode = CAM_CHASE;
         } 
 
-        // 3. Suavizar la transición (interpola entre el modo actual y el objetivo)
+        // 3. Suavizar la transición 
         const lerpFactor = 0.15;
         currentCameraMode.offset.lerp(targetCameraMode.offset, lerpFactor);
         currentCameraMode.lookAt.lerp(targetCameraMode.lookAt, lerpFactor);
@@ -773,10 +778,7 @@ function init() {
         const desiredPosition = car.position.clone().add(currentCameraMode.offset.clone().applyQuaternion(car.quaternion)); 
         const desiredLookAt = car.position.clone().add(currentCameraMode.lookAt.clone().applyQuaternion(car.quaternion));
 
-        // Interpolar suavemente la posición real de la cámara
         camera.position.lerp(desiredPosition, 0.15);
-        
-        // El punto de mira sigue al coche
         camera.lookAt(desiredLookAt);
       }
       // ------------------------------------------------------------
@@ -847,7 +849,7 @@ function init() {
       joy.addEventListener('pointerdown', e=>{ md=true; baseX=e.clientX; baseY=e.clientY; if (e.pointerType === 'mouse') joy.setPointerCapture(e.pointerId); });
       joy.addEventListener('pointermove', e=>{ 
           if(!md) return; 
-          const dx=e.clientX-baseX, dy=e.clientY-baseY; 
+          const dx=e.clientX-baseX, dy=e.clientY-by; 
           const max=36; 
           const nx=Math.max(-1,Math.min(1,dx/max)); 
           const ny=Math.max(-1,Math.min(1,dy/max)); 
