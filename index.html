@@ -24,53 +24,55 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
   /* HUD - Estilo de consola de juego MÁS PEQUEÑO Y GAMER */
-  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:12px;pointer-events:none;text-shadow:0 0 4px #000} 
+  .hud{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;z-index:120;font-size:10px; /* Tamaño de fuente más pequeño */ pointer-events:none;text-shadow:0 0 4px #000} 
   .panel{
     background:var(--panel-bg);
-    padding:6px 10px; /* Reducción de padding */
-    border-radius:3px; /* Esquinas más cuadradas */
+    padding:4px 8px; /* Reducción de padding */
+    border-radius:3px;
     font-weight:600;
     border:1px solid var(--panel-border);
     pointer-events:auto;
-    box-shadow:0 0 10px rgba(51, 204, 255, 0.2); /* Sombra neón */
-    backdrop-filter:blur(3px);
-    background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+    box-shadow:0 0 8px rgba(51, 204, 255, 0.2); 
+    backdrop-filter:blur(2px); /* Blur ligeramente menor */
+    background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,0,0,0.65));
   }
-  .panel h2{font-size:13px;margin:0 0 3px 0;color:var(--header-color); font-weight:800; text-transform:uppercase;}
+  .panel h2{font-size:12px; /* Título más pequeño */ margin:0 0 2px 0;color:var(--header-color); font-weight:800; text-transform:uppercase;}
   .panel span {color: #fff;}
   .panel strong {color: var(--header-color);}
+  .panel br { line-height: 1.0; } /* Ajustar la altura de las líneas */
+
 
   /* PANEL DE DIAGNÓSTICO/ARMAS (Consolidado) */
   #diagnostico-armas{ 
     display: flex; 
     flex-direction: column; 
-    width: 170px; /* Mismo tamaño para no obstruir */
+    width: 150px; /* Tamaño total más pequeño */
     pointer-events: none; 
-    line-height: 1.1; 
-    font-size: 11px;
+    line-height: 1.0; 
+    font-size: 9px; /* Fuente minúscula */
   }
   #diagnostico-armas h2{ color: #ffcc00; }
-  .componente-estado{ font-size: 10px; margin-top: 1px; color: #fff;}
+  .componente-estado{ font-size: 9px; margin-top: 0px; color: #fff; line-height: 1.0; }
   .estado-ok{ color: var(--green); }
   .estado-danado{ color: #ff9900; }
   .estado-critico{ color: var(--red); font-weight: 700; }
 
-  /* Health and Ammo Bars */
-  .bar-container{width:80px;height:10px;background:#333333;border-radius:2px;overflow:hidden;margin-top:2px;border:1px solid rgba(255,255,255,0.1)}
+  /* Health and Ammo Bars - BARRAS MÁS DELGADAS */
+  .bar-container{width:70px;height:8px; /* Barras más pequeñas */ background:#333333;border-radius:2px;overflow:hidden;margin-top:1px;border:1px solid rgba(255,255,255,0.1)}
   .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #aa0000, var(--red));transition:width 0.2s}
   .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #007700, var(--green));transition:width 0.2s}
   
   /* Velocímetro */
   .speedometer{
-    position:fixed;right:10px; bottom:120px; width:100px;height:100px; /* Más pequeño */
+    position:fixed;right:10px; bottom:120px; width:90px;height:90px; /* Aún más pequeño */
     background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); 
     box-shadow:0 0 10px rgba(51, 204, 255, 0.2); 
     display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
   }
-  .speed-value{font-size:30px;font-weight:800;color:var(--green);text-shadow:0 0 8px rgba(51, 255, 51, 0.4)}
-  .speed-unit{font-size:10px;color:#ffffff}
+  .speed-value{font-size:28px;font-weight:800;color:var(--green);text-shadow:0 0 8px rgba(51, 255, 51, 0.4)}
+  .speed-unit{font-size:9px;color:#ffffff}
   
-  /* Controles */
+  /* Controles (Sin cambios) */
   .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(51, 204, 255, 0.1) }
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.25); transform:translate(0,0) }
   .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
@@ -88,7 +90,7 @@
     .fps{left:8px;bottom:100px;} 
     .speedometer{width:90px;height:90px;right:8px;bottom:100px;}
     .speed-value{font-size:26px}
-    #diagnostico-armas{ width: 150px; }
+    #diagnostico-armas{ width: 130px; }
   }
 </style>
 </head>
@@ -107,7 +109,7 @@
         <h2>DIAGNÓSTICO & ARMAS</h2>
         <div id="componentes">
             </div>
-        <div style="margin-top: 5px;">
+        <div style="margin-top: 3px;">
             <strong>MUNICIÓN:</strong> <span id="ammoCount">∞</span> 
             <div class="bar-container"><div id="ammoBar" class="ammo-bar"></div></div>
         </div>
@@ -469,7 +471,7 @@ function init() {
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // Suelo tipo asfalto: Textura - CAMBIADO A GRIS CEMENTO (0xdddddd)
+      // Suelo tipo metal (metalness alto, roughness bajo, color CLARO)
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
@@ -481,11 +483,11 @@ function init() {
         console.warn('Fallo al cargar textura de asfalto.');
         asphaltMap = null;
       }
-      // CAMBIO SOLICITADO: Asfalto gris cemento
+      // CAMBIO SOLICITADO: Asfalto color metal CLARO (como el cemento, pero metálico)
       const roadMat = new THREE.MeshStandardMaterial({
-        color: 0xdddddd, 
-        roughness: 0.9,
-        metalness: 0.12,
+        color: 0xdddddd, // Gris muy claro
+        metalness: 0.9, // Alto valor metálico
+        roughness: 0.15, // Bajo valor de rugosidad (brillante/pulido)
         map: asphaltMap || null
       });
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
@@ -686,8 +688,11 @@ function init() {
 
       function updateHUD(){
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
-          document.getElementById('ammoCount').textContent = state.ammo === Infinity ? '∞' : car.userData.ammo;
-          document.getElementById('ammoBar').style.width = (car.userData.ammo / car.userData.maxAmmo * 100) + '%';
+          document.getElementById('carType').textContent = car.userData.type;
+          
+          // Munición infinita visual: 
+          document.getElementById('ammoCount').textContent = '∞';
+          document.getElementById('ammoBar').style.width = '100%'; // Siempre lleno
           
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
           document.getElementById('speedDisplay').textContent = kmh;
@@ -734,10 +739,10 @@ function init() {
       let lastFireTime = 0;
       function doFire(){
           const now = performance.now();
-          if(now - lastFireTime < BULLET_COOLDOWN_MS || car.userData.isDestroyed || car.userData.ammo <= 0) return;
+          if(now - lastFireTime < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
           lastFireTime = now;
           
-          car.userData.ammo = Math.max(0, car.userData.ammo - 1); // Consumir munición
+          // Munición infinita (NO se consume)
 
           fireBtn.classList.add('cooldown');
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
