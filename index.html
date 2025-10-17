@@ -758,10 +758,10 @@ function init() {
 
         // 2. Transición de modo de cámara
         if(reverseTimer > reverseThreshold && targetCameraMode === CAM_CHASE){
-            // Activar modo reversa
+            // Activar modo reversa (Vista frontal)
             targetCameraMode = CAM_REVERSE;
         } else if (car.userData.speed > 0.05 && targetCameraMode === CAM_REVERSE){
-            // Desactivar modo reversa si el coche avanza
+            // Desactivar modo reversa si el coche avanza (Regresar a Vista normal)
             targetCameraMode = CAM_CHASE;
         } else if (reverseTimer === 0 && targetCameraMode === CAM_REVERSE) {
              // Desactivar si el coche para mientras está en modo reversa
