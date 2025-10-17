@@ -378,12 +378,14 @@ class CarController extends THREE.Group {
 
 let renderer = null; 
 let composer = null; 
+let isFiring = false; // Nueva variable para el estado de disparo
+let fireInterval = null; // Nuevo control para el disparo automático
 
 function init() {
     (function(){
       const holder = document.getElementById('holder');
       const CITY_SIZE = 400; 
-      const BULLET_COOLDOWN_MS = 260;
+      const BULLET_COOLDOWN_MS = 160; // Se redujo para disparo automático más rápido
       const AI_CARS = [];
       const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
@@ -396,7 +398,6 @@ function init() {
       
       // ** 1. GESTIÓN DEFENSIVA DEL RENDERER (Configuración Estándar)**
       try {
-        // *** CAMBIOS CLAVE AQUÍ: Se eliminan opciones agresivas de rendimiento ***
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
             alpha: false
@@ -419,7 +420,6 @@ function init() {
         renderer.setClearColor(scene.background); 
         
         const loadingEl = document.getElementById('loading');
-        // El mensaje de carga se oculta si la inicialización del renderer es exitosa.
         if (loadingEl) loadingEl.style.display = 'none';
         
       } catch (err) {
@@ -468,10 +468,8 @@ function init() {
       scene.add(new THREE.AmbientLight(0xffffff, 1.0));             
 
       // ---------------------------------------------------------
-      // Suelo tipo CONCRETO (Textura Eliminada para evitar fallos de carga)
+      // Suelo tipo CONCRETO (Textura Eliminada)
       // ---------------------------------------------------------
-      
-      // *** CAMBIO CLAVE AQUÍ: Se usa solo color sólido y se elimina el TextureLoader ***
       const roadMat = new THREE.MeshStandardMaterial({
         color: 0x4a4a4a, // Gris concreto oscuro
         metalness: 0.05, 
@@ -495,7 +493,7 @@ function init() {
       }
 
       // ---------------------------------------------------------
-      // Muros -> edificios (Textura de Ladrillos de THREE.JS mantenida)
+      // Muros -> edificios 
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       const buildingTex = texLoader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
@@ -624,6 +622,62 @@ function init() {
       }
 
       setupBulletPool(); 
+      
+      // ---------- SISTEMA DE IMPACTOS DE BALA ----------
+      const impactPool = [];
+      const activeImpacts = [];
+      const maxImpacts = 50; 
+      const IMPACT_DURATION = 150; // ms
+
+      function setupImpactPool(){
+          const impactGeo = new THREE.SphereGeometry(0.2, 6, 6); // Pequeña esfera
+          const impactMat = new THREE.MeshBasicMaterial({color:0xff3333, emissive: 0xff0000, transparent: true, opacity: 1.0, emissiveIntensity: 10});
+          for(let i=0; i<maxImpacts; i++){
+              const impact = new THREE.Mesh(impactGeo, impactMat.clone());
+              impact.userData.mat = impact.material; // Referencia al material
+              impact.userData.spawnTime = 0;
+              impact.visible = false;
+              scene.add(impact);
+              impactPool.push(impact);
+          }
+      }
+      function getImpact(){
+          const impact = impactPool.find(b => !b.visible);
+          if(impact){ impact.visible = true; activeImpacts.push(impact); }
+          return impact;
+      }
+
+      function createImpact(position){
+          const impact = getImpact();
+          if(impact){
+              impact.position.copy(position);
+              impact.userData.spawnTime = performance.now();
+              impact.scale.set(1, 1, 1);
+              impact.userData.mat.opacity = 1.0;
+              impact.userData.mat.emissiveIntensity = 10;
+          }
+      }
+
+      function updateImpacts(now){
+          for(let i=activeImpacts.length - 1; i>=0; i--){
+              const impact = activeImpacts[i];
+              const life = now - impact.userData.spawnTime;
+              
+              if(life > IMPACT_DURATION){
+                  impact.visible = false;
+                  impact.position.set(0, -9999, 0);
+                  activeImpacts.splice(i, 1);
+              } else {
+                  const factor = life / IMPACT_DURATION;
+                  // Desvanecer (Opacidad) y encoger un poco
+                  impact.userData.mat.opacity = Math.max(0, 1.0 - factor * 2); 
+                  impact.scale.setScalar(1.0 - factor * 0.5);
+              }
+          }
+      }
+      
+      setupImpactPool();
+      // --------------------------------------------------
 
       function applyDamage(target, amount, component = 'chasis_frontal'){
           const isDead = target.applyDamage(amount, component);
@@ -648,6 +702,9 @@ function init() {
                           if (target.componentes.motor && dot < -0.5) { componentHit = 'motor'; } 
                           else if (target.componentes.ruedas_traseras && dot > -0.5 && dot < 0.5) { componentHit = 'ruedas_traseras'; }
 
+                          // *** Generar impacto visual en la posición de la bala ***
+                          createImpact(bullet.position.clone()); 
+                          
                           applyDamage(target, bullet.userData.damage, componentHit);
                           hit = true;
                           break;
@@ -692,10 +749,40 @@ function init() {
           for (const key in car.componentes) {
               const comp = car.componentes[key];
               let className = comp.estado === 'CRÍTICO' ? 'estado-critico' : comp.estado === 'DAÑADO' ? 'estado-danado' : 'estado-ok';
-              // Diseño ultra-compacto: EFECTO: ESTADO (HP)
+              // Diseño ultra-compacto: EFECTO: ESTADO: (HP)
               html += `<p class="componente-estado"><strong>${comp.efecto.toUpperCase()}:</strong> <span class="${className}">${comp.estado} (${Math.round(comp.vida)}%)</span></p>`;
           }
           UI_COMP_EL.innerHTML = html;
+      }
+
+      // ---------- LÓGICA DE DISPARO AUTOMÁTICO ----------
+
+      function fireLoop() {
+          if (car.userData.isDestroyed) { stopFire(); return; }
+          
+          // Efecto visual de cooldown
+          fireBtn.classList.add('cooldown');
+          setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS - 20);
+
+          const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+          spawnBulletsFromCar(car, dir);
+      }
+
+      function doFire(){
+          if (isFiring || car.userData.isDestroyed) return;
+          isFiring = true;
+          // Dispara inmediatamente
+          fireLoop(); 
+          // Configura el disparo continuo
+          fireInterval = setInterval(fireLoop, BULLET_COOLDOWN_MS);
+      }
+      
+      function stopFire(){
+          if(!isFiring) return;
+          isFiring = false;
+          clearInterval(fireInterval);
+          fireInterval = null;
+          fireBtn.classList.remove('cooldown'); // Asegura que el botón se vea activo si se soltó
       }
 
       // ---------- INPUTS Y CONTROLES ----------
@@ -721,27 +808,16 @@ function init() {
       joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
       
       const fireBtn = document.getElementById('fire');
-      fireBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doFire(); }, {passive:false});
+      // ** Modificación de eventos de disparo **
+      fireBtn.addEventListener('touchstart', e => { e.preventDefault(); doFire(); }, {passive:false});
+      fireBtn.addEventListener('touchend', e => { e.preventDefault(); stopFire(); }, {passive:false});
       fireBtn.addEventListener('mousedown', doFire);
+      fireBtn.addEventListener('mouseup', stopFire);
+      // ** Fin de Modificación **
       
       const turboBtn = document.getElementById('turbo');
       turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); state.turbo = true; }, {passive:false});
       turboBtn.addEventListener('touchend', e=>{ e.preventDefault(); state.turbo = false; }, {passive:false});
-      
-      let lastFireTime = 0;
-      function doFire(){
-          const now = performance.now();
-          if(now - lastFireTime < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
-          lastFireTime = now;
-          
-          // Munición infinita (NO se consume)
-
-          fireBtn.classList.add('cooldown');
-          setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
-
-          const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-          spawnBulletsFromCar(car, dir);
-      }
       
       // ---------- RENDER LOOP ----------
       let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
@@ -781,6 +857,9 @@ function init() {
             const bullet = activeBullets[i];
             bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
         }
+        
+        // ** Actualizar impactos **
+        updateImpacts(now);
         
         updateCamera();
         updateHUD();
