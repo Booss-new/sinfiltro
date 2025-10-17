@@ -392,16 +392,14 @@ function init() {
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
       
-      // *** AJUSTE DE LUZ/ATMÓSFERA: NIEBLA QUITADA (NULL) ***
       scene.fog = null; 
       
-      // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
+      // ** 1. GESTIÓN DEFENSIVA DEL RENDERER (Configuración Estándar)**
       try {
+        // *** CAMBIOS CLAVE AQUÍ: Se eliminan opciones agresivas de rendimiento ***
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
-            alpha: false,
-            powerPreference: "low-power", 
-            failIfMajorPerformanceCaveat: true 
+            alpha: false
         });
         
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -421,12 +419,13 @@ function init() {
         renderer.setClearColor(scene.background); 
         
         const loadingEl = document.getElementById('loading');
+        // El mensaje de carga se oculta si la inicialización del renderer es exitosa.
         if (loadingEl) loadingEl.style.display = 'none';
         
       } catch (err) {
         console.error('Error FATAL al crear el contexto WebGL:', err);
         const loadingEl = document.getElementById('loading');
-        if (loadingEl) loadingEl.textContent = '¡Error! WebGL no soportado o falló la inicialización. Intenta con otro dispositivo/navegador.';
+        if (loadingEl) loadingEl.textContent = '¡Error! WebGL no soportado o falló la inicialización.';
         return; 
       }
       
@@ -449,7 +448,7 @@ function init() {
         }
       }
 
-      // Luces
+      // Luces (Se mantienen los ajustes para que el suelo no se vea negro)
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
@@ -464,33 +463,20 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      // ----------------------------------------------------------------------------------
-      // *** SOLUCIÓN DE LUZ: Aumentamos la intensidad de las luces de relleno para evitar que el suelo se vea negro. ***
-      // ----------------------------------------------------------------------------------
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, **0.5**)); // Subido de 0.2 a 0.5
-      scene.add(new THREE.AmbientLight(0xffffff, **1.0**));             // Subido de 0.5 a 1.0
-      // ----------------------------------------------------------------------------------
-
+      // La solución de iluminación que evita el suelo negro se mantiene
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.5)); 
+      scene.add(new THREE.AmbientLight(0xffffff, 1.0));             
 
       // ---------------------------------------------------------
-      // Suelo tipo CONCRETO (Gris mate y áspero)
+      // Suelo tipo CONCRETO (Textura Eliminada para evitar fallos de carga)
       // ---------------------------------------------------------
-      const texLoader = new THREE.TextureLoader();
-      let asphaltMap = null;
-      try {
-        asphaltMap = texLoader.load('https://cdn.pixabay.com/photo/2017/01/14/12/59/asphalt-1971367_1280.jpg');
-        asphaltMap.wrapS = asphaltMap.wrapT = THREE.RepeatWrapping;
-        asphaltMap.repeat.set(60,60);
-      } catch(e){
-        console.warn('Fallo al cargar textura de asfalto.');
-        asphaltMap = null;
-      }
       
+      // *** CAMBIO CLAVE AQUÍ: Se usa solo color sólido y se elimina el TextureLoader ***
       const roadMat = new THREE.MeshStandardMaterial({
         color: 0x4a4a4a, // Gris concreto oscuro
-        metalness: 0.05, // Muy bajo, no es metal
-        roughness: 0.85, // Alto, es áspero y mate
-        map: asphaltMap || null
+        metalness: 0.05, 
+        roughness: 0.85, 
+        map: null // Se asegura que no haya textura
       });
       
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
@@ -509,8 +495,9 @@ function init() {
       }
 
       // ---------------------------------------------------------
-      // Muros -> edificios (textura + ventanas simuladas)
+      // Muros -> edificios (Textura de Ladrillos de THREE.JS mantenida)
       // ---------------------------------------------------------
+      const texLoader = new THREE.TextureLoader();
       const buildingTex = texLoader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
       buildingTex.wrapS = buildingTex.wrapT = THREE.RepeatWrapping;
       buildingTex.repeat.set(8,2);
