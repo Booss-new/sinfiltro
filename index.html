@@ -744,30 +744,25 @@ function init() {
           state.health = car.userData.health; 
       }
       
-      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA ----------
+      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (AJUSTADA) ----------
       function updateCamera(){
         
         // 1. Detección de reversa para cambiar el objetivo (targetCameraMode)
-        if(car.userData.speed < -0.05){
-            // Mantiene el contador si sigue yendo hacia atrás
+        // Usamos el input del jugador (state.forward) para una detección más rápida
+        if(state.forward < -0.05){ 
             if(targetCameraMode === CAM_CHASE) reverseTimer++;
         } else {
-            // Reinicia el contador si va adelante o está parado
             reverseTimer = 0;
         }
 
         // 2. Transición de modo de cámara
-        if(reverseTimer > reverseThreshold && targetCameraMode === CAM_CHASE){
-            // Activar modo reversa (Vista frontal)
+        if(targetCameraMode === CAM_CHASE && reverseTimer > reverseThreshold){
+            // ACTIVAR: Si estamos en vista de persecución Y el jugador ha estado en reversa por un tiempo.
             targetCameraMode = CAM_REVERSE;
-        } else if (car.userData.speed > 0.05 && targetCameraMode === CAM_REVERSE){
-            // Desactivar modo reversa si el coche avanza (Regresar a Vista normal)
+        } else if (targetCameraMode === CAM_REVERSE && (state.forward > 0.05 || car.userData.speed > 0.1)) {
+            // DESACTIVAR: Si estamos en vista de reversa Y el jugador acelera hacia adelante, o si el coche ya tiene velocidad positiva.
             targetCameraMode = CAM_CHASE;
-        } else if (reverseTimer === 0 && targetCameraMode === CAM_REVERSE) {
-             // Desactivar si el coche para mientras está en modo reversa
-            targetCameraMode = CAM_CHASE;
-        }
-
+        } 
 
         // 3. Suavizar la transición (interpola entre el modo actual y el objetivo)
         const lerpFactor = 0.15;
