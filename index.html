@@ -24,73 +24,74 @@
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
   /* HUD - Estilo de consola de juego MÁS PEQUEÑO Y GAMER */
-  .hud{position:fixed;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;z-index:120;font-size:10px; /* Tamaño de fuente más pequeño */ pointer-events:none;text-shadow:0 0 4px #000} 
+  .hud{position:fixed;top:4px;left:4px;right:4px;display:flex;justify-content:space-between;z-index:120;font-size:8px; /* TAMAÑO DE FUENTE ULTRA PEQUEÑO */ pointer-events:none;text-shadow:0 0 4px #000; line-height: 1.0;} 
   .panel{
     background:var(--panel-bg);
-    padding:4px 8px; /* Reducción de padding */
+    padding:2px 5px; /* REDUCCIÓN DRÁSTICA DEL PADDING */
     border-radius:3px;
     font-weight:600;
     border:1px solid var(--panel-border);
     pointer-events:auto;
-    box-shadow:0 0 8px rgba(51, 204, 255, 0.2); 
-    backdrop-filter:blur(2px); /* Blur ligeramente menor */
+    box-shadow:0 0 5px rgba(51, 204, 255, 0.2); 
+    backdrop-filter:blur(2px);
     background: linear-gradient(135deg, rgba(0,0,0,0.85), rgba(0,0,0,0.65));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-  .panel h2{font-size:12px; /* Título más pequeño */ margin:0 0 2px 0;color:var(--header-color); font-weight:800; text-transform:uppercase;}
-  .panel span {color: #fff;}
-  .panel strong {color: var(--header-color);}
-  .panel br { line-height: 1.0; } /* Ajustar la altura de las líneas */
-
+  /* OCULTAR TÍTULOS PARA AHORRAR ESPACIO */
+  .panel h2{display: none;}
+  .panel span {color: #fff; font-weight: 400;}
+  .panel strong {color: var(--header-color); font-weight: 700; margin-right: 3px;}
+  .panel br { line-height: 1.0; display: none; } 
 
   /* PANEL DE DIAGNÓSTICO/ARMAS (Consolidado) */
   #diagnostico-armas{ 
     display: flex; 
-    flex-direction: column; 
-    width: 150px; /* Tamaño total más pequeño */
-    pointer-events: none; 
+    flex-direction: row; /* Poner en línea para ahorrar espacio vertical */
+    width: auto;
+    max-width: 250px;
     line-height: 1.0; 
-    font-size: 9px; /* Fuente minúscula */
+    font-size: 8px; 
+    gap: 8px; /* Espacio entre secciones */
   }
-  #diagnostico-armas h2{ color: #ffcc00; }
-  .componente-estado{ font-size: 9px; margin-top: 0px; color: #fff; line-height: 1.0; }
-  .estado-ok{ color: var(--green); }
-  .estado-danado{ color: #ff9900; }
-  .estado-critico{ color: var(--red); font-weight: 700; }
+  .comp-section { display: flex; flex-direction: column; line-height: 1.0; gap: 0px; }
+  .componente-estado{ font-size: 8px; margin: 0px; color: #fff; line-height: 1.0; }
 
-  /* Health and Ammo Bars - BARRAS MÁS DELGADAS */
-  .bar-container{width:70px;height:8px; /* Barras más pequeñas */ background:#333333;border-radius:2px;overflow:hidden;margin-top:1px;border:1px solid rgba(255,255,255,0.1)}
+  /* Health and Ammo Bars - BARRAS AÚN MÁS DELGADAS */
+  .bar-container{width:50px;height:6px; /* Barras ultra-pequeñas */ background:#333333;border-radius:2px;overflow:hidden;margin-top:1px;border:1px solid rgba(255,255,255,0.1)}
   .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #aa0000, var(--red));transition:width 0.2s}
   .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #007700, var(--green));transition:width 0.2s}
   
   /* Velocímetro */
   .speedometer{
-    position:fixed;right:10px; bottom:120px; width:90px;height:90px; /* Aún más pequeño */
+    position:fixed;right:10px; bottom:100px; width:80px;height:80px; /* Reducción de tamaño */
     background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); 
     box-shadow:0 0 10px rgba(51, 204, 255, 0.2); 
     display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
   }
-  .speed-value{font-size:28px;font-weight:800;color:var(--green);text-shadow:0 0 8px rgba(51, 255, 51, 0.4)}
-  .speed-unit{font-size:9px;color:#ffffff}
+  .speed-value{font-size:24px;font-weight:800;color:var(--green);text-shadow:0 0 8px rgba(51, 255, 51, 0.4)}
+  .speed-unit{font-size:8px;color:#ffffff}
   
   /* Controles (Sin cambios) */
-  .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(51, 204, 255, 0.1) }
+  .joy { position:fixed; left:12px; bottom:12px; width:90px; height:90px; border-radius:50px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(51, 204, 255, 0.1) }
   .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.25); transform:translate(0,0) }
-  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
+  .fire { position:fixed; right:110px; bottom:12px; width:65px; height:65px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
   .fire.cooldown { background:linear-gradient(135deg, #aaa, #ccc); box-shadow:none; transform: scale(0.9); pointer-events: none; }
-  .turbo { position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#00f); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 10px var(--blue); font-size:20px; border:3px solid #fff; }
+  .turbo { position:fixed; right:12px; bottom:12px; width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#00f); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 10px var(--blue); font-size:20px; border:3px solid #fff; }
   
   /* FPS/Loader */
-  .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:10px;backdrop-filter:blur(3px); color: var(--green);}
+  .fps{position:fixed;left:12px;bottom:100px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:10px;backdrop-filter:blur(3px); color: var(--green);}
   #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.8);color:#fff;padding:14px 18px;border-radius:12px;font-weight:600}
 
   @media (max-width:420px){ 
-    .joy{width:90px;height:90px;left:8px;bottom:8px;} 
-    .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
+    .joy{width:80px;height:80px;left:8px;bottom:8px;} 
+    .fire{right:95px;bottom:8px;width:60px;height:60px;font-size:24px}
     .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:16px}
-    .fps{left:8px;bottom:100px;} 
-    .speedometer{width:90px;height:90px;right:8px;bottom:100px;}
-    .speed-value{font-size:26px}
-    #diagnostico-armas{ width: 130px; }
+    .fps{left:8px;bottom:90px;} 
+    .speedometer{width:80px;height:80px;right:8px;bottom:90px;}
+    .speed-value{font-size:24px}
+    #diagnostico-armas{ max-width: 90%; }
   }
 </style>
 </head>
@@ -99,17 +100,19 @@
 
   <div class="hud">
     <div class="panel">
-      <h2>VEHÍCULO</h2>
-      <strong>TIPO:</strong> <span id="carType">Sport</span><br>
-      <strong>INTEGRIDAD:</strong>
-      <div class="bar-container"><div id="healthBar" class="health-bar"></div></div>
+      <strong>VEHÍCULO:</strong> <span id="carType">Sport</span>
+      <div style="display: flex; align-items: center; margin-top: 1px;">
+        <strong>INTEGRIDAD:</strong>
+        <div class="bar-container" style="margin-left: 3px;"><div id="healthBar" class="health-bar"></div></div>
+      </div>
     </div>
 
     <div class="panel" id="diagnostico-armas">
-        <h2>DIAGNÓSTICO & ARMAS</h2>
-        <div id="componentes">
-            </div>
-        <div style="margin-top: 3px;">
+        <div class="comp-section">
+            <div id="componentes" style="margin-bottom: 2px;">
+                </div>
+        </div>
+        <div class="comp-section">
             <strong>MUNICIÓN:</strong> <span id="ammoCount">∞</span> 
             <div class="bar-container"><div id="ammoBar" class="ammo-bar"></div></div>
         </div>
@@ -141,7 +144,7 @@ const BLOOM_ENABLED = true;
 const SHADOWS_ENABLED = true; 
 
 // =========================================================================
-// == CLASE CARCONTROLLER (Modificaciones de armamento)                   ==
+// == CLASE CARCONTROLLER (Ajustes visuales y de HUD)                   ==
 // =========================================================================
 
 const VEHICLE_STATS = {
@@ -181,11 +184,12 @@ class CarController extends THREE.Group {
 
         this.buildMesh(stats);
 
+        // CORRECCIÓN: Barra de salud más pequeña y en el techo (para AI)
         if(isAI){
             const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00, transparent: true, opacity: 0.8});
-            const hbGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.2, 0.1);
+            const hbGeo = new THREE.BoxGeometry(stats.width * 0.8, 0.1, 0.08); // Más delgada
             const healthBar = new THREE.Mesh(hbGeo, hbMat);
-            healthBar.position.y = 2.5;
+            healthBar.position.y = 2.0; // Un poco más baja
             healthBar.rotation.y = Math.PI/2;
             this.userData.healthBar = healthBar;
             this.add(healthBar);
@@ -214,45 +218,37 @@ class CarController extends THREE.Group {
         
         // Cañones delanteros - MODIFICADO para simular AK-47
         if (this.userData.type !== 'Traffic') {
-            const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.95, roughness: 0.3 }); // Color más oscuro, menos brillante
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.95, roughness: 0.3 });
             
-            const frontZ = -stats.length / 2 + 0.3; // Posición general
-            const gunY = 1.5; // Altura sobre el vehículo
+            const frontZ = -stats.length / 2 + 0.3;
+            const gunY = 1.5;
 
-            const leftX = -stats.width / 2 + 0.3; // Posición lateral
+            const leftX = -stats.width / 2 + 0.3;
             const rightX = stats.width / 2 - 0.3;
 
             // AK-47 Derecha
             const ak47_R = new THREE.Group();
-
-            // Cañón
-            const barrelR_geo = new THREE.CylinderGeometry(0.08, 0.1, 1.2, 8); // Cañón un poco más delgado y largo
+            const barrelR_geo = new THREE.CylinderGeometry(0.08, 0.1, 1.2, 8);
             const barrelR = new THREE.Mesh(barrelR_geo, gunMat);
             barrelR.rotation.x = Math.PI / 2;
-            barrelR.position.set(0, 0, 0.6); // Mover hacia adelante
+            barrelR.position.set(0, 0, 0.6);
             ak47_R.add(barrelR);
-
-            // Cuerpo principal (cubo rectangular)
             const bodyR_geo = new THREE.BoxGeometry(0.2, 0.25, 0.8);
             const bodyR = new THREE.Mesh(bodyR_geo, gunMat);
             bodyR.position.set(0, 0.1, 0);
             ak47_R.add(bodyR);
-
-            // Cargador (rectángulo curvo o trapezoidal)
-            const magR_geo = new THREE.BoxGeometry(0.12, 0.3, 0.3); // Simple box para el cargador
+            const magR_geo = new THREE.BoxGeometry(0.12, 0.3, 0.3);
             const magR = new THREE.Mesh(magR_geo, gunMat);
             magR.position.set(0, -0.25, -0.1);
             ak47_R.add(magR);
-
-            // Culata (cubo simple)
             const stockR_geo = new THREE.BoxGeometry(0.15, 0.15, 0.4);
             const stockR = new THREE.Mesh(stockR_geo, gunMat);
             stockR.position.set(0, 0.1, -0.5);
             ak47_R.add(stockR);
 
             ak47_R.position.set(rightX, gunY, frontZ);
-            ak47_R.rotation.y = Math.PI; // Apuntar hacia adelante
-            ak47_R.rotation.x = -0.1; // Ligeramente inclinado
+            ak47_R.rotation.y = Math.PI;
+            ak47_R.rotation.x = -0.1;
             if(SHADOWS_ENABLED) ak47_R.traverse(child => { if(child.isMesh) child.castShadow = true; });
             this.add(ak47_R);
 
@@ -261,8 +257,6 @@ class CarController extends THREE.Group {
             ak47_L.position.x = leftX;
             this.add(ak47_L);
 
-            // Guardar offsets (punto de salida de las balas)
-            // Se usa el punto final del cañón
             this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ - 1.2 * Math.cos(ak47_R.rotation.x)));
             this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ - 1.2 * Math.cos(ak47_L.rotation.x)));
         }
@@ -397,7 +391,8 @@ function init() {
       
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
-      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, CITY_SIZE * 2); 
+      // Reducir la niebla oscura para que el asfalto claro se vea mejor
+      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/1.5, CITY_SIZE * 2); 
       
       // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
       try {
@@ -442,7 +437,8 @@ function init() {
         try{
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
+            // Aumentar la intensidad del Bloom
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85); 
             bloomPass.renderToScreen = true;
             composer.addPass(bloomPass);
             console.log("Efecto Bloom inicializado correctamente.");
@@ -453,7 +449,7 @@ function init() {
       }
 
       // Luces
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
@@ -467,11 +463,11 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.5)); 
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.7)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // Suelo tipo metal (metalness alto, roughness bajo, color CLARO)
+      // Suelo tipo metal CLARO (gris casi blanco)
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
@@ -483,9 +479,9 @@ function init() {
         console.warn('Fallo al cargar textura de asfalto.');
         asphaltMap = null;
       }
-      // CAMBIO SOLICITADO: Asfalto color metal CLARO (como el cemento, pero metálico)
+      // CAMBIO: Asfalto BLANCO metálico
       const roadMat = new THREE.MeshStandardMaterial({
-        color: 0xdddddd, // Gris muy claro
+        color: 0xececec, // Gris extremadamente claro (casi blanco)
         metalness: 0.9, // Alto valor metálico
         roughness: 0.15, // Bajo valor de rugosidad (brillante/pulido)
         map: asphaltMap || null
@@ -698,9 +694,11 @@ function init() {
           document.getElementById('speedDisplay').textContent = kmh;
           
           let html = '';
+          // Se muestra solo el estado (OK, DAÑADO, CRÍTICO)
           for (const key in car.componentes) {
               const comp = car.componentes[key];
               let className = comp.estado === 'CRÍTICO' ? 'estado-critico' : comp.estado === 'DAÑADO' ? 'estado-danado' : 'estado-ok';
+              // Diseño ultra-compacto: EFECTO: ESTADO (HP)
               html += `<p class="componente-estado"><strong>${comp.efecto.toUpperCase()}:</strong> <span class="${className}">${comp.estado} (${Math.round(comp.vida)}%)</span></p>`;
           }
           UI_COMP_EL.innerHTML = html;
