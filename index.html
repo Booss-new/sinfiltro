@@ -113,14 +113,11 @@
 
 <script>
 
-// ** OPINIÓN DE RENDIMIENTO **
-// Se recomienda mantener SHADOWS_ENABLED y BLOOM_ENABLED a 'true' y que el código
-// maneje los fallos de forma suave, lo cual hacemos con el try/catch.
 const BLOOM_ENABLED = true; 
 const SHADOWS_ENABLED = true; 
 
 // =========================================================================
-// == CLASE CARCONTROLLER (SIN CAMBIOS EN LÓGICA DE JUEGO)                ==
+// == CLASE CARCONTROLLER (Modificaciones de armamento)                   ==
 // =========================================================================
 
 const VEHICLE_STATS = {
@@ -191,31 +188,59 @@ class CarController extends THREE.Group {
         this.userData.body = body;
         this.userData.tailLights = tailLights;
         
-        // Cañones delanteros - MODIFICADO para ser 2 tubos simples
+        // Cañones delanteros - MODIFICADO para simular AK-47
         if (this.userData.type !== 'Traffic') {
-            const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.95, roughness: 0.15 });
-            const barrelGeo = new THREE.CylinderGeometry(0.12, 0.1, 1.0, 8); // Tubos de ametralladora
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.95, roughness: 0.3 }); // Color más oscuro, menos brillante
+            
+            const frontZ = -stats.length / 2 + 0.3; // Posición general
+            const gunY = 1.5; // Altura sobre el vehículo
 
-            const frontZ = -stats.length / 2 + 0.3; 
-            const leftX = -stats.width / 2 + 0.4; // Más cerca de las ruedas
-            const rightX = stats.width / 2 - 0.4;
-            const gunY = 1.6; // Más arriba, sobre el capó
+            const leftX = -stats.width / 2 + 0.3; // Posición lateral
+            const rightX = stats.width / 2 - 0.3;
 
-            // Cañón Derecho
-            const barrelR = new THREE.Mesh(barrelGeo, gunMat);
-            barrelR.rotation.x = Math.PI / 2; // Apunta hacia adelante (rotación para que el cilindro esté horizontal)
-            barrelR.position.set(rightX, gunY, frontZ);
-            if(SHADOWS_ENABLED) barrelR.castShadow = true;
-            this.add(barrelR);
+            // AK-47 Derecha
+            const ak47_R = new THREE.Group();
 
-            // Cañón Izquierdo
-            const barrelL = barrelR.clone();
-            barrelL.position.x = leftX;
-            this.add(barrelL);
+            // Cañón
+            const barrelR_geo = new THREE.CylinderGeometry(0.08, 0.1, 1.2, 8); // Cañón un poco más delgado y largo
+            const barrelR = new THREE.Mesh(barrelR_geo, gunMat);
+            barrelR.rotation.x = Math.PI / 2;
+            barrelR.position.set(0, 0, 0.6); // Mover hacia adelante
+            ak47_R.add(barrelR);
+
+            // Cuerpo principal (cubo rectangular)
+            const bodyR_geo = new THREE.BoxGeometry(0.2, 0.25, 0.8);
+            const bodyR = new THREE.Mesh(bodyR_geo, gunMat);
+            bodyR.position.set(0, 0.1, 0);
+            ak47_R.add(bodyR);
+
+            // Cargador (rectángulo curvo o trapezoidal)
+            const magR_geo = new THREE.BoxGeometry(0.12, 0.3, 0.3); // Simple box para el cargador
+            const magR = new THREE.Mesh(magR_geo, gunMat);
+            magR.position.set(0, -0.25, -0.1);
+            ak47_R.add(magR);
+
+            // Culata (cubo simple)
+            const stockR_geo = new THREE.BoxGeometry(0.15, 0.15, 0.4);
+            const stockR = new THREE.Mesh(stockR_geo, gunMat);
+            stockR.position.set(0, 0.1, -0.5);
+            ak47_R.add(stockR);
+
+            ak47_R.position.set(rightX, gunY, frontZ);
+            ak47_R.rotation.y = Math.PI; // Apuntar hacia adelante
+            ak47_R.rotation.x = -0.1; // Ligeramente inclinado
+            if(SHADOWS_ENABLED) ak47_R.traverse(child => { if(child.isMesh) child.castShadow = true; });
+            this.add(ak47_R);
+
+            // AK-47 Izquierda (clonar y ajustar posición)
+            const ak47_L = ak47_R.clone();
+            ak47_L.position.x = leftX;
+            this.add(ak47_L);
 
             // Guardar offsets (punto de salida de las balas)
-            this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ));
-            this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ));
+            // Se usa el punto final del cañón
+            this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ - 1.2 * Math.cos(ak47_R.rotation.x)));
+            this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ - 1.2 * Math.cos(ak47_L.rotation.x)));
         }
 
         this.createWheels(stats);
@@ -333,8 +358,8 @@ class CarController extends THREE.Group {
 // == FUNCIÓN DE INICIALIZACIÓN PRINCIPAL (init)                          ==
 // =========================================================================
 
-let renderer = null; // Declaración global
-let composer = null; // Declaración global
+let renderer = null; 
+let composer = null; 
 
 function init() {
     (function(){
@@ -355,8 +380,8 @@ function init() {
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
             alpha: false,
-            powerPreference: "low-power", // Sugiere usar GPU de bajo consumo (mejor en móviles)
-            failIfMajorPerformanceCaveat: true // Falla si no se puede iniciar con rendimiento mínimo
+            powerPreference: "low-power", 
+            failIfMajorPerformanceCaveat: true 
         });
         
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -365,7 +390,6 @@ function init() {
         renderer.shadowMap.enabled = SHADOWS_ENABLED;
         if(SHADOWS_ENABLED) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
-        // Forzamos CSS para asegurar la visibilidad del canvas (z-index: 0)
         renderer.domElement.style.position = 'absolute';
         renderer.domElement.style.top = '0';
         renderer.domElement.style.left = '0';
@@ -383,11 +407,9 @@ function init() {
         console.error('Error FATAL al crear el contexto WebGL:', err);
         const loadingEl = document.getElementById('loading');
         if (loadingEl) loadingEl.textContent = '¡Error! WebGL no soportado o falló la inicialización. Intenta con otro dispositivo/navegador.';
-        return; // Detener la ejecución si falla el renderer
+        return; 
       }
       
-      // ** AJUSTE DE FRUSTUM (Optimización) **
-      // Reduce la distancia de visión para menor carga de draw-calls.
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24);
 
@@ -402,7 +424,7 @@ function init() {
             console.log("Efecto Bloom inicializado correctamente.");
         } catch(e){
             console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
-            composer = null; // Fuerza el fallback a renderizado simple
+            composer = null; 
         }
       }
 
@@ -411,7 +433,6 @@ function init() {
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
-        // ** Sombra de Baja Resolución (Optimizada) **
         dirLight.shadow.mapSize.width = 1024; 
         dirLight.shadow.mapSize.height = 1024;
       }
@@ -426,7 +447,7 @@ function init() {
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // Suelo tipo asfalto: Textura
+      // Suelo tipo asfalto: Textura - CAMBIADO A GRIS CLARO
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
@@ -438,9 +459,9 @@ function init() {
         console.warn('Fallo al cargar textura de asfalto.');
         asphaltMap = null;
       }
-      // CAMBIO SOLICITADO: Asfalto gris (0x1f1f1f)
+      // CAMBIO SOLICITADO: Asfalto gris claro (0xcccccc)
       const roadMat = new THREE.MeshStandardMaterial({
-        color: 0x1f1f1f,
+        color: 0xcccccc, // Gris más claro
         roughness: 0.9,
         metalness: 0.12,
         map: asphaltMap || null
