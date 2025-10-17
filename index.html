@@ -378,14 +378,29 @@ class CarController extends THREE.Group {
 
 let renderer = null; 
 let composer = null; 
-let isFiring = false; // Nueva variable para el estado de disparo
-let fireInterval = null; // Nuevo control para el disparo automático
+let isFiring = false; 
+let fireInterval = null; 
+
+// --- Variables de Control de Cámara ---
+const CAM_CHASE = { 
+    offset: new THREE.Vector3(0, 12, 24), // Posición Detrás (Normal)
+    lookAt: new THREE.Vector3(0, 1.2, 0)
+}; 
+const CAM_REVERSE = {
+    offset: new THREE.Vector3(0, 4, -8), // Posición Delante (Reversa)
+    lookAt: new THREE.Vector3(0, 0.8, 0)
+};
+let currentCameraMode = CAM_CHASE;
+let targetCameraMode = CAM_CHASE;
+
+let reverseTimer = 0;
+const reverseThreshold = 20; // 20 frames / ticks (aprox 330ms)
 
 function init() {
     (function(){
       const holder = document.getElementById('holder');
       const CITY_SIZE = 400; 
-      const BULLET_COOLDOWN_MS = 160; // Se redujo para disparo automático más rápido
+      const BULLET_COOLDOWN_MS = 160; 
       const AI_CARS = [];
       const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
@@ -430,7 +445,9 @@ function init() {
       }
       
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
-      camera.position.set(0, 12, 24);
+      camera.position.set(0, 12, 24); // Posición inicial
+      currentCameraMode.offset.copy(CAM_CHASE.offset); // Sincroniza el offset inicial
+      currentCameraMode.lookAt.copy(CAM_CHASE.lookAt); // Sincroniza el lookAt inicial
 
       // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
       if(BLOOM_ENABLED){
@@ -727,11 +744,48 @@ function init() {
           state.health = car.userData.health; 
       }
       
+      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA ----------
       function updateCamera(){
-        const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
-        camera.position.lerp(desired, 0.15);
-        camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
+        
+        // 1. Detección de reversa para cambiar el objetivo (targetCameraMode)
+        if(car.userData.speed < -0.05){
+            // Mantiene el contador si sigue yendo hacia atrás
+            if(targetCameraMode === CAM_CHASE) reverseTimer++;
+        } else {
+            // Reinicia el contador si va adelante o está parado
+            reverseTimer = 0;
+        }
+
+        // 2. Transición de modo de cámara
+        if(reverseTimer > reverseThreshold && targetCameraMode === CAM_CHASE){
+            // Activar modo reversa
+            targetCameraMode = CAM_REVERSE;
+        } else if (car.userData.speed > 0.05 && targetCameraMode === CAM_REVERSE){
+            // Desactivar modo reversa si el coche avanza
+            targetCameraMode = CAM_CHASE;
+        } else if (reverseTimer === 0 && targetCameraMode === CAM_REVERSE) {
+             // Desactivar si el coche para mientras está en modo reversa
+            targetCameraMode = CAM_CHASE;
+        }
+
+
+        // 3. Suavizar la transición (interpola entre el modo actual y el objetivo)
+        const lerpFactor = 0.15;
+        currentCameraMode.offset.lerp(targetCameraMode.offset, lerpFactor);
+        currentCameraMode.lookAt.lerp(targetCameraMode.lookAt, lerpFactor);
+
+        // 4. Aplicar la posición y orientación de la cámara
+        const desiredPosition = car.position.clone().add(currentCameraMode.offset.clone().applyQuaternion(car.quaternion)); 
+        const desiredLookAt = car.position.clone().add(currentCameraMode.lookAt.clone().applyQuaternion(car.quaternion));
+
+        // Interpolar suavemente la posición real de la cámara
+        camera.position.lerp(desiredPosition, 0.15);
+        
+        // El punto de mira sigue al coche
+        camera.lookAt(desiredLookAt);
       }
+      // ------------------------------------------------------------
+
 
       function updateHUD(){
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
@@ -861,7 +915,9 @@ function init() {
         // ** Actualizar impactos **
         updateImpacts(now);
         
+        // ** Actualizar cámara **
         updateCamera();
+        
         updateHUD();
         
         // ** RENDERIZADO CON FALLBACK **
