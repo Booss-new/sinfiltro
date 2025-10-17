@@ -102,6 +102,19 @@
   /* FPS/Loader */
   .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px;backdrop-filter:blur(3px); color: var(--panel-text);}
 
+  #loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: rgba(0,0,0,0.8);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    z-index: 130;
+  }
+  
   @media (max-width:420px){ 
     .joy{width:90px;height:90px;left:8px;bottom:8px;} 
     .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
@@ -150,12 +163,12 @@
 
 <script>
 
+// =========================================================================
+// == CONSTANTES Y CONFIGURACIÓN ===========================================
+// =========================================================================
+
 const BLOOM_ENABLED = true; 
 const SHADOWS_ENABLED = true; 
-
-// =========================================================================
-// == CLASE CARCONTROLLER (Sin Cambios Funcionales)                       ==
-// =========================================================================
 
 const VEHICLE_STATS = {
     'Muscle Car': { color: 0x880000, width: 2.8, length: 5.0, height: 1.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
@@ -163,6 +176,10 @@ const VEHICLE_STATS = {
     'Pickup': { color: 0x336633, width: 3.2, length: 5.5, height: 1.2, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 },
     'Traffic': { color: 0xaaaaaa, width: 2.5, length: 4.5, height: 1.0, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
 };
+
+// =========================================================================
+// == CLASE CARCONTROLLER (Sin Cambios Funcionales)                       ==
+// =========================================================================
 
 class CarController extends THREE.Group {
     constructor(type, isAI) {
@@ -381,6 +398,35 @@ let renderer = null;
 let composer = null; 
 let gameObjects = []; 
 
+// FIX AUDIO: Declaración de AudioContext para gestión de reproducción automática
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+const motorSound = new Audio('https://www.soundjay.com/transport/car-engine-01.mp3'); 
+motorSound.loop = true;
+motorSound.volume = 0.0; 
+
+let audioStarted = false;
+function startAudio(){
+    if(!audioStarted){
+        // Usamos el AudioContext para desbloquear la reproducción en navegadores
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(e => console.warn("Fallo al reanudar AudioContext:", e));
+        }
+        // Intentamos reproducir el audio del motor
+        motorSound.play().catch(e => console.warn("Fallo al iniciar el audio del motor:", e));
+        audioStarted = true;
+    }
+    // Removemos los listeners una vez que se inicia el audio
+    document.removeEventListener('pointerdown', startAudio);
+    document.removeEventListener('touchstart', startAudio);
+    document.removeEventListener('click', startAudio); 
+}
+// Agregamos listeners de interacción para iniciar el audio
+document.addEventListener('pointerdown', startAudio);
+document.addEventListener('touchstart', startAudio);
+document.addEventListener('click', startAudio); 
+
+
 function init() {
     (function(){
       const holder = document.getElementById('holder');
@@ -397,7 +443,8 @@ function init() {
       scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, 2000); 
       
       // -------------------------------------------------------------------
-      // ** GESTIÓN DEFENSIVA DEL RENDERER ** // -------------------------------------------------------------------
+      // ** GESTIÓN DEFENSIVA DEL RENDERER ** // 
+      // -------------------------------------------------------------------
       try {
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
@@ -435,6 +482,7 @@ function init() {
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24);
 
+      // FIX CRÍTICO: Se añade la verificación de 'undefined' para EffectComposer
       if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){
         try{
             composer = new EffectComposer(renderer);
@@ -442,10 +490,14 @@ function init() {
             const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
             bloomPass.renderToScreen = true;
             composer.addPass(bloomPass);
+            console.log("Bloom Effect Composer inicializado correctamente.");
         } catch(e){
             console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
             composer = null; 
         }
+      } else if (BLOOM_ENABLED) {
+          console.warn("EffectComposer no definido. Revisar carga de librerías. Renderizado simple activo.");
+          composer = null; 
       }
 
       // Luces
@@ -629,6 +681,7 @@ function init() {
               b.position.copy(origin);
               b.userData.dir.copy(dir);
               
+              // FIX SONIDO: Audio de disparo
               const sound = new Audio('https://www.soundjay.com/weapons/rifle-01.mp3'); 
               sound.volume = 0.3; 
               sound.play().catch(e => console.warn("Fallo al iniciar el audio del disparo:", e));
@@ -646,6 +699,7 @@ function init() {
           m.userData.dir.copy(dir);
           m.rotation.copy(targetCar.rotation);
           
+          // FIX SONIDO: Audio de misil
           const sound = new Audio('https://www.soundjay.com/military/missile-01.mp3'); 
           sound.volume = 0.6; 
           sound.play().catch(e => console.warn("Fallo al iniciar el audio del misil:", e));
@@ -655,14 +709,6 @@ function init() {
 
       setupBulletPool(); 
       
-      // FIX SONIDO: Audio context para mejor gestión en móviles
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const audioCtx = new AudioContext();
-
-      const motorSound = new Audio('https://www.soundjay.com/transport/car-engine-01.mp3'); 
-      motorSound.loop = true;
-      motorSound.volume = 0.0; 
-
       // Función TWEEN
       const TWEEN = { 
         Easing: { Quadratic: { Out: (k) => k * (2 - k) } },
@@ -689,7 +735,7 @@ function init() {
           return this;
         }, onComplete: function(cb) { this.onComplete = cb; return this; } } },
         start: function() { } 
-      } } };
+      } };
 
       function createExplosion(position, isMissile = false){
           const size = isMissile ? 5.0 : 0.5; 
@@ -707,9 +753,11 @@ function init() {
           scene.add(expLight);
 
           if(isMissile){
+              // FIX SONIDO: Explosión de misil
               const sound = new Audio('https://www.soundjay.com/military/explosion-01.mp3'); 
               sound.volume = 0.8; sound.play().catch(e => console.warn("Fallo al iniciar el audio de la explosión:", e));
           } else {
+              // FIX SONIDO: Impacto de bala
               const sound = new Audio('https://www.soundjay.com/weapons/bullet-impact-01.mp3'); 
               sound.volume = 0.5; sound.play().catch(e => console.warn("Fallo al iniciar el audio de impacto:", e));
           }
@@ -830,7 +878,8 @@ function init() {
               missileBtn.classList.remove('cooldown');
               missileBtn.style.opacity = 1.0;
           }
-
+          
+          // CONTROL DE VOLUMEN DEL MOTOR
           motorSound.volume = Math.min(0.8, Math.abs(car.userData.speed) * 0.5);
       }
 
@@ -839,22 +888,6 @@ function init() {
       let touchId = null, baseX=0, baseY=0;
       let stick = {x:0,y:0};
       function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-      
-      let audioStarted = false;
-      function startAudio(){
-          if(!audioStarted){
-              // Usamos el AudioContext para desbloquear la reproducción en navegadores
-              if (audioCtx.state === 'suspended') {
-                  audioCtx.resume();
-              }
-              motorSound.play().catch(e => console.warn("Fallo al iniciar el audio del motor:", e));
-              audioStarted = true;
-          }
-          document.removeEventListener('pointerdown', startAudio);
-          document.removeEventListener('touchstart', startAudio);
-      }
-      document.addEventListener('pointerdown', startAudio);
-      document.addEventListener('touchstart', startAudio);
       
       
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
@@ -963,7 +996,7 @@ function init() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO CON FIX DEL COMPOSER
+        // RENDERIZADO CON COMPOSER (FIXED)
         if(composer && BLOOM_ENABLED){
             composer.render();
         } else {
@@ -995,7 +1028,7 @@ function init() {
     })();
 }
 
-// LLAMADA DE INICIALIZACIÓN DE SEGURIDAD
+// LLAMADA DE INICIALIZACIÓN DE SEGURIDAD: Llama a init cuando la página y scripts están listos.
 window.onload = init; 
 </script>
 </body>
