@@ -3,20 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>CENIT DE ACERO: Arena de Combate Extremo</title>
+<title>CENIT DE ACERO: Arena de Combate Extremo (Modo Seguro)</title>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://unpkg.com/three@0.158.0/examples/js/audio/PositionalAudio.js"></script>
 <script src="https://unpkg.com/three@0.158.0/examples/js/loaders/AudioLoader.js"></script>
 
 
 <style>
-  /* Base Style - ESTILO AAA ESTILIZADO */
+  /* Base Style - Mismo estilo visual, pero la lógica 3D es más simple */
   :root{
     --bg:#020306;
     --red:#e74c3c;
@@ -108,7 +103,7 @@
     <div class="speed-unit">KM/H</div>
   </div>
 
-  <div id="loading">Cargando CENIT DE ACERO...</div>
+  <div id="loading">Cargando CENIT DE ACERO (Modo Seguro)...</div>
 
   <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
   <div class="fire" id="fire">💥</div>
@@ -117,8 +112,9 @@
 
 <script>
 
-const BLOOM_ENABLED = true; 
-const SHADOWS_ENABLED = true; 
+// CRÍTICO: Deshabilitamos el Bloom y las Sombras por completo para máxima compatibilidad.
+const BLOOM_ENABLED = false; 
+const SHADOWS_ENABLED = false; 
 
 // =========================================================================
 // == CLASE CARCONTROLLER (Con Lógica de IA y Componentes)                ==
@@ -147,13 +143,11 @@ class CarController extends THREE.Group {
         this.userData.speed = 0; 
         this.userData.isDestroyed = false;
         
-        // Lógica de IA (Nueva)
         this.userData.lastFireTime = 0; 
         this.userData.fireCooldown = 500 + Math.random() * 500; 
 
         this.userData.gunOffsets = []; 
         
-        // Mesh de colisión (Nueva)
         const boxGeo = new THREE.BoxGeometry(stats.width + 0.5, 2.0, stats.length + 0.5); 
         const boxMat = new THREE.MeshBasicMaterial({ visible: false }); 
         this.userData.collisionMesh = new THREE.Mesh(boxGeo, boxMat);
@@ -186,13 +180,14 @@ class CarController extends THREE.Group {
     }
 
     buildMesh(stats) {
+        // Usamos BasicMaterial para evitar problemas de iluminación/sombras
         const bodyGeo = new THREE.TorusKnotGeometry(stats.length/5, stats.width/8, 100, 16); 
-        const bodyMat = new THREE.MeshStandardMaterial({color:stats.color, metalness:0.9, roughness:0.15}); 
+        const bodyMat = new THREE.MeshBasicMaterial({color:stats.color}); 
         const body = new THREE.Mesh(bodyGeo, bodyMat);
         body.scale.set(1.5, 0.8, 1);
         body.rotation.y = Math.PI / 2;
         body.position.y = 1.0; 
-        if(SHADOWS_ENABLED){ body.castShadow = true; body.receiveShadow = true; }
+        // CRÍTICO: No cast/receive shadow
         this.add(body);
         
         const tailLightMat = new THREE.MeshBasicMaterial({color:0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5});
@@ -206,7 +201,7 @@ class CarController extends THREE.Group {
         
         // Cañones delanteros
         if (this.userData.type !== 'Traffic') {
-            const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.95, roughness: 0.15 });
+            const gunMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
             const barrelGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8);
 
             const frontZ = -stats.length / 2 + 0.7;
@@ -238,7 +233,7 @@ class CarController extends THREE.Group {
     
     createWheels(stats){
         const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, stats.width * 0.25, 12);
-        const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9, metalness: 0.1 });
+        const wheelMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
         
         const wheelData = [
             { x: stats.width / 2 + 0.1, z: stats.length / 2 - 0.7 },
@@ -251,7 +246,7 @@ class CarController extends THREE.Group {
             const wheel = new THREE.Mesh(wheelGeo, wheelMat);
             wheel.rotation.z = Math.PI / 2;
             wheel.position.set(pos.x, 0.5, pos.z);
-            if(SHADOWS_ENABLED) wheel.castShadow = true;
+            // CRÍTICO: No cast shadow
             this.add(wheel);
         }
     }
@@ -349,10 +344,10 @@ class CarController extends THREE.Group {
 // =========================================================================
 
 let renderer = null; 
-let composer = null; 
+let composer = null; // Siempre nulo en este modo seguro
 let gameObjects = []; 
 
-// Variables de Audio (Nuevas)
+// Variables de Audio
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioLoader = new THREE.AudioLoader();
@@ -397,7 +392,7 @@ function init() {
       scene.background = new THREE.Color(0x6e8ca0); 
       scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, 2000); 
       
-      const loadingEl = document.getElementById('loading'); // CRÍTICO: Obtener loader antes del try/catch
+      const loadingEl = document.getElementById('loading'); 
       
       // -------------------------------------------------------------------
       // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
@@ -413,8 +408,8 @@ function init() {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(window.innerWidth, window.innerHeight);
         
-        renderer.shadowMap.enabled = SHADOWS_ENABLED;
-        if(SHADOWS_ENABLED) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // CRÍTICO: SOMBRAS DESACTIVADAS
+        renderer.shadowMap.enabled = false;
         
         renderer.domElement.style.position = 'absolute';
         renderer.domElement.style.top = '0';
@@ -445,6 +440,7 @@ function init() {
       // ** Audio (THREE.js Positional) **
       camera.add(listener);
       motorSound = new THREE.PositionalAudio(listener);
+      // Usamos un sonido local o más genérico si el de 'soundjay.com' da problemas de CORS
       audioLoader.load( 'https://www.soundjay.com/transport/car-engine-01.mp3', function( buffer ) {
           motorSound.setBuffer( buffer );
           motorSound.setLoop( true );
@@ -452,41 +448,15 @@ function init() {
           motorSound.setVolume( 0.0 );
       });
 
-      // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
-      if(BLOOM_ENABLED){
-        try{
-            composer = new EffectComposer(renderer);
-            composer.addPass(new RenderPass(scene, camera));
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
-            bloomPass.renderToScreen = true;
-            composer.addPass(bloomPass);
-            console.log("Efecto Bloom inicializado correctamente.");
-        } catch(e){
-            console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
-            composer = null; // Forzar el fallback
-        }
-      }
+      // ** 2. BLOOM DESACTIVADO **
+      composer = null; 
 
-      // Luces (Igual que en tu código)
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
-      dirLight.position.set(200, 400, 300);
-      dirLight.castShadow = SHADOWS_ENABLED;
-      if(SHADOWS_ENABLED){
-        dirLight.shadow.mapSize.width = 1024; 
-        dirLight.shadow.mapSize.height = 1024;
-      }
-      dirLight.shadow.camera.left = -CITY_SIZE;
-      dirLight.shadow.camera.right = CITY_SIZE;
-      dirLight.shadow.camera.top = CITY_SIZE;
-      dirLight.shadow.camera.bottom = -CITY_SIZE;
-      dirLight.shadow.bias = -0.0005; 
-      scene.add(dirLight);
-      
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.5)); 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
+      // Luces (Solo ambiental y hemisferio, no direccional con sombra)
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.9)); 
+      scene.add(new THREE.AmbientLight(0xffffff, 0.8)); 
 
       // ---------------------------------------------------------
-      // Suelo y Muros (Igual que en tu código, con optimización)
+      // Suelo y Muros
       // ---------------------------------------------------------
       const texLoader = new THREE.TextureLoader();
       let asphaltMap = null;
@@ -496,13 +466,11 @@ function init() {
         asphaltMap.repeat.set(60,60);
       } catch(e){ console.warn('Fallo al cargar textura de asfalto.'); }
       
-      const roadMat = new THREE.MeshStandardMaterial({
-        color: 0x2b2b2b, roughness: 0.9, metalness: 0.12, map: asphaltMap || null
-      });
+      // CRÍTICO: Usamos BasicMaterial en el suelo
+      const roadMat = new THREE.MeshBasicMaterial({ color: 0x2b2b2b, map: asphaltMap || null });
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
       ground.position.y = 0;
-      if(SHADOWS_ENABLED) ground.receiveShadow = true;
       scene.add(ground);
 
       const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); 
@@ -519,36 +487,17 @@ function init() {
       buildingTex.repeat.set(8,2);
       const WALL_THICKNESS = 10;
       const WALL_HEIGHT = 180;
-      const arenaMat = new THREE.MeshStandardMaterial({map: buildingTex, roughness: 0.85, metalness: 0.25});
+      // CRÍTICO: Usamos BasicMaterial en las paredes
+      const arenaMat = new THREE.MeshBasicMaterial({map: buildingTex}); 
 
       function createWall(x, z, sizeX, sizeZ) {
         const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, WALL_HEIGHT, sizeZ), arenaMat);
         wall.position.set(x, WALL_HEIGHT / 2 + 0.5, z);
-        if(SHADOWS_ENABLED){ wall.castShadow = true; wall.receiveShadow = true; }
         scene.add(wall);
         
-        wall.userData.isWall = true; // Para detección de colisiones
+        wall.userData.isWall = true; 
         wall.userData.boundingBox = new THREE.Box3().setFromObject(wall);
         gameObjects.push(wall);
-
-        const windowMat = new THREE.MeshStandardMaterial({color: 0x222a33, emissive: 0x111122, emissiveIntensity: 0.12, roughness: 0.9});
-        const cols = Math.max(2, Math.floor(sizeX / 20));
-        const rows = 6;
-        for(let r=0; r<rows; r++){
-            for(let c=0; c<cols; c++){
-                const wx = x - sizeX/2 + (c + 0.5) * (sizeX / cols);
-                const wz = z + sizeZ/2 - 0.6; 
-                const wy = 30 + r * (WALL_HEIGHT / (rows+1));
-                const win = new THREE.Mesh(new THREE.BoxGeometry(sizeX/cols * 0.6, WALL_HEIGHT/(rows+1) * 0.5, 0.4), windowMat);
-                if(sizeZ > sizeX){ 
-                    win.position.set(wz, wy, wx); 
-                    win.rotation.y = Math.PI/2;
-                } else {
-                    win.position.set(wx, wy, wz);
-                }
-                scene.add(win);
-            }
-        }
       }
       
       createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
@@ -561,7 +510,7 @@ function init() {
       const car = new CarController(CURRENT_CAR_TYPE, false);
       car.position.set(0, 0, 0);
       scene.add(car);
-      gameObjects.push(car); // Agregar al array de colisiones
+      gameObjects.push(car); 
       car.add(motorSound);
 
       const ai1 = new CarController('Sport', true);
@@ -613,6 +562,7 @@ function init() {
 
       function setupBulletPool() {
           const bulletGeo = new THREE.SphereGeometry(0.18, 8, 8);
+          // CRÍTICO: Usamos BasicMaterial
           const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff4444, emissive: 0xff0000, emissiveIntensity: 6 }); 
           for (let i = 0; i < maxBullets; i++) {
               const bullet = new THREE.Mesh(bulletGeo, bulletMat);
@@ -621,13 +571,13 @@ function init() {
               bullet.userData.damage = BULLET_DAMAGE;
               bullet.userData.isBullet = true;
               bullet.visible = false;
-              if(SHADOWS_ENABLED) bullet.castShadow = true;
               scene.add(bullet);
               bulletPool.push(bullet);
           }
           
           const missileGeo = new THREE.CylinderGeometry(0.4, 0.6, 2.0, 8); 
-          const missileMat = new THREE.MeshStandardMaterial({color: 0xaaaaaa, metalness: 0.9, roughness: 0.1});
+          // CRÍTICO: Usamos BasicMaterial
+          const missileMat = new THREE.MeshBasicMaterial({color: 0xaaaaaa});
           for(let i = 0; i < maxMissiles; i++){
               const missile = new THREE.Mesh(missileGeo, missileMat);
               missile.rotation.x = Math.PI / 2;
@@ -640,7 +590,6 @@ function init() {
               const light = new THREE.PointLight(0xff8800, 10, 10);
               missile.add(light);
               missile.userData.light = light;
-              if(SHADOWS_ENABLED) missile.castShadow = true;
               scene.add(missile);
               missilePool.push(missile);
           }
@@ -829,7 +778,7 @@ function init() {
               }
               
               const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
-              aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
+              aiCar.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
           }
       }
 
@@ -997,87 +946,4 @@ function init() {
       let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
       function animate(){
         const now = performance.now();
-        const dt = Math.min(50, now-last) / 16.666;
-        last = now;
-        
-        // Player movement
-        if(state.health > 0){
-            state.forward = Math.max(-1, Math.min(1, stick.y));
-            state.turn = Math.max(-1, Math.min(1, stick.x));
-            
-            const physicsMod = car.getPhysicsModifier();
-            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod * (state.turbo ? 1.8 : 1.0); 
-            
-            if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
-            else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
-            else car.userData.speed *= 0.96;
-            
-            car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
-            state.speed = car.userData.speed; 
-            
-            const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
-            let rotationMultiplier = 1;
-            if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
-            
-            car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
-            
-            const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-            car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
-            
-        }
-        
-        updateAICars(dt, now); // Lógica de la IA
-        checkCollisions(dt);
-        
-        // Movimiento de proyectiles y misiles
-        for(let i = activeBullets.length - 1; i >= 0; i--){
-            const bullet = activeBullets[i];
-            bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
-        }
-        
-        for(let i = activeMissiles.length - 1; i >= 0; i--){
-            const missile = activeMissiles[i];
-            missile.position.addScaledVector(missile.userData.dir, missile.userData.speed * dt);
-            missile.userData.light.intensity *= 0.98;
-        }
-        
-        updateCamera();
-        updateHUD();
-        
-        // ** RENDERIZADO CON FALLBACK **
-        if(composer){
-            composer.render();
-        } else {
-            renderer.render(scene, camera);
-        }
-        
-        frames++; 
-        if(now - (lastFpsTime || now) >= 1000){ 
-            lastFpsTime = now;
-            document.getElementById('fps').textContent = `FPS: ${frames}`;
-            frames = 0;
-        }
-
-        requestAnimationFrame(animate);
-      }
-
-      // INICIO DEL BUCLE
-      animate(); 
-
-      window.addEventListener('resize', ()=>{ 
-        if(renderer){
-            renderer.setSize(window.innerWidth, window.innerHeight); 
-            camera.aspect = innerWidth/innerHeight; 
-            camera.updateProjectionMatrix(); 
-            if(composer) composer.setSize(window.innerWidth, window.innerHeight);
-        }
-      });
-
-    })();
-}
-
-// LLAMADA DE INICIALIZACIÓN DE SEGURIDAD
-window.onload = init; 
-</script>
-</body>
-</html>
+        const dt = Math.min(50, now-last) / 16.666
