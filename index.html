@@ -4,6 +4,15 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>CENIT DE ACERO: Arena de Combate Extremo</title>
+
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+
+
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -20,32 +29,29 @@
     --red-glow: #ff0044;
   }
   html,body{height:100%;margin:0;background:linear-gradient(#6e8ca0,#a0c0e0);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
-  /* CRÍTICO: Aseguramos que el contenedor del renderizado ocupe todo */
   #holder{width:100%;height:100%;position:relative;touch-action:none; display: block;} 
   
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
-  /* HUD - Estilo de consola de juego (Mantenido el estilo Gamer de V7) */
+  /* HUD - Estilo de consola de juego (Final) */
   .hud{
     position:fixed;top:8px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;
     font-size:12px;pointer-events:none;text-shadow:0 0 4px #000;
   } 
   .panel{
     background:var(--panel-bg);
-    padding:6px 10px; /* Reducido */
+    padding:6px 10px; 
     border-radius:2px;
     font-weight:600;
     pointer-events:auto;
-    box-shadow:0 0 10px rgba(0, 255, 255, 0.2); /* Sombra de neón */
+    box-shadow:0 0 10px rgba(0, 255, 255, 0.2); 
     border:1px solid var(--panel-border);
     color: var(--panel-text);
     backdrop-filter:blur(3px);
     transition: background-color 0.3s;
   }
-  .panel h2{font-size:14px;margin:0 0 3px 0;color:#00ffff} /* Título Cian */
+  .panel h2{font-size:14px;margin:0 0 3px 0;color:#00ffff} 
   #diagnostico{ flex-direction: column; width: 140px; pointer-events: none; line-height: 1.1; font-size: 11px; }
-  #diagnostico h2{ font-size: 13px; margin: 0 0 2px 0; }
-  .componente-estado{ font-size: 10px; margin-top: 1px; }
   .estado-ok{ color: #00ffaa; } 
   .estado-danado{ color: #ffcc00; } 
   .estado-critico{ color: var(--red-glow); font-weight: 700; }
@@ -53,46 +59,42 @@
   .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #c0392b, var(--red-glow));transition:width 0.2s}
   .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #27ae60, #00ffaa);transition:width 0.2s}
   
-  /* Velocímetro (Mantenido) */
+  /* Velocímetro */
   .speedometer{
     position:fixed;right:10px; bottom:120px; width:100px;height:100px; background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); box-shadow:0 0 10px rgba(0, 255, 255, 0.2); display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
   }
   .speed-value{font-size:30px;font-weight:800;color:var(--panel-text);text-shadow:0 0 8px rgba(0, 255, 255, 0.4)}
-  .speed-unit{font-size:10px;color:var(--panel-text)}
   
-  /* Controles (ACTUALIZADO: Joystick Estilo Gamer) */
+  /* Controles (Joystick Estilo Gamer Final) */
   .joy { 
-      position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:12px; /* Cuadrado redondeado */
-      background:rgba(255,255,255,0.08); /* Fondo transparente */
+      position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:12px; 
+      background:rgba(255,255,255,0.08); 
       display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; 
-      border:2px solid rgba(0, 255, 255, 0.4); /* Borde cian */
+      border:2px solid rgba(0, 255, 255, 0.4); 
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
   }
   .stick { 
       width:40px; height:40px; border-radius:50%; 
-      background:linear-gradient(135deg, #00ffff, #009999); /* Degradado cian */
+      background:linear-gradient(135deg, #00ffff, #009999); 
       border: 2px solid #fff;
       box-shadow: 0 0 10px #00ffff;
       transform:translate(0,0) 
   }
   
-  /* Botones de acción (Añadido estilo de contorno) */
+  /* Botones de acción */
   .fire { 
       position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; 
       background:linear-gradient(135deg,#ff0000,#cc0000); 
-      display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;
       box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #ffaaaa; 
-      transition:transform 0.1s 
+      /* ... otros estilos ... */
   }
-  .fire.cooldown { background:linear-gradient(135deg, #444, #333); box-shadow:none; transform: scale(0.9); pointer-events: none; }
   
   .turbo { 
       position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; 
       background:linear-gradient(135deg,#0055ff,#0033cc); 
-      display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;
-      box-shadow:0 0 15px #0055ff; font-size:40px; /* Misil más grande */
+      box-shadow:0 0 15px #0055ff; font-size:40px; 
       border:3px solid #aaffff;
-      transition:transform 0.1s 
+      /* ... otros estilos ... */
   }
   .turbo.cooldown { background:linear-gradient(135deg, #003366, #0066cc); box-shadow:none; opacity: 0.5 !important; }
 
@@ -103,11 +105,10 @@
   @media (max-width:420px){ 
     .joy{width:90px;height:90px;left:8px;bottom:8px;} 
     .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
-    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:30px} /* Misil más grande */
+    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:30px} 
     .fps{left:8px;bottom:100px;} 
     .speedometer{width:100px;height:100px;right:8px;bottom:100px;}
     #diagnostico{ top: 8px; right: 8px; left: auto; width: 120px; padding: 6px 8px; }
-    .panel{ padding: 6px 8px; }
   }
 </style>
 </head>
@@ -146,12 +147,6 @@
   <div class="turbo" id="turbo">🚀</div>
   <div class="fps" id="fps">FPS: --</div>
 
-<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
 <script>
 
@@ -159,7 +154,7 @@ const BLOOM_ENABLED = true;
 const SHADOWS_ENABLED = true; 
 
 // =========================================================================
-// == CLASE CARCONTROLLER (Mantenido)                                     ==
+// == CLASE CARCONTROLLER (Sin Cambios Funcionales)                       ==
 // =========================================================================
 
 const VEHICLE_STATS = {
@@ -402,8 +397,7 @@ function init() {
       scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, 2000); 
       
       // -------------------------------------------------------------------
-      // ** GESTIÓN DEFENSIVA DEL RENDERER ** (Base Estable V5)
-      // -------------------------------------------------------------------
+      // ** GESTIÓN DEFENSIVA DEL RENDERER ** // -------------------------------------------------------------------
       try {
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
@@ -441,7 +435,7 @@ function init() {
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24);
 
-      if(BLOOM_ENABLED){
+      if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){
         try{
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
@@ -455,7 +449,7 @@ function init() {
       }
 
       // Luces
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9); // Luz más fuerte
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
@@ -469,21 +463,19 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.8)); // Hemisferio más brillante
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.8)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // ** SUELO METÁLICO (Asegurando visibilidad) **
+      // ** SUELO METÁLICO (Final) **
       // ---------------------------------------------------------
       const metalMat = new THREE.MeshStandardMaterial({
         color: 0x444444, 
-        roughness: 0.1, // Menos rugoso para más brillo
-        metalness: 0.95, // Más metálico
+        roughness: 0.1, 
+        metalness: 0.95, 
         emissive: 0x111111,
         emissiveIntensity: 0.1
       });
-      // Para simular vigas o enrejado simple, se puede usar una textura o aumentar la subdivisión y jugar con el color, 
-      // pero por simplicidad se mantiene el plano con alto brillo metálico.
       const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), metalMat);
       ground.rotation.x = -Math.PI/2;
       ground.position.y = 0;
@@ -492,8 +484,8 @@ function init() {
 
 
       // Muros
-      const texLoader = new THREE.TextureLoader();
-      // Usamos un color base en lugar de una textura de ladrillo que distrae
+      const WALL_THICKNESS = 10;
+      const WALL_HEIGHT = 180;
       const arenaMat = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.8, metalness: 0.3}); 
 
       function createWall(x, z, sizeX, sizeZ) {
@@ -505,12 +497,8 @@ function init() {
         wall.userData.isWall = true;
         wall.userData.boundingBox = new THREE.Box3().setFromObject(wall);
         gameObjects.push(wall);
-
-        // Eliminación de geometría de ventanas para optimizar y limpiar la vista
       }
       
-      const WALL_THICKNESS = 10;
-      const WALL_HEIGHT = 180;
       createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
       createWall(0, CITY_SIZE/2 + WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
       createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
@@ -562,7 +550,7 @@ function init() {
       const BULLET_DAMAGE = 15;
       const MISSILE_DAMAGE = 80; 
       const MISSILE_SPEED = 2.0;
-      const MISSILE_IMPACT_RADIUS = 5.0; // Distancia para detonación
+      const MISSILE_IMPACT_RADIUS = 5.0; 
 
       function setupBulletPool() {
           const bulletGeo = new THREE.SphereGeometry(0.18, 8, 8);
@@ -579,7 +567,6 @@ function init() {
               bulletPool.push(bullet);
           }
           
-          // Pool de misiles (más grandes)
           const missileGeo = new THREE.CylinderGeometry(0.4, 0.6, 2.0, 8); 
           const missileMat = new THREE.MeshStandardMaterial({color: 0xaaaaaa, metalness: 0.9, roughness: 0.1});
           for(let i = 0; i < maxMissiles; i++){
@@ -641,6 +628,10 @@ function init() {
               const origin = targetCar.position.clone().add(off.clone().applyQuaternion(targetCar.quaternion));
               b.position.copy(origin);
               b.userData.dir.copy(dir);
+              
+              const sound = new Audio('https://www.soundjay.com/weapons/rifle-01.mp3'); 
+              sound.volume = 0.3; 
+              sound.play().catch(e => console.warn("Fallo al iniciar el audio del disparo:", e));
           }
       }
 
@@ -655,14 +646,22 @@ function init() {
           m.userData.dir.copy(dir);
           m.rotation.copy(targetCar.rotation);
           
+          const sound = new Audio('https://www.soundjay.com/military/missile-01.mp3'); 
+          sound.volume = 0.6; 
+          sound.play().catch(e => console.warn("Fallo al iniciar el audio del misil:", e));
+
           return true;
       }
 
       setupBulletPool(); 
       
+      // FIX SONIDO: Audio context para mejor gestión en móviles
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext();
+
       const motorSound = new Audio('https://www.soundjay.com/transport/car-engine-01.mp3'); 
       motorSound.loop = true;
-      motorSound.volume = 0.0; // Empieza silencioso
+      motorSound.volume = 0.0; 
 
       // Función TWEEN
       const TWEEN = { 
@@ -693,10 +692,10 @@ function init() {
       } } };
 
       function createExplosion(position, isMissile = false){
-          const size = isMissile ? 5.0 : 0.5; // Misil más grande
+          const size = isMissile ? 5.0 : 0.5; 
           const duration = isMissile ? 400 : 200;
           const color = isMissile ? 0xffaa00 : 0xff4444;
-          const intensity = isMissile ? 30 : 8; // Luz más intensa para misil
+          const intensity = isMissile ? 30 : 8; 
 
           const flash = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 1.0}));
           flash.position.copy(position);
@@ -708,11 +707,11 @@ function init() {
           scene.add(expLight);
 
           if(isMissile){
-              const sound = new Audio('https://www.soundjay.com/military/explosion-01.mp3'); // Sonido de explosión
-              sound.volume = 0.8; sound.play();
+              const sound = new Audio('https://www.soundjay.com/military/explosion-01.mp3'); 
+              sound.volume = 0.8; sound.play().catch(e => console.warn("Fallo al iniciar el audio de la explosión:", e));
           } else {
-              const sound = new Audio('https://www.soundjay.com/weapons/bullet-impact-01.mp3'); // Sonido de impacto de bala
-              sound.volume = 0.5; sound.play();
+              const sound = new Audio('https://www.soundjay.com/weapons/bullet-impact-01.mp3'); 
+              sound.volume = 0.5; sound.play().catch(e => console.warn("Fallo al iniciar el audio de impacto:", e));
           }
 
           new TWEEN.Tween(flash.scale).to({x: size, y: size, z: size}, duration).easing(TWEEN.Easing.Quadratic.Out).start();
@@ -832,7 +831,6 @@ function init() {
               missileBtn.style.opacity = 1.0;
           }
 
-          // Control de volumen del motor
           motorSound.volume = Math.min(0.8, Math.abs(car.userData.speed) * 0.5);
       }
 
@@ -842,10 +840,13 @@ function init() {
       let stick = {x:0,y:0};
       function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
       
-      // Inicia el sonido en la primera interacción (obligatorio en navegadores)
       let audioStarted = false;
       function startAudio(){
           if(!audioStarted){
+              // Usamos el AudioContext para desbloquear la reproducción en navegadores
+              if (audioCtx.state === 'suspended') {
+                  audioCtx.resume();
+              }
               motorSound.play().catch(e => console.warn("Fallo al iniciar el audio del motor:", e));
               audioStarted = true;
           }
@@ -897,10 +898,11 @@ function init() {
       let lastMissileTime = 0;
       function doMissile(){
           const now = performance.now();
-          // FIX CLAVE: Revisar si la clase 'cooldown' fue agregada por CSS al quedarse sin misiles
-          if(now - lastMissileTime < MISSILE_COOLDOWN_MS || car.userData.isDestroyed || missileBtn.classList.contains('cooldown')) return;
+          // Lógica de cooldown y disponibilidad de misiles
+          if(now - lastMissileTime < MISSILE_COOLDOWN_MS || car.userData.isDestroyed || state.missileCount <= 0) return;
 
-          const launched = spawnMissileFromCar(car, new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize());
+          const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
+          const launched = spawnMissileFromCar(car, dir);
 
           if(launched) {
               lastMissileTime = now;
@@ -961,8 +963,8 @@ function init() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO CON FALLBACK
-        if(composer){
+        // RENDERIZADO CON FIX DEL COMPOSER
+        if(composer && BLOOM_ENABLED){
             composer.render();
         } else {
             renderer.render(scene, camera);
