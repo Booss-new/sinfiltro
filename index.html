@@ -6,12 +6,6 @@
 <title>CENIT DE ACERO: Arena de Combate Extremo</title>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-
 
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
@@ -167,7 +161,8 @@
 // == CONSTANTES Y CONFIGURACIÓN ===========================================
 // =========================================================================
 
-const BLOOM_ENABLED = true; 
+// [1] BLOOM_ENABLED ahora es FALSE para evitar la dependencia de EffectComposer.js
+const BLOOM_ENABLED = false; 
 const SHADOWS_ENABLED = true; 
 
 const VEHICLE_STATS = {
@@ -453,12 +448,13 @@ function init() {
       // -------------------------------------------------------------------
       // ** GESTIÓN DEFENSIVA DEL RENDERER ** // 
       // -------------------------------------------------------------------
+      const loadingEl = document.getElementById('loading'); // Obtenido antes del try/catch
       try {
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
             alpha: false,
             powerPreference: "low-power", 
-            failIfMajorPerformanceCaveat: true 
+            failIfMajorPerformanceCaveat: false // [2] Se relaja la restricción de fallIfMajorPerformanceCaveat
         });
         
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -477,16 +473,15 @@ function init() {
         holder.appendChild(renderer.domElement);
         renderer.setClearColor(scene.background); 
         
-        // CORRECCIÓN DEL LOADER: Se quita la línea 'if (loadingEl) loadingEl.style.display = 'none';' de aquí.
+        // [3] Se oculta el loader justo después de que el renderer se crea exitosamente
+        if (loadingEl) loadingEl.style.display = 'none'; 
         
       } catch (err) {
+        // [4] FALLBACK ROBUSTO: Si falla, muestra el error y termina.
         console.error('Error FATAL al crear el contexto WebGL:', err);
-        const loadingEl = document.getElementById('loading');
-        let errorDetails = (typeof EffectComposer === 'undefined') ? 'EffectComposer is not defined' : err.message;
         if (loadingEl) {
-             loadingEl.innerHTML = `¡Error al inicializar 3D! WebGL falló.<br>Intente en un navegador/dispositivo diferente.<br>Detalles: ${errorDetails}`;
+             loadingEl.innerHTML = `¡Error al inicializar 3D! WebGL falló.<br>Intente en un navegador/dispositivo diferente.<br>Detalles: ${err.message || "Error desconocido. Verifique compatibilidad."}`;
              loadingEl.style.backgroundColor = 'rgba(150, 0, 0, 0.9)';
-             // Dejamos el loader visible para mostrar el error
         }
         return; 
       }
@@ -504,23 +499,8 @@ function init() {
           motorSound.setVolume( 0.0 );
       });
 
-      // FIX CRÍTICO: Se añade la verificación de 'undefined' para EffectComposer
-      if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){
-        try{
-            composer = new EffectComposer(renderer);
-            composer.addPass(new RenderPass(scene, camera));
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
-            bloomPass.renderToScreen = true;
-            composer.addPass(bloomPass);
-            console.log("Bloom Effect Composer inicializado correctamente.");
-        } catch(e){
-            console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
-            composer = null; 
-        }
-      } else if (BLOOM_ENABLED) {
-          console.warn("EffectComposer no definido. Revisar carga de librerías. Renderizado simple activo.");
-          composer = null; 
-      }
+      // [5] Se elimina toda la lógica de EffectComposer, ya que era una causa potencial de fallo de inicialización.
+      // if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){ ... }
 
       // Luces
       const dirLight = new THREE.DirectionalLight(0xffffff, 0.9); 
@@ -1050,18 +1030,14 @@ function init() {
       
       // ---------- RENDER LOOP ----------
       let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
-      const loadingEl = document.getElementById('loading'); // Se obtiene aquí
 
       function animate(){
         const now = performance.now();
         const dt = Math.min(50, now-last) / 16.666;
         last = now;
         
-        // CORRECCIÓN DEL LOADER: Ocultar si la función se ejecuta (3D inicializado)
-        if (loadingEl && loadingEl.style.display !== 'none') {
-             loadingEl.style.display = 'none';
-        }
-
+        // El loader ya fue ocultado en init(), así que solo renderizamos
+        
         // Player movement
         if(state.health > 0){
             state.forward = Math.max(-1, Math.min(1, stick.y));
@@ -1108,12 +1084,8 @@ function init() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO CON COMPOSER (FIXED)
-        if(composer && BLOOM_ENABLED){
-            composer.render();
-        } else {
-            renderer.render(scene, camera);
-        }
+        // RENDERIZADO SIMPLE (ya que BLOOM está deshabilitado)
+        renderer.render(scene, camera);
         
         frames++; 
         if(now - (lastFpsTime || now) >= 1000){ 
@@ -1133,7 +1105,7 @@ function init() {
             renderer.setSize(window.innerWidth, window.innerHeight); 
             camera.aspect = innerWidth/innerHeight; 
             camera.updateProjectionMatrix(); 
-            if(composer) composer.setSize(window.innerWidth, window.innerHeight);
+            // if(composer) composer.setSize(window.innerWidth, window.innerHeight); // Comentado
         }
       });
       
