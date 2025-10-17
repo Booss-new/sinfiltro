@@ -381,23 +381,10 @@ let composer = null;
 let isFiring = false; 
 let fireInterval = null; 
 
-// --- Variables de Control de Cámara (CORREGIDAS) ---
-const CAM_CHASE = { 
-    offset: new THREE.Vector3(0, 12, 24), // Posición Detrás (Normal)
-    lookAt: new THREE.Vector3(0, 1.2, 0)
-}; 
-const CAM_REVERSE = {
-    offset: new THREE.Vector3(0, 4, -8), // Posición Delante (Reversa)
-    lookAt: new THREE.Vector3(0, 0.8, 0)
-};
-let targetCameraData = CAM_CHASE; 
-let interpolatedCamera = {
-    offset: CAM_CHASE.offset.clone(), 
-    lookAt: CAM_CHASE.lookAt.clone()
-};
+// --- Variables de Cámara Fijas (RESTAURADAS) ---
+const CAMERA_OFFSET = new THREE.Vector3(0, 12, 24);
+const CAMERA_LOOKAT = new THREE.Vector3(0, 1.2, 0);
 
-let reverseTimer = 0;
-const reverseThreshold = 20; // 20 frames / ticks (aprox 330ms)
 
 function init() {
     (function(){
@@ -449,7 +436,6 @@ function init() {
       
       const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000); 
       camera.position.set(0, 12, 24); // Posición inicial
-      // La cámara interpolada ya está configurada a CAM_CHASE en las declaraciones globales.
 
       // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
       if(BLOOM_ENABLED){
@@ -468,7 +454,7 @@ function init() {
       }
 
       // Luces (Se mantienen los ajustes para que el suelo no se vea negro)
-      const dirLight = new THREE.DirectionionalLight(0xffffff, 0.7); 
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
@@ -746,41 +732,18 @@ function init() {
           state.health = car.userData.health; 
       }
       
-      // ---------- LÓGICA DE CÁMARA DINÁMICA DE REVERSA (CORREGIDA) ----------
+      // ---------- LÓGICA DE CÁMARA FIJA (RESTAURADA) ----------
       function updateCamera(){
         
-        // 1. Detección de input (reverseTimer)
-        // El jugador está en reversa si state.forward es menor a -0.05
-        if(state.forward < -0.05){ 
-            // Si el MODO OBJETIVO es CHASE, incrementamos el tiempo de espera
-            if(targetCameraData === CAM_CHASE) reverseTimer++;
-        } else {
-            // Si el jugador suelta el control o acelera, reinicia el contador inmediatamente
-            reverseTimer = 0;
-        }
-
-        // 2. Transición de modo de cámara
-        if(targetCameraData === CAM_CHASE && reverseTimer > reverseThreshold){
-            // ACTIVAR REVERSA: Si se cumple el umbral de tiempo de reversa (sostuvo el input)
-            targetCameraData = CAM_REVERSE;
-        } 
+        // La posición deseada es el centro del carro más un desplazamiento (offset)
+        // que es rotado por la orientación del carro (car.quaternion).
+        const desiredPosition = car.position.clone().add(CAMERA_OFFSET.clone().applyQuaternion(car.quaternion)); 
         
-        // CONDICIÓN DE RETORNO CLAVE: Vuelve a normal si el jugador NO está en reversa (reverseTimer === 0)
-        if (targetCameraData === CAM_REVERSE && reverseTimer === 0) { 
-            targetCameraData = CAM_CHASE;
-        } 
+        // El punto de mira deseado es el centro del carro más un pequeño offset vertical (lookAt).
+        const desiredLookAt = car.position.clone().add(CAMERA_LOOKAT.clone().applyQuaternion(car.quaternion));
 
-        // 3. Suavizar la transición (Usando el objeto INTERPOLADO)
-        const lerpFactor = 0.1; 
-        interpolatedCamera.offset.lerp(targetCameraData.offset, lerpFactor);
-        interpolatedCamera.lookAt.lerp(targetCameraData.lookAt, lerpFactor);
-
-        // 4. Aplicar la posición y orientación de la cámara
-        // CRÍTICO: Usamos las propiedades interpoladas (offset y lookAt)
-        const desiredPosition = car.position.clone().add(interpolatedCamera.offset.clone().applyQuaternion(car.quaternion)); 
-        const desiredLookAt = car.position.clone().add(interpolatedCamera.lookAt.clone().applyQuaternion(car.quaternion));
-
-        camera.position.lerp(desiredPosition, 0.15); // Suavidad de la posición final
+        // Aplicar interpolación (lerp) para un movimiento suave de la cámara
+        camera.position.lerp(desiredPosition, 0.15);
         camera.lookAt(desiredLookAt);
       }
       // ------------------------------------------------------------
@@ -844,7 +807,7 @@ function init() {
       let stick = {x:0,y:0};
       function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-by; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
       joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
       
       let md=false;
