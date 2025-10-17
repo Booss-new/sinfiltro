@@ -1030,7 +1030,21 @@ function init() {
       
       
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
+      joy.addEventListener('touchmove', e=>{ 
+          e.preventDefault(); 
+          for(const t of e.changedTouches){ 
+              if(t.identifier===touchId){ 
+                  const dx=t.clientX-baseX, dy=t.clientY-baseY; 
+                  const max=36; 
+                  const nx=Math.max(-1,Math.min(1,dx/max)); 
+                  // CORRECCIÓN V15: Se elimina el '-ny' para que el movimiento hacia arriba sea positivo (adelante).
+                  const ny=Math.max(-1,Math.min(1,dy/max)); 
+                  stick.x = nx; 
+                  stick.y = ny; 
+                  stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; // La palanca se mueve en la dirección del dedo
+              } 
+          } 
+      }, {passive:false});
       joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
       
       let md=false;
@@ -1043,9 +1057,11 @@ function init() {
           const dx=e.clientX-baseX, dy=e.clientY-baseY; 
           const max=36; 
           const nx=Math.max(-1,Math.min(1,dx/max)); 
+          // CORRECCIÓN V15: Se elimina el '-ny' para que el movimiento hacia arriba sea positivo (adelante).
           const ny=Math.max(-1,Math.min(1,dy/max)); 
-          stick.x=nx; stick.y=-ny; 
-          stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
+          stick.x=nx; 
+          stick.y=ny; 
+          stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; // La palanca se mueve en la dirección del puntero
       });
       joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
       joy.addEventListener('pointerleave', e=>{ md=false; resetStick(); });
@@ -1107,6 +1123,7 @@ function init() {
             
             let forward = 0, turn = 0;
             if (currentCar === car) {
+                // El valor de stick.y ahora es POSITIVO al mover el joystick HACIA ARRIBA (adelante)
                 forward = Math.max(-1, Math.min(1, stick.y));
                 turn = Math.max(-1, Math.min(1, stick.x));
             } else {
