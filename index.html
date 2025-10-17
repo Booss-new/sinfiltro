@@ -143,7 +143,7 @@
     
     <div class="panel">
       <h2>MUNICIÓN</h2>
-      Misiles: <span id="missileCountDisplay">3</span> / 3 
+      Misiles: <span id="missileCountDisplay">3 / 3</span> 
       <div class="bar-container"><div id="ammoBar" class="ammo-bar"></div></div>
     </div>
   </div>
@@ -177,12 +177,6 @@ const VEHICLE_STATS = {
     'Traffic': { color: 0xaaaaaa, width: 2.5, length: 4.5, height: 1.0, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
 };
 
-// Variables globales para la IA y el Juego
-const AI_CARS = [];
-const TRAFFIC_CARS = [];
-let car = null; 
-let gameObjects = []; 
-
 // =========================================================================
 // == CLASE CARCONTROLLER (Sin Cambios Funcionales)                       ==
 // =========================================================================
@@ -202,15 +196,15 @@ class CarController extends THREE.Group {
         this.userData.rotSpeed = stats.rotSpeed;
         this.userData.speed = 0; 
         this.userData.isDestroyed = false;
+        this.userData.lastFireTime = 0; // Para la IA
+        this.userData.fireCooldown = 500 + Math.random() * 500; // Cooldown variable para IA
 
         this.userData.gunOffsets = []; 
         
-        // El mesh de colisión es un poco más grande que el modelo visual
         const boxGeo = new THREE.BoxGeometry(stats.width + 0.5, 2.0, stats.length + 0.5); 
         const boxMat = new THREE.MeshBasicMaterial({ visible: false }); 
         this.userData.collisionMesh = new THREE.Mesh(boxGeo, boxMat);
         this.add(this.userData.collisionMesh); 
-        // Se crea el BoundingBox para la detección de colisión
         this.userData.boundingBox = new THREE.Box3().setFromObject(this.userData.collisionMesh);
 
 
@@ -235,14 +229,6 @@ class CarController extends THREE.Group {
             this.userData.healthBar = healthBar;
             this.add(healthBar);
             if(SHADOWS_ENABLED) healthBar.receiveShadow = false;
-            
-            // AI Movement Vars
-            this.userData.target = new THREE.Vector3(); 
-            this.userData.mode = 'idle'; 
-            this.userData.aiTurn = 0;
-            this.userData.aiForward = 0;
-            this.userData.lastFired = 0;
-            this.userData.fireCooldown = 500 + Math.random() * 500;
         }
     }
 
@@ -331,11 +317,10 @@ class CarController extends THREE.Group {
             else comp.estado = 'OK';
         }
 
-        this.userData.health -= amount * 0.5; // Reducción de la salud total
+        this.userData.health -= amount * 0.5;
         this.userData.health = Math.max(0, this.userData.health);
 
         if (this.userData.body && this.userData.body.material) {
-            // Efecto visual de golpe
             if (typeof this.userData.body.material.opacity === 'undefined') {
                 this.userData.body.material.transparent = true;
                 this.userData.body.material.opacity = 1.0;
@@ -400,7 +385,7 @@ class CarController extends THREE.Group {
         }
 
         if (chasis && (chasis.estado === 'CRÍTICO' || chasis.estado === 'DESTRUIDO')) {
-            this.userData.speed *= 0.95; // Pequeño freno por chasis dañado
+            this.userData.speed *= 0.95; 
         }
 
         return { maxSpeedMod, rotSpeedMod };
@@ -413,6 +398,7 @@ class CarController extends THREE.Group {
 
 let renderer = null; 
 let composer = null; 
+let gameObjects = []; 
 
 // FIX AUDIO: Declaración de AudioContext para gestión de reproducción automática
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -454,8 +440,10 @@ function init() {
       const CITY_SIZE = 400; 
       const BULLET_COOLDOWN_MS = 260;
       const MISSILE_COOLDOWN_MS = 1500; 
+      const AI_CARS = [];
+      const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
-      const UI_MISSILE_EL = document.getElementById('missileCountDisplay'); 
+      const UI_MISSILE_COUNT = document.getElementById('missileCountDisplay');
       let CURRENT_CAR_TYPE = 'Sport'; 
       
       const scene = new THREE.Scene();
@@ -489,8 +477,7 @@ function init() {
         holder.appendChild(renderer.domElement);
         renderer.setClearColor(scene.background); 
         
-        const loadingEl = document.getElementById('loading');
-        if (loadingEl) loadingEl.style.display = 'none';
+        // CORRECCIÓN DEL LOADER: Se quita la línea 'if (loadingEl) loadingEl.style.display = 'none';' de aquí.
         
       } catch (err) {
         console.error('Error FATAL al crear el contexto WebGL:', err);
@@ -499,6 +486,7 @@ function init() {
         if (loadingEl) {
              loadingEl.innerHTML = `¡Error al inicializar 3D! WebGL falló.<br>Intente en un navegador/dispositivo diferente.<br>Detalles: ${errorDetails}`;
              loadingEl.style.backgroundColor = 'rgba(150, 0, 0, 0.9)';
+             // Dejamos el loader visible para mostrar el error
         }
         return; 
       }
@@ -516,7 +504,7 @@ function init() {
           motorSound.setVolume( 0.0 );
       });
 
-      // Efectos de post-procesado (Bloom)
+      // FIX CRÍTICO: Se añade la verificación de 'undefined' para EffectComposer
       if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){
         try{
             composer = new EffectComposer(renderer);
@@ -524,11 +512,13 @@ function init() {
             const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
             bloomPass.renderToScreen = true;
             composer.addPass(bloomPass);
+            console.log("Bloom Effect Composer inicializado correctamente.");
         } catch(e){
             console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
             composer = null; 
         }
       } else if (BLOOM_ENABLED) {
+          console.warn("EffectComposer no definido. Revisar carga de librerías. Renderizado simple activo.");
           composer = null; 
       }
 
@@ -583,17 +573,19 @@ function init() {
         gameObjects.push(wall);
       }
       
-      createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS); // Muro Norte
-      createWall(0, CITY_SIZE/2 + WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS); // Muro Sur
-      createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE); // Muro Este
-      createWall(-CITY_SIZE/2 - WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE); // Muro Oeste
+      createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
+      createWall(0, CITY_SIZE/2 + WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
+      createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
+      createWall(-CITY_SIZE/2 - WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
 
       // ---------- VEHÍCULOS ----------
       
-      car = new CarController(CURRENT_CAR_TYPE, false);
+      const car = new CarController(CURRENT_CAR_TYPE, false);
       car.position.set(0, 0, 0);
       scene.add(car); 
+      // CRÍTICO FIX: Añadir el coche del jugador a la lista de objetos del juego
       gameObjects.push(car); 
+      // El motorSound debe estar en la posición del coche para audio 3D
       car.add(motorSound);
 
       const ai1 = new CarController('Muscle Car', true);
@@ -601,6 +593,7 @@ function init() {
       ai1.rotation.y = Math.PI;
       scene.add(ai1); 
       AI_CARS.push(ai1); 
+      // CRÍTICO FIX: Añadir el coche IA 1 a la lista de objetos del juego
       gameObjects.push(ai1);
 
       const ai2 = new CarController('Pickup', true);
@@ -608,23 +601,17 @@ function init() {
       ai2.rotation.y = 0;
       scene.add(ai2); 
       AI_CARS.push(ai2); 
+      // CRÍTICO FIX: Añadir el coche IA 2 a la lista de objetos del juego
       gameObjects.push(ai2);
 
-      // Tráfico (5 Coches)
       for(let i = 0; i < 5; i++){
           const traffic = new CarController('Traffic', true);
-          // Posición en una calle simulada (línea vertical u horizontal)
-          const isVertical = Math.random() < 0.5;
-          let x = isVertical ? (Math.random() * 40 - 20) : (Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4);
-          let z = isVertical ? (Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4) : (Math.random() * 40 - 20);
-          
-          traffic.position.set(x, 0, z);
-          traffic.rotation.y = isVertical ? (Math.random() < 0.5 ? 0 : Math.PI) : (Math.random() < 0.5 ? Math.PI/2 : -Math.PI/2);
-          
+          traffic.position.set((Math.random() < 0.5 ? 1 : -1) * 3, 0, Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4);
+          traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
           traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
-          traffic.userData.mode = 'cruise';
           TRAFFIC_CARS.push(traffic);
           scene.add(traffic); 
+          // CRÍTICO FIX: Añadir los coches de tráfico a la lista de objetos del juego
           gameObjects.push(traffic);
       }
 
@@ -634,6 +621,7 @@ function init() {
           turn: 0, 
           speed: 0,
           health: car.userData.health, 
+          ammo: Infinity, 
           missileCount: 3 
       };
       
@@ -718,9 +706,9 @@ function init() {
           if (index > -1) activeMissiles.splice(index, 1);
       }
 
-      function spawnBulletsFromCar(targetCar, dir, offsets = null){
-          const offs = offsets || (targetCar.userData.gunOffsets || []);
-          for(const off of offs){
+      function spawnBulletsFromCar(targetCar, dir){ // Se ha simplificado para ser reutilizada por la IA
+          const offsets = targetCar.userData.gunOffsets || [];
+          for(const off of offsets){
               const b = getBullet();
               if(!b) break; 
               const origin = targetCar.position.clone().add(off.clone().applyQuaternion(targetCar.quaternion));
@@ -729,14 +717,12 @@ function init() {
               
               // FIX SONIDO: Audio de disparo
               const sound = new Audio('https://www.soundjay.com/weapons/rifle-01.mp3'); 
-              sound.volume = 0.3; 
+              sound.volume = targetCar.userData.isAI ? 0.1 : 0.3; // Volumen más bajo para IA
               sound.play().catch(e => console.warn("Fallo al iniciar el audio del disparo:", e));
           }
       }
 
       function spawnMissileFromCar(targetCar, dir){
-          if(targetCar.userData.isAI) return false; 
-          
           const m = getMissile();
           if(!m) return false;
           
@@ -757,7 +743,7 @@ function init() {
 
       setupBulletPool(); 
       
-      // Función TWEEN simplificada
+      // Función TWEEN
       const TWEEN = { 
         Easing: { Quadratic: { Out: (k) => k * (2 - k) } },
         Tween: function(obj) { return { to: function(props, duration) { return { easing: function(e) { this.easingFn = e; return this; }, start: function() { 
@@ -783,7 +769,7 @@ function init() {
           return this;
         }, onComplete: function(cb) { this.onComplete = cb; return this; } } },
         start: function() { } 
-      };
+      } };
 
       function createExplosion(position, isMissile = false){
           const size = isMissile ? 5.0 : 0.5; 
@@ -830,10 +816,6 @@ function init() {
       
 
       const halfCity = CITY_SIZE / 2;
-      
-      // =========================================================================
-      // ** FIX CRÍTICO V14: LÓGICA DE COLISIÓN MEJORADA **
-      // =========================================================================
       function checkCollisions(dt){
           
           // 1. Colisiones de Proyectiles (Balas y Misiles)
@@ -851,6 +833,8 @@ function init() {
               
               const targets = [car, ...AI_CARS, ...TRAFFIC_CARS].filter(t => !t.userData.isDestroyed);
               for(const target of targets){
+                  if(target === car && p.userData._spawnTime === undefined) continue; // Hack temporal para evitar que el jugador se dispare a si mismo
+                  
                   if(target.position.distanceTo(p.position) < (p.userData.isMissile ? MISSILE_IMPACT_RADIUS : 3.0) && target.userData.health > 0){ 
                       
                       let componentHit = 'chasis_frontal';
@@ -869,60 +853,99 @@ function init() {
               }
           }
           
-          // 2. Colisiones de Vehículos con el Entorno/Otros
-          for(const currentCar of gameObjects.filter(obj => obj instanceof CarController && !obj.userData.isDestroyed)){
-              const currentBBox = currentCar.userData.boundingBox.copy(currentCar.userData.collisionMesh.geometry.boundingBox).applyMatrix4(currentCar.matrixWorld);
-              
-              for(const obj of gameObjects){
-                  if(obj === currentCar || (obj instanceof CarController && obj.userData.isDestroyed)) continue;
-                  
-                  const isWall = obj.userData.isWall;
-                  const otherBBox = obj.userData.boundingBox.copy(
-                      (obj instanceof CarController ? obj.userData.collisionMesh.geometry.boundingBox : obj.geometry.boundingBox)
-                  ).applyMatrix4(obj.matrixWorld);
-
-                  if(currentBBox.intersectsBox(otherBBox)){
-                      // Lógica de retroceso vectorial
-                      let pushDirection = new THREE.Vector3();
-                      let separationFactor = 0.3; // Distancia para empujar
-                      
-                      if(isWall){
-                          // Calcular la dirección desde el centro de la pared al centro del coche
-                          pushDirection.subVectors(currentCar.position, obj.position).normalize();
-                      } else { 
-                          // Colisión coche-coche: la dirección es la del coche que recibe el impacto
-                          pushDirection.subVectors(currentCar.position, obj.position).normalize();
-                          separationFactor = 0.5; 
-                          // También empujar al otro coche
-                          obj.position.addScaledVector(pushDirection.clone().negate(), separationFactor * 0.5);
-                          obj.userData.speed *= -0.1;
-                      }
-
-                      // Aplicar el empuje al coche actual
-                      currentCar.position.addScaledVector(pushDirection, separationFactor);
-                      currentCar.userData.speed *= -0.2; // Freno/reversa
-                      applyDamage(currentCar, 5, 'chasis_frontal');
+          // 2. Colisiones del Jugador con el Entorno/Vehículos
+          
+          const carBBox = car.userData.boundingBox.copy(car.userData.collisionMesh.geometry.boundingBox).applyMatrix4(car.matrixWorld);
+          let collided = false;
+          
+          for(const obj of gameObjects){
+              if(obj === car) continue;
+              if(obj.userData.isWall){
+                  const wallBBox = obj.userData.boundingBox;
+                  if(carBBox.intersectsBox(wallBBox)){
+                      collided = true;
+                      break;
                   }
               }
-              
-              // Colisión con los límites del mapa (Hard Limit)
-              if (Math.abs(currentCar.position.x) > halfCity || Math.abs(currentCar.position.z) > halfCity) {
-                   currentCar.userData.speed *= -0.2;
-                   
-                   let pushDirection = new THREE.Vector3();
-                   if (currentCar.position.x > halfCity) pushDirection.x = -1;
-                   if (currentCar.position.x < -halfCity) pushDirection.x = 1;
-                   if (currentCar.position.z > halfCity) pushDirection.z = -1;
-                   if (currentCar.position.z < -halfCity) pushDirection.z = 1;
-
-                   currentCar.position.addScaledVector(pushDirection, 0.5);
-                   applyDamage(currentCar, 5, 'chasis_frontal');
+              if(obj instanceof CarController && !obj.userData.isDestroyed){
+                  const otherCarBBox = obj.userData.boundingBox.copy(obj.userData.collisionMesh.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
+                  if(carBBox.intersectsBox(otherCarBBox)){
+                      collided = true;
+                      break;
+                  }
               }
           }
           
+          if(collided || Math.abs(car.position.x) > halfCity || Math.abs(car.position.z) > halfCity){
+              car.userData.speed *= -0.2; 
+              const pushBack = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion); // Vector corregido a -1 para empujar hacia atrás
+              car.position.addScaledVector(pushBack, 0.5);
+              applyDamage(car, 5, 'chasis_frontal');
+          }
           state.health = car.userData.health; 
       }
       
+      
+      // =========================================================================
+      // == LÓGICA DE INTELIGENCIA ARTIFICIAL (IA) ===============================
+      // =========================================================================
+
+      function updateAICars(dt, now) {
+          // 1. Lógica de Tráfico (TRAFFIC_CARS)
+          for (const traffic of TRAFFIC_CARS) {
+              if (traffic.userData.isDestroyed) continue;
+              
+              // Comportamiento simple: avanza
+              traffic.userData.speed = traffic.userData.maxSpeed * 0.9;
+              
+              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(traffic.quaternion);
+              traffic.position.add(fwd.multiplyScalar(traffic.userData.speed * dt * 0.82));
+          }
+          
+          // 2. Lógica de Combatientes (AI_CARS)
+          for (const aiCar of AI_CARS) {
+              if (aiCar.userData.isDestroyed || car.userData.isDestroyed) continue;
+              
+              const target = car.position;
+              const dirToTarget = target.clone().sub(aiCar.position);
+              const distance = dirToTarget.length();
+              dirToTarget.normalize();
+              
+              const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(aiCar.quaternion);
+              const angle = forwardVector.angleTo(dirToTarget);
+              const cross = new THREE.Vector3().crossVectors(forwardVector, dirToTarget);
+              
+              // Define la velocidad de movimiento: más rápido si está lejos, más lento si está cerca.
+              if (distance > 50) {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed;
+              } else if (distance < 20) {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.5; // Frenar si está muy cerca
+              } else {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.8;
+              }
+
+              // Lógica de Giro
+              if (angle > 0.1) {
+                  const rotDir = Math.sign(cross.y) * aiCar.userData.rotSpeed;
+                  aiCar.rotation.y += rotDir * dt * 0.8; 
+              } else {
+                  // Ajuste fino si el ángulo es pequeño
+                  if(Math.abs(cross.y) > 0.01) aiCar.rotation.y += Math.sign(cross.y) * aiCar.userData.rotSpeed * dt * 0.2;
+              }
+              
+              // Lógica de Disparo
+              if (distance < 80 && angle < 0.2 && (now - aiCar.userData.lastFireTime) > aiCar.userData.fireCooldown) {
+                  const aimDir = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion).normalize();
+                  spawnBulletsFromCar(aiCar, aimDir);
+                  aiCar.userData.lastFireTime = now;
+              }
+              
+              // Aplica movimiento hacia adelante
+              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
+              aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
+          }
+      }
+
       function updateCamera(){
         const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
         camera.position.lerp(desired, 0.15);
@@ -931,8 +954,7 @@ function init() {
 
       function updateHUD(){
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
-          UI_MISSILE_EL.textContent = `${state.missileCount} / 3`;
-          document.getElementById('ammoBar').style.width = (state.missileCount / 3 * 100) + '%';
+          UI_MISSILE_COUNT.textContent = `${state.missileCount} / ${maxMissiles}`;
           
           const kmh = Math.round(Math.abs(car.userData.speed) / car.userData.maxSpeed * 200);
           document.getElementById('speedDisplay').textContent = kmh;
@@ -956,72 +978,7 @@ function init() {
           // CONTROL DE VOLUMEN DEL MOTOR
           if(motorSound) motorSound.setVolume(Math.min(0.8, Math.abs(car.userData.speed) * 0.5));
       }
-      
-      // =========================================================================
-      // ** LÓGICA DE MOVIMIENTO Y COMPORTAMIENTO DE LA IA (V14) **
-      // =========================================================================
-      function updateAICars(now, dt){
-          const target = car.position.clone();
-          
-          // Lógica de los AI_CARS (Enemigos)
-          for(const aicar of AI_CARS){
-              if(aicar.userData.isDestroyed) continue;
-              
-              const distance = aicar.position.distanceTo(target);
-              
-              // 1. Rotación para apuntar al objetivo
-              const targetVector = new THREE.Vector3().subVectors(target, aicar.position).normalize();
-              const currentVector = new THREE.Vector3(0,0,-1).applyQuaternion(aicar.quaternion).normalize();
-              
-              let angle = currentVector.angleTo(targetVector);
-              const cross = new THREE.Vector3().crossVectors(currentVector, targetVector);
-              if (cross.y > 0) angle = -angle; 
 
-              // Rotación es proporcional al ángulo y la velocidad de rotación
-              aicar.userData.aiTurn = angle / (Math.PI / 4); // Normalizar el giro entre -1 y 1 (o más)
-
-              // 2. Lógica de Persecución y Distancia
-              if (distance > 30) {
-                  aicar.userData.aiForward = 1.0; // Perseguir si está lejos
-                  aicar.userData.aiTurn = Math.min(1.0, Math.max(-1.0, aicar.userData.aiTurn));
-              } else if (distance < 15) {
-                  aicar.userData.aiForward = -0.5; // Retroceder si está demasiado cerca
-                  if(aicar.userData.aiTurn > 0.05 || aicar.userData.aiTurn < -0.05) aicar.userData.aiTurn *= -1; // Maniobrar en reversa
-              } else {
-                  aicar.userData.aiForward = 0.5; // Mantener posición
-                  aicar.userData.aiTurn *= 0.2; // Suavizar giro para disparar
-              }
-              
-              // 3. Disparo de la IA
-              if(distance < 50 && now - aicar.userData.lastFired > aicar.userData.fireCooldown){
-                  if (Math.abs(angle) < 0.15) { // Disparar solo si está apuntando razonablemente bien
-                      const dir = new THREE.Vector3(0,0,-1).applyQuaternion(aicar.quaternion).normalize();
-                      spawnBulletsFromCar(aicar, dir);
-                      aicar.userData.lastFired = now;
-                      aicar.userData.fireCooldown = 500 + Math.random() * 500;
-                  }
-              }
-          }
-          
-          // Lógica de TRAFFIC_CARS (Tráfico)
-          for(const traffic of TRAFFIC_CARS){
-              if(traffic.userData.isDestroyed) continue;
-              
-              // Simulación de "cruising"
-              if (traffic.userData.mode === 'cruise') {
-                  traffic.userData.aiForward = 0.7; 
-                  traffic.userData.aiTurn = 0;
-                  
-                  // Lógica simple de borde (mejora en Z)
-                  if (traffic.position.z > halfCity - 10 && traffic.userData.aiForward > 0 && traffic.rotation.y < Math.PI / 4) {
-                      traffic.rotation.y = Math.PI; 
-                  } else if (traffic.position.z < -halfCity + 10 && traffic.userData.aiForward > 0 && traffic.rotation.y > 3 * Math.PI / 4) {
-                       traffic.rotation.y = 0; 
-                  }
-              }
-          }
-      }
-      
       // ---------- INPUTS Y CONTROLES ----------
       const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
       let touchId = null, baseX=0, baseY=0;
@@ -1030,21 +987,7 @@ function init() {
       
       
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
-      joy.addEventListener('touchmove', e=>{ 
-          e.preventDefault(); 
-          for(const t of e.changedTouches){ 
-              if(t.identifier===touchId){ 
-                  const dx=t.clientX-baseX, dy=t.clientY-baseY; 
-                  const max=36; 
-                  const nx=Math.max(-1,Math.min(1,dx/max)); 
-                  // CORRECCIÓN V15: Se elimina el '-ny' para que el movimiento hacia arriba sea positivo (adelante).
-                  const ny=Math.max(-1,Math.min(1,dy/max)); 
-                  stick.x = nx; 
-                  stick.y = ny; 
-                  stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; // La palanca se mueve en la dirección del dedo
-              } 
-          } 
-      }, {passive:false});
+      joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
       joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
       
       let md=false;
@@ -1057,13 +1000,12 @@ function init() {
           const dx=e.clientX-baseX, dy=e.clientY-baseY; 
           const max=36; 
           const nx=Math.max(-1,Math.min(1,dx/max)); 
-          // CORRECCIÓN V15: Se elimina el '-ny' para que el movimiento hacia arriba sea positivo (adelante).
           const ny=Math.max(-1,Math.min(1,dy/max)); 
-          stick.x=nx; 
-          stick.y=ny; 
-          stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; // La palanca se mueve en la dirección del puntero
+          stick.x=nx; stick.y=-ny; 
+          stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
       });
       joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
+      // FIX JOYSTICK: Resetear si el puntero se sale del área (desktop/mouse)
       joy.addEventListener('pointerleave', e=>{ md=false; resetStick(); });
       
       const fireBtn = document.getElementById('fire');
@@ -1074,11 +1016,11 @@ function init() {
       missileBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doMissile(); }, {passive:false});
       missileBtn.addEventListener('mousedown', doMissile);
       
-      let lastFireTime = 0;
+      let lastFireTimePlayer = 0; // Renombrado para diferenciarlo de la IA
       function doFire(){
           const now = performance.now();
-          if(now - lastFireTime < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
-          lastFireTime = now;
+          if(now - lastFireTimePlayer < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
+          lastFireTimePlayer = now;
           
           fireBtn.classList.add('cooldown');
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS);
@@ -1090,6 +1032,7 @@ function init() {
       let lastMissileTime = 0;
       function doMissile(){
           const now = performance.now();
+          // Lógica de cooldown y disponibilidad de misiles
           if(now - lastMissileTime < MISSILE_COOLDOWN_MS || car.userData.isDestroyed || state.missileCount <= 0) return;
 
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
@@ -1097,7 +1040,6 @@ function init() {
 
           if(launched) {
               lastMissileTime = now;
-              // El cooldown visual solo aplica para el misil, no para el botón
               missileBtn.classList.add('cooldown');
               setTimeout(() => { 
                  missileBtn.classList.remove('cooldown'); 
@@ -1108,49 +1050,47 @@ function init() {
       
       // ---------- RENDER LOOP ----------
       let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
+      const loadingEl = document.getElementById('loading'); // Se obtiene aquí
+
       function animate(){
         const now = performance.now();
         const dt = Math.min(50, now-last) / 16.666;
         last = now;
         
-        // Lógica de la IA
-        updateAICars(now, dt);
-        
-        // Movimiento del Jugador y la IA
-        const controlledCars = [car, ...AI_CARS, ...TRAFFIC_CARS];
-        for (const currentCar of controlledCars) {
-            if (currentCar.userData.isDestroyed) continue;
-            
-            let forward = 0, turn = 0;
-            if (currentCar === car) {
-                // El valor de stick.y ahora es POSITIVO al mover el joystick HACIA ARRIBA (adelante)
-                forward = Math.max(-1, Math.min(1, stick.y));
-                turn = Math.max(-1, Math.min(1, stick.x));
-            } else {
-                forward = currentCar.userData.aiForward;
-                turn = currentCar.userData.aiTurn;
-            }
-
-            const physicsMod = currentCar.getPhysicsModifier();
-            let maxSpeed = currentCar.userData.maxSpeed * physicsMod.maxSpeedMod; 
-            
-            // Aceleración y Freno
-            if(forward > 0.05) currentCar.userData.speed += 0.018 * forward * dt;
-            else if(forward < -0.05) currentCar.userData.speed -= 0.03 * (-forward) * dt;
-            else currentCar.userData.speed *= 0.95; // Amortiguación del movimiento (FIXED)
-            
-            currentCar.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, currentCar.userData.speed));
-            
-            const currentSpeedFactor = Math.abs(currentCar.userData.speed / currentCar.userData.maxSpeed);
-            let rotationMultiplier = 1;
-            if(currentSpeedFactor < 0.1) rotationMultiplier = 0.5; // Más difícil girar si casi no te mueves
-            
-            currentCar.rotation.y += -turn * currentCar.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
-            
-            const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(currentCar.quaternion);
-            currentCar.position.add(fwd.multiplyScalar(currentCar.userData.speed * dt * 0.82));
+        // CORRECCIÓN DEL LOADER: Ocultar si la función se ejecuta (3D inicializado)
+        if (loadingEl && loadingEl.style.display !== 'none') {
+             loadingEl.style.display = 'none';
         }
 
+        // Player movement
+        if(state.health > 0){
+            state.forward = Math.max(-1, Math.min(1, stick.y));
+            state.turn = Math.max(-1, Math.min(1, stick.x));
+            
+            const physicsMod = car.getPhysicsModifier();
+            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod; 
+            
+            if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
+            else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
+            else car.userData.speed *= 0.96;
+            
+            car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
+            state.speed = car.userData.speed; 
+            
+            const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
+            let rotationMultiplier = 1;
+            if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn)); 
+            
+            car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
+            
+            const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+            car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
+            
+        }
+        
+        // ** NUEVO ** Lógica de IA (Debe ejecutarse antes de la colisión)
+        updateAICars(dt, now);
+        
         checkCollisions(dt);
         
         // Movimiento de proyectiles y misiles
@@ -1161,10 +1101,6 @@ function init() {
         
         for(let i = activeMissiles.length - 1; i >= 0; i--){
             const missile = activeMissiles[i];
-            // Orientar el misil a su dirección de vuelo (estético)
-            missile.lookAt(missile.position.clone().add(missile.userData.dir));
-            missile.rotation.x -= Math.PI / 2;
-            
             missile.position.addScaledVector(missile.userData.dir, missile.userData.speed * dt);
             missile.userData.light.intensity *= 0.98;
         }
@@ -1172,7 +1108,7 @@ function init() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO CON COMPOSER
+        // RENDERIZADO CON COMPOSER (FIXED)
         if(composer && BLOOM_ENABLED){
             composer.render();
         } else {
@@ -1201,13 +1137,13 @@ function init() {
         }
       });
       
-      // Iniciar audio al cargar y con cualquier interacción posterior
+      // CRÍTICO: Iniciar audio al cargar y con cualquier interacción posterior
       startAudio();
 
     })();
 }
 
-// CRÍTICO: Iniciar la función de inicialización cuando el DOM esté cargado
+// CRÍTICO: Cambiado a DOMContentLoaded para asegurar que todas las etiquetas <script> se hayan procesado.
 document.addEventListener('DOMContentLoaded', init); 
 </script>
 </body>
