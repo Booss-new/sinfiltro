@@ -6,6 +6,14 @@
 <title>CENIT DE ACERO: Arena de Combate Extremo</title>
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/audio/PositionalAudio.js"></script>
+<script src="https://unpkg.com/three@0.158.0/examples/js/loaders/AudioLoader.js"></script>
+
 
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
@@ -16,106 +24,59 @@
     --green:#2ecc71;
     --shadow:rgba(0,0,0,0.8);
     --text-color:#111111;
-    /* Nuevos colores para estilo Gamer */
-    --panel-bg:rgba(10, 15, 20, 0.75); 
-    --panel-border:rgba(0, 255, 255, 0.5); /* Cian futurista */
-    --panel-text: #ffffff;
-    --red-glow: #ff0044;
+    --panel-bg:rgba(255,255,255,0.85); 
+    --panel-border:rgba(0,0,0,0.15);
   }
   html,body{height:100%;margin:0;background:linear-gradient(#6e8ca0,#a0c0e0);font-family:'Montserrat', sans-serif;color:var(--text-color);overflow:hidden}
   #holder{width:100%;height:100%;position:relative;touch-action:none; display: block;} 
   
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 
-  /* HUD - Estilo de consola de juego (Final) */
-  .hud{
-    position:fixed;top:8px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;
-    font-size:12px;pointer-events:none;text-shadow:0 0 4px #000;
-  } 
-  .panel{
-    background:var(--panel-bg);
-    padding:6px 10px; 
-    border-radius:2px;
-    font-weight:600;
-    pointer-events:auto;
-    box-shadow:0 0 10px rgba(0, 255, 255, 0.2); 
-    border:1px solid var(--panel-border);
-    color: var(--panel-text);
-    backdrop-filter:blur(3px);
-    transition: background-color 0.3s;
-  }
-  .panel h2{font-size:14px;margin:0 0 3px 0;color:#00ffff} 
-  #diagnostico{ flex-direction: column; width: 140px; pointer-events: none; line-height: 1.1; font-size: 11px; }
-  .estado-ok{ color: #00ffaa; } 
-  .estado-danado{ color: #ffcc00; } 
-  .estado-critico{ color: var(--red-glow); font-weight: 700; }
-  .bar-container{width:80px;height:10px;background:#333333;border-radius:2px;overflow:hidden;margin-top:2px;border:1px solid rgba(0,255,255,0.4)}
-  .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #c0392b, var(--red-glow));transition:width 0.2s}
-  .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #27ae60, #00ffaa);transition:width 0.2s}
+  /* HUD */
+  .hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:120;font-size:13px;pointer-events:none;text-shadow:none} 
+  .panel{background:var(--panel-bg);padding:8px 14px;border-radius:8px;font-weight:600;border:1px solid var(--panel-border);pointer-events:auto;box-shadow:0 4px 15px rgba(0,0,0,0.3);backdrop-filter:blur(3px)}
+  .panel h2{font-size:16px;margin:0 0 5px 0;color:#000}
+
+  /* PANEL DE DIAGNÓSTICO */
+  #diagnostico{ flex-direction: column; width: 170px; pointer-events: none; line-height: 1.2; }
+  #diagnostico h2{ font-size: 14px; margin: 0 0 3px 0; color: #007777; }
+  .componente-estado{ font-size: 10px; margin-top: 1px; }
+  .estado-ok{ color: var(--green); }
+  .estado-danado{ color: #cc6600; }
+  .estado-critico{ color: var(--red); font-weight: 700; }
+
+  /* Health and Ammo Bars */
+  .bar-container{width:100px;height:12px;background:#dddddd;border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid rgba(0,0,0,0.2)}
+  .health-bar{height:100%;width:100%;background:linear-gradient(90deg, #c0392b, #e74c3c);transition:width 0.2s}
+  .ammo-bar{height:100%;width:100%;background:linear-gradient(90deg, #27ae60, #2ecc71);transition:width 0.2s}
   
   /* Velocímetro */
   .speedometer{
-    position:fixed;right:10px; bottom:120px; width:100px;height:100px; background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); box-shadow:0 0 10px rgba(0, 255, 255, 0.2); display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
+    position:fixed;right:10px; bottom:120px; width:120px;height:120px; background:var(--panel-bg); border-radius:50%; border:1px solid var(--panel-border); box-shadow:0 4px 15px rgba(0,0,0,0.3); display:flex;flex-direction:column;align-items:center;justify-content:center; pointer-events:none; z-index:115; backdrop-filter:blur(3px);
   }
-  .speed-value{font-size:30px;font-weight:800;color:var(--panel-text);text-shadow:0 0 8px rgba(0, 255, 255, 0.4)}
+  .speed-value{font-size:36px;font-weight:800;color:#000;text-shadow:0 0 8px rgba(0,0,0,0.2)}
+  .speed-unit{font-size:12px;color:var(--text-color)}
   
-  /* Controles (Joystick Estilo Gamer Final) */
-  .joy { 
-      position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:12px; 
-      background:rgba(255,255,255,0.08); 
-      display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; 
-      border:2px solid rgba(0, 255, 255, 0.4); 
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-  }
-  .stick { 
-      width:40px; height:40px; border-radius:50%; 
-      background:linear-gradient(135deg, #00ffff, #009999); 
-      border: 2px solid #fff;
-      box-shadow: 0 0 10px #00ffff;
-      transform:translate(0,0) 
-  }
-  
-  /* Botones de acción */
-  .fire { 
-      position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; 
-      background:linear-gradient(135deg,#ff0000,#cc0000); 
-      box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #ffaaaa; 
-      display: flex; align-items: center; justify-content: center;
-  }
-  
-  .turbo { 
-      position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; 
-      background:linear-gradient(135deg,#0055ff,#0033cc); 
-      box-shadow:0 0 15px #0055ff; font-size:40px; 
-      border:3px solid #aaffff;
-      display: flex; align-items: center; justify-content: center;
-  }
-  .turbo.cooldown { background:linear-gradient(135deg, #003366, #0066cc); box-shadow:none; opacity: 0.5 !important; }
-
+  /* Controles */
+  .joy { position:fixed; left:12px; bottom:12px; width:100px; height:100px; border-radius:50px; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; pointer-events:auto; z-index:100; border:2px solid rgba(255,255,255,0.1) }
+  .stick { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.25); transform:translate(0,0) }
+  .fire { position:fixed; right:120px; bottom:20px; width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,var(--red),#ff0000); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 15px var(--red); font-size:30px; border:3px solid #fff; transition:transform 0.1s }
+  .fire.cooldown { background:linear-gradient(135deg, #aaa, #ccc); box-shadow:none; transform: scale(0.9); pointer-events: none; }
+  .turbo { position:fixed; right:12px; bottom:12px; width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--blue),#00f); display:flex;align-items:center;justify-content:center;z-index:110;pointer-events:auto;box-shadow:0 0 10px var(--blue); font-size:20px; border:3px solid #fff; }
+  .turbo.cooldown { opacity: 0.5; pointer-events: none; }
   
   /* FPS/Loader */
-  .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px;backdrop-filter:blur(3px); color: var(--panel-text);}
+  .fps{position:fixed;left:12px;bottom:120px;background:var(--panel-bg);padding:4px 8px;border-radius:4px;font-weight:600;z-index:110;font-size:12px;backdrop-filter:blur(3px)}
+  #loading{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:130;background:rgba(0,0,0,0.8);color:#fff;padding:14px 18px;border-radius:12px;font-weight:600}
 
-  #loading {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #fff;
-    background: rgba(0,0,0,0.8);
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 1.2em;
-    z-index: 130;
-  }
-  
   @media (max-width:420px){ 
     .joy{width:90px;height:90px;left:8px;bottom:8px;} 
     .fire{right:95px;bottom:12px;width:60px;height:60px;font-size:24px}
-    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:30px} 
+    .turbo{right:8px;bottom:8px;width:70px;height:70px;font-size:16px}
     .fps{left:8px;bottom:100px;} 
     .speedometer{width:100px;height:100px;right:8px;bottom:100px;}
-    #diagnostico{ top: 8px; right: 8px; left: auto; width: 120px; padding: 6px 8px; }
+    .speed-value{font-size:30px}
+    #diagnostico{ top: 70px; right: 10px; left: auto; width: 140px; }
   }
 </style>
 </head>
@@ -154,16 +115,14 @@
   <div class="turbo" id="turbo">🚀</div>
   <div class="fps" id="fps">FPS: --</div>
 
-
 <script>
 
-// =========================================================================
-// == CONSTANTES Y CONFIGURACIÓN ===========================================
-// =========================================================================
-
-// [1] BLOOM_ENABLED ahora es FALSE para evitar la dependencia de EffectComposer.js
-const BLOOM_ENABLED = false; 
+const BLOOM_ENABLED = true; 
 const SHADOWS_ENABLED = true; 
+
+// =========================================================================
+// == CLASE CARCONTROLLER (Con Lógica de IA y Componentes)                ==
+// =========================================================================
 
 const VEHICLE_STATS = {
     'Muscle Car': { color: 0x880000, width: 2.8, length: 5.0, height: 1.0, health: 100, maxSpeed: 1.2, rotSpeed: 0.040, maxAmmo: 15 },
@@ -171,10 +130,6 @@ const VEHICLE_STATS = {
     'Pickup': { color: 0x336633, width: 3.2, length: 5.5, height: 1.2, health: 150, maxSpeed: 0.9, rotSpeed: 0.030, maxAmmo: 20 },
     'Traffic': { color: 0xaaaaaa, width: 2.5, length: 4.5, height: 1.0, health: 50, maxSpeed: 0.7, rotSpeed: 0.020, maxAmmo: 0 }
 };
-
-// =========================================================================
-// == CLASE CARCONTROLLER (Sin Cambios Funcionales)                       ==
-// =========================================================================
 
 class CarController extends THREE.Group {
     constructor(type, isAI) {
@@ -191,11 +146,14 @@ class CarController extends THREE.Group {
         this.userData.rotSpeed = stats.rotSpeed;
         this.userData.speed = 0; 
         this.userData.isDestroyed = false;
-        this.userData.lastFireTime = 0; // Para la IA
-        this.userData.fireCooldown = 500 + Math.random() * 500; // Cooldown variable para IA
+        
+        // Lógica de IA (Nueva)
+        this.userData.lastFireTime = 0; 
+        this.userData.fireCooldown = 500 + Math.random() * 500; 
 
         this.userData.gunOffsets = []; 
         
+        // Mesh de colisión (Nueva)
         const boxGeo = new THREE.BoxGeometry(stats.width + 0.5, 2.0, stats.length + 0.5); 
         const boxMat = new THREE.MeshBasicMaterial({ visible: false }); 
         this.userData.collisionMesh = new THREE.Mesh(boxGeo, boxMat);
@@ -246,34 +204,33 @@ class CarController extends THREE.Group {
         this.userData.body = body;
         this.userData.tailLights = tailLights;
         
-        // Modelo de arma tipo Rifle de Asalto (M4/AK)
+        // Cañones delanteros
         if (this.userData.type !== 'Traffic') {
             const gunMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.95, roughness: 0.15 });
+            const barrelGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.8, 8);
 
-            const frontZ = -stats.length / 2 + 0.3;
-            const leftX = -stats.width / 2 - 0.2;
-            const rightX = stats.width / 2 + 0.2;
-            const gunY = 1.0;
-            const barrelLength = 1.5;
+            const frontZ = -stats.length / 2 + 0.7;
+            const leftX = -stats.width / 2 - 0.1;
+            const rightX = stats.width / 2 + 0.1;
+            const gunY = 1.2;
 
-            const barrelR = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, barrelLength, 8), gunMat);
+            const barrelR = new THREE.Mesh(barrelGeo, gunMat);
             barrelR.rotation.z = Math.PI / 2;
-            barrelR.position.set(rightX, gunY, frontZ - barrelLength/2);
+            barrelR.position.set(rightX, gunY, frontZ);
             this.add(barrelR);
-
-            const receiverR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.5), gunMat);
-            receiverR.position.set(rightX, gunY, frontZ + 0.25);
-            this.add(receiverR);
+            const baseR = new THREE.Mesh(new THREE.BoxGeometry(0.28,0.18,0.38), gunMat);
+            baseR.position.set(rightX, gunY - 0.08, frontZ + 0.28);
+            this.add(baseR);
 
             const barrelL = barrelR.clone();
             barrelL.position.x = leftX;
             this.add(barrelL);
-            const receiverL = receiverR.clone();
-            receiverL.position.x = leftX;
-            this.add(receiverL);
+            const baseL = baseR.clone();
+            baseL.position.x = leftX;
+            this.add(baseL);
 
-            this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ - barrelLength));
-            this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ - barrelLength));
+            this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ));
+            this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ));
         }
 
         this.createWheels(stats);
@@ -395,35 +352,30 @@ let renderer = null;
 let composer = null; 
 let gameObjects = []; 
 
-// FIX AUDIO: Declaración de AudioContext para gestión de reproducción automática
+// Variables de Audio (Nuevas)
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 const audioLoader = new THREE.AudioLoader();
 const listener = new THREE.AudioListener();
-let motorSound = null; // THREE.PositionalAudio
-
+let motorSound = null; 
 let audioStarted = false;
+
 function startAudio(){
     if(!audioStarted){
-        // Usamos el AudioContext para desbloquear la reproducción en navegadores
         if (audioCtx.state === 'suspended') {
             audioCtx.resume().catch(e => console.warn("Fallo al reanudar AudioContext:", e));
         }
-        
         if(motorSound) {
              motorSound.context.resume().then(() => {
                 motorSound.play().catch(e => console.warn("Fallo al iniciar el audio del motor:", e));
              }).catch(e => console.warn("Fallo al reanudar AudioContext y Play:", e));
         }
-        
         audioStarted = true;
     }
-    // Removemos los listeners una vez que se inicia el audio
     document.removeEventListener('pointerdown', startAudio);
     document.removeEventListener('touchstart', startAudio);
     document.removeEventListener('click', startAudio); 
 }
-// Agregamos listeners de interacción para iniciar el audio
 document.addEventListener('pointerdown', startAudio);
 document.addEventListener('touchstart', startAudio);
 document.addEventListener('click', startAudio); 
@@ -439,22 +391,23 @@ function init() {
       const TRAFFIC_CARS = [];
       const UI_COMP_EL = document.getElementById('componentes'); 
       const UI_MISSILE_COUNT = document.getElementById('missileCountDisplay');
-      let CURRENT_CAR_TYPE = 'Sport'; 
+      let CURRENT_CAR_TYPE = 'Muscle Car'; 
       
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
       scene.fog = new THREE.Fog(scene.background, CITY_SIZE/2, 2000); 
       
+      const loadingEl = document.getElementById('loading'); // CRÍTICO: Obtener loader antes del try/catch
+      
       // -------------------------------------------------------------------
-      // ** GESTIÓN DEFENSIVA DEL RENDERER ** // 
+      // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
       // -------------------------------------------------------------------
-      const loadingEl = document.getElementById('loading'); // Obtenido antes del try/catch
       try {
         renderer = new THREE.WebGLRenderer({
             antialias: true, 
             alpha: false,
             powerPreference: "low-power", 
-            failIfMajorPerformanceCaveat: false // [2] Se relaja la restricción de fallIfMajorPerformanceCaveat
+            failIfMajorPerformanceCaveat: false 
         });
         
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -473,14 +426,14 @@ function init() {
         holder.appendChild(renderer.domElement);
         renderer.setClearColor(scene.background); 
         
-        // [3] Se oculta el loader justo después de que el renderer se crea exitosamente
+        // CRÍTICO: Ocultar si el renderer se crea exitosamente
         if (loadingEl) loadingEl.style.display = 'none'; 
-        
+
       } catch (err) {
-        // [4] FALLBACK ROBUSTO: Si falla, muestra el error y termina.
+        // FALLBACK ROBUSTO: Si falla, muestra el error y termina.
         console.error('Error FATAL al crear el contexto WebGL:', err);
         if (loadingEl) {
-             loadingEl.innerHTML = `¡Error al inicializar 3D! WebGL falló.<br>Intente en un navegador/dispositivo diferente.<br>Detalles: ${err.message || "Error desconocido. Verifique compatibilidad."}`;
+             loadingEl.innerHTML = `¡Error al inicializar 3D! WebGL falló.<br>Detalles: ${err.message || "Error desconocido."}`;
              loadingEl.style.backgroundColor = 'rgba(150, 0, 0, 0.9)';
         }
         return; 
@@ -499,11 +452,23 @@ function init() {
           motorSound.setVolume( 0.0 );
       });
 
-      // [5] Se elimina toda la lógica de EffectComposer, ya que era una causa potencial de fallo de inicialización.
-      // if(BLOOM_ENABLED && typeof EffectComposer !== 'undefined'){ ... }
+      // ** 2. INICIALIZACIÓN CONDICIONAL Y DEFENSIVA DEL BLOOM **
+      if(BLOOM_ENABLED){
+        try{
+            composer = new EffectComposer(renderer);
+            composer.addPass(new RenderPass(scene, camera));
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85); 
+            bloomPass.renderToScreen = true;
+            composer.addPass(bloomPass);
+            console.log("Efecto Bloom inicializado correctamente.");
+        } catch(e){
+            console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
+            composer = null; // Forzar el fallback
+        }
+      }
 
-      // Luces
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9); 
+      // Luces (Igual que en tu código)
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.6); 
       dirLight.position.set(200, 400, 300);
       dirLight.castShadow = SHADOWS_ENABLED;
       if(SHADOWS_ENABLED){
@@ -517,30 +482,44 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.8)); 
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.5)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
-      // ** SUELO METÁLICO (Final) **
+      // Suelo y Muros (Igual que en tu código, con optimización)
       // ---------------------------------------------------------
-      const metalMat = new THREE.MeshStandardMaterial({
-        color: 0x444444, 
-        roughness: 0.1, 
-        metalness: 0.95, 
-        emissive: 0x111111,
-        emissiveIntensity: 0.1
+      const texLoader = new THREE.TextureLoader();
+      let asphaltMap = null;
+      try {
+        asphaltMap = texLoader.load('https://cdn.pixabay.com/photo/2017/01/14/12/59/asphalt-1971367_1280.jpg');
+        asphaltMap.wrapS = asphaltMap.wrapT = THREE.RepeatWrapping;
+        asphaltMap.repeat.set(60,60);
+      } catch(e){ console.warn('Fallo al cargar textura de asfalto.'); }
+      
+      const roadMat = new THREE.MeshStandardMaterial({
+        color: 0x2b2b2b, roughness: 0.9, metalness: 0.12, map: asphaltMap || null
       });
-      const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), metalMat);
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
       ground.rotation.x = -Math.PI/2;
       ground.position.y = 0;
       if(SHADOWS_ENABLED) ground.receiveShadow = true;
       scene.add(ground);
 
+      const lineMat = new THREE.MeshBasicMaterial({color:0xffff00}); 
+      const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
+      for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
+          const line = new THREE.Mesh(dashedLineGeo, lineMat);
+          line.position.set(0, 0.01, i);
+          line.rotation.x = -Math.PI/2;
+          scene.add(line);
+      }
 
-      // Muros
+      const buildingTex = texLoader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
+      buildingTex.wrapS = buildingTex.wrapT = THREE.RepeatWrapping;
+      buildingTex.repeat.set(8,2);
       const WALL_THICKNESS = 10;
       const WALL_HEIGHT = 180;
-      const arenaMat = new THREE.MeshStandardMaterial({color: 0x333333, roughness: 0.8, metalness: 0.3}); 
+      const arenaMat = new THREE.MeshStandardMaterial({map: buildingTex, roughness: 0.85, metalness: 0.25});
 
       function createWall(x, z, sizeX, sizeZ) {
         const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, WALL_HEIGHT, sizeZ), arenaMat);
@@ -548,9 +527,28 @@ function init() {
         if(SHADOWS_ENABLED){ wall.castShadow = true; wall.receiveShadow = true; }
         scene.add(wall);
         
-        wall.userData.isWall = true;
+        wall.userData.isWall = true; // Para detección de colisiones
         wall.userData.boundingBox = new THREE.Box3().setFromObject(wall);
         gameObjects.push(wall);
+
+        const windowMat = new THREE.MeshStandardMaterial({color: 0x222a33, emissive: 0x111122, emissiveIntensity: 0.12, roughness: 0.9});
+        const cols = Math.max(2, Math.floor(sizeX / 20));
+        const rows = 6;
+        for(let r=0; r<rows; r++){
+            for(let c=0; c<cols; c++){
+                const wx = x - sizeX/2 + (c + 0.5) * (sizeX / cols);
+                const wz = z + sizeZ/2 - 0.6; 
+                const wy = 30 + r * (WALL_HEIGHT / (rows+1));
+                const win = new THREE.Mesh(new THREE.BoxGeometry(sizeX/cols * 0.6, WALL_HEIGHT/(rows+1) * 0.5, 0.4), windowMat);
+                if(sizeZ > sizeX){ 
+                    win.position.set(wz, wy, wx); 
+                    win.rotation.y = Math.PI/2;
+                } else {
+                    win.position.set(wx, wy, wz);
+                }
+                scene.add(win);
+            }
+        }
       }
       
       createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
@@ -562,26 +560,20 @@ function init() {
       
       const car = new CarController(CURRENT_CAR_TYPE, false);
       car.position.set(0, 0, 0);
-      scene.add(car); 
-      // CRÍTICO FIX: Añadir el coche del jugador a la lista de objetos del juego
-      gameObjects.push(car); 
-      // El motorSound debe estar en la posición del coche para audio 3D
+      scene.add(car);
+      gameObjects.push(car); // Agregar al array de colisiones
       car.add(motorSound);
 
-      const ai1 = new CarController('Muscle Car', true);
+      const ai1 = new CarController('Sport', true);
       ai1.position.set(20, 0, 50);
       ai1.rotation.y = Math.PI;
-      scene.add(ai1); 
-      AI_CARS.push(ai1); 
-      // CRÍTICO FIX: Añadir el coche IA 1 a la lista de objetos del juego
+      scene.add(ai1); AI_CARS.push(ai1);
       gameObjects.push(ai1);
 
       const ai2 = new CarController('Pickup', true);
       ai2.position.set(-20, 0, -50);
       ai2.rotation.y = 0;
-      scene.add(ai2); 
-      AI_CARS.push(ai2); 
-      // CRÍTICO FIX: Añadir el coche IA 2 a la lista de objetos del juego
+      scene.add(ai2); AI_CARS.push(ai2);
       gameObjects.push(ai2);
 
       for(let i = 0; i < 5; i++){
@@ -590,8 +582,7 @@ function init() {
           traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
           traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
           TRAFFIC_CARS.push(traffic);
-          scene.add(traffic); 
-          // CRÍTICO FIX: Añadir los coches de tráfico a la lista de objetos del juego
+          scene.add(traffic);
           gameObjects.push(traffic);
       }
 
@@ -599,24 +590,26 @@ function init() {
       const state = {
           forward: 0, 
           turn: 0, 
+          turbo: false, 
           speed: 0,
           health: car.userData.health, 
-          ammo: Infinity, 
+          ammo: Infinity,
           missileCount: 3 
       };
       
-      // SISTEMA DE ARMAS (Bullet Pool)
+      // SISTEMA DE ARMAS (Con Misiles y Pool)
       const bulletPool = [];
       const missilePool = []; 
       const activeBullets = [];
       const activeMissiles = [];
       const maxBullets = 120;
       const maxMissiles = 10;
-
       const BULLET_DAMAGE = 15;
       const MISSILE_DAMAGE = 80; 
       const MISSILE_SPEED = 2.0;
       const MISSILE_IMPACT_RADIUS = 5.0; 
+      let lastFireTimePlayer = 0; 
+      let lastMissileTime = 0;
 
       function setupBulletPool() {
           const bulletGeo = new THREE.SphereGeometry(0.18, 8, 8);
@@ -626,8 +619,8 @@ function init() {
               bullet.userData.dir = new THREE.Vector3();
               bullet.userData.speed = 3.0; 
               bullet.userData.damage = BULLET_DAMAGE;
-              bullet.visible = false;
               bullet.userData.isBullet = true;
+              bullet.visible = false;
               if(SHADOWS_ENABLED) bullet.castShadow = true;
               scene.add(bullet);
               bulletPool.push(bullet);
@@ -647,7 +640,6 @@ function init() {
               const light = new THREE.PointLight(0xff8800, 10, 10);
               missile.add(light);
               missile.userData.light = light;
-
               if(SHADOWS_ENABLED) missile.castShadow = true;
               scene.add(missile);
               missilePool.push(missile);
@@ -686,7 +678,7 @@ function init() {
           if (index > -1) activeMissiles.splice(index, 1);
       }
 
-      function spawnBulletsFromCar(targetCar, dir){ // Se ha simplificado para ser reutilizada por la IA
+      function spawnBulletsFromCar(targetCar, dir){
           const offsets = targetCar.userData.gunOffsets || [];
           for(const off of offsets){
               const b = getBullet();
@@ -695,13 +687,11 @@ function init() {
               b.position.copy(origin);
               b.userData.dir.copy(dir);
               
-              // FIX SONIDO: Audio de disparo
               const sound = new Audio('https://www.soundjay.com/weapons/rifle-01.mp3'); 
-              sound.volume = targetCar.userData.isAI ? 0.1 : 0.3; // Volumen más bajo para IA
+              sound.volume = targetCar.userData.isAI ? 0.1 : 0.3; 
               sound.play().catch(e => console.warn("Fallo al iniciar el audio del disparo:", e));
           }
       }
-
       function spawnMissileFromCar(targetCar, dir){
           const m = getMissile();
           if(!m) return false;
@@ -713,17 +703,15 @@ function init() {
           m.userData.dir.copy(dir);
           m.rotation.copy(targetCar.rotation);
           
-          // FIX SONIDO: Audio de misil
           const sound = new Audio('https://www.soundjay.com/military/missile-01.mp3'); 
           sound.volume = 0.6; 
           sound.play().catch(e => console.warn("Fallo al iniciar el audio del misil:", e));
 
           return true;
       }
-
       setupBulletPool(); 
-      
-      // Función TWEEN
+
+      // Lógica de TWEEN para explosiones (simplificada)
       const TWEEN = { 
         Easing: { Quadratic: { Out: (k) => k * (2 - k) } },
         Tween: function(obj) { return { to: function(props, duration) { return { easing: function(e) { this.easingFn = e; return this; }, start: function() { 
@@ -737,7 +725,7 @@ function init() {
             let eased = this.easingFn ? this.easingFn(progress) : progress;
             for(let key in props) {
               if (typeof obj[key] === 'object') { 
-                  obj[key].copy(current[key]).lerp(props[key], eased); 
+                  if(obj[key].lerp) obj[key].copy(current[key]).lerp(props[key], eased); 
               } else {
                   obj[key] = current[key] + (props[key] - current[key]) * eased;
               }
@@ -767,11 +755,9 @@ function init() {
           scene.add(expLight);
 
           if(isMissile){
-              // FIX SONIDO: Explosión de misil
               const sound = new Audio('https://www.soundjay.com/military/explosion-01.mp3'); 
               sound.volume = 0.8; sound.play().catch(e => console.warn("Fallo al iniciar el audio de la explosión:", e));
           } else {
-              // FIX SONIDO: Impacto de bala
               const sound = new Audio('https://www.soundjay.com/weapons/bullet-impact-01.mp3'); 
               sound.volume = 0.5; sound.play().catch(e => console.warn("Fallo al iniciar el audio de impacto:", e));
           }
@@ -786,6 +772,7 @@ function init() {
           }).start();
       }
 
+
       function applyDamage(target, amount, component = 'chasis_frontal', isMissile = false){
           createExplosion(target.position, isMissile);
           
@@ -793,7 +780,59 @@ function init() {
           if(target === car) state.health = car.userData.health;
           if(isDead){ console.log(`${target.userData.type} DESTRUIDO!`); }
       }
-      
+
+      // -------------------------------------------------------------------
+      // ** LÓGICA DE INTELIGENCIA ARTIFICIAL (IA) **
+      // -------------------------------------------------------------------
+
+      function updateAICars(dt, now) {
+          // 1. Lógica de Tráfico
+          for (const traffic of TRAFFIC_CARS) {
+              if (traffic.userData.isDestroyed) continue;
+              traffic.userData.speed = traffic.userData.maxSpeed * 0.9;
+              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(traffic.quaternion);
+              traffic.position.add(fwd.multiplyScalar(traffic.userData.speed * dt * 0.82));
+          }
+          
+          // 2. Lógica de Combatientes
+          for (const aiCar of AI_CARS) {
+              if (aiCar.userData.isDestroyed || car.userData.isDestroyed) continue;
+              
+              const target = car.position;
+              const dirToTarget = target.clone().sub(aiCar.position);
+              const distance = dirToTarget.length();
+              dirToTarget.normalize();
+              
+              const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(aiCar.quaternion);
+              const angle = forwardVector.angleTo(dirToTarget);
+              const cross = new THREE.Vector3().crossVectors(forwardVector, dirToTarget);
+              
+              if (distance > 50) {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed;
+              } else if (distance < 20) {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.5; 
+              } else {
+                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.8;
+              }
+
+              if (angle > 0.1) {
+                  const rotDir = Math.sign(cross.y) * aiCar.userData.rotSpeed;
+                  aiCar.rotation.y += rotDir * dt * 0.8; 
+              } else {
+                  if(Math.abs(cross.y) > 0.01) aiCar.rotation.y += Math.sign(cross.y) * aiCar.userData.rotSpeed * dt * 0.2;
+              }
+              
+              if (distance < 80 && angle < 0.2 && (now - aiCar.userData.lastFireTime) > aiCar.userData.fireCooldown) {
+                  const aimDir = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion).normalize();
+                  spawnBulletsFromCar(aiCar, aimDir);
+                  aiCar.userData.lastFireTime = now;
+              }
+              
+              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
+              aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
+          }
+      }
+
 
       const halfCity = CITY_SIZE / 2;
       function checkCollisions(dt){
@@ -813,7 +852,7 @@ function init() {
               
               const targets = [car, ...AI_CARS, ...TRAFFIC_CARS].filter(t => !t.userData.isDestroyed);
               for(const target of targets){
-                  if(target === car && p.userData._spawnTime === undefined) continue; // Hack temporal para evitar que el jugador se dispare a si mismo
+                  if(target === car && p.userData._spawnTime === undefined) continue; 
                   
                   if(target.position.distanceTo(p.position) < (p.userData.isMissile ? MISSILE_IMPACT_RADIUS : 3.0) && target.userData.health > 0){ 
                       
@@ -834,98 +873,35 @@ function init() {
           }
           
           // 2. Colisiones del Jugador con el Entorno/Vehículos
-          
           const carBBox = car.userData.boundingBox.copy(car.userData.collisionMesh.geometry.boundingBox).applyMatrix4(car.matrixWorld);
           let collided = false;
           
           for(const obj of gameObjects){
               if(obj === car) continue;
+              
+              let otherBBox = null;
               if(obj.userData.isWall){
-                  const wallBBox = obj.userData.boundingBox;
-                  if(carBBox.intersectsBox(wallBBox)){
-                      collided = true;
-                      break;
-                  }
+                  otherBBox = obj.userData.boundingBox;
               }
               if(obj instanceof CarController && !obj.userData.isDestroyed){
-                  const otherCarBBox = obj.userData.boundingBox.copy(obj.userData.collisionMesh.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
-                  if(carBBox.intersectsBox(otherCarBBox)){
-                      collided = true;
-                      break;
-                  }
+                  otherBBox = obj.userData.boundingBox.copy(obj.userData.collisionMesh.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
+              }
+              
+              if(otherBBox && carBBox.intersectsBox(otherBBox)){
+                  collided = true;
+                  break;
               }
           }
           
           if(collided || Math.abs(car.position.x) > halfCity || Math.abs(car.position.z) > halfCity){
               car.userData.speed *= -0.2; 
-              const pushBack = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion); // Vector corregido a -1 para empujar hacia atrás
+              const pushBack = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion); 
               car.position.addScaledVector(pushBack, 0.5);
               applyDamage(car, 5, 'chasis_frontal');
           }
           state.health = car.userData.health; 
       }
       
-      
-      // =========================================================================
-      // == LÓGICA DE INTELIGENCIA ARTIFICIAL (IA) ===============================
-      // =========================================================================
-
-      function updateAICars(dt, now) {
-          // 1. Lógica de Tráfico (TRAFFIC_CARS)
-          for (const traffic of TRAFFIC_CARS) {
-              if (traffic.userData.isDestroyed) continue;
-              
-              // Comportamiento simple: avanza
-              traffic.userData.speed = traffic.userData.maxSpeed * 0.9;
-              
-              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(traffic.quaternion);
-              traffic.position.add(fwd.multiplyScalar(traffic.userData.speed * dt * 0.82));
-          }
-          
-          // 2. Lógica de Combatientes (AI_CARS)
-          for (const aiCar of AI_CARS) {
-              if (aiCar.userData.isDestroyed || car.userData.isDestroyed) continue;
-              
-              const target = car.position;
-              const dirToTarget = target.clone().sub(aiCar.position);
-              const distance = dirToTarget.length();
-              dirToTarget.normalize();
-              
-              const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(aiCar.quaternion);
-              const angle = forwardVector.angleTo(dirToTarget);
-              const cross = new THREE.Vector3().crossVectors(forwardVector, dirToTarget);
-              
-              // Define la velocidad de movimiento: más rápido si está lejos, más lento si está cerca.
-              if (distance > 50) {
-                  aiCar.userData.speed = aiCar.userData.maxSpeed;
-              } else if (distance < 20) {
-                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.5; // Frenar si está muy cerca
-              } else {
-                  aiCar.userData.speed = aiCar.userData.maxSpeed * 0.8;
-              }
-
-              // Lógica de Giro
-              if (angle > 0.1) {
-                  const rotDir = Math.sign(cross.y) * aiCar.userData.rotSpeed;
-                  aiCar.rotation.y += rotDir * dt * 0.8; 
-              } else {
-                  // Ajuste fino si el ángulo es pequeño
-                  if(Math.abs(cross.y) > 0.01) aiCar.rotation.y += Math.sign(cross.y) * aiCar.userData.rotSpeed * dt * 0.2;
-              }
-              
-              // Lógica de Disparo
-              if (distance < 80 && angle < 0.2 && (now - aiCar.userData.lastFireTime) > aiCar.userData.fireCooldown) {
-                  const aimDir = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion).normalize();
-                  spawnBulletsFromCar(aiCar, aimDir);
-                  aiCar.userData.lastFireTime = now;
-              }
-              
-              // Aplica movimiento hacia adelante
-              const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(aiCar.quaternion);
-              aiCar.position.add(fwd.multiplyScalar(aiCar.userData.speed * dt * 0.82));
-          }
-      }
-
       function updateCamera(){
         const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion)); 
         camera.position.lerp(desired, 0.15);
@@ -952,10 +928,8 @@ function init() {
               missileBtn.classList.add('cooldown');
           } else {
               missileBtn.classList.remove('cooldown');
-              missileBtn.style.opacity = 1.0;
           }
           
-          // CONTROL DE VOLUMEN DEL MOTOR
           if(motorSound) motorSound.setVolume(Math.min(0.8, Math.abs(car.userData.speed) * 0.5));
       }
 
@@ -964,8 +938,6 @@ function init() {
       let touchId = null, baseX=0, baseY=0;
       let stick = {x:0,y:0};
       function resetStick(){ stick={x:0,y:0}; stickEl.style.transform = `translate(0px,0px)`; }
-      
-      
       joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX=t.clientX; baseY=t.clientY; }, {passive:false});
       joy.addEventListener('touchmove', e=>{ e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier===touchId){ const dx=t.clientX-baseX, dy=t.clientY-baseY; const max=36; const nx=Math.max(-1,Math.min(1,dx/max)); const ny=Math.max(-1,Math.min(1,dy/max)); stick.x = nx; stick.y = -ny; stickEl.style.transform = `translate(${nx*28}px,${-ny*28}px)`; } } }, {passive:false});
       joy.addEventListener('touchend', e=>{ for(const t of e.changedTouches){ if(t.identifier===touchId){ touchId=null; resetStick(); } } }, {passive:false});
@@ -985,7 +957,6 @@ function init() {
           stickEl.style.transform=`translate(${nx*28}px,${-ny*28}px)`; 
       });
       joy.addEventListener('pointerup', e=>{ md=false; resetStick(); });
-      // FIX JOYSTICK: Resetear si el puntero se sale del área (desktop/mouse)
       joy.addEventListener('pointerleave', e=>{ md=false; resetStick(); });
       
       const fireBtn = document.getElementById('fire');
@@ -996,7 +967,6 @@ function init() {
       missileBtn.addEventListener('touchstart', e=>{ e.preventDefault(); doMissile(); }, {passive:false});
       missileBtn.addEventListener('mousedown', doMissile);
       
-      let lastFireTimePlayer = 0; // Renombrado para diferenciarlo de la IA
       function doFire(){
           const now = performance.now();
           if(now - lastFireTimePlayer < BULLET_COOLDOWN_MS || car.userData.isDestroyed) return;
@@ -1009,10 +979,8 @@ function init() {
           spawnBulletsFromCar(car, dir);
       }
       
-      let lastMissileTime = 0;
       function doMissile(){
           const now = performance.now();
-          // Lógica de cooldown y disponibilidad de misiles
           if(now - lastMissileTime < MISSILE_COOLDOWN_MS || car.userData.isDestroyed || state.missileCount <= 0) return;
 
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
@@ -1021,22 +989,16 @@ function init() {
           if(launched) {
               lastMissileTime = now;
               missileBtn.classList.add('cooldown');
-              setTimeout(() => { 
-                 missileBtn.classList.remove('cooldown'); 
-                 if(state.missileCount > 0) missileBtn.style.opacity = 1.0; 
-              }, MISSILE_COOLDOWN_MS);
+              setTimeout(() => { missileBtn.classList.remove('cooldown'); }, MISSILE_COOLDOWN_MS);
           }
       }
       
       // ---------- RENDER LOOP ----------
       let last = performance.now(); let frames = 0; let lastFpsTime = performance.now();
-
       function animate(){
         const now = performance.now();
         const dt = Math.min(50, now-last) / 16.666;
         last = now;
-        
-        // El loader ya fue ocultado en init(), así que solo renderizamos
         
         // Player movement
         if(state.health > 0){
@@ -1044,7 +1006,7 @@ function init() {
             state.turn = Math.max(-1, Math.min(1, stick.x));
             
             const physicsMod = car.getPhysicsModifier();
-            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod; 
+            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod * (state.turbo ? 1.8 : 1.0); 
             
             if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
             else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
@@ -1064,9 +1026,7 @@ function init() {
             
         }
         
-        // ** NUEVO ** Lógica de IA (Debe ejecutarse antes de la colisión)
-        updateAICars(dt, now);
-        
+        updateAICars(dt, now); // Lógica de la IA
         checkCollisions(dt);
         
         // Movimiento de proyectiles y misiles
@@ -1084,8 +1044,12 @@ function init() {
         updateCamera();
         updateHUD();
         
-        // RENDERIZADO SIMPLE (ya que BLOOM está deshabilitado)
-        renderer.render(scene, camera);
+        // ** RENDERIZADO CON FALLBACK **
+        if(composer){
+            composer.render();
+        } else {
+            renderer.render(scene, camera);
+        }
         
         frames++; 
         if(now - (lastFpsTime || now) >= 1000){ 
@@ -1105,18 +1069,15 @@ function init() {
             renderer.setSize(window.innerWidth, window.innerHeight); 
             camera.aspect = innerWidth/innerHeight; 
             camera.updateProjectionMatrix(); 
-            // if(composer) composer.setSize(window.innerWidth, window.innerHeight); // Comentado
+            if(composer) composer.setSize(window.innerWidth, window.innerHeight);
         }
       });
-      
-      // CRÍTICO: Iniciar audio al cargar y con cualquier interacción posterior
-      startAudio();
 
     })();
 }
 
-// CRÍTICO: Cambiado a DOMContentLoaded para asegurar que todas las etiquetas <script> se hayan procesado.
-document.addEventListener('DOMContentLoaded', init); 
+// LLAMADA DE INICIALIZACIÓN DE SEGURIDAD
+window.onload = init; 
 </script>
 </body>
 </html>
