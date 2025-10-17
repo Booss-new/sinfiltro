@@ -391,8 +391,9 @@ function init() {
       
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x6e8ca0); 
-      // Reducir la niebla oscura para que el asfalto claro se vea mejor
-      scene.fog = new THREE.Fog(scene.background, CITY_SIZE/1.5, CITY_SIZE * 2); 
+      
+      // *** CAMBIO IMPLEMENTADO: QUITAR LA NIEBLA ***
+      scene.fog = null; 
       
       // ** 1. GESTIÓN DEFENSIVA DEL RENDERER **
       try {
@@ -463,7 +464,9 @@ function init() {
       dirLight.shadow.bias = -0.0005; 
       scene.add(dirLight);
       
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.7)); 
+      // *** CAMBIO IMPLEMENTADO: LUZ AMBIENTAL A MEDIA (0.5) ***
+      // Ajustamos el Hemisferio para no dominar la escena
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 0.2)); 
       scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
 
       // ---------------------------------------------------------
