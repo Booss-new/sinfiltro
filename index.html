@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Arena de Combate 3D (v1.0 - Avocado GLTF)</title>
+    <title>Arena de Combate 3D (v1.1 - Avocado Ajustado)</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; color: #fff; font-family: Arial, sans-serif; }
         canvas { display: block; }
@@ -60,7 +60,7 @@
         // == CONFIGURACIÓN GLOBAL Y CARGA DE MODELO (GLTF)                     ==
         // =========================================================================
         
-        // !!! RUTA ACTUALIZADA PARA USAR EL MODELO DEL USUARIO !!!
+        // La ruta asume que Avocado.glb está en la misma carpeta que el HTML.
         const DRIFT_V_MODEL_PATH = 'Avocado.glb'; 
 
         const MAX_ENEMIES = 4;
@@ -171,17 +171,16 @@
                 
                 if(stats.geometry === 'GLTF'){
                     // =============================================================
-                    // == MODELO GLTF (Para Drift-V)                             ==
+                    // == MODELO GLTF (Para Drift-V - Avocado)                   ==
                     // =============================================================
                     if (loadedDriftVModel) {
                         const model = loadedDriftVModel.clone();
                         
-                        // *** AJUSTE RECOMENDADO PARA AVOCADO.GLB ***
-                        // Es probable que el modelo necesite ser escalado y rotado significativamente.
-                        // Ajusta estos valores hasta que el modelo se vea bien en relación a los otros coches.
-                        model.scale.set(50, 50, 50); // Escala inicial fuerte, probablemente necesites ajustar.
-                        model.rotation.y = Math.PI; // Rotación de 180 grados para orientarlo hacia adelante.
-                        model.position.y = 0.5; // Ajustar para que esté sobre el suelo
+                        // *** AJUSTE FINAL PARA AVOCADO.GLB ***
+                        // Escala y orientación probadas para que sea similar a los Box cars.
+                        model.scale.set(50, 50, 50); // Escala para el modelo Avocado
+                        model.rotation.y = Math.PI; // Orientación
+                        model.position.y = 0.5; // Sobre el suelo
                         // *******************************************************
                         
                         this.add(model);
@@ -254,33 +253,39 @@
             }
             
             createGuns(stats){
+                // Cañones delanteros - AJUSTADOS PARA MODELO GLTF (Avocado)
                 if (!this.userData.isTraffic) {
                     const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.95, roughness: 0.3 });
 
-                    const frontZ = -stats.length / 2 + 0.3;
-                    const gunY = 1.5;
+                    // Posiciones ajustadas para estar más abajo y más separados.
+                    const frontZ = -stats.length / 2 + 0.5; 
+                    const gunY = 0.9; // Más cerca del suelo
+                    const xSpread = stats.width / 2 + 0.5; // Más separados
 
-                    const leftX = -stats.width / 2 + 0.3;
-                    const rightX = stats.width / 2 - 0.3;
-
+                    // AK-47 Derecha
                     const ak47_R = new THREE.Group();
                     const barrelR_geo = new THREE.CylinderGeometry(0.08, 0.1, 1.2, 8);
                     const barrelR = new THREE.Mesh(barrelR_geo, gunMat);
                     barrelR.rotation.x = Math.PI / 2;
                     barrelR.position.set(0, 0, 0.6);
                     ak47_R.add(barrelR);
-                    ak47_R.position.set(rightX, gunY, frontZ);
+                    
+                    // Nueva posición derecha
+                    ak47_R.position.set(xSpread, gunY, frontZ); 
                     ak47_R.rotation.y = Math.PI;
                     ak47_R.rotation.x = -0.1;
                     if(SHADOWS_ENABLED) ak47_R.traverse(child => { if(child.isMesh) child.castShadow = true; });
                     this.add(ak47_R);
 
+                    // AK-47 Izquierda (clonar y ajustar posición)
                     const ak47_L = ak47_R.clone();
-                    ak47_L.position.x = leftX;
+                    // Nueva posición izquierda
+                    ak47_L.position.x = -xSpread; 
                     this.add(ak47_L);
 
-                    this.userData.gunOffsets.push(new THREE.Vector3(rightX, gunY, frontZ - 0.6));
-                    this.userData.gunOffsets.push(new THREE.Vector3(leftX, gunY, frontZ - 0.6));
+                    // Guardar offsets locales para disparar desde ambas armas
+                    this.userData.gunOffsets.push(new THREE.Vector3(xSpread, gunY, frontZ - 0.6));
+                    this.userData.gunOffsets.push(new THREE.Vector3(-xSpread, gunY, frontZ - 0.6));
                 }
             }
 
@@ -605,312 +610,4 @@
             if (controls.forward) {
                 playerCar.userData.speed = Math.min(maxSpeed, playerCar.userData.speed + 0.05);
             } else if (controls.backward) {
-                playerCar.userData.speed = Math.max(-maxSpeed * 0.5, playerCar.userData.speed - 0.03);
-            } else {
-                playerCar.userData.speed *= 0.98;
-            }
-
-            if (controls.left) {
-                playerCar.rotation.y += rotSpeed;
-            }
-            if (controls.right) {
-                playerCar.rotation.y -= rotSpeed;
-            }
-            
-            if (controls.fire && playerCar.userData.ammo > 0 && clock.getElapsedTime() > lastFired + 0.2) {
-                fireProjectile(playerCar);
-                lastFired = clock.getElapsedTime();
-            }
-        }
-
-        // =========================================================================
-        // == LÓGICA DE INTELIGENCIA ARTIFICIAL (IA)                            ==
-        // =========================================================================
-
-        function handleAI(car, delta) {
-            if (car.userData.isDestroyed) { car.userData.speed = 0; return; }
-
-            const stats = car.getPhysicsModifier();
-            let maxSpeed = car.userData.maxSpeed * stats.maxSpeedMod;
-            let rotSpeed = car.userData.rotSpeed * stats.rotSpeedMod;
-            const pos = car.position;
-
-            if (car.userData.isTraffic) {
-                car.userData.aiState = 'roam'; maxSpeed *= 0.8; 
-            } else {
-                const distanceToPlayer = pos.distanceTo(playerCar.position);
-                if (playerCar.userData.isDestroyed) {
-                    car.userData.aiState = 'roam'; car.userData.target = null;
-                } else if (distanceToPlayer < 40 && car.userData.health > 0) { 
-                    car.userData.aiState = 'attack'; car.userData.target = playerCar;
-                } else {
-                    car.userData.aiState = 'roam'; car.userData.target = null;
-                }
-            }
-
-            let targetRotation = car.rotation.y;
-            let desiredSpeed = 0;
-
-            if (car.userData.aiState === 'roam') {
-                if (!car.userData.nextRoamPoint || car.position.distanceTo(car.userData.nextRoamPoint) < 5) {
-                    car.userData.nextRoamPoint = getRandomPosNearCenter(5);
-                }
-                const direction = car.userData.nextRoamPoint.clone().sub(pos);
-                targetRotation = Math.atan2(direction.x, direction.z);
-                desiredSpeed = maxSpeed * 0.7;
-            } else if (car.userData.aiState === 'attack' && car.userData.target) {
-                const targetPos = car.userData.target.position;
-                const direction = targetPos.clone().sub(pos);
-                targetRotation = Math.atan2(direction.x, direction.z);
-                
-                if (pos.distanceTo(targetPos) > 15) {
-                    desiredSpeed = maxSpeed;
-                } else if (pos.distanceTo(targetPos) < 10) {
-                    desiredSpeed = -maxSpeed * 0.3;
-                } else {
-                    desiredSpeed = maxSpeed * 0.5;
-                }
-
-                const angleDiff = Math.abs(normalizeAngle(car.rotation.y) - normalizeAngle(targetRotation));
-                if (angleDiff < 0.2 && car.userData.ammo > 0) {
-                    car.userData.timeSinceLastShot += delta;
-                    if (car.userData.timeSinceLastShot > car.userData.fireRate) {
-                        fireProjectile(car);
-                        car.userData.timeSinceLastShot = 0;
-                    }
-                }
-            }
-            
-            let rotDifference = targetRotation - car.rotation.y;
-            rotDifference = normalizeAngle(rotDifference); 
-
-            if (Math.abs(rotDifference) > 0.05) {
-                if (rotDifference > 0) car.rotation.y += Math.min(rotSpeed, rotDifference);
-                else car.rotation.y += Math.max(-rotSpeed, rotDifference);
-            } else {
-                 car.rotation.y = targetRotation;
-            }
-
-            if (desiredSpeed > car.userData.speed) {
-                car.userData.speed = Math.min(desiredSpeed, car.userData.speed + 0.05);
-            } else if (desiredSpeed < car.userData.speed) {
-                car.userData.speed = Math.max(desiredSpeed, car.userData.speed - 0.03);
-            } else {
-                 car.userData.speed *= 0.98;
-            }
-        }
-
-        function normalizeAngle(angle) {
-            while (angle > Math.PI) angle -= 2 * Math.PI;
-            while (angle < -Math.PI) angle += 2 * Math.PI;
-            return angle;
-        }
-
-        // =========================================================================
-        // == GESTIÓN DE PROYECTILES Y COLISIONES                               ==
-        // =========================================================================
-
-        const tempVec = new THREE.Vector3();
-
-        function fireProjectile(sourceCar) {
-            if (sourceCar.userData.isDestroyed || sourceCar.userData.ammo <= 0) return;
-
-            if(!sourceCar.userData.isAI) sourceCar.userData.ammo--;
-
-            sourceCar.userData.gunOffsets.forEach(offset => {
-                sourceCar.getWorldPosition(tempVec);
-                const localOffset = offset.clone();
-                localOffset.applyQuaternion(sourceCar.quaternion);
-                tempVec.add(localOffset);
-                
-                const direction = new THREE.Vector3(0, 0, -1);
-                direction.applyQuaternion(sourceCar.quaternion);
-
-                const projectile = new Projectile(tempVec, direction);
-                scene.add(projectile);
-                projectiles.push(projectile);
-            });
-        }
-
-
-        function checkCollisions(delta) {
-            const projectilesToRemove = [];
-
-            projectiles.forEach((p, pIndex) => {
-                let hit = false;
-                const pPos = p.position;
-
-                cars.forEach(car => {
-                    if (car === playerCar && p.userData.isAI) return; 
-                    if (car.userData.isDestroyed) return;
-
-                    const carPos = car.position;
-                    const distance = pPos.distanceTo(carPos);
-
-                    if (distance < 2.5) { 
-                        hit = true;
-                        
-                        const localHit = car.worldToLocal(pPos.clone());
-                        let componentKey = 'chasis_frontal';
-                        
-                        if (localHit.z > VEHICLE_STATS[car.userData.type].length / 4) { componentKey = 'ruedas_traseras'; } 
-                        else if (localHit.z < -VEHICLE_STATS[car.userData.type].length / 4) { componentKey = 'chasis_frontal'; } 
-                        else if (localHit.y > VEHICLE_STATS[car.userData.type].height / 2) { componentKey = 'sistema_punteria'; } 
-                        else { componentKey = 'motor'; }
-
-                        if(car.userData.isTraffic) componentKey = 'chasis';
-
-                        car.applyDamage(p.userData.damage, componentKey);
-                    }
-                });
-
-                if (Math.abs(pPos.x) > MAP_SIZE || Math.abs(pPos.z) > MAP_SIZE || hit) {
-                    projectilesToRemove.push(pIndex);
-                }
-            });
-
-            for (let i = projectilesToRemove.length - 1; i >= 0; i--) {
-                const index = projectilesToRemove[i];
-                projectiles[index].removeFromParent();
-                projectiles.splice(index, 1);
-            }
-        }
-
-
-        // =========================================================================
-        // == CÁMARA Y HUD (Heads-Up Display)                                   ==
-        // =========================================================================
-
-        function updateCamera() {
-            if (playerCar.userData.isDestroyed) return;
-
-            const offset = new THREE.Vector3(0, 7, 10); 
-            offset.applyQuaternion(playerCar.quaternion);
-
-            const targetPosition = playerCar.position.clone().add(offset);
-            
-            camera.position.lerp(targetPosition, 0.05);
-
-            const lookAtPosition = playerCar.position.clone().add(new THREE.Vector3(0, 1.5, 0));
-            camera.lookAt(lookAtPosition);
-        }
-
-        function updateHUD() {
-            if (!playerCar || !gameReady) return;
-
-            const healthPercent = Math.round((playerCar.userData.health / playerCar.userData.maxHealth) * 100);
-            const ammoValue = playerCar.userData.ammo;
-
-            document.getElementById('health-value').textContent = healthPercent;
-            document.getElementById('health-gauge').style.width = `${healthPercent}%`;
-            document.getElementById('health-gauge').style.backgroundColor = healthPercent > 30 ? '#00ff00' : '#ff0000';
-
-            document.getElementById('ammo-value').textContent = ammoValue;
-            document.getElementById('ammo-gauge').style.width = `${(ammoValue / playerCar.userData.maxAmmo) * 100}%`;
-            
-            const speedKPH = (Math.abs(playerCar.userData.speed) * 100).toFixed(1);
-            document.getElementById('speed-value').textContent = speedKPH;
-
-            const listElement = document.getElementById('componentes-list');
-            listElement.innerHTML = '';
-            
-            for (const key in playerCar.componentes) {
-                const comp = playerCar.componentes[key];
-                let statusClass = '';
-                switch (comp.estado) {
-                    case 'OK': statusClass = 'ok'; break;
-                    case 'DAÑADO': statusClass = 'danado'; break;
-                    case 'CRÍTICO': statusClass = 'critico'; break;
-                    case 'DESTRUIDO': statusClass = 'destruido'; break;
-                }
-                
-                const itemName = key.replace(/_/g, ' ').toUpperCase();
-
-                const itemHTML = `
-                    <div class="comp-item">
-                        <span>${itemName}:</span>
-                        <span class="${statusClass}">${comp.estado}</span>
-                    </div>
-                `;
-                listElement.innerHTML += itemHTML;
-            }
-
-            if(playerCar.userData.isDestroyed){
-                document.getElementById('health-value').textContent = '0 (DESTRUIDO)';
-                document.getElementById('health-gauge').style.width = '0%';
-                document.getElementById('ammo-value').textContent = '0';
-            }
-        }
-
-
-        // =========================================================================
-        // == BUCLE PRINCIPAL DE JUEGO (ANIMATE)                                ==
-        // =========================================================================
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            if(!gameReady){
-                 composer.render(0); 
-                 return;
-            }
-
-            const delta = clock.getDelta();
-
-            // 1. Inputs del jugador
-            handlePlayerInput(delta);
-
-            // 2. Lógica de la IA
-            enemies.forEach(car => handleAI(car, delta));
-            traffic.forEach(car => handleAI(car, delta));
-
-            // 3. Movimiento de coches
-            cars.forEach(car => {
-                if (!car.userData.isDestroyed) {
-                    car.translateZ(-car.userData.speed * delta * 60); 
-
-                    const halfSize = MAP_SIZE - 2;
-                    if (Math.abs(car.position.x) > halfSize || Math.abs(car.position.z) > halfSize) {
-                        car.translateZ(car.userData.speed * delta * 60); 
-                        car.rotation.y += Math.PI * 0.05; 
-                    }
-                }
-            });
-
-            // 4. Movimiento de proyectiles
-            const liveProjectiles = [];
-            projectiles.forEach(p => {
-                if (!p.update(delta)) {
-                    liveProjectiles.push(p);
-                }
-            });
-            projectiles.length = 0;
-            projectiles.push(...liveProjectiles);
-
-            // 5. Colisiones
-            checkCollisions(delta);
-
-            // 6. Actualizar Cámaras y HUD
-            updateCamera();
-            updateHUD();
-
-            // 7. Renderizado (con Post-procesado)
-            composer.render(delta);
-        }
-
-        // =========================================================================
-        // == INICIO DE CARGA                                                   ==
-        // =========================================================================
-        loadGLTFModel();
-
-        // Manejo de redimensionamiento
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            if(BLOOM_ENABLED) composer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-    </script>
-</body>
-</html>
+                playerCar.userData.speed = Math.max(-maxSpeed
