@@ -5,293 +5,178 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>CENIT DE ACERO: Arena de Combate Extremo</title>
 <style>
-  html,body{
-    margin:0;
-    padding:0;
-    overflow:hidden;
-    background:#6e8ca0;
-    height:100%;
+  body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #6e8ca0;
+    font-family: sans-serif;
   }
-  #holder{
-    width:100%;
-    height:100%;
-    position:relative;
-    overflow:hidden;
-    touch-action:none;
-  }
-  #loading{
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:#000;
-    color:#fff;
-    font-size:24px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:999;
-  }
-  .hud{
-    position:fixed;
-    top:10px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:10px;
-    z-index:100;
-  }
-  .hud .card{
-    background:#fff;
-    padding:10px 16px;
-    border-radius:10px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.2);
-    min-width:120px;
-    text-align:center;
-  }
-  .controls{
-    position:fixed;
-    bottom:20px;
-    left:20px;
-    z-index:100;
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .fire,.turbo{
-    width:60px;
-    height:60px;
-    border-radius:50%;
-    border:none;
-    color:#fff;
-    font-size:24px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 2px 8px rgba(0,0,0,0.4);
-  }
-  .fire{background:#e74c3c;}
-  .turbo{background:#3498db;}
-  #fps{
-    position:fixed;
-    bottom:90px;
-    left:20px;
-    color:#000;
-    background:#fff;
-    border-radius:6px;
-    padding:3px 6px;
-    font-family:monospace;
-    font-size:14px;
-    z-index:100;
-  }
-  #speed{
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    background:#fff;
-    border-radius:50%;
-    width:70px;
-    height:70px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:bold;
-    box-shadow:0 2px 6px rgba(0,0,0,0.2);
-    z-index:100;
+  #loading {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #020306;
+    color: white;
+    font-size: 1.5em;
+    z-index: 100;
   }
 </style>
 </head>
 <body>
-<div id="holder"></div>
 <div id="loading">Cargando...</div>
-
-<div class="hud">
-  <div class="card">
-    <strong>VEHÍCULO:</strong> Sport<br>
-    Integridad:<div style="height:6px;background:#e74c3c;width:80%;margin:auto;border-radius:4px;"></div>
-  </div>
-  <div class="card" style="color:#007777"><strong>DIAGNÓSTICO</strong></div>
-  <div class="card">
-    <strong>MUNICIÓN</strong><br>
-    Munición: ∞<div style="height:6px;background:#2ecc71;width:80%;margin:auto;border-radius:4px;"></div>
-  </div>
-</div>
-
-<div id="fps">FPS: --</div>
-<div id="speed">0<br><small>KM/H</small></div>
-
-<div class="controls">
-  <button class="fire">💥</button>
-  <button class="turbo">🚀</button>
-</div>
-
-<!-- Three.js -->
-<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-
+<div id="holder"></div>
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 function init(){
-  const holder=document.getElementById('holder');
-  const scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x6e8ca0);
+  const holder = document.getElementById('holder');
 
-  // --- renderer optimizado ---
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
-  renderer.shadowMap.enabled=true;
-  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
-  renderer.setSize(window.innerWidth,window.innerHeight);
-  renderer.domElement.style.position='absolute';
-  renderer.domElement.style.top='0';
-  renderer.domElement.style.left='0';
-  renderer.domElement.style.width='100%';
-  renderer.domElement.style.height='100%';
-  renderer.domElement.style.zIndex='0';
-  holder.appendChild(renderer.domElement);
-  renderer.setClearColor(scene.background);
-  document.getElementById('loading').style.display='none';
+  // --- Escena y cámara ---
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x6e8ca0);
 
-  // --- cámara ---
-  const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);
-  camera.position.set(0,6,15);
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+  camera.position.set(0, 5, 15);
 
-  // --- luces ---
-  const light=new THREE.DirectionalLight(0xffffff,1.2);
-  light.position.set(20,40,20);
-  light.castShadow=true;
-  light.shadow.mapSize.width=1024;
-  light.shadow.mapSize.height=1024;
-  scene.add(light,new THREE.AmbientLight(0xffffff,0.5));
+  // --- Luz direccional ---
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(5, 10, 7.5);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;   // 🔧 reducido para móviles
+  dirLight.shadow.mapSize.height = 1024;
+  scene.add(dirLight);
 
-  // --- piso tipo asfalto ---
-  const asphalt=new THREE.TextureLoader().load("https://threejs.org/examples/textures/terrain/grasslight-big.jpg");
-  asphalt.wrapS=asphalt.wrapT=THREE.RepeatWrapping;
-  asphalt.repeat.set(20,20);
-  const ground=new THREE.Mesh(
-    new THREE.PlaneGeometry(500,500),
-    new THREE.MeshStandardMaterial({map:asphalt,roughness:0.9,metalness:0.1})
+  // --- Luz ambiental ---
+  const ambLight = new THREE.AmbientLight(0x404040, 1.8);
+  scene.add(ambLight);
+
+  // 🔧 FIX RENDERER --------------------------------------------------
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.top = '0';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.zIndex = '0';
+    holder.appendChild(renderer.domElement);
+
+    // Asegurar color de fondo
+    renderer.setClearColor(scene.background);
+
+    // Ocultar loader solo al tener renderer
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.style.display = 'none';
+  } catch (err) {
+    console.error('Error al inicializar renderer:', err);
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.textContent = 'Error: WebGL no soportado.';
+    return;
+  }
+  // -----------------------------------------------------------------
+
+  // --- Piso tipo asfalto ---
+  const textureLoader = new THREE.TextureLoader();
+  const asphalt = textureLoader.load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
+  asphalt.wrapS = asphalt.wrapT = THREE.RepeatWrapping;
+  asphalt.repeat.set(20, 20);
+
+  const floorGeo = new THREE.PlaneGeometry(1000, 1000);
+  const floorMat = new THREE.MeshStandardMaterial({ map: asphalt });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // --- Paredes tipo edificios ---
+  const buildingTex = textureLoader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
+  buildingTex.wrapS = buildingTex.wrapT = THREE.RepeatWrapping;
+  const wallMat = new THREE.MeshStandardMaterial({ map: buildingTex });
+
+  const wallGeo = new THREE.BoxGeometry(1000, 100, 5);
+  const wall1 = new THREE.Mesh(wallGeo, wallMat);
+  wall1.position.set(0, 50, -500);
+  const wall2 = wall1.clone();
+  wall2.position.set(0, 50, 500);
+  const wall3 = wall1.clone();
+  wall3.rotation.y = Math.PI / 2;
+  wall3.position.set(-500, 50, 0);
+  const wall4 = wall3.clone();
+  wall4.position.set(500, 50, 0);
+  scene.add(wall1, wall2, wall3, wall4);
+
+  // --- Vehículo (simplificado como caja) ---
+  const carBody = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 1, 4),
+    new THREE.MeshStandardMaterial({ color: 0x8888ff })
   );
-  ground.rotation.x=-Math.PI/2;
-  ground.receiveShadow=true;
-  scene.add(ground);
+  carBody.castShadow = true;
+  scene.add(carBody);
 
-  // --- paredes tipo edificios ---
-  const brickTex=new THREE.TextureLoader().load("https://threejs.org/examples/textures/brick_diffuse.jpg");
-  brickTex.wrapS=brickTex.wrapT=THREE.RepeatWrapping;
-  brickTex.repeat.set(10,4);
-  const wallMat=new THREE.MeshStandardMaterial({map:brickTex});
-  const size=500, h=80, thick=10;
-  function wall(x,z,w,d){
-    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wallMat);
-    m.position.set(x,h/2,z);
-    m.receiveShadow=true;
-    scene.add(m);
-  }
-  wall(0,-size/2,size,thick);
-  wall(0,size/2,size,thick);
-  wall(size/2,0,thick,size);
-  wall(-size/2,0,thick,size);
+  // --- Armas sobre llantas delanteras ---
+  const gunGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.5);
+  const gunMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+  const gunLeft = new THREE.Mesh(gunGeo, gunMat);
+  const gunRight = gunLeft.clone();
 
-  // --- vehículo ---
-  const car=new THREE.Group();
-  const body=new THREE.Mesh(
-    new THREE.BoxGeometry(3,1,6),
-    new THREE.MeshStandardMaterial({color:0x223388,metalness:0.7,roughness:0.3})
-  );
-  body.position.y=1.2;
-  body.castShadow=true;
-  car.add(body);
+  gunLeft.rotation.z = Math.PI / 2;
+  gunRight.rotation.z = Math.PI / 2;
 
-  // ruedas
-  const wheelGeo=new THREE.CylinderGeometry(0.6,0.6,0.5,16);
-  const wheelMat=new THREE.MeshStandardMaterial({color:0x111111});
-  function addWheel(x,z){
-    const w=new THREE.Mesh(wheelGeo,wheelMat);
-    w.rotation.z=Math.PI/2;
-    w.position.set(x,0.6,z);
-    car.add(w);
-  }
-  addWheel(1.5,2.3);
-  addWheel(-1.5,2.3);
-  addWheel(1.5,-2.3);
-  addWheel(-1.5,-2.3);
+  gunLeft.position.set(-0.9, 0.5, 1.5);
+  gunRight.position.set(0.9, 0.5, 1.5);
+  carBody.add(gunLeft);
+  carBody.add(gunRight);
 
-  // --- armas sobre llantas delanteras ---
-  const gunGeo=new THREE.CylinderGeometry(0.1,0.1,2,8);
-  const gunMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:1,roughness:0.2});
-  function addGun(x,z){
-    const g=new THREE.Mesh(gunGeo,gunMat);
-    g.rotation.z=Math.PI/2;
-    g.position.set(x,1.2,z);
-    g.castShadow=true;
-    car.add(g);
-  }
-  addGun(1.5,2.3);
-  addGun(-1.5,2.3);
-  scene.add(car);
+  // --- Balas (munición infinita) ---
+  const bullets = [];
+  const bulletGeo = new THREE.SphereGeometry(0.1);
+  const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
-  // --- sistema de balas ---
-  const bullets=[];
-  const bulletGeo=new THREE.SphereGeometry(0.15,8,8);
-  const bulletMat=new THREE.MeshBasicMaterial({color:0xff3333});
-  function shoot(){
-    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-    const pos1=car.position.clone().add(new THREE.Vector3(1.5,1.2,2.3).applyQuaternion(car.quaternion));
-    const pos2=car.position.clone().add(new THREE.Vector3(-1.5,1.2,2.3).applyQuaternion(car.quaternion));
-    for(const p of [pos1,pos2]){
-      const b=new THREE.Mesh(bulletGeo,bulletMat);
-      b.position.copy(p);
-      b.userData.dir=dir.clone();
-      bullets.push(b);
-      scene.add(b);
-    }
-  }
+  window.addEventListener('click', () => {
+    const bullet = new THREE.Mesh(bulletGeo, bulletMat);
+    bullet.position.copy(carBody.position);
+    bullet.position.z -= 2;
+    scene.add(bullet);
+    bullets.push({ mesh: bullet, vel: new THREE.Vector3(0, 0, -1).applyQuaternion(carBody.quaternion) });
+  });
 
-  document.querySelector('.fire').addEventListener('click',shoot);
-  window.addEventListener('click',shoot);
+  // --- Movimiento de cámara / animación ---
+  const clock = new THREE.Clock();
 
-  // --- animación ---
-  let t=0;
-  const fps=document.getElementById('fps');
-  const speed=document.getElementById('speed');
-  let last=performance.now(),frames=0,lastFps=0;
-
-  function animate(now){
+  function animate(){
     requestAnimationFrame(animate);
-    const dt=(now-last)/1000;
-    last=now;
-    frames++;
-    if(now-lastFps>1000){
-      fps.textContent='FPS: '+frames;
-      frames=0;
-      lastFps=now;
-    }
 
-    t+=dt;
-    car.position.x=Math.sin(t)*10;
-    car.position.z=Math.cos(t)*10;
-    car.rotation.y=t;
-
-    for(let i=bullets.length-1;i>=0;i--){
-      const b=bullets[i];
-      b.position.addScaledVector(b.userData.dir,2);
-      if(b.position.length()>500){
-        scene.remove(b);
-        bullets.splice(i,1);
+    const delta = clock.getDelta();
+    bullets.forEach((b, i) => {
+      b.mesh.position.addScaledVector(b.vel, delta * 50);
+      if (b.mesh.position.length() > 1000) {
+        scene.remove(b.mesh);
+        bullets.splice(i, 1);
       }
-    }
+    });
 
-    const kmh=Math.abs(Math.sin(t)*80).toFixed(0);
-    speed.innerHTML=kmh+"<br><small>KM/H</small>";
-
-    camera.position.lerp(new THREE.Vector3(car.position.x,car.position.y+5,car.position.z+12),0.1);
-    camera.lookAt(car.position);
-
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
   }
+
   animate();
+
+  window.addEventListener('resize', ()=>{
+    if(renderer){
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    }
+  });
 }
-init();
+window.onload = init;
 </script>
 </body>
 </html>
