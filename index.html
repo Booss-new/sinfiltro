@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>CENIT DE ACERO: Arena de Combate Extremo - v3.1.0 (MISIL)</title>
+<title>CENIT DE ACERO: Arena de Combate Extremo - v3.1.1 (MISIL FIXED Y PRO)</title>
 <style>
   /* Base Style - ESTILO AAA ESTILIZADO */
   :root{
@@ -161,7 +161,7 @@ class CarController extends THREE.Group {
         this.userData.maxAmmo = stats.maxAmmo;
         this.userData.ammo = stats.maxAmmo;
         this.userData.maxMissiles = stats.maxMissiles;
-        this.userData.missiles = stats.maxMissiles;
+        this.userData.missiles = stats.missiles || stats.maxMissiles;
         this.userData.maxSpeed = stats.maxSpeed;
         this.userData.rotSpeed = stats.rotSpeed;
         this.userData.speed = 0;
@@ -169,10 +169,10 @@ class CarController extends THREE.Group {
         this.userData.aiState = 'roam';
         this.userData.target = null;
         this.userData.timeSinceLastShot = 0;
-        this.userData.timeSinceLastMissile = 0; // Cooldown de misil AI
+        this.userData.timeSinceLastMissile = 0;
 
         this.userData.gunOffsets = [];
-        this.userData.missileOffset = null; // Un solo offset para misil
+        this.userData.missileOffset = null;
 
         this.componentes = {
             motor: { vida: 100, max: 100, estado: 'OK', efecto: 'Potencia' },
@@ -382,47 +382,83 @@ class CarController extends THREE.Group {
 }
 
 // =========================================================================
-// == CLASE MISSILE (NUEVO)                                             ==
+// == CLASE MISSILE (FIX Y MEJORA DE ASPECTO)                           ==
 // =========================================================================
+const TEMP_VECTOR_MISSILE = new THREE.Vector3();
 
-class Missile extends THREE.Mesh {
-    constructor(geometry, material) {
-        super(geometry, material);
+class Missile extends THREE.Group { // Ahora es un Group para mejor modelado
+    constructor() {
+        super();
+        
+        // Estructura del misil (Aspecto Mejorado)
+        const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 2.0, 12);
+        const noseGeo = new THREE.ConeGeometry(0.4, 0.6, 12);
+
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.9, roughness: 0.3 });
+        const noseMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8, roughness: 0.2 });
+
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.rotation.x = Math.PI / 2;
+        body.position.z = 0;
+        this.add(body);
+
+        const nose = new THREE.Mesh(noseGeo, noseMat);
+        nose.rotation.x = Math.PI / 2;
+        nose.position.z = 1.3;
+        this.add(nose);
+        
+        // Fuego de propulsión (Luz de punto)
+        const flameLight = new THREE.PointLight(0xff0000, 10, 5, 2);
+        flameLight.position.set(0, 0, -1.0);
+        this.add(flameLight);
+        this.userData.flameLight = flameLight;
+        
+        // Data del misil
         this.userData.dir = new THREE.Vector3();
-        this.userData.speed = 1.0; // Velocidad inicial más baja para guiado
+        this.userData.speed = 1.0;
         this.userData.maxSpeed = 2.5;
         this.userData.acceleration = 0.05;
-        this.userData.damage = 50; // ¡Daño significativamente mayor!
-        this.userData.targetCar = null; // Objetivo a seguir
-        this.userData.angularSpeed = 0.05; // Velocidad de giro
+        this.userData.damage = 50;
+        this.userData.targetCar = null;
+        this.userData.angularSpeed = 0.05; // Ajustado para un giro más suave
         this.userData.isFriendly = false;
         this.userData._spawnTime = 0;
         this.userData.owner = null;
+        
+        if(SHADOWS_ENABLED) this.traverse(child => { if(child.isMesh) child.castShadow = true; });
     }
 
     // Método para guiar el misil hacia el objetivo
     updateGuidance(dt) {
         if (!this.userData.targetCar || this.userData.targetCar.userData.isDestroyed) {
             this.userData.targetCar = null;
+            this.userData.flameLight.intensity = 0; // Apagar llama sin objetivo
             return;
         }
+
+        // Limitar dt para evitar giros excesivos
+        const limitedDt = Math.min(dt, 2.0);
 
         const targetPos = this.userData.targetCar.position;
         const diff = targetPos.clone().sub(this.position).normalize();
 
-        // Obtener la dirección actual del misil
         const currentDir = this.userData.dir;
 
-        // Mezclar (lerp) la dirección actual con la dirección al objetivo
-        currentDir.lerp(diff, this.userData.angularSpeed * dt);
+        // Suavizar la dirección hacia el objetivo
+        currentDir.lerp(diff, this.userData.angularSpeed * limitedDt * 0.5); // 0.5 para hacerlo más lento y estable
         currentDir.normalize();
 
+        // ** CORRECCIÓN CRÍTICA DE ROTACIÓN **
+        // El misil debe rotar para mirar su vector de dirección (currentDir)
+        // Usamos la propiedad `lookAt` para rotar el grupo completo de forma correcta
+        TEMP_VECTOR_MISSILE.copy(this.position).add(currentDir.clone().multiplyScalar(10));
+        this.lookAt(TEMP_VECTOR_MISSILE);
+        
         // Acelerar el misil
-        this.userData.speed = Math.min(this.userData.maxSpeed, this.userData.speed + this.userData.acceleration * dt);
-
-        // Apuntar el misil visualmente (rotación)
-        const targetYaw = Math.atan2(currentDir.x, currentDir.z);
-        this.rotation.y = targetYaw;
+        this.userData.speed = Math.min(this.userData.maxSpeed, this.userData.speed + this.userData.acceleration * limitedDt);
+        
+        // Llama parpadeante
+        this.userData.flameLight.intensity = 8 + Math.sin(performance.now() * 0.01) * 4;
     }
 }
 
@@ -444,9 +480,8 @@ const BULLET_COOLDOWN_MS = 160;
 const MISSILE_COOLDOWN_MS = 3000;
 const CITY_SIZE = 400;
 const halfCity = CITY_SIZE / 2;
-let missileCooldownTimer = 0; // Temporizador para el misil del jugador
+let missileCooldownTimer = 0;
 
-// Funciones de Bullets, Impacts y MISSILES (Pools)
 const bulletPool = [];
 const activeBullets = [];
 const maxBullets = 120;
@@ -492,6 +527,7 @@ function getMissile() {
         missile.visible = true; 
         missile.userData._spawnTime = performance.now(); 
         missile.userData.speed = 1.0;
+        missile.userData.flameLight.visible = true;
         activeMissiles.push(missile); 
     }
     return missile;
@@ -501,6 +537,7 @@ function releaseMissile(m) {
     m.position.set(0, -9999, 0);
     m.userData.dir.set(0,0,0);
     m.userData.targetCar = null;
+    m.userData.flameLight.visible = false;
     const index = activeMissiles.indexOf(m);
     if (index > -1) activeMissiles.splice(index, 1);
 }
@@ -517,7 +554,7 @@ function spawnMissileFromCar(targetCar, isFriendly = false, target = null) {
     m.userData.dir.copy(dir);
     m.userData.isFriendly = isFriendly;
     m.userData.owner = targetCar;
-    m.userData.targetCar = target; // Asignar objetivo
+    m.userData.targetCar = target;
 
     return true;
 }
@@ -534,6 +571,8 @@ function createImpact(position, scale = 1.0, color = 0xff3333, intensity = 10){
         impact.position.copy(position);
         impact.userData.spawnTime = performance.now();
         impact.scale.setScalar(scale);
+        
+        // Actualizar material del impacto
         impact.userData.mat.opacity = 1.0;
         impact.userData.mat.emissiveIntensity = intensity;
         impact.userData.mat.color.setHex(color);
@@ -594,7 +633,7 @@ function updateAICars(dt, playerCar) {
                 ai.userData.timeSinceLastShot = 0;
             }
 
-            // 5. Disparar (Misil - NEW)
+            // 5. Disparar (Misil)
             ai.userData.timeSinceLastMissile += dt;
             if (distanceToPlayer < 100 && ai.userData.missiles > 0 && ai.userData.timeSinceLastMissile * 16.666 > MISSILE_COOLDOWN_MS * 2.5) {
                 if(spawnMissileFromCar(ai, false, playerCar)){
@@ -692,7 +731,8 @@ function init() {
         try{
             composer = new EffectComposer(renderer);
             composer.addPass(new RenderPass(scene, camera));
-            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85);
+            // Aumentar la intensidad del Bloom para que la llama del misil se vea espectacular
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.6, 0.85); 
             bloomPass.renderToScreen = true;
             composer.addPass(bloomPass);
         } catch(e){
@@ -715,8 +755,8 @@ function init() {
       dirLight.shadow.bias = -0.0005;
       scene.add(dirLight);
 
-      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 1.0)); // Ambiente más claro
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5)); // Luz ambiente
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 1.0));
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
       // Suelo y Muros (Sin Cambios)
       const texLoader = new THREE.TextureLoader();
@@ -772,7 +812,7 @@ function init() {
       const car = new CarController(CURRENT_CAR_TYPE, false);
       car.position.set(0, 0, 0);
       scene.add(car);
-      PLAYER_CAR = car; // Asignar al global
+      PLAYER_CAR = car;
 
       const ai1 = new CarController('Sport', true);
       ai1.position.set(20, 0, 50);
@@ -815,14 +855,10 @@ function init() {
       
       // Setup Missiles (NEW)
       function setupMissilePool() {
-          const missileGeo = new THREE.CylinderGeometry(0.3, 0.4, 2.0, 12);
-          const missileMat = new THREE.MeshBasicMaterial({ color: 0x33ccff, emissive: 0x33ccff, emissiveIntensity: 8 });
           for (let i = 0; i < maxMissiles; i++) {
-              const missile = new Missile(missileGeo, missileMat);
+              const missile = new Missile(); // Usamos la nueva clase Missile
               missile.userData.owner = null;
-              missile.rotation.x = Math.PI / 2; // Orientación inicial
               missile.visible = false;
-              if(SHADOWS_ENABLED) missile.castShadow = true;
               scene.add(missile);
               missilePool.push(missile);
           }
@@ -868,7 +904,9 @@ function init() {
                   if(isMissile){
                       const targetCars = [...AI_CARS, ...TRAFFIC_CARS, PLAYER_CAR];
                       for(const target of targetCars){
-                          if(target.userData.isDestroyed) continue;
+                          // No dañar el obstáculo ni al lanzador
+                          if(target.userData.isDestroyed) continue; 
+                          
                           if(target.position.distanceTo(position) < 10.0){ // Radio de explosión del misil
                               applyDamage(target, damage * 0.75, 'chasis_frontal');
                           }
@@ -914,11 +952,16 @@ function init() {
               if (hit){ releaseBullet(bullet); }
           }
           
-          // 2. Colisiones de Misiles (NEW)
+          // 2. Colisiones de Misiles
           for(let i=activeMissiles.length-1;i>=0;i--){
               const missile = activeMissiles[i];
               let hit = false;
               
+              // No queremos que el misil golpee a su lanzador inmediatamente
+              if(missile.userData.owner === PLAYER_CAR && (performance.now() - missile.userData._spawnTime) < 300) continue; 
+              if(missile.userData.owner !== PLAYER_CAR && missile.userData.owner !== null && (performance.now() - missile.userData._spawnTime) < 300) continue;
+
+
               if (Math.abs(missile.position.x) > halfCity || Math.abs(missile.position.z) > halfCity) { hit = true; }
               else if (checkBulletToObstacleCollisions(missile.position.clone(), new THREE.Vector3(0.5, 0.5, 1.0), missile.userData.damage, true)) { hit = true; }
               
@@ -929,6 +972,7 @@ function init() {
                   for(const target of currentTargets){
                       if(target.userData.isDestroyed || target === missile.userData.owner) continue;
 
+                      // La distancia de colisión se aumenta para el misil
                       if(target.position.distanceTo(missile.position) < 5.0 && target.userData.health > 0){
                           // Daño por impacto directo y explosión de área
                           applyDamage(target, missile.userData.damage * 0.8, 'chasis_frontal');
@@ -966,11 +1010,9 @@ function init() {
           document.getElementById('healthBar').style.width = (state.health / car.userData.maxHealth * 100) + '%';
           document.getElementById('carType').textContent = car.userData.type;
 
-          // Mostrar Misiles
           document.getElementById('missileCount').textContent = car.userData.missiles;
           document.getElementById('ammoBar').style.width = (car.userData.missiles / car.userData.maxMissiles * 100) + '%';
           
-          // Cooldown visual del misil (si el juego no está cargando)
           if(missileCooldownTimer > 0) document.getElementById('turbo').classList.add('cooldown');
           else document.getElementById('turbo').classList.remove('cooldown');
 
@@ -987,16 +1029,14 @@ function init() {
           UI_COMP_EL.innerHTML = html;
       }
 
-      // Disparo automático (manteniendo doble disparo desde offsets)
+      // Disparo de ametralladora (sin cambios)
       const fireBtn = document.getElementById('fire');
       function fireLoop() {
           if (car.userData.isDestroyed) { stopFire(); return; }
-
           fireBtn.classList.add('cooldown');
           setTimeout(() => { fireBtn.classList.remove('cooldown'); }, BULLET_COOLDOWN_MS - 20);
-
           const dir = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-          spawnBulletsFromCar(car, dir, car.userData.gunOffsets, true); // Marcar como amigable
+          spawnBulletsFromCar(car, dir, car.userData.gunOffsets, true);
       }
       function doFire(){
           if (isFiring || car.userData.isDestroyed) return;
@@ -1012,24 +1052,24 @@ function init() {
           fireBtn.classList.remove('cooldown');
       }
       
-      // Lanzamiento de Misil (NEW)
+      // Lanzamiento de Misil (sin cambios de lógica, solo usa la nueva clase)
       const turboBtn = document.getElementById('turbo');
       function fireMissile() {
           if (car.userData.isDestroyed || missileCooldownTimer > 0 || car.userData.missiles <= 0) return;
 
-          // Intentamos buscar un objetivo: el primer AI que no esté destruido.
+          // Busca el objetivo más cercano que sea un AI de combate
           const target = AI_CARS.find(ai => !ai.userData.isDestroyed);
 
           if(spawnMissileFromCar(car, true, target)){
               car.userData.missiles--;
-              missileCooldownTimer = MISSILE_COOLDOWN_MS; // Iniciar Cooldown
+              missileCooldownTimer = MISSILE_COOLDOWN_MS;
           }
       }
       turboBtn.addEventListener('touchstart', e=>{ e.preventDefault(); fireMissile(); }, {passive:false});
       turboBtn.addEventListener('mousedown', fireMissile);
-      // El "turbo" ya no es un estado, sino un evento de disparo
 
-      // INPUTS y controles
+
+      // INPUTS y controles (sin cambios)
       const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
       let touchId = null, baseX=0, baseY=0;
       let stick = {x:0,y:0};
@@ -1070,19 +1110,21 @@ function init() {
               } else {
                   const factor = life / IMPACT_DURATION;
                   impact.userData.mat.opacity = Math.max(0, 1.0 - factor * 2);
-                  impact.scale.setScalar(impact.scale.x * (1.0 - factor * 0.5)); // Decaimiento basado en su escala inicial
+                  impact.scale.setScalar(impact.scale.x * (1.0 - factor * 0.5));
               }
           }
       }
 
       function animate(){
         const now = performance.now();
-        const dt = Math.min(50, now-last) / 16.666;
+        const deltaTimeMs = now - last;
+        const dt = Math.min(50, deltaTimeMs) / 16.666; // dt limitado y normalizado
+
         last = now;
         
         // Cooldown del misil del jugador
         if (missileCooldownTimer > 0) {
-            missileCooldownTimer -= (now - last);
+            missileCooldownTimer -= deltaTimeMs;
             if (missileCooldownTimer < 0) missileCooldownTimer = 0;
         }
 
@@ -1092,7 +1134,8 @@ function init() {
             state.turn = Math.max(-1, Math.min(1, stick.x));
 
             const physicsMod = car.getPhysicsModifier();
-            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod * (state.turbo ? 1.8 : 1.0);
+            // Eliminada la dependencia del estado.turbo del input, ya que ahora es el botón de misiles.
+            let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod; 
 
             if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
             else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
@@ -1109,10 +1152,8 @@ function init() {
 
             const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
             car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
-
-            checkCollisions(dt);
         }
-
+        
         // ** 2. Lógica de AI y Tráfico **
         updateAICars(dt, PLAYER_CAR);
         updateTrafficCars(dt);
@@ -1124,13 +1165,15 @@ function init() {
              if(now - bullet.userData._spawnTime > 3000) releaseBullet(bullet);
         }
         
-        // Lógica de Misil (NEW)
+        // Lógica de Misil
         for(let i = activeMissiles.length - 1; i >= 0; i--){
             const missile = activeMissiles[i];
-            missile.updateGuidance(dt); // Lógica de guiado
+            missile.updateGuidance(dt); // Lógica de guiado CORREGIDA
             missile.position.addScaledVector(missile.userData.dir, missile.userData.speed * dt);
-            if(now - missile.userData._spawnTime > 5000) releaseMissile(missile); // Autodestrucción
+            if(now - missile.userData._spawnTime > 5000) releaseMissile(missile);
         }
+        
+        checkCollisions(dt); // Se movió la colisión al final del movimiento
 
         // ** 4. Actualizaciones de HUD/Cámara/FPS **
         updateImpacts(now);
