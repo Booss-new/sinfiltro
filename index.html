@@ -3,885 +3,295 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>CENIT DE ACERO: Ciber-Guerra Urbana - v3.0 PRO</title>
+<title>CENIT DE ACERO: Arena de Combate Extremo</title>
 <style>
-  /* === ESTILO PRO v3.0 - CIBERPUNK NEÓN === */
-  :root {
-    --bg: #01020a; /* Negro azulado profundo */
-    --cyan: #00ffff;
-    --magenta: #ff00ff;
-    --red: #ff1f4f;
-    --green: #39ff14;
-    --shadow: rgba(0, 0, 0, 0.9);
-    --text-color: #f0f0f0;
-    --panel-bg: rgba(10, 20, 40, 0.85);
-    --panel-border: rgba(0, 255, 255, 0.5);
-    --header-color: var(--cyan);
+  html,body{
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    background:#6e8ca0;
+    height:100%;
   }
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-  html, body { 
-    height: 100%; margin: 0; background-color: var(--bg); 
-    font-family: 'Orbitron', sans-serif; color: var(--text-color); overflow: hidden;
+  #holder{
+    width:100%;
+    height:100%;
+    position:relative;
+    overflow:hidden;
+    touch-action:none;
   }
-  #holder { width: 100%; height: 100%; position: relative; touch-action: none; display: block; cursor: crosshair; }
-  
-  /* --- HUD GENERAL --- */
-  .hud { position: fixed; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; z-index: 120; font-size: 11px; pointer-events: none; text-shadow: 0 0 5px #000; }
-  .panel {
-    background: var(--panel-bg); padding: 5px 10px; border-radius: 5px;
-    border: 1px solid var(--panel-border); pointer-events: auto;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3), inset 0 0 8px rgba(0, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
+  #loading{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:#000;
+    color:#fff;
+    font-size:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
   }
-  .panel strong { color: var(--header-color); font-weight: 700; margin-right: 5px; }
-
-  /* --- PANELES ESPECÍFICOS --- */
-  #vehicle-status .bar-container { width: 120px; height: 10px; background: #222; border-radius: 3px; overflow: hidden; margin-left: 5px; border: 1px solid rgba(0,0,0,0.5); }
-  .health-bar { height: 100%; background: linear-gradient(90deg, var(--red), #ff6684); transition: width 0.3s ease-out; }
-  #diagnostics { text-align: right; font-size: 10px; line-height: 1.4; }
-  .component-status.CRITICO { color: var(--red); font-weight: bold; animation: blink 1s infinite; }
-  .component-status.DAÑADO { color: #ffcc00; }
-  @keyframes blink { 50% { opacity: 0.4; } }
-
-  /* --- ARMAS Y MUNICIÓN --- */
-  #weapon-info { position: fixed; bottom: 110px; right: 10px; z-index: 115; }
-  #weapon-info .panel { display: flex; flex-direction: column; align-items: flex-end; }
-  .weapon-slot { display: flex; align-items: center; justify-content: flex-end; margin-top: 5px; }
-  .weapon-slot span { font-size: 16px; font-weight: 900; }
-  .weapon-icon { font-size: 18px; margin-right: 8px; }
-  .ammo-bar { height: 100%; background: linear-gradient(90deg, var(--green), #99ff99); }
-  #weapon-info .bar-container { width: 80px; height: 8px; }
-
-  /* --- VELOCÍMETRO --- */
-  .speedometer {
-    position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); width: 180px; height: 50px;
-    background: var(--panel-bg); border-radius: 10px 10px 0 0; border: 1px solid var(--panel-border);
-    display: flex; align-items: center; justify-content: center; z-index: 115; backdrop-filter: blur(5px);
+  .hud{
+    position:fixed;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:10px;
+    z-index:100;
   }
-  .speed-value { font-size: 32px; font-weight: 900; color: var(--green); text-shadow: 0 0 10px var(--green); }
-  .speed-unit { font-size: 12px; color: #fff; margin-left: 10px; }
-
-  /* --- CONTROLES --- */
-  .joy { position: fixed; left: 20px; bottom: 20px; width: 120px; height: 120px; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; pointer-events: auto; z-index: 100; border: 2px solid rgba(0, 255, 255, 0.2); backdrop-filter: blur(3px); }
-  .stick { width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 255, 255, 0.4); }
-  .fire { position: fixed; right: 130px; bottom: 20px; width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--red), #c00); display: flex; align-items: center; justify-content: center; z-index: 110; pointer-events: auto; box-shadow: 0 0 20px var(--red); font-size: 36px; border: 3px solid #fff; transition: all 0.1s; }
-  .missile { position: fixed; right: 20px; bottom: 90px; width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--magenta), #800080); box-shadow: 0 0 20px var(--magenta); font-size: 30px; }
-  .turbo { position: fixed; right: 20px; bottom: 20px; width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), #00aaff); box-shadow: 0 0 20px var(--cyan); font-size: 24px; }
-  .fire, .turbo, .missile { display: flex; align-items: center; justify-content: center; z-index: 110; pointer-events: auto; border: 3px solid #fff; transition: all 0.1s; }
-  .btn-cooldown { background: #555 !important; box-shadow: none !important; transform: scale(0.9); pointer-events: none !important; }
-
-  /* --- OTROS ELEMENTOS UI --- */
-  #target-lock { position: fixed; border: 2px solid var(--red); width: 40px; height: 40px; z-index: 150; pointer-events: none; transition: opacity 0.2s; background: rgba(255,31,79, 0.1); border-radius: 50%; }
-  #minimap { position: fixed; top: 10px; right: 10px; width: 150px; height: 150px; border: 2px solid var(--panel-border); background-color: rgba(10, 20, 40, 0.9); z-index: 200; overflow: hidden; border-radius: 50%; }
-  .fps { position: fixed; left: 10px; bottom: 10px; background: var(--panel-bg); padding: 5px 8px; border-radius: 4px; z-index: 110; font-size: 12px; color: var(--green); }
-  #loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 999; background: var(--bg); color: #fff; padding: 20px 30px; border-radius: 10px; font-weight: 700; font-size: 1.2em; border: 1px solid var(--panel-border); }
-
-  @media (max-width: 800px) {
-    .joy { width: 100px; height: 100px; } .stick { width: 45px; height: 45px; }
-    .fire { width: 70px; height: 70px; right: 110px; font-size: 30px; }
-    .missile { width: 60px; height: 60px; bottom: 80px; right: 15px; font-size: 26px; }
-    .turbo { width: 50px; height: 50px; right: 15px; bottom: 15px; font-size: 20px; }
-    #minimap { width: 120px; height: 120px; }
+  .hud .card{
+    background:#fff;
+    padding:10px 16px;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    min-width:120px;
+    text-align:center;
+  }
+  .controls{
+    position:fixed;
+    bottom:20px;
+    left:20px;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .fire,.turbo{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:none;
+    color:#fff;
+    font-size:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .fire{background:#e74c3c;}
+  .turbo{background:#3498db;}
+  #fps{
+    position:fixed;
+    bottom:90px;
+    left:20px;
+    color:#000;
+    background:#fff;
+    border-radius:6px;
+    padding:3px 6px;
+    font-family:monospace;
+    font-size:14px;
+    z-index:100;
+  }
+  #speed{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#fff;
+    border-radius:50%;
+    width:70px;
+    height:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    z-index:100;
   }
 </style>
 </head>
 <body>
-  <div id="holder"></div>
-  <div id="loading">CARGANDO CENIT DE ACERO v3.0...</div>
+<div id="holder"></div>
+<div id="loading">Cargando...</div>
 
-  <div class="hud">
-    <div class="panel" id="vehicle-status">
-      <div style="display: flex; align-items: center;">
-        <strong>INTEGRIDAD:</strong>
-        <div class="bar-container"><div id="healthBar" class="health-bar"></div></div>
-      </div>
-    </div>
-    <div class="panel" id="diagnostics"></div>
+<div class="hud">
+  <div class="card">
+    <strong>VEHÍCULO:</strong> Sport<br>
+    Integridad:<div style="height:6px;background:#e74c3c;width:80%;margin:auto;border-radius:4px;"></div>
   </div>
-  
-  <div id="minimap"></div>
-  <div id="target-lock" style="opacity: 0;"></div>
-
-  <div class="speedometer">
-    <div class="speed-value" id="speedDisplay">0</div>
-    <div class="speed-unit">KM/H</div>
+  <div class="card" style="color:#007777"><strong>DIAGNÓSTICO</strong></div>
+  <div class="card">
+    <strong>MUNICIÓN</strong><br>
+    Munición: ∞<div style="height:6px;background:#2ecc71;width:80%;margin:auto;border-radius:4px;"></div>
   </div>
+</div>
 
-  <div id="weapon-info">
-    <div class="panel">
-      <div class="weapon-slot">
-        <span class="weapon-icon">🔥</span>
-        <span id="ammo-mg">∞</span>
-      </div>
-      <div class="weapon-slot">
-        <span class="weapon-icon">🚀</span>
-        <span id="ammo-msl">3</span>
-      </div>
-    </div>
-  </div>
+<div id="fps">FPS: --</div>
+<div id="speed">0<br><small>KM/H</small></div>
 
-  <div class="joy" id="joy"><div class="stick" id="stick"></div></div>
-  <div class="fire" id="fire">🔥</div>
-  <div class="missile" id="missile">🎯</div>
-  <div class="turbo" id="turbo">⚡</div>
-  <div class="fps" id="fps">FPS: --</div>
+<div class="controls">
+  <button class="fire">💥</button>
+  <button class="turbo">🚀</button>
+</div>
 
-<script type="importmap">{ "imports": { "three": "https://unpkg.com/three@0.163.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/" } }</script>
-<script type="module">
-import * as THREE from 'three';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { Lensflare, LensflareElement } from 'three/addons/objects/Lensflare.js';
+<!-- Three.js -->
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 
-// =========================================================================
-// == CONFIGURACIÓN GLOBAL DEL JUEGO (PRO)                                ==
-// =========================================================================
-const GAME_CONFIG = {
-    SHADOWS_ENABLED: true,
-    BLOOM_ENABLED: true,
-    CITY_SIZE: 500,       // Tamaño total del mapa
-    BLOCK_SIZE: 50,       // Tamaño de cada manzana
-    STREET_WIDTH: 12,     // Ancho de las calles
-    BUILDING_MAX_H: 80,   // Altura máxima de edificios
-    AI_COUNT: 5,          // Número de enemigos
-    TRAFFIC_COUNT: 10     // Número de vehículos civiles
-};
+<script>
+function init(){
+  const holder=document.getElementById('holder');
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x6e8ca0);
 
-const VEHICLE_STATS = {
-    'PlayerCyber': { health: 250, maxSpeed: 1.5, rotSpeed: 0.05, primaryAmmo: Infinity, secondaryAmmo: 3 },
-    'EnemyScout': { health: 80, maxSpeed: 1.3, rotSpeed: 0.06, primaryAmmo: Infinity },
-    'EnemyEnforcer': { health: 150, maxSpeed: 1.0, rotSpeed: 0.04, primaryAmmo: Infinity },
-    'Civilian': { health: 40, maxSpeed: 0.8, rotSpeed: 0.03 }
-};
+  // --- renderer optimizado ---
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.domElement.style.position='absolute';
+  renderer.domElement.style.top='0';
+  renderer.domElement.style.left='0';
+  renderer.domElement.style.width='100%';
+  renderer.domElement.style.height='100%';
+  renderer.domElement.style.zIndex='0';
+  holder.appendChild(renderer.domElement);
+  renderer.setClearColor(scene.background);
+  document.getElementById('loading').style.display='none';
 
-// =========================================================================
-// == GESTOR DE EFECTOS VISUALES (Explosiones, Chispas, etc.)             ==
-// =========================================================================
-class EffectManager {
-    constructor(scene) {
-        this.scene = scene;
-        this.particlePool = [];
-        this.activeParticles = [];
-        
-        // Pre-generar partículas para el pool
-        const particleMat = new THREE.SpriteMaterial({ color: 0xffffff, blending: THREE.AdditiveBlending, transparent: true });
-        for (let i = 0; i < 200; i++) {
-            const particle = new THREE.Sprite(particleMat);
-            particle.visible = false;
-            this.particlePool.push(particle);
-            this.scene.add(particle);
-        }
+  // --- cámara ---
+  const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,2000);
+  camera.position.set(0,6,15);
+
+  // --- luces ---
+  const light=new THREE.DirectionalLight(0xffffff,1.2);
+  light.position.set(20,40,20);
+  light.castShadow=true;
+  light.shadow.mapSize.width=1024;
+  light.shadow.mapSize.height=1024;
+  scene.add(light,new THREE.AmbientLight(0xffffff,0.5));
+
+  // --- piso tipo asfalto ---
+  const asphalt=new THREE.TextureLoader().load("https://threejs.org/examples/textures/terrain/grasslight-big.jpg");
+  asphalt.wrapS=asphalt.wrapT=THREE.RepeatWrapping;
+  asphalt.repeat.set(20,20);
+  const ground=new THREE.Mesh(
+    new THREE.PlaneGeometry(500,500),
+    new THREE.MeshStandardMaterial({map:asphalt,roughness:0.9,metalness:0.1})
+  );
+  ground.rotation.x=-Math.PI/2;
+  ground.receiveShadow=true;
+  scene.add(ground);
+
+  // --- paredes tipo edificios ---
+  const brickTex=new THREE.TextureLoader().load("https://threejs.org/examples/textures/brick_diffuse.jpg");
+  brickTex.wrapS=brickTex.wrapT=THREE.RepeatWrapping;
+  brickTex.repeat.set(10,4);
+  const wallMat=new THREE.MeshStandardMaterial({map:brickTex});
+  const size=500, h=80, thick=10;
+  function wall(x,z,w,d){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wallMat);
+    m.position.set(x,h/2,z);
+    m.receiveShadow=true;
+    scene.add(m);
+  }
+  wall(0,-size/2,size,thick);
+  wall(0,size/2,size,thick);
+  wall(size/2,0,thick,size);
+  wall(-size/2,0,thick,size);
+
+  // --- vehículo ---
+  const car=new THREE.Group();
+  const body=new THREE.Mesh(
+    new THREE.BoxGeometry(3,1,6),
+    new THREE.MeshStandardMaterial({color:0x223388,metalness:0.7,roughness:0.3})
+  );
+  body.position.y=1.2;
+  body.castShadow=true;
+  car.add(body);
+
+  // ruedas
+  const wheelGeo=new THREE.CylinderGeometry(0.6,0.6,0.5,16);
+  const wheelMat=new THREE.MeshStandardMaterial({color:0x111111});
+  function addWheel(x,z){
+    const w=new THREE.Mesh(wheelGeo,wheelMat);
+    w.rotation.z=Math.PI/2;
+    w.position.set(x,0.6,z);
+    car.add(w);
+  }
+  addWheel(1.5,2.3);
+  addWheel(-1.5,2.3);
+  addWheel(1.5,-2.3);
+  addWheel(-1.5,-2.3);
+
+  // --- armas sobre llantas delanteras ---
+  const gunGeo=new THREE.CylinderGeometry(0.1,0.1,2,8);
+  const gunMat=new THREE.MeshStandardMaterial({color:0x222222,metalness:1,roughness:0.2});
+  function addGun(x,z){
+    const g=new THREE.Mesh(gunGeo,gunMat);
+    g.rotation.z=Math.PI/2;
+    g.position.set(x,1.2,z);
+    g.castShadow=true;
+    car.add(g);
+  }
+  addGun(1.5,2.3);
+  addGun(-1.5,2.3);
+  scene.add(car);
+
+  // --- sistema de balas ---
+  const bullets=[];
+  const bulletGeo=new THREE.SphereGeometry(0.15,8,8);
+  const bulletMat=new THREE.MeshBasicMaterial({color:0xff3333});
+  function shoot(){
+    const dir=new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
+    const pos1=car.position.clone().add(new THREE.Vector3(1.5,1.2,2.3).applyQuaternion(car.quaternion));
+    const pos2=car.position.clone().add(new THREE.Vector3(-1.5,1.2,2.3).applyQuaternion(car.quaternion));
+    for(const p of [pos1,pos2]){
+      const b=new THREE.Mesh(bulletGeo,bulletMat);
+      b.position.copy(p);
+      b.userData.dir=dir.clone();
+      bullets.push(b);
+      scene.add(b);
     }
+  }
 
-    getParticle() {
-        const p = this.particlePool.find(p => !p.visible);
-        if (p) {
-            p.visible = true;
-            this.activeParticles.push(p);
-            return p;
-        }
-        return null;
-    }
+  document.querySelector('.fire').addEventListener('click',shoot);
+  window.addEventListener('click',shoot);
 
-    createExplosion(position, scale = 1.0) {
-        // 1. Luz de la explosión
-        const flash = new THREE.PointLight(0xffaa55, 1000, 50 * scale);
-        flash.position.copy(position);
-        this.scene.add(flash);
-        setTimeout(() => this.scene.remove(flash), 200);
+  // --- animación ---
+  let t=0;
+  const fps=document.getElementById('fps');
+  const speed=document.getElementById('speed');
+  let last=performance.now(),frames=0,lastFps=0;
 
-        // 2. Partículas de fuego/chispas
-        for (let i = 0; i < 50; i++) {
-            const p = this.getParticle();
-            if (!p) continue;
-
-            p.position.copy(position);
-            p.material.color.setHSL(Math.random() * 0.1 + 0.05, 1, 0.6);
-            p.material.opacity = 1;
-            p.scale.setScalar(Math.random() * 2 * scale + 1);
-
-            const velocity = new THREE.Vector3(
-                (Math.random() - 0.5) * 30 * scale,
-                (Math.random() - 0.5) * 30 * scale,
-                (Math.random() - 0.5) * 30 * scale
-            );
-            const life = Math.random() * 0.8 + 0.4;
-            
-            p.userData = { velocity, life, startTime: performance.now() };
-        }
-        
-        // 3. Onda de choque (Torus expansivo)
-        const shockwaveGeo = new THREE.TorusGeometry(5 * scale, 0.5 * scale, 16, 100);
-        const shockwaveMat = new THREE.MeshBasicMaterial({ color: 0xffaa55, transparent: true, opacity: 0.8 });
-        const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
-        shockwave.position.copy(position);
-        shockwave.rotation.x = Math.PI / 2;
-        this.scene.add(shockwave);
-        shockwave.userData = { life: 0.5, startTime: performance.now() };
-        this.activeParticles.push(shockwave);
-    }
-    
-    createImpactSparks(position) {
-        for (let i = 0; i < 10; i++) {
-            const p = this.getParticle();
-            if (!p) continue;
-            p.position.copy(position);
-            p.material.color.set(0xffffaa);
-            p.material.opacity = 1;
-            p.scale.setScalar(Math.random() * 0.5 + 0.2);
-            const velocity = new THREE.Vector3( (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15 );
-            p.userData = { velocity, life: 0.3, startTime: performance.now() };
-        }
-    }
-
-    update(dt) {
-        for (let i = this.activeParticles.length - 1; i >= 0; i--) {
-            const p = this.activeParticles[i];
-            const elapsed = (performance.now() - p.userData.startTime) / 1000;
-            
-            if (elapsed > p.userData.life) {
-                p.visible = false;
-                if(p.isMesh) this.scene.remove(p); // Remover meshes como la onda de choque
-                this.activeParticles.splice(i, 1);
-                continue;
-            }
-
-            const lifeFactor = elapsed / p.userData.life;
-
-            if (p.isSprite) { // Partículas de explosión/chispas
-                p.position.addScaledVector(p.userData.velocity, dt);
-                p.userData.velocity.y -= 20 * dt; // Gravedad
-                p.material.opacity = 1.0 - lifeFactor;
-            } else if (p.isMesh) { // Onda de choque
-                const scale = 1 + lifeFactor * 5;
-                p.scale.set(scale, scale, scale);
-                p.material.opacity = 0.8 * (1.0 - lifeFactor);
-            }
-        }
-    }
-}
-
-
-// =========================================================================
-// == CLASE CARCONTROLLER (Modelo, Física, IA y Armas PRO)                ==
-// =========================================================================
-class CarController extends THREE.Group {
-    constructor(type, isAI, effectManager) {
-        super();
-        const stats = VEHICLE_STATS[type];
-
-        this.userData.type = type;
-        this.userData.isAI = isAI;
-        this.userData.effectManager = effectManager;
-        this.userData.maxHealth = stats.health;
-        this.userData.health = stats.health;
-        this.userData.maxSpeed = stats.maxSpeed;
-        this.userData.rotSpeed = stats.rotSpeed;
-        this.userData.speed = 0;
-        this.userData.isDestroyed = false;
-        this.userData.suspensionOffset = 0;
-
-        // FÍSICA DE DERRAPE
-        this.userData.driftFactor = 0;
-
-        // IA AVANZADA
-        if (isAI) {
-            this.userData.aiState = 'PATROL'; // PATROL, CHASE, ATTACK
-            this.userData.aiTarget = null;
-            this.userData.aiTimer = 0;
-            this.userData.patrolPoint = new THREE.Vector3();
-            this.setNewPatrolPoint();
-        }
-        
-        // SISTEMA DE ARMAS
-        this.weapons = {
-            primary: { ready: true, cooldown: 120, ammo: stats.primaryAmmo }, // Ametralladora
-            secondary: { ready: true, cooldown: 3000, ammo: stats.secondaryAmmo || 0 } // Misiles
-        };
-
-        this.buildMesh(type);
-
-        if(isAI){
-            const hbMat = new THREE.MeshBasicMaterial({color:0x00ff00});
-            this.userData.healthBar = new THREE.Mesh(new THREE.BoxGeometry(3, 0.15, 0.1), hbMat);
-            this.userData.healthBar.position.y = 3.5;
-            this.add(this.userData.healthBar);
-        }
-    }
-    
-    // --- CONSTRUCCIÓN DEL MODELO DEL VEHÍCULO (PRO) ---
-    buildMesh(type) {
-        if (type === 'PlayerCyber' || type === 'EnemyEnforcer' || type === 'EnemyScout') {
-            this.createCyberpunkCarMesh(type);
-        } else { // Civilian
-            this.createCivilianCarMesh();
-        }
-        if(GAME_CONFIG.SHADOWS_ENABLED) this.traverse(child => { if(child.isMesh) child.castShadow = true; });
-    }
-    
-    createCyberpunkCarMesh(type){
-        const isPlayer = type === 'PlayerCyber';
-        const mainColor = isPlayer ? 0x00ffff : (type === 'EnemyEnforcer' ? 0xcc0000 : 0xffaa00);
-        const bodyMat = new THREE.MeshStandardMaterial({color: mainColor, metalness: 0.8, roughness: 0.2});
-        const darkMat = new THREE.MeshStandardMaterial({color: 0x111111, metalness: 0.5, roughness: 0.4});
-        
-        // Chasis principal
-        const chassisGeo = new THREE.BoxGeometry(2.5, 0.8, 5);
-        const chassis = new THREE.Mesh(chassisGeo, bodyMat);
-        chassis.position.y = 0.8;
-        this.add(chassis);
-
-        // Cabina
-        const cabinGeo = new THREE.BoxGeometry(2.0, 0.9, 2.5);
-        const cabin = new THREE.Mesh(cabinGeo, darkMat);
-        cabin.position.set(0, 1.55, -0.3);
-        this.add(cabin);
-
-        // Ruedas
-        const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
-        const wheelMat = new THREE.MeshStandardMaterial({color: 0x111111, roughness: 0.8});
-        const wheelPositions = [ {x:1.45, z:1.8}, {x:-1.45, z:1.8}, {x:1.45, z:-1.8}, {x:-1.45, z:-1.8} ];
-        wheelPositions.forEach(p => {
-            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-            wheel.rotation.z = Math.PI / 2;
-            wheel.position.set(p.x, 0.6, p.z);
-            this.add(wheel);
-        });
-
-        // Armas (Ametralladoras)
-        const gunGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
-        const gun1 = new THREE.Mesh(gunGeo, darkMat);
-        gun1.rotation.x = Math.PI/2;
-        gun1.position.set(0.8, 1.2, -2.9); this.add(gun1);
-        const gun2 = gun1.clone();
-        gun2.position.x = -0.8; this.add(gun2);
-        this.userData.gunOffsets = [gun1.position.clone(), gun2.position.clone()];
-
-        // Luces (Emisivas para Bloom)
-        const lightMat = new THREE.MeshBasicMaterial({color: mainColor});
-        const frontLight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.2, 0.1), lightMat);
-        frontLight.position.set(0, 0.9, -2.55); this.add(frontLight);
-        const tailLight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.1), new THREE.MeshBasicMaterial({color:0xff0000}));
-        tailLight.position.set(0, 1.0, 2.55); this.add(tailLight);
-        
-        this.userData.tailLight = tailLight; // Guardar referencia para frenado
-    }
-
-    createCivilianCarMesh(){
-        const color = new THREE.Color().setHSL(Math.random(), 0.6, 0.6);
-        const bodyMat = new THREE.MeshStandardMaterial({color: color, metalness: 0.5, roughness: 0.5});
-        const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.0, 4.5), bodyMat);
-        chassis.position.y = 1.0; this.add(chassis);
-        const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 2.0), bodyMat);
-        cabin.position.set(0, 1.9, -0.5); this.add(cabin);
-    }
-    
-    // --- LÓGICA DE DAÑO Y DESTRUCCIÓN (PRO) ---
-    applyDamage(amount) {
-        if (this.userData.isDestroyed) return false;
-        this.userData.health = Math.max(0, this.userData.health - amount);
-
-        if (this.userData.health <= 0) {
-             this.destroyVehicle();
-             return true;
-        }
-        return false;
-    }
-    
-    destroyVehicle() {
-        if (this.userData.isDestroyed) return;
-        this.userData.isDestroyed = true;
-        this.userData.speed = 0;
-        this.userData.effectManager.createExplosion(this.position, this.userData.type === 'EnemyEnforcer' ? 1.5 : 1.0);
-        
-        // Desvanecer y ocultar el vehículo
-        setTimeout(() => { this.visible = false; }, 500);
-        if(this.userData.healthBar) this.userData.healthBar.visible = false;
-    }
-    
-    // --- INTELIGENCIA ARTIFICIAL (PRO) ---
-    updateAI(dt, playerCar) {
-        if (this.userData.isDestroyed || playerCar.userData.isDestroyed) {
-            this.userData.speed *= 0.95; // Frenar si está destruido o el jugador lo está
-            return;
-        }
-
-        const distToPlayer = this.position.distanceTo(playerCar.position);
-        
-        // Lógica de cambio de estado
-        switch(this.userData.aiState) {
-            case 'PATROL':
-                if (distToPlayer < 80) { this.userData.aiState = 'CHASE'; }
-                break;
-            case 'CHASE':
-                if (distToPlayer > 120) { this.userData.aiState = 'PATROL'; this.setNewPatrolPoint(); }
-                else if (distToPlayer < 60) { this.userData.aiState = 'ATTACK'; }
-                break;
-            case 'ATTACK':
-                if (distToPlayer > 70) { this.userData.aiState = 'CHASE'; }
-                break;
-        }
-
-        // Ejecución de acciones por estado
-        let targetPos, desiredSpeed, turnDirection;
-        this.userData.aiTimer -= dt * 16.66;
-
-        switch (this.userData.aiState) {
-            case 'PATROL':
-                targetPos = this.userData.patrolPoint;
-                desiredSpeed = this.userData.maxSpeed * 0.6;
-                if (this.position.distanceTo(targetPos) < 10) this.setNewPatrolPoint();
-                break;
-            case 'CHASE':
-                targetPos = playerCar.position;
-                desiredSpeed = this.userData.maxSpeed * 0.9;
-                break;
-            case 'ATTACK':
-                targetPos = playerCar.position;
-                desiredSpeed = this.userData.maxSpeed * 0.5; // Maniobrar más lento para apuntar
-                
-                // Disparar al jugador
-                const vectorToPlayer = playerCar.position.clone().sub(this.position).normalize();
-                const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(this.quaternion);
-                if (vectorToPlayer.dot(forwardVector) > 0.9 && this.weapons.primary.ready) {
-                     this.firePrimary(true); // El 'true' indica que es un disparo de IA
-                }
-                break;
-        }
-        
-        // Movimiento y giro
-        const localTarget = this.worldToLocal(targetPos.clone());
-        turnDirection = Math.sign(localTarget.x) * (Math.abs(localTarget.x) > 0.5 ? 1 : 0);
-        this.rotation.y += -turnDirection * this.userData.rotSpeed * dt;
-        
-        this.userData.speed = THREE.MathUtils.lerp(this.userData.speed, desiredSpeed, dt * 0.05);
-        
-        const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(this.quaternion);
-        this.position.addScaledVector(fwd, this.userData.speed * dt);
-        
-        // Actualizar barra de vida
-        if(this.userData.healthBar){
-           this.userData.healthBar.scale.x = this.userData.health / this.userData.maxHealth;
-           this.userData.healthBar.material.color.set(this.userData.health/this.userData.maxHealth < 0.3 ? 0xff0000 : 0x00ff00);
-           this.userData.healthBar.lookAt(playerCar.position.clone().add(new THREE.Vector3(0,10,0)));
-        }
-    }
-    
-    setNewPatrolPoint() {
-        const half = GAME_CONFIG.CITY_SIZE / 2;
-        this.userData.patrolPoint.set(
-            (Math.random() - 0.5) * half,
-            0,
-            (Math.random() - 0.5) * half
-        );
-    }
-    
-    // --- SISTEMA DE ARMAS (PRO) ---
-    firePrimary(isAI = false) {
-        if (!this.weapons.primary.ready || this.userData.isDestroyed) return null;
-        this.weapons.primary.ready = false;
-        setTimeout(() => { this.weapons.primary.ready = true; }, this.weapons.primary.cooldown);
-
-        const dir = new THREE.Vector3(0,0,-1).applyQuaternion(this.quaternion).normalize();
-        const origins = this.userData.gunOffsets.map(offset => this.localToWorld(offset.clone()));
-        return { origins, dir, damage: 10, speed: 4.0, type: 'bullet', owner: this };
-    }
-
-    fireSecondary(target) {
-        if (!this.weapons.secondary.ready || this.weapons.secondary.ammo <= 0 || this.userData.isDestroyed) return null;
-        
-        this.weapons.secondary.ammo--;
-        this.weapons.secondary.ready = false;
-        setTimeout(() => { this.weapons.secondary.ready = true; }, this.weapons.secondary.cooldown);
-
-        const dir = new THREE.Vector3(0,0,-1).applyQuaternion(this.quaternion).normalize();
-        const origin = this.localToWorld(new THREE.Vector3(0, 1.5, -2));
-        return { origin, dir, damage: 80, speed: 2.0, type: 'missile', target, owner: this };
-    }
-    
-    // --- FÍSICA Y ACTUALIZACIÓN (PRO) ---
-    update(dt, input) {
-        if (this.userData.isDestroyed) return;
-        
-        // FÍSICA DE SUSPENSIÓN (visual)
-        const suspensionTarget = -input.forward * 0.1 + (Math.abs(this.userData.speed) > 1.0 ? Math.sin(performance.now() / 100) * 0.05 : 0);
-        this.userData.suspensionOffset = THREE.MathUtils.lerp(this.userData.suspensionOffset, suspensionTarget, 0.1);
-        this.children[0].position.y = (this.userData.type === 'PlayerCyber' ? 0.8 : 1.0) + this.userData.suspensionOffset;
-
-        // ACELERACIÓN Y FRENO
-        const maxSpeed = this.userData.maxSpeed * (input.turbo ? 1.6 : 1.0);
-        if (input.forward > 0.1) this.userData.speed += 0.04 * input.forward * dt;
-        else if (input.forward < -0.1) this.userData.speed += 0.06 * input.forward * dt; // Reversa más potente
-        else this.userData.speed *= 0.97; // Fricción
-        this.userData.speed = THREE.MathUtils.clamp(this.userData.speed, -maxSpeed * 0.4, maxSpeed);
-
-        // LUZ DE FRENO
-        if(this.userData.tailLight) this.userData.tailLight.material.emissiveIntensity = (input.forward < -0.1) ? 5 : 1;
-
-        // FÍSICA DE DERRAPE (Drifting)
-        const speedFactor = Math.abs(this.userData.speed) / this.userData.maxSpeed;
-        if (speedFactor > 0.5 && Math.abs(input.turn) > 0.5) {
-            this.userData.driftFactor = Math.min(1.0, this.userData.driftFactor + dt * 0.1);
-        } else {
-            this.userData.driftFactor = Math.max(0.0, this.userData.driftFactor - dt * 0.1);
-        }
-        const rotMultiplier = 1.0 - this.userData.driftFactor * 0.4;
-        const driftAngle = -input.turn * this.userData.driftFactor * 0.1;
-        
-        // GIRO Y MOVIMIENTO
-        if(Math.abs(this.userData.speed) > 0.05) {
-            this.rotation.y += -input.turn * this.userData.rotSpeed * speedFactor * dt * rotMultiplier;
-        }
-
-        const forwardVector = new THREE.Vector3(driftAngle, 0, -1).applyQuaternion(this.quaternion).normalize();
-        this.position.addScaledVector(forwardVector, this.userData.speed * dt);
-    }
-}
-
-// =========================================================================
-// == INICIALIZACIÓN PRINCIPAL DEL JUEGO (init)                           ==
-// =========================================================================
-
-let renderer, composer, scene, camera, minimapCamera, playerCar, effectManager;
-const allCars = [];
-const activeProjectiles = [];
-let lastFpsTime = 0, frames = 0;
-
-function init() {
-    // --- CONFIGURACIÓN BÁSICA DE THREE.JS ---
-    scene = new THREE.Scene();
-    
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = GAME_CONFIG.SHADOWS_ENABLED;
-    if(GAME_CONFIG.SHADOWS_ENABLED) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.autoClear = false; // Para renderizar minimapa
-    document.getElementById('holder').appendChild(renderer.domElement);
-
-    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.5, 2000);
-    minimapCamera = new THREE.OrthographicCamera(-75, 75, 75, -75, 0.1, 200);
-    minimapCamera.rotation.x = -Math.PI / 2;
-    scene.add(minimapCamera);
-
-    effectManager = new EffectManager(scene);
-
-    // --- SKYBOX (PRO) ---
-    const cubeTexLoader = new THREE.CubeTextureLoader();
-    const skyboxTexture = cubeTexLoader.load([
-        'https://threejs.org/examples/textures/cube/Bridge2/px.jpg', 'https://threejs.org/examples/textures/cube/Bridge2/nx.jpg',
-        'https://threejs.org/examples/textures/cube/Bridge2/py.jpg', 'https://threejs.org/examples/textures/cube/Bridge2/ny.jpg',
-        'https://threejs.org/examples/textures/cube/Bridge2/pz.jpg', 'https://threejs.org/examples/textures/cube/Bridge2/nz.jpg'
-    ]);
-    scene.background = skyboxTexture;
-    
-    // --- ILUMINACIÓN (PRO) ---
-    scene.add(new THREE.AmbientLight(0x404080, 2.0));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    dirLight.position.set(150, 200, 100);
-    dirLight.castShadow = GAME_CONFIG.SHADOWS_ENABLED;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    const d = GAME_CONFIG.CITY_SIZE/2;
-    dirLight.shadow.camera.left = -d; dirLight.shadow.camera.right = d;
-    dirLight.shadow.camera.top = d; dirLight.shadow.camera.bottom = -d;
-    scene.add(dirLight);
-
-    // --- LENSFLARE (EFECTO CINEMÁTICO) ---
-    const texLoader = new THREE.TextureLoader();
-    const texFlare0 = texLoader.load("https://threejs.org/examples/textures/lensflare/lensflare0.png");
-    const texFlare3 = texLoader.load("https://threejs.org/examples/textures/lensflare/lensflare3.png");
-    const lensflare = new Lensflare();
-    lensflare.addElement(new LensflareElement(texFlare0, 700, 0, dirLight.color));
-    lensflare.addElement(new LensflareElement(texFlare3, 60, 0.6));
-    dirLight.add(lensflare);
-
-    // --- POST-PROCESAMIENTO (BLOOM) ---
-    if (GAME_CONFIG.BLOOM_ENABLED) {
-        composer = new EffectComposer(renderer);
-        composer.addPass(new RenderPass(scene, camera));
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.2, 0.1);
-        composer.addPass(bloomPass);
-    }
-
-    // --- CREACIÓN DEL MUNDO (PRO) ---
-    createProceduralCity();
-
-    // --- CREACIÓN DE VEHÍCULOS ---
-    playerCar = new CarController('PlayerCyber', false, effectManager);
-    scene.add(playerCar);
-    allCars.push(playerCar);
-
-    for (let i = 0; i < GAME_CONFIG.AI_COUNT; i++) {
-        const type = Math.random() < 0.3 ? 'EnemyEnforcer' : 'EnemyScout';
-        const aiCar = new CarController(type, true, effectManager);
-        aiCar.position.set((Math.random() - 0.5) * GAME_CONFIG.CITY_SIZE, 0, (Math.random() - 0.5) * GAME_CONFIG.CITY_SIZE);
-        scene.add(aiCar);
-        allCars.push(aiCar);
-    }
-    for (let i = 0; i < GAME_CONFIG.TRAFFIC_COUNT; i++) {
-        const trafficCar = new CarController('Civilian', true, effectManager);
-        trafficCar.position.set((Math.random() - 0.5) * GAME_CONFIG.CITY_SIZE, 0, (Math.random() - 0.5) * GAME_CONFIG.CITY_SIZE);
-        scene.add(trafficCar);
-        allCars.push(trafficCar);
-    }
-
-    // --- INICIALIZACIÓN DE CONTROLES Y BUCLE DE JUEGO ---
-    setupControls();
-    document.getElementById('loading').style.display = 'none';
-    animate();
-}
-
-// --- GENERADOR DE CIUDAD PROCEDURAL (PRO) ---
-function createProceduralCity() {
-    const { CITY_SIZE, BLOCK_SIZE, STREET_WIDTH, BUILDING_MAX_H } = GAME_CONFIG;
-    
-    // Suelo (Asfalto)
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.9 });
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE), groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = GAME_CONFIG.SHADOWS_ENABLED;
-    scene.add(ground);
-
-    // Inspirado en la idea de llevar las calles de Playas JM a un videojuego,
-    // creamos una grilla urbana densa.
-    const buildingGeo = new THREE.BoxGeometry(1, 1, 1);
-    const buildingMat = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.3, roughness: 0.6 });
-    const neonMat = new THREE.MeshBasicMaterial();
-
-    const totalBlockSize = BLOCK_SIZE + STREET_WIDTH;
-    const numBlocks = Math.floor(CITY_SIZE / totalBlockSize);
-
-    for (let i = -numBlocks / 2; i < numBlocks / 2; i++) {
-        for (let j = -numBlocks / 2; j < numBlocks / 2; j++) {
-            const x = i * totalBlockSize;
-            const z = j * totalBlockSize;
-
-            // Edificio
-            const height = Math.random() * BUILDING_MAX_H * 0.7 + BUILDING_MAX_H * 0.3;
-            const building = new THREE.Mesh(buildingGeo, buildingMat);
-            building.scale.set(BLOCK_SIZE, height, BLOCK_SIZE);
-            building.position.set(x, height / 2, z);
-            building.castShadow = GAME_CONFIG.SHADOWS_ENABLED;
-            building.receiveShadow = GAME_CONFIG.SHADOWS_ENABLED;
-            scene.add(building);
-            
-            // Neones
-            if (Math.random() > 0.5) {
-                const neonColor = Math.random() > 0.5 ? 0xff00ff : 0x00ffff;
-                const neon = new THREE.Mesh(new THREE.BoxGeometry(BLOCK_SIZE + 0.2, 1, 1), neonMat.clone());
-                neon.material.color.setHex(neonColor);
-                neon.position.set(x, height * (0.5 + Math.random() * 0.4), z + BLOCK_SIZE / 2 + 0.1);
-                scene.add(neon);
-            }
-
-            // Farola
-            if (Math.random() > 0.3) {
-                const light = new THREE.PointLight(0xffddaa, 50, 30);
-                light.position.set(x + totalBlockSize / 2, 10, z + totalBlockSize / 2);
-                scene.add(light);
-            }
-        }
-    }
-}
-
-
-// --- LÓGICA DE PROYECTILES (PRO) ---
-function createProjectile(data) {
-    let proj;
-    if (data.type === 'bullet') {
-        proj = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
-    } else { // missile
-        proj = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 1.2, 8), new THREE.MeshStandardMaterial({ color: 0xcccccc, emissive: 0xff0000 }));
-        const light = new THREE.PointLight(0xff0000, 20, 10);
-        proj.add(light);
-    }
-    proj.userData = data;
-    if(data.origins) proj.position.copy(data.origins[0]); else proj.position.copy(data.origin);
-    
-    // Rotar misiles para que apunten hacia adelante
-    if(data.type === 'missile') proj.quaternion.copy(data.owner.quaternion);
-    
-    scene.add(proj);
-    activeProjectiles.push(proj);
-
-    // Si es una ráfaga de ametralladora, crea el segundo proyectil
-    if(data.type === 'bullet' && data.origins.length > 1) {
-       const proj2 = proj.clone();
-       proj2.userData = {...data};
-       proj2.position.copy(data.origins[1]);
-       scene.add(proj2);
-       activeProjectiles.push(proj2);
-    }
-}
-
-function updateProjectiles(dt) {
-    for (let i = activeProjectiles.length - 1; i >= 0; i--) {
-        const p = activeProjectiles[i];
-
-        if (p.userData.type === 'missile' && p.userData.target && !p.userData.target.userData.isDestroyed) {
-            // Lógica de seguimiento de misiles
-            const targetDirection = p.userData.target.position.clone().sub(p.position).normalize();
-            p.userData.dir.lerp(targetDirection, dt * 0.2).normalize();
-            p.quaternion.slerp(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1), p.userData.dir), dt * 2.0);
-        }
-
-        p.position.addScaledVector(p.userData.dir, p.userData.speed * dt);
-        
-        // Colisiones
-        let hit = false;
-        for(const car of allCars) {
-            if (car !== p.userData.owner && !car.userData.isDestroyed && p.position.distanceTo(car.position) < 3.0) {
-                car.applyDamage(p.userData.damage);
-                hit = true;
-                break;
-            }
-        }
-        
-        if (hit || p.position.y < -10 || Math.abs(p.position.x) > GAME_CONFIG.CITY_SIZE/2) {
-            if(p.userData.type === 'missile') effectManager.createExplosion(p.position, 0.8);
-            else effectManager.createImpactSparks(p.position);
-            scene.remove(p);
-            activeProjectiles.splice(i, 1);
-        }
-    }
-}
-
-
-// --- CONTROLES Y ENTRADA DEL JUGADOR ---
-const playerInput = { forward: 0, turn: 0, turbo: false, fire: false, fire_msl: false };
-function setupControls(){
-    // Joystick
-    const joy = document.getElementById('joy'), stickEl = document.getElementById('stick');
-    let touchId = null, baseX = 0, baseY = 0;
-    joy.addEventListener('touchstart', e => { e.preventDefault(); const t = e.changedTouches[0]; touchId = t.identifier; baseX = t.clientX; baseY = t.clientY; }, { passive: false });
-    joy.addEventListener('touchmove', e => { e.preventDefault(); for(const t of e.changedTouches){ if(t.identifier === touchId){ const dx = t.clientX - baseX, dy = t.clientY - baseY, max = 50; playerInput.turn = THREE.MathUtils.clamp(dx / max, -1, 1); playerInput.forward = THREE.MathUtils.clamp(-(dy / max), -1, 1); stickEl.style.transform = `translate(${playerInput.turn * 35}px,${-playerInput.forward * 35}px)`; } } }, { passive: false });
-    const endTouch = () => { touchId = null; playerInput.forward = 0; playerInput.turn = 0; stickEl.style.transform = `translate(0,0)`; };
-    joy.addEventListener('touchend', endTouch); joy.addEventListener('touchcancel', endTouch);
-
-    // Botones
-    const setupButton = (id, key) => {
-        const btn = document.getElementById(id);
-        btn.addEventListener('touchstart', e => { e.preventDefault(); playerInput[key] = true; }, { passive: false });
-        btn.addEventListener('touchend', e => { e.preventDefault(); playerInput[key] = false; });
-    };
-    setupButton('fire', 'fire');
-    setupButton('turbo', 'turbo');
-    setupButton('missile', 'fire_msl');
-}
-
-
-// --- ACTUALIZACIÓN DE UI Y CÁMARAS ---
-let targetLockEnemy = null;
-function updateUIandCamera(){
-    // Cámara principal
-    const offset = new THREE.Vector3(0, 5 + playerCar.userData.speed * 2, 12 + playerCar.userData.speed * 2).applyQuaternion(playerCar.quaternion);
-    const desiredPos = playerCar.position.clone().add(offset);
-    camera.position.lerp(desiredPos, 0.1);
-    camera.lookAt(playerCar.position.clone().add(new THREE.Vector3(0, 2, 0)));
-
-    // HUD
-    document.getElementById('healthBar').style.width = (playerCar.userData.health / playerCar.userData.maxHealth * 100) + '%';
-    document.getElementById('speedDisplay').textContent = Math.round(Math.abs(playerCar.userData.speed / playerCar.userData.maxSpeed * 220));
-    document.getElementById('ammo-msl').textContent = playerCar.weapons.secondary.ammo;
-    if (!playerCar.weapons.secondary.ready) document.getElementById('missile').classList.add('btn-cooldown');
-    else document.getElementById('missile').classList.remove('btn-cooldown');
-    
-    // Buscando objetivo para misiles
-    let closestEnemy = null, minAngle = 0.5;
-    const forwardVector = new THREE.Vector3(0,0,-1).applyQuaternion(playerCar.quaternion);
-    allCars.forEach(car => {
-        if(car.userData.isAI && car.userData.type !== 'Civilian' && !car.userData.isDestroyed){
-            const vecToEnemy = car.position.clone().sub(playerCar.position).normalize();
-            const angle = forwardVector.dot(vecToEnemy);
-            if(angle > minAngle){
-                minAngle = angle;
-                closestEnemy = car;
-            }
-        }
-    });
-    targetLockEnemy = closestEnemy;
-
-    // Indicador de objetivo
-    const lockEl = document.getElementById('target-lock');
-    if (targetLockEnemy) {
-        const screenPos = targetLockEnemy.position.clone().project(camera);
-        lockEl.style.left = `${(screenPos.x + 1) / 2 * window.innerWidth - 20}px`;
-        lockEl.style.top = `${(-screenPos.y + 1) / 2 * window.innerHeight - 20}px`;
-        lockEl.style.opacity = '1';
-    } else {
-        lockEl.style.opacity = '0';
-    }
-}
-
-// --- BUCLE PRINCIPAL DEL JUEGO (animate) ---
-const clock = new THREE.Clock();
-function animate() {
+  function animate(now){
     requestAnimationFrame(animate);
-    const dt = clock.getDelta();
-
-    // Lógica del jugador
-    if(playerInput.fire){
-        const projData = playerCar.firePrimary();
-        if(projData) createProjectile(projData);
-    }
-    if(playerInput.fire_msl){
-        const projData = playerCar.fireSecondary(targetLockEnemy);
-        if(projData) createProjectile(projData);
-        playerInput.fire_msl = false; // Disparo único por pulsación
-    }
-    playerCar.update(dt, playerInput);
-
-    // Lógica de IA y Proyectiles
-    allCars.forEach(car => {
-        if (car.userData.isAI) car.updateAI(dt, playerCar);
-    });
-    updateProjectiles(dt);
-    effectManager.update(dt);
-    
-    // Actualizar UI y Cámaras
-    updateUIandCamera();
-
-    // Renderizado
-    renderer.clear();
-    
-    // Renderizado principal
-    const { innerWidth, innerHeight } = window;
-    renderer.setViewport(0, 0, innerWidth, innerHeight);
-    renderer.setScissor(0, 0, innerWidth, innerHeight);
-    renderer.setScissorTest(true);
-    if (composer) composer.render();
-    else renderer.render(scene, camera);
-
-    // Renderizado del minimapa
-    const mapSize = 150;
-    renderer.setViewport(innerWidth - mapSize - 10, innerHeight - mapSize - 10, mapSize, mapSize);
-    renderer.setScissor(innerWidth - mapSize - 10, innerHeight - mapSize - 10, mapSize, mapSize);
-    renderer.setScissorTest(true);
-    minimapCamera.position.set(playerCar.position.x, 100, playerCar.position.z);
-    renderer.render(scene, minimapCamera);
-
-    // FPS
+    const dt=(now-last)/1000;
+    last=now;
     frames++;
-    const now = performance.now();
-    if (now >= lastFpsTime + 1000) {
-        document.getElementById('fps').textContent = `FPS: ${frames}`;
-        frames = 0;
-        lastFpsTime = now;
+    if(now-lastFps>1000){
+      fps.textContent='FPS: '+frames;
+      frames=0;
+      lastFps=now;
     }
+
+    t+=dt;
+    car.position.x=Math.sin(t)*10;
+    car.position.z=Math.cos(t)*10;
+    car.rotation.y=t;
+
+    for(let i=bullets.length-1;i>=0;i--){
+      const b=bullets[i];
+      b.position.addScaledVector(b.userData.dir,2);
+      if(b.position.length()>500){
+        scene.remove(b);
+        bullets.splice(i,1);
+      }
+    }
+
+    const kmh=Math.abs(Math.sin(t)*80).toFixed(0);
+    speed.innerHTML=kmh+"<br><small>KM/H</small>";
+
+    camera.position.lerp(new THREE.Vector3(car.position.x,car.position.y+5,car.position.z+12),0.1);
+    camera.lookAt(car.position);
+
+    renderer.render(scene,camera);
+  }
+  animate();
 }
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    if (composer) composer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// INICIAR JUEGO
 init();
-
 </script>
 </body>
 </html>
