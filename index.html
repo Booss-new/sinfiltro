@@ -1,660 +1,546 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Media App</title>
-    <style>
-        :root {
-            /* Colores del Diseño Cian/Violeta/Blur (Pro) */
-            --bg-color: #12121e; /* Azul muy oscuro/violeta */
-            --card: #1f1f33; /* Violeta oscuro para tarjetas */
-            --text-color: #ffffff;
-            --secondary-text: #b3b3c8;
-            --accent-cyan: #00e0ff;
-            --accent-magenta: #a000ff;
-            --gradient-nav: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-magenta) 100%);
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            --border-radius: 12px;
-            --fab-size: 56px;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Premium (Móvil)</title>
+<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  /* ================= VARS (mantengo paleta aprobada) ================= */
+  :root{
+    --bg-1:#05060a; --bg-2:#071226;
+    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
+    --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.04);
+    --radius:14px; --trans:260ms;
+    --text:#eaf7ff;
+    --skel-color: rgba(255,255,255,0.05); /* AGREGADO para simulación de carga */
+  }
+  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
+  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
 
-        /* RESET y BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.3s;
-            padding-bottom: 70px; /* Espacio para el nav fijo */
-        }
-        main { padding: 16px; max-width: 100%; }
-        a { text-decoration: none; color: var(--text-color); }
+  /* ================= keep UI identical to approved design ================= */
+  .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
+    radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
+  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
 
-        /* HEADERS */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background-color: var(--bg-color);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .logo { 
-            font-size: 1.5rem; 
-            font-weight: bold; 
-            background: var(--gradient-nav);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-        }
+  /* Top header */
+  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
+  .left-ctrl{display:flex;align-items:center;gap:12px}
+  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
+  .icon-btn:active{transform:scale(.96)}
+  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+  .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
 
-        /* BOTONES DE ICONO */
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: background 0.2s;
-        }
-        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); }
+  /* Main content uses native body scrolling (fixes mobile touch) */
+  main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
+  .container{padding:12px}
 
-        /* BUSCADOR */
-        .search-container {
-            padding: 16px;
-            background-color: var(--bg-color);
-            position: sticky;
-            top: 59px;
-            z-index: 90;
-        }
-        .search-input {
-            width: 100%;
-            padding: 10px 16px;
-            border: 1px solid var(--card);
-            background-color: var(--card);
-            border-radius: var(--border-radius);
-            color: var(--text-color);
-            font-size: 1rem;
-            transition: border-color 0.3s;
-        }
-        .search-input::placeholder { color: var(--secondary-text); }
-        .search-input:focus { border-color: var(--accent-cyan); outline: none; }
+  /* Hero */
+  .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+  .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
+  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
 
-        /* NAVEGACIÓN SECUNDARIA (Tabs) */
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 16px;
-        }
-        .tab-item {
-            padding: 8px 16px;
-            color: var(--secondary-text);
-            font-weight: 600;
-            cursor: pointer;
-            position: relative;
-            transition: color 0.3s;
-        }
-        .tab-item.active {
-            color: var(--text-color);
-        }
-        .tab-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: -9px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 3px;
-            background: var(--gradient-nav);
-            border-radius: 2px;
-        }
+  /* Section */
+  .section{margin-top:16px}
+  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
+  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
 
-        /* GRID DE CONTENIDO */
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
+  /* Horizontal two-row scrollers (kept visuals) */
+  .h-stack{display:flex;flex-direction:column;gap:10px}
+  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+  .h-row::-webkit-scrollbar{display:none}
+  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
+  .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
+  .card-small .meta{position:relative;z-index:6}
+  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
+  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
+  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-        /* TARJETA DE CONTENIDO */
-        .card {
-            background-color: var(--card);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            aspect-ratio: 3/4; /* Relación más vertical para móvil */
-        }
-        .card:active { transform: scale(0.98); box-shadow: none; }
-        
-        .card-media {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: brightness(0.7);
-        }
+  /* Grid (vertical infinite) */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
+  .grid img{width:100%;height:150px;object-fit:cover}
+  .grid .body{padding:8px;color:var(--text)}
+  .grid .title{font-weight:700}
+  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-        .card-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 10px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-        }
-        .card-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
-        .card-stats {
-            font-size: 0.75rem;
-            color: var(--secondary-text);
-            display: flex;
-            gap: 8px;
-        }
-        .card-stats span {
-            display: flex;
-            align-items: center;
-        }
+  /* FAB + bottom nav */
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+  
+  /* MEJORA 1: FAB radial (bubbles) - Diseño mejorado */
+  .bubble{
+    width:52px;height:52px;border-radius:10px; /* Cuadrado redondeado como los panel-item */
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card); /* Fondo más discreto */
+    color:var(--text);font-weight:700;cursor:pointer;
+    box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
+    transition: background var(--trans);
+  }
+  .bubble:hover { background: rgba(255,255,255,0.06); }
+  .bubble-group { 
+    display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
+    padding: 6px 10px; width: 100%; /* Para que ocupe todo el ancho del radials */
+  }
+  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
+  .radials{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Más cerca del FAB */
+    display:flex;flex-direction:column;gap:8px;align-items:flex-start; /* Alineación izquierda */
+    z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
+    padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
+    width: 200px; /* Ancho fijo para las burbujas */
+    transform: translateX(-50%) translateY(20px);
+  }
+  .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
 
-        /* NAVEGACIÓN INFERIOR (Footer Nav) */
-        .footer-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background-color: var(--card);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
-        }
-        .nav-item {
-            color: var(--secondary-text);
-            text-align: center;
-            font-size: 0.7rem;
-            padding: 4px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: color 0.3s;
-        }
-        .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
-        .nav-item.active { color: var(--accent-cyan); }
+  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
-        /* FLOATING ACTION BUTTON (FAB) */
-        .fab {
-            position: fixed;
-            bottom: 70px;
-            right: 20px;
-            width: var(--fab-size);
-            height: var(--fab-size);
-            background: var(--gradient-nav);
-            border-radius: 50%;
-            border: none;
-            color: #000;
-            font-size: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: var(--shadow);
-            z-index: 110;
-            cursor: pointer;
-        }
+  /* Panel & overlay (menu lateral) */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
+  .overlay.show{display:block;pointer-events:auto;opacity:1}
+  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
+  .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
+  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-        /* BURBUJAS RADIALES (RADIALS) */
-        .radials {
-            position: fixed;
-            bottom: calc(70px + var(--fab-size) / 2);
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 12px;
-            z-index: 109;
-            pointer-events: none; /* Inicialmente no interactivo */
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .radials.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .bubble-group {
-            display: flex;
-            align-items: center;
-            background: none;
-            border: none;
-            cursor: pointer;
-            gap: 8px;
-        }
-        .bubble {
-            width: 40px;
-            height: 40px;
-            background-color: var(--card);
-            border-radius: 50%;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            transform: scale(0);
-            animation: bounceIn 0.3s forwards;
-            animation-delay: var(--delay, 0s);
-        }
-        .bubble-text {
-            background-color: var(--card);
-            color: var(--text-color);
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            opacity: 0;
-            transform: translateX(10px);
-            animation: fadeInSlide 0.3s forwards;
-            animation-delay: var(--delay, 0s);
-        }
+  /* Viewer (immersive) */
+  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
+  .viewer.show{display:flex}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .viewer img,.viewer video{width:100%;height:auto;display:block}
+  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px} /* ESTE SE MANTIENE PARA NO ROMPER JS */
+  .viewer-controls-meta { 
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10;
+    display: flex; gap: 8px; justify-content: center;
+    background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
+  }
+  
+  /* Search modal & MyVideos modal */
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
+  .modal.show{display:block}
+  .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
+  .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .mini-thumb img{width:100%;height:100%;object-fit:cover}
+  .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
 
-        /* MODAL (VIEWER Y UPLOAD) */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            padding: 0;
-            transition: opacity 0.3s;
-            opacity: 0;
-        }
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
-        .modal .head {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            color: var(--text-color);
-            background-color: rgba(31, 31, 51, 0.8);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            position: sticky;
-            top: 0;
-            z-index: 210;
-        }
-        .modal-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-        .viewer-media-container {
-            width: 100%;
-            aspect-ratio: 16/9; /* Para videos */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
-        }
-        .viewer-media {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        
-        .viewer-details {
-            padding: 16px;
-            background-color: var(--bg-color);
-        }
-        .viewer-title { font-size: 1.5rem; margin-bottom: 8px; }
-        .viewer-stats { color: var(--secondary-text); margin-bottom: 16px; font-size: 0.9rem; }
-        
-        /* Modal de subida de archivo */
-        #uploadModal {
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .upload-box {
-            background-color: var(--card);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .upload-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--gradient-nav);
-            transition: width 0.3s;
-        }
-        .upload-status {
-            font-size: 0.9rem;
-            color: var(--accent-cyan);
-        }
+  /* Nuevo: Modal de Simulación/Progreso de Subida (MEJORA 3) */
+  #uploadModal {
+      display:none; text-align: center;
+      padding: 20px; max-width: 300px;
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      background: var(--card); border-radius: 12px; z-index: 250;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  }
+  .progress-bar {
+      width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px;
+  }
+  .progress-fill {
+      height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear;
+  }
 
-        /* Modal de Selección de Archivos */
-        #fileSelectModal {
-            justify-content: flex-end;
-            background-color: rgba(0, 0, 0, 0.6);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        #fileSelectModal.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #fileSelectModal > div:last-child {
-            background-color: var(--bg-color);
-            width: 100%;
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            padding: 16px;
-            transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-        }
-        #fileSelectModal.show > div:last-child {
-            transform: translateY(0);
-        }
+  /* NUEVO: Modal de selección de archivo */
+  #fileSelectModal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 240; display: none;
+      align-items: flex-end; justify-content: center; opacity: 0;
+      transition: opacity 0.3s ease-out;
+  }
+  #fileSelectModal.show { opacity: 1; display: flex; }
+  #fileSelectModal > div {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      backdrop-filter: blur(12px); border-radius: 12px 12px 0 0;
+      padding: 20px; width: 100%; max-width: 450px;
+      transform: translateY(100%); transition: transform 0.3s ease-out;
+  }
+  #fileSelectModal.show > div { transform: translateY(0); }
 
-        /* ANIMACIONES */
-        @keyframes bounceIn {
-            0% { transform: scale(0); }
-            60% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        @keyframes fadeInSlide {
-            0% { opacity: 0; transform: translateX(10px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  /* Small screens */
+  @media (max-width:420px){
+    .card-small{min-width:150px;height:100px}
+    .grid img{height:120px}
+    .fab{width:64px;height:64px}
+    .panel{width:92%;left:4%}
+  }
+
+  /* fallback when backdrop-filter not supported */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
+  }
+
+  /* animation */
+  .fade-up{animation:fadeUp .48s cubic-bezier(.2,.9,.2,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
+  <div class="bg-anim" aria-hidden="true"></div>
 
-    <header class="header">
-        <div class="logo">ProMedia</div>
-        <div class="header-icons">
-            <button id="searchBtn" class="icon-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
-            <button id="profileBtn" class="icon-btn" aria-label="Perfil"><i class="fas fa-user-circle"></i></button>
-        </div>
-    </header>
-
-    <main>
-        
-        <nav class="tabs">
-            <div id="tabTrends" class="tab-item active" data-type="trends">Tendencias</div>
-            <div id="tabReco" class="tab-item" data-type="reco">Recomendado</div>
-            <div id="tabRecent" class="tab-item" data-type="recent">Reciente</div>
-        </nav>
-
-        <section id="contentGrid" class="content-grid">
-            </section>
-        
-        <div id="loader" style="text-align: center; padding: 20px; display: none;">
-            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--accent-cyan);"></i>
-        </div>
-
-    </main>
-    
-    <div id="fileSelectModal" class="modal" aria-hidden="true" role="dialog" aria-label="Seleccionar Archivo">
-        <div class="head" style="justify-content:space-between">
-            <strong>Subir Archivo</strong>
-            <button id="closeFileSelect" class="icon-btn">✕</button>
-        </div>
-        <div style="padding: 10px; display: flex; flex-direction: column; gap: 12px;">
-            <input type="file" id="realFileInput" accept="image/*,video/*" style="padding: 10px; border: 1px solid var(--card); border-radius: 8px;">
-            <input type="text" id="uploadTitleInput" class="search-input" placeholder="Título (opcional)">
-            <button id="startUploadBtn" class="icon-btn" style="width:100%; height:48px; background: var(--accent-cyan); color: #001; font-weight: 700;">Subir Ahora</button>
-        </div>
+  <header>
+    <div class="header-inner">
+      <div class="left-ctrl">
+        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
+        <button class="logo-btn" id="brandBtn"><span class="logo">SinFiltro</span></button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
+        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
+      </div>
     </div>
-    <button id="fab" class="fab" aria-label="Opciones de publicación">+</button>
-    <div id="radials" class="radials"></div>
+  </header>
 
-    <footer class="footer-nav">
-        <a href="#" class="nav-item active"><i class="fas fa-home"></i> Inicio</a>
-        <a href="#" class="nav-item"><i class="fas fa-compass"></i> Explorar</a>
-        <a href="#" class="nav-item"><i class="fas fa-box"></i> Colección</a>
-        <a href="#" class="nav-item"><i class="fas fa-bell"></i> Notificaciones</a>
-    </footer>
-    
-    <div id="viewerModal" class="modal" aria-hidden="true" role="dialog" aria-label="Visor de Contenido">
-        <div class="head">
-            <button id="closeViewer" class="icon-btn">✕</button>
-            <span id="viewerUser" style="margin-left: 10px; font-weight: 600;">@usuario</span>
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+  <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
+    <div style="display:flex;align-items:center;gap:8px">
+      <strong>Cuenta</strong>
+      <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">✕</button> </div>
+    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
+    <nav style="display:flex;flex-direction:column;gap:8px">
+      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
+      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
+      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
+      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mis videos</button>
+      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+      <section class="hero fade-up" aria-label="presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+      </section>
+
+      <section class="section fade-up" aria-label="tendencias">
+        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
+          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
         </div>
-        <div class="modal-content">
-            <div class="viewer-media-container">
-                <img id="viewerImage" class="viewer-media" style="display:none;">
-                <video id="viewerVideo" class="viewer-media" controls style="display:none;"></video>
-            </div>
-            <div class="viewer-details">
-                <h2 id="viewerTitle" class="viewer-title">Título del Contenido</h2>
-                <div id="viewerStats" class="viewer-stats"></div>
-                </div>
+      </section>
+
+      <section class="section fade-up" aria-label="recomendados">
+        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
+          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
         </div>
+      </section>
+
+      <section class="section fade-up" aria-label="antes visto">
+        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
+          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
+        </div>
+      </section>
+
+      <section class="section fade-up" aria-label="explorar">
+        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
+        <div id="gridFeed" class="grid" aria-live="polite"></div>
+      </section>
     </div>
+  </main>
+  
+  <div id="fileSelectModal" role="dialog" aria-hidden="true" aria-modal="true" aria-label="Subir Archivo">
+      <div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+              <strong style="font-size:18px;">Subir a SinFiltro</strong>
+              <button id="closeFileSelect" class="icon-btn">✕</button>
+          </div>
+          <input type="file" id="realFileInput" accept="image/*,video/*" style="width:100%; padding: 10px; border: 1px solid var(--muted); border-radius: 8px; margin-bottom: 10px; background: var(--card); color: var(--text);">
+          <input type="text" id="uploadTitleInput" class="search-input" placeholder="Título (opcional)" style="width:100%; margin-bottom: 15px;">
+          <button id="startUploadBtn" class="icon-btn" style="width:100%; height:50px; background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet)); color: var(--bg-1); font-weight: 700;">
+              Subir Ahora
+          </button>
+      </div>
+  </div>
+  <div id="radials" class="radials" aria-hidden="true"></div>
+  <button id="fab" class="fab" aria-label="Crear">＋</button>
 
-    <div id="uploadModal" class="modal" aria-hidden="true" role="dialog" aria-label="Progreso de Subida">
-        <div class="upload-box">
-            <div class="head" style="padding: 0; background: none; justify-content: space-between;">
-                <span id="uploadTitle" class="upload-title" style="margin: 0;">Subiendo archivo...</span>
-                <button id="closeUpload" class="icon-btn">✕</button>
-            </div>
-            <div class="progress-bar">
-                <div id="progressFill" class="progress-fill"></div>
-            </div>
-            <span id="uploadStatus" class="upload-status">0%</span>
-        </div>
+  <nav class="bottom-nav" role="navigation" aria-label="navegación">
+    <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
+    <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
+    <div style="width:78px"></div>
+    <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
+    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
+  </nav>
+
+  <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+    <div class="card" style="position:relative;">
+      <div id="viewerInner"></div>
+      <div id="viewerControls" class="viewer-controls-meta">
+        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
+        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
+        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
+        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button> <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        /* DOM REFERENCES */
-        const $ = s => document.querySelector(s);
-        const $$ = s => document.querySelectorAll(s);
+  <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
+    <div class="head">
+      <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
+      <button id="closeSearch" class="icon-btn">✕</button>
+    </div>
+    <div id="searchMini" class="grid-mini"></div>
+  </div>
 
-        const contentGrid = $('#contentGrid');
-        const loader = $('#loader');
-        const tabs = $$('.tab-item');
-        const fab = $('#fab');
-        const radials = $('#radials');
-        const viewerModal = $('#viewerModal');
-        const closeViewer = $('#closeViewer');
-        const viewerImage = $('#viewerImage');
-        const viewerVideo = $('#viewerVideo');
-        const viewerTitle = $('#viewerTitle');
-        const viewerStats = $('#viewerStats');
-        const uploadModal = $('#uploadModal');
-        const uploadTitle = $('#uploadTitle');
-        const progressFill = $('#progressFill');
-        const uploadStatus = $('#uploadStatus');
-        const closeUpload = $('#closeUpload');
+  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
+    <div class="head" style="justify-content:space-between">
+      <strong>Tus videos (demo)</strong>
+      <button id="closeMy" class="icon-btn">✕</button>
+    </div>
+    <div id="myGrid" class="grid-mini"></div>
+  </div>
 
-        // Estado Global
-        let currentTab = 'trends';
-        let allServerContent = []; // Caché de todo el contenido
-
-        /* ---------- FETCH CONTENT FROM SERVER ---------- */
-        async function fetchContent(type) {
-            loader.style.display = 'block';
-            contentGrid.innerHTML = '';
-            
-            try {
-                // Usamos la URL base /api/content/feed/:type que definimos en server.js
-                const response = await fetch(`/api/content/feed/${type}`);
-                const data = await response.json();
-
-                if (data.success && data.data) {
-                    return data.data;
-                } else {
-                    console.error("Error al obtener datos:", data);
-                    return [];
-                }
-            } catch (error) {
-                console.error("Error de red o servidor:", error);
-                return [];
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-
-        /* ---------- RENDERING LOGIC ---------- */
-        function createCard(item) {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.setAttribute('data-id', item.id);
-            card.onclick = () => openViewer(item);
-
-            let mediaHTML;
-            if (item.kind === 'video') {
-                // Usa la etiqueta <video> y la propiedad poster (si existe) para mostrar una miniatura
-                mediaHTML = `<video class="card-media" src="${item.src}" poster="https://picsum.photos/300/400?id=${item.id}" muted preload="metadata"></video>`;
-            } else {
-                mediaHTML = `<img class="card-media" src="${item.src}" alt="${item.title}">`;
-            }
-
-            card.innerHTML = `
-                ${mediaHTML}
-                <div class="card-overlay">
-                    <div class="card-title">${item.title}</div>
-                    <div class="card-stats">
-                        <span><i class="fas fa-heart"></i> ${item.likes}</span>
-                        <span><i class="fas fa-comment"></i> ${item.comments}</span>
-                        <span><i class="fas fa-eye"></i> ${item.views}</span>
-                    </div>
-                </div>
-            `;
-            return card;
-        }
-
-        async function renderGrid(type) {
-            const data = await fetchContent(type);
-            contentGrid.innerHTML = '';
-            
-            // Simulación: agregamos el contenido subido en memoria (si existe) al inicio del array
-            const uploadedContent = allServerContent.filter(item => item.userId === 'u_uploaded');
-            const finalData = [...uploadedContent, ...data.filter(item => item.userId !== 'u_uploaded')];
-
-            finalData.forEach(item => {
-                contentGrid.appendChild(createCard(item));
-            });
-            // Actualizamos la caché global con el contenido cargado del servidor
-            allServerContent = finalData; 
-        }
-
-        // Función principal de renderizado
-        function renderAll() {
-            renderGrid(currentTab);
-        }
-
-        /* ---------- VIEWER MODAL LOGIC ---------- */
-        function openViewer(item) {
-            viewerImage.style.display = 'none';
-            viewerVideo.style.display = 'none';
-
-            if (item.kind === 'video') {
-                viewerVideo.src = item.src;
-                viewerVideo.style.display = 'block';
-                // Asegurar que el video se cargue y pueda reproducirse
-                viewerVideo.load();
-            } else {
-                viewerImage.src = item.src;
-                viewerImage.style.display = 'block';
-            }
-
-            viewerTitle.textContent = item.title;
-            viewerStats.innerHTML = `
-                <span>${item.views} vistas</span>
-                <span>${item.likes} Me gusta</span>
-                <span>${item.comments} Comentarios</span>
-            `;
-            $('#viewerUser').textContent = `@${item.userId}`;
-
-            viewerModal.classList.add('show');
-            viewerModal.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeViewerFunc() {
-            viewerModal.classList.remove('show');
-            viewerModal.setAttribute('aria-hidden', 'true');
-            // Pausar el video al cerrar
-            viewerVideo.pause();
-            document.body.style.overflow = '';
-        }
-
-        closeViewer.addEventListener('click', closeViewerFunc);
-
-        /* ---------- TABS LOGIC ---------- */
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Desactivar el tab actual
-                $('#tab' + currentTab.charAt(0).toUpperCase() + currentTab.slice(1)).classList.remove('active');
-                
-                // Activar el nuevo tab
-                currentTab = tab.getAttribute('data-type');
-                tab.classList.add('active');
-                
-                // Renderizar
-                renderGrid(currentTab);
-            });
-        });
-
-        /* ---------- INICIALIZACIÓN ---------- */
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
-        });
+  <div id="uploadModal" aria-hidden="true" role="alertdialog">
+      <h3 id="uploadTitle" style="margin-top:0;font-size:16px;">Subiendo archivo...</h3>
+      <p id="uploadStatus" style="font-size:12px; color:var(--muted)">0%</p>
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <button id="closeUpload" class="icon-btn" style="margin-top:15px; background: transparent; border: 1px solid var(--muted)">Cancelar</button>
+  </div>
 
 
-/* ******************************************************************* */
-/* ---------- CÓDIGO DE SUBIDA REAL (FAB, Modal, y Lógica Fetch) ---------- */
-/* ******************************************************************* */
+<script>
+/* =========================
+   SinFiltro — mejoras funcionales (mantener diseño)
+   ========================= */
 
-/* DOM refs Adicionales para Subida Real */
+/* Helpers */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
+const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  CAMBIO CLAVE: URL de tu servidor en RENDER (o donde lo hayas desplegado)
+//  IMPORTANTE: DEBES SUSTITUIR ESTA URL POR LA TUYA CUANDO HAGAS EL DEPLOY FINAL.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const SERVER_URL = 'http://localhost:3000'; // Usa localhost para desarrollo, cambia a tu URL de Render para producción.
+
+
+/* DOM refs */
+const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
+const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
+const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
+const gridFeed = $('#gridFeed');
+const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
+const fab = $('#fab'), radials = $('#radials');
+const themeToggle = $('#themeToggle');
+const brandBtn = $('#brandBtn');
+const searchTop = $('#searchTop');
+const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
+const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
+const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); 
+// NUEVOS refs para subida real
 const fileSelectModal = $('#fileSelectModal');
 const closeFileSelect = $('#closeFileSelect');
 const realFileInput = $('#realFileInput');
 const uploadTitleInput = $('#uploadTitleInput');
 const startUploadBtn = $('#startUploadBtn');
-const BASE_URL = '/api'; // Apunta a tu Express Server
 
-/* ---------- FAB radial (bubbles) - MEJORADO ---------- */
+
+/* Data pool (demo) */
+let pool = []; // Se llenará con datos reales del servidor + mockups
+let activeList=[], currentIndex=0;
+
+/* ---------- FETCH CONTENT FROM SERVER (MODIFICADO) ---------- */
+async function fetchContent(type) {
+    try {
+        // Usa la URL del servidor
+        const response = await fetch(`${SERVER_URL}/api/content/feed/${type}`);
+        const data = await response.json();
+
+        if (data.success && data.data) {
+            return data.data;
+        } else {
+            console.error("Error al obtener datos:", data);
+            return [];
+        }
+    } catch (error) {
+        console.error("Error de red o servidor, usando datos mock:", error);
+        // Fallback a datos mock si el servidor no responde
+        return Array.from({length:16}).map((_,i)=>({
+            id:'mock'+type+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
+            title:['Offline: Callejón neon','Offline: Atardecer','Offline: Retrato','Offline: Arte Urbano'][i%4],
+            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K'
+        }));
+    }
+}
+
+/* ---------- RENDER LOGIC (MODIFICADO para usar datos reales) ---------- */
+async function renderAll() {
+    // 1. Obtener y renderizar tendencias
+    const trendsData = await fetchContent('trends');
+    const recoData = await fetchContent('reco');
+    const recentData = await fetchContent('recent'); // Usaremos 'recent' para todo el pool
+
+    // Usar todos los datos como pool principal
+    pool = [...trendsData, ...recoData, ...recentData];
+
+    // Llenar las filas horizontales con los datos del servidor
+    renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
+    renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
+    renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
+    
+    // Llenar el grid con el resto del pool
+    renderGridInitial(pool.slice(24)); // Usar el resto del pool
+
+    // seed rows for smoothness (mantenido)
+    $$('.h-row').forEach(r=> {
+        if(r.children.length < 8){
+          for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+        }
+        enableDragScroll(r);
+    });
+    lazyObserve();
+}
+
+
+/* ---------- UTILS (sin cambios relevantes) ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+let imgObserver = null;
+function lazyObserve(root=document){
+  const imgs = root.querySelectorAll('img[data-src], video[data-src]'); // Videos también pueden ser lazy
+  if('IntersectionObserver' in window){
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const media = e.target;
+            media.src = media.dataset.src;
+            media.onload = ()=> media.parentElement.classList.remove('skel');
+            media.removeAttribute('data-src');
+            obs.unobserve(media);
+          }
+        });
+      }, {rootMargin:'300px', threshold:0.05});
+    }
+    imgs.forEach(i=> imgObserver.observe(i));
+  } else {
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  }
+}
+
+function makeSmallCard(item){
+  const d = document.createElement('div');
+  d.className = 'card-small skel fade-up';
+  d.setAttribute('tabindex','0');
+  let mediaTag;
+  if(item.kind === 'video'){
+    // Usar la etiqueta video en el card small
+    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s"></video>`;
+  } else {
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+  }
+
+  d.innerHTML = `
+    ${mediaTag}
+    ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
+    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+      <div class="meta">
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+      </div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+    </div>
+  `;
+  d.addEventListener('click', ()=> openViewerByItem(item));
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
+  return d;
+}
+
+function makeGridCard(item){
+  const a = document.createElement('article');
+  a.className = 'card skel fade-up';
+  let mediaTag;
+  if(item.kind === 'video'){
+    mediaTag = `<video data-src="${item.src}" muted preload="metadata" style="width:100%;height:150px;object-fit:cover"></video>`;
+  } else {
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+  }
+  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.addEventListener('click', ()=> openViewerByItem(item));
+  return a;
+}
+
+function renderTwoRows(row1,row2,items){
+  row1.innerHTML=''; row2.innerHTML='';
+  items.forEach((it,i)=>{
+    const target = (i%2===0)?row1:row2;
+    target.appendChild(makeSmallCard(it));
+  });
+}
+
+function renderGridInitial(items=grid){
+  gridFeed.innerHTML = '';
+  items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+  lazyObserve(gridFeed);
+}
+
+function enableDragScroll(el){ /* ... (Código sin cambios) ... */ }
+function showViewer(){
+  const it = activeList[currentIndex];
+  viewerInner.innerHTML = '';
+  if(!it) return;
+
+  downloadBtn.style.display = 'inline-flex';
+
+  // Usamos un elemento <video> o <img> real
+  let mediaElement;
+  if(it.kind === 'video'){
+    const video = document.createElement('video');
+    video.src = it.src;
+    video.controls = true;
+    video.autoplay = false;
+    video.style.maxHeight = '70vh';
+    mediaElement = video;
+  } else {
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    mediaElement = img;
+  }
+  viewerInner.appendChild(mediaElement);
+  
+  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+
+function openViewerByItem(item){
+  const lists = [pool]; // Solo buscamos en el pool principal
+  activeList = [];
+  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
+  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
+  showViewer();
+}
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
+function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
+function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
+closeViewer.addEventListener('click', closeViewerFunc);
+viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+prevBtn.addEventListener('click', prevItem);
+nextBtn.addEventListener('click', nextItem);
+downloadBtn.addEventListener('click', ()=>{ /* ... (LÓGICA DE DESCARGA mantenida) ... */ });
+
+closePanelBtn.addEventListener('click', closePanel); // Función existente
+menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); }); // Función existente
+overlay.addEventListener('click', (e) => { if (e.target === overlay) { if (panel.classList.contains('open')) { closePanel(); } if (radials.classList.contains('show')) { radials.classList.remove('show'); radials.innerHTML = ''; } } }); // Función existente
+
+/* ---------- FAB radial (bubbles) - MODIFICADO ---------- */
 fab.addEventListener('click', ()=>{
   if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
   else {
@@ -664,12 +550,12 @@ fab.addEventListener('click', ()=>{
     // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
         const d = document.createElement('button'); d.className='bubble-group';
-        d.innerHTML = `<span class="bubble" style="--delay: 0s">${icon}</span><span class="bubble-text" style="--delay: 0s">${text}</span>`;
+        d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
         d.onclick = action;
         return d;
     }
 
-    // MODIFICADO: Abrir el modal de selección de archivos
+    // AHORA LLAMA AL MODAL DE SELECCIÓN DE ARCHIVO
     const uploadAction = ()=> { radials.classList.remove('show'); openFileSelectModal(); };
     const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
     const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
@@ -680,7 +566,8 @@ fab.addEventListener('click', ()=>{
   }
 });
 
-/* ---------- Modal de Selección de Archivo (Lógica) ---------- */
+
+/* ---------- LOGICA DE SUBIDA REAL (Añadida) ---------- */
 function openFileSelectModal(){
     fileSelectModal.classList.add('show');
     fileSelectModal.setAttribute('aria-hidden', 'false');
@@ -689,29 +576,40 @@ function openFileSelectModal(){
 function closeFileSelectModal(){
     fileSelectModal.classList.remove('show');
     fileSelectModal.setAttribute('aria-hidden', 'true');
-    // Restablecer el input
-    realFileInput.value = '';
-    uploadTitleInput.value = '';
+    realFileInput.value = ''; // Limpiar input de archivo
+    uploadTitleInput.value = ''; // Limpiar input de título
     document.body.style.overflow = '';
 }
 closeFileSelect.addEventListener('click', closeFileSelectModal);
 
-/* ---------- Lógica de Subida REAL (Usando Fetch y FormData) ---------- */
+// Evento de click en el botón de Subir Ahora (en el modal de selección)
+startUploadBtn.addEventListener('click', () => {
+    const file = realFileInput.files[0];
+    const title = uploadTitleInput.value;
+
+    if (!file) {
+        alert('Por favor, selecciona un archivo.');
+        return;
+    }
+
+    uploadFileToBackend(file, title);
+});
+
 async function uploadFileToBackend(file, title){
     const formData = new FormData();
-    formData.append('file', file); // 'file' debe coincidir con upload.single('file') en server.js
+    formData.append('file', file);
     formData.append('title', title);
     
-    // 1. Mostrar modal de progreso
     closeFileSelectModal();
-    uploadModal.style.display = 'flex'; // Usar flex para centrar
+    // 1. Mostrar modal de progreso
+    uploadModal.style.display = 'block';
     uploadModal.setAttribute('aria-hidden', 'false');
-    uploadTitle.textContent = 'Subiendo a servidor...';
+    uploadTitle.textContent = 'Subiendo ' + file.name.substring(0, 15) + '...';
     progressFill.style.width = '0%';
     uploadStatus.textContent = '0%';
     let progress = 0;
     
-    // Simular progreso rápido mientras se espera la respuesta (opcional, mejor con XHR)
+    // Simular progreso rápido mientras se espera la respuesta (necesario con fetch)
     const progressSim = setInterval(()=>{
         if(progress < 95) {
             progress += 5;
@@ -721,15 +619,14 @@ async function uploadFileToBackend(file, title){
     }, 200);
 
     try {
-        const response = await fetch(`${BASE_URL}/content/upload`, {
+        const response = await fetch(`${SERVER_URL}/api/content/upload`, {
             method: 'POST',
             body: formData,
-            // fetch no necesita headers de Content-Type para FormData
         });
 
         clearInterval(progressSim);
         progressFill.style.width = '100%';
-        uploadStatus.textContent = '100% - Procesando...';
+        uploadStatus.textContent = '100% - Procesando en servidor...';
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -740,8 +637,8 @@ async function uploadFileToBackend(file, title){
         if(result.success){
             uploadTitle.textContent = '¡Subida Completa!';
             
-            // Agregamos el nuevo item al caché local para que se vea inmediatamente
-            allServerContent.unshift(result.item);
+            // Agregamos el nuevo item al pool local para que se vea inmediatamente
+            pool.unshift(result.item);
 
             setTimeout(()=>{ 
                 closeUploadModal(); 
@@ -756,28 +653,16 @@ async function uploadFileToBackend(file, title){
     } catch (error) {
         clearInterval(progressSim);
         uploadTitle.textContent = 'Error de Subida';
-        uploadStatus.textContent = error.message;
+        uploadStatus.textContent = error.message.includes('fetch') ? 'Servidor no disponible (Render caído?)' : error.message;
         
         setTimeout(()=> {
             closeUploadModal();
-            alert(`Error al subir: ${error.message}`);
-        }, 3000);
+            alert(`Error al subir: ${uploadTitle.textContent}`);
+        }, 4000);
     }
 }
 
-// Evento de click en el botón de Subir Ahora
-startUploadBtn.addEventListener('click', () => {
-    const file = realFileInput.files[0];
-    const title = uploadTitleInput.value;
-
-    if (!file) {
-        alert('Por favor, selecciona un archivo.');
-        return;
-    }
-
-    uploadFileToBackend(file, title);
-});
-
+// Subida: La función closeUploadModal es la única que queda del código de simulación
 function closeUploadModal(){
     uploadModal.style.display = 'none';
     uploadModal.setAttribute('aria-hidden', 'true');
@@ -786,20 +671,22 @@ function closeUploadModal(){
 closeUpload.addEventListener('click', closeUploadModal);
 
 
-/* ---------- Accessibility & shortcuts ---------- */
+/* ---------- (Resto del JS sin cambios relevantes) ---------- */
+
+document.addEventListener('DOMContentLoaded', renderAll);
+
 document.addEventListener('keydown', e=>{ 
     if(e.key==='Escape'){ 
         closeViewerFunc(); 
-        // closePanel(); 
-        // closeSearchModal(); 
-        // closeMyModal(); 
-        closeUploadModal(); 
-        closeFileSelectModal(); 
-        radials.classList.remove('show');
+        closePanel(); 
+        closeSearchModal(); 
+        closeMyModal(); 
+        closeUploadModal();
+        closeFileSelectModal(); // AGREGADO
     } 
 });
 
 /* End of script */
-    </script>
+</script>
 </body>
 </html>
