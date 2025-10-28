@@ -112,32 +112,18 @@
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;}
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 80vh; object-fit: contain;}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;} /* Padding 0 para que la imagen ocupe todo */
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;} /* Max-height ajustado */
   
-  /* MEJORA 2: Controles más abajo */
+  /* MEJORA 2: Controles y meta-datos más abajo */
   .viewer-controls-meta { 
-    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 10;
+    z-index: 10;
     display: flex; gap: 8px; justify-content: center;
     background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
+    margin: 12px auto; /* Centrar y dar espacio */
+    width: fit-content;
   }
   
-  /* NUEVO: Meta-datos en el visor */
-  .viewer-meta {
-      position: absolute; 
-      bottom: 60px; /* Sobre los controles */
-      left: 50%; 
-      transform: translateX(-50%); 
-      z-index: 9;
-      background: rgba(0,0,0,0.3);
-      padding: 6px 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      color: var(--text);
-      display: flex;
-      gap: 15px;
-  }
-
   /* Search modal & MyVideos modal */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
   .modal.show{display:block}
@@ -293,8 +279,18 @@
 
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
     <div class="card" style="position:relative; padding: 0;">
-      <div id="viewerInner"></div>
-      <div id="viewerMeta" class="viewer-meta"></div> 
+      <div id="viewerInner" style="padding: 12px 12px 0 12px;"></div> 
+      
+      <div id="viewerBottom" style="
+        padding: 12px;
+        background: rgba(0,0,0,0.5); /* Semi-transparente para separar del fondo */
+        border-top: 1px solid rgba(255,255,255,0.05);
+        display: flex; flex-direction: column; gap: 8px;
+        position: relative;
+        z-index: 10;
+      ">
+        </div>
+      
       <div id="viewerControls" class="viewer-controls-meta">
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
@@ -351,7 +347,8 @@ const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn'), viewerMeta = $('#viewerMeta');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
+const viewerBottom = $('#viewerBottom'); // NUEVO: Referencia al contenedor de interacciones
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
@@ -381,7 +378,13 @@ async function fetchContent(type) {
         const data = await response.json();
 
         if (data.success && data.data) {
-            return data.data;
+            // Asegurarse de que cada item tenga 'liked' y 'comments' para la simulación
+            return data.data.map(item => ({
+                ...item,
+                liked: false, // Por defecto, no le ha dado like
+                comments: item.comments || rand(100), // Asegurar que tenga comentarios
+                views: item.views || (rand(9)+1)+'K'
+            }));
         } else {
             console.error("Error al obtener datos:", data);
             return [];
@@ -392,7 +395,7 @@ async function fetchContent(type) {
         return Array.from({length:16}).map((_,i)=>({
             id:'mock'+type+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
             title:['Offline: Callejón neon','Offline: Atardecer','Offline: Retrato','Offline: Arte Urbano'][i%4],
-            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K'
+            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K', liked: false
         }));
     }
 }
@@ -508,7 +511,7 @@ function renderTwoRows(row1,row2,items){
   });
 }
 
-function renderGridInitial(items=grid){
+function renderGridInitial(items=pool){ // Usa 'pool' para tener más variedad
   gridFeed.innerHTML = '';
   items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
@@ -552,7 +555,6 @@ async function loadMoreHorizontal(row) {
     horizontalLoading = true;
 
     const type = row.dataset.type;
-    const rowId = row.id.endsWith('1') ? 'row1' : 'row2';
     
     // Obtener un nuevo set de datos mock (simulando una nueva petición al servidor)
     // Para no duplicar, simplemente sacamos más contenido aleatorio del pool grande
@@ -573,11 +575,12 @@ async function loadMoreHorizontal(row) {
     horizontalLoading = false;
 }
 
-// MODIFICADO: showViewer para incluir meta-datos y nueva posición de controles
+// MODIFICADO: showViewer para implementar la nueva barra de interacciones
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
-  viewerMeta.innerHTML = '';
+  viewerBottom.innerHTML = ''; // Limpiamos el contenido anterior
+
   if(!it) return;
 
   downloadBtn.style.display = 'inline-flex';
@@ -599,16 +602,44 @@ function showViewer(){
   }
   viewerInner.appendChild(mediaElement);
 
-  // NUEVO: Mostrar Meta-datos
-  viewerMeta.innerHTML = `
-      <span>👁️ ${it.views || '0K'}</span>
-      <span>❤ ${it.likes || 0}</span>
-      <span>💬 ${it.comments || 0}</span>
+  // NUEVA ESTRUCTURA: Barra de interacciones tipo red social
+  viewerBottom.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
+              <span id="likeBtn" style="cursor:pointer; color: ${it.liked ? 'var(--accent-violet)' : 'var(--muted)'};">
+                  ❤ ${it.likes || 0}
+              </span>
+              <span>💬 ${it.comments || 0}</span>
+          </div>
+          <span style="font-size: 12px; color: var(--muted);">
+              👁️ ${it.views || '0K'} Vistas
+          </span>
+      </div>
+
+      <div style="display:flex; gap: 8px; align-items:center;">
+          <input type="text" placeholder="Añade un comentario (demo)..." class="search-input" style="flex-grow:1; padding: 10px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.1);">
+          <button class="icon-btn" style="width: 40px; height: 40px; background: var(--accent-violet); color: #000;">➡️</button>
+      </div>
   `;
+
+  // Añadir la lógica de simulación de like
+  viewerBottom.querySelector('#likeBtn').addEventListener('click', (e) => {
+      it.liked = !it.liked;
+      if (it.liked) {
+          it.likes = (it.likes || 0) + 1;
+          e.target.style.color = 'var(--accent-violet)';
+      } else {
+          it.likes = (it.likes || 1) - 1; // Asegurarse que no baja de 0
+          if (it.likes < 0) it.likes = 0;
+          e.target.style.color = 'var(--muted)';
+      }
+      e.target.innerHTML = `❤ ${it.likes}`;
+  });
   
   viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
+
 
 function openViewerByItem(item){
   const lists = [pool]; 
@@ -617,7 +648,7 @@ function openViewerByItem(item){
   if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
   showViewer();
 }
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; viewerMeta.innerHTML=''; document.body.style.overflow = ''; }
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; viewerBottom.innerHTML=''; document.body.style.overflow = ''; }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
@@ -765,7 +796,13 @@ async function uploadFileToBackend(file, title){
             uploadTitle.textContent = '¡Subida Completa!';
             
             // Agregamos el nuevo item al pool local para que se vea inmediatamente
-            pool.unshift(result.item);
+            // Asegurarse de que el nuevo item tenga las propiedades para el visor
+            pool.unshift({
+                ...result.item,
+                liked: false,
+                comments: 0,
+                views: '0K'
+            });
 
             setTimeout(()=>{ 
                 closeUploadModal(); 
