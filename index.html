@@ -73,28 +73,53 @@
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   
   /* MEJORA 1: FAB radial (bubbles) - Diseño mejorado */
+  /* Ajuste de los íconos dentro de las burbujas */
   .bubble{
-    width:52px;height:52px;border-radius:10px; /* Cuadrado redondeado como los panel-item */
+    width:44px; /* Tamaño de los icon-btn */
+    height:44px;
+    border-radius:10px; /* Cuadrado redondeado como los icon-btn */
     display:flex;align-items:center;justify-content:center;
-    background:var(--card); /* Fondo más discreto */
-    color:var(--text);font-weight:700;cursor:pointer;
-    box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
+    background:var(--card); /* Fondo discreto como otros botones */
+    color:var(--muted);font-weight:700;cursor:pointer;
+    border:1px solid rgba(255,255,255,0.02);
+    box-shadow:none; /* Sin sombra extra aquí, la tendrá el contenedor */
     transition: background var(--trans);
+    font-size: 20px; /* Tamaño del icono */
   }
   .bubble:hover { background: rgba(255,255,255,0.06); }
+  
+  /* Contenedor de cada burbuja (icono + texto) */
   .bubble-group { 
-    display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
-    padding: 6px 10px; width: 100%; /* Para que ocupe todo el ancho del radials */
+    display: flex; flex-direction: row; align-items: center; gap: 10px; 
+    padding: 6px 10px; /* Padding interno */
+    width: calc(100% - 20px); /* Ajustado por el padding de .radials */
+    border-radius: 12px; /* Bordes redondeados como las cards */
+    background: var(--card); /* Fondo como una tarjeta */
+    border: 1px solid rgba(255,255,255,0.02);
+    box-shadow:0 8px 30px rgba(0,0,0,0.3); /* Sombra para resaltar */
+    transition: transform var(--trans), opacity var(--trans);
+    cursor: pointer;
   }
-  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
+  .bubble-group:active { transform: scale(0.98); }
+
+  .bubble-text { 
+    font-size: 14px; 
+    font-weight: 500; 
+    color: var(--text); 
+    flex-grow: 1; /* Para que el texto ocupe el espacio restante */
+  }
+
   .radials{
-    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Más cerca del FAB */
-    display:flex;flex-direction:column;gap:8px;align-items:flex-start; /* Alineación izquierda */
+    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Posición inicial, más cerca del FAB */
+    display:flex;flex-direction:column;gap:8px;align-items:center; /* Centrado */
     z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
-    padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
-    width: 200px; /* Ancho fijo para las burbujas */
-    transform: translateX(-50%) translateY(20px);
+    /* Los estilos de fondo y blur se moverán al bubble-group o se quitarán si no son necesarios */
+    /* background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px); */
+    padding: 10px 0; /* padding vertical, horizontal se manejará en bubble-group */
+    border-radius: 12px; 
+    /* border: 1px solid rgba(255,255,255,0.03); */
+    width: 200px; /* Ancho fijo para el contenedor de las burbujas */
+    transform: translateX(-50%) translateY(20px); /* Para animación de entrada */
   }
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
 
@@ -111,14 +136,26 @@
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img,.viewer video{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px} /* ESTE SE MANTIENE PARA NO ROMPER JS */
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-width: 100%; max-height: 80vh; object-fit: contain;} /* Ajustado */
+  /* REPOSICIONADO: Controles del Viewer más abajo */
   .viewer-controls-meta { 
-    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10;
-    display: flex; gap: 8px; justify-content: center;
-    background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
+    position: absolute; 
+    bottom: 20px; /* Más abajo para no estorbar la imagen */
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 230; /* Asegurarse de que esté por encima de la imagen */
+    display: flex; 
+    gap: 8px; 
+    justify-content: center;
+    background: rgba(0,0,0,0.4); /* Fondo más oscuro para mayor contraste */
+    backdrop-filter: blur(8px); /* Blur más fuerte */
+    padding: 10px 15px; 
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05); /* Borde sutil */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5); /* Sombra para darle profundidad */
   }
+  .viewer .controls{display:none;} /* Ocultar el controls original si aún existiera */
   
   /* Search modal & MyVideos modal */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
@@ -150,11 +187,12 @@
     .grid img{height:120px}
     .fab{width:64px;height:64px}
     .panel{width:92%;left:4%}
+    .viewer-controls-meta { bottom: 10px; padding: 8px 10px; gap: 6px; } /* Ajuste para pantallas más pequeñas */
   }
 
   /* fallback when backdrop-filter not supported */
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
+    .panel, header, .modal, .viewer-controls-meta { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
   }
 
   /* animation */
@@ -505,20 +543,6 @@ overlay.addEventListener('click', (e) => {
     }
 });
 
-// panel actions
-$$('.panel-item').forEach(btn=>{
-  btn.addEventListener('click', (e)=>{
-    const action = btn.dataset.action;
-    closePanel();
-    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
-    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'my'){ openMyModal(); }
-    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
-    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
-  });
-});
-
 /* ---------- FAB radial (bubbles) - MEJORADO ---------- */
 fab.addEventListener('click', ()=>{
   if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
@@ -529,6 +553,7 @@ fab.addEventListener('click', ()=>{
     // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
         const d = document.createElement('button'); d.className='bubble-group';
+        // El icono y el texto dentro de su propio span para styling
         d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
         d.onclick = action;
         return d;
@@ -560,138 +585,4 @@ function simulateUpload(title){
             clearInterval(uploadInterval);
             progress = 100;
             uploadTitle.textContent = '¡Subida Completa!';
-            uploadStatus.textContent = '100% - Procesando...';
-            progressFill.style.width = '100%';
-            setTimeout(()=>{ closeUploadModal(); alert('¡Contenido Subido con Éxito!'); }, 1500);
-        } else {
-            progressFill.style.width = `${progress}%`;
-            uploadStatus.textContent = `${progress}%`;
-        }
-    }, 300);
-}
-
-function closeUploadModal(){
-    clearInterval(uploadInterval);
-    uploadModal.style.display = 'none';
-    uploadModal.setAttribute('aria-hidden', 'true');
-    uploadTitle.textContent = 'Subiendo archivo...';
-}
-closeUpload.addEventListener('click', closeUploadModal);
-
-
-/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-function applyTheme(t){
-  // Use rAF to avoid sync layout thrashing
-  requestAnimationFrame(()=>{
-    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
-    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
-  });
-}
-applyTheme(theme);
-themeToggle.addEventListener('click', ()=> {
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-});
-
-/* brand click -> home */
-brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navSearch').addEventListener('click', ()=> openSearchModal());
-$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal());
-
-/* Top search demo */
-searchTop.addEventListener('click', ()=> openSearchModal());
-
-/* ---------- Search modal (miniatures) ---------- */
-function openSearchModal(){
-  populateSearchMini();
-  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
-  // lock background scroll lightly
-  document.body.style.overflow = 'hidden';
-}
-function closeSearchModal(){
-  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
-  searchMini.innerHTML = '';
-  document.body.style.overflow = '';
-}
-closeSearch.addEventListener('click', closeSearchModal);
-searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
-
-function populateSearchMini(q){
-  searchMini.innerHTML = '';
-  // generate 12 thumbnails demo
-  for(let i=0;i<12;i++){
-    const item = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
-    searchMini.appendChild(d);
-  }
-}
-
-/* ---------- My videos modal (grid preview) ---------- */
-function openMyModal(){
-  myGrid.innerHTML = '';
-  // demo: fill with 9 random items (mix images & videos)
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
-    myGrid.appendChild(d);
-  }
-  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
-closeMy.addEventListener('click', closeMyModal);
-myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
-
-/* ---------- Infinite vertical load (grid) ---------- */
-let loadingGrid=false;
-window.addEventListener('scroll', ()=>{
-  // when approaching bottom, append grid items
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
-      lazyObserve(gridFeed); loadingGrid=false;
-    }, 700);
-  }
-});
-
-/* ---------- Render initial content ---------- */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  // seed rows for smoothness
-  $$('.h-row').forEach(r=> {
-    if(r.children.length < 8){
-      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    }
-  });
-  lazyObserve();
-}
-document.addEventListener('DOMContentLoaded', renderAll);
-
-/* ---------- Accessibility & shortcuts ---------- */
-document.addEventListener('keydown', e=>{ 
-    if(e.key==='Escape'){ 
-        closeViewerFunc(); 
-        closePanel(); 
-        closeSearchModal(); 
-        closeMyModal(); 
-        closeUploadModal(); // AGREGADO
-    } 
-});
-
-/* End of script */
-</script>
-</body>
-</html>
+            uploadStatus.textContent = '
