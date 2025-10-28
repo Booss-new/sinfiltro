@@ -1,7 +1,7 @@
 {
-  "name": "pro-video-app",
+  "name": "sinfiltro-pro-app",
   "version": "1.0.0",
-  "description": "App profesional de videos para móvil",
+  "description": "App SinFiltro - Pro",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
