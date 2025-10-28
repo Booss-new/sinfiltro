@@ -6,7 +6,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // --- BASE DE DATOS MOCKUP EN MEMORIA DEL SERVIDOR ---
-// Simula datos de contenido para el feed
 const serverDataStore = {
     content: Array.from({length: 16}).map((_, i) => ({
         id: 'p' + i,
@@ -26,16 +25,16 @@ app.use(express.json());
 
 
 // --- SERVICIO DEL FRONTEND ---
-// Servimos el archivo índice.html cuando se accede a la raíz (/)
+
+// 💡 LÍNEA CORREGIDA: Busca 'index.html' sin tilde
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'índice.html')); 
+    res.sendFile(path.join(__dirname, 'index.html')); 
 });
 
-// Permitir acceso a otros recursos estáticos (CSS, JS)
+// Permitir acceso a otros recursos estáticos
 app.use(express.static(path.join(__dirname, ''))); 
 
 // --- ENDPOINT DE OBTENCIÓN DEL FEED (API REAL) ---
-// La ruta que tu frontend llama con fetch('/api/content/feed/trends')
 app.get('/api/content/feed/:type', (req, res) => {
     const type = req.params.type;
     let items;
