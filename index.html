@@ -73,41 +73,58 @@
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   
   /* FAB radial (bubbles) */
-  .bubble{
-    width:52px;height:52px;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--card);
-    color:var(--text);font-weight:700;cursor:pointer;
-    box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
-    transition: background var(--trans);
-  }
-  .bubble:hover { background: rgba(255,255,255,0.06); }
+  /* --- RE-DISEÑO DE LAS BURBUJAS --- */
   .bubble-group { 
     display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
-    padding: 6px 10px; width: 100%;
+    padding: 10px 14px; 
+    width: 100%;
+    background: var(--card); /* Fondo similar al menú lateral */
+    border-radius: 12px; /* Esquinas redondeadas */
+    border: 1px solid rgba(255,255,255,0.03); /* Borde sutil */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transition: background var(--trans);
+    cursor: pointer;
   }
-  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
+  .bubble-group:hover { background: rgba(255,255,255,0.06); }
+  .bubble { /* Icono dentro de la burbuja */
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet)); /* Color de acento */
+    color: #000; font-weight: 700; font-size: 18px;
+  }
+  .bubble-text { font-size: 15px; font-weight: 500; color: var(--text); flex-grow: 1; text-align: left; }
+
   .radials{
     position:fixed;left:50%;transform:translateX(-50%);bottom:100px;
     display:flex;flex-direction:column;gap:8px;align-items:flex-start;
     z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
     padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
-    width: 200px;
+    width: 200px; /* Ancho fijo para las burbujas */
     transform: translateX(-50%) translateY(20px);
   }
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
 
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  /* CAMBIO: Renombrar nav-me a Mi Cuenta */
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
   /* Panel & overlay (menu lateral) */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
   .overlay.show{display:block;pointer-events:auto;opacity:1}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
+  /* --- CAMBIO: ALTURA DEL PANEL LATERAL A MITAD DE LA PANTALLA --- */
+  .panel{
+    position:fixed;left:8px;top:12px;bottom:auto;height:50%; /* Altura al 50% */
+    width:86%;max-width:320px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
+    border-radius:12px;padding:12px;z-index:180;
+    box-shadow:0 30px 80px rgba(2,10,18,0.6);
+    transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none;
+    display: flex; flex-direction: column; /* Para empujar el contenido hacia arriba */
+  }
   .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .panel nav { flex-grow: 1; overflow-y: auto; padding-right: 5px; /* Para scrollbar */ }
+
 
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
@@ -715,8 +732,8 @@ fab.addEventListener('click', ()=>{
 
     // AHORA LLAMA AL MODAL DE SELECCIÓN DE ARCHIVO
     const uploadAction = ()=> { radials.classList.remove('show'); openFileSelectModal(); };
-    const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
-    const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
+    const createPostAction = ()=> { alert('Demo: Publicar Galería'); radials.classList.remove('show'); };
+    const createShortAction = ()=> { alert('Demo: Crear Short'); radials.classList.remove('show'); };
 
     radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
     radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
@@ -856,7 +873,9 @@ themeToggle.addEventListener('click', ()=> {
 brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navSearch').addEventListener('click', ()=> openSearchModal());
+/* --- CAMBIO: Antes Visto solo hace scroll, no abre pestaña --- */
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#seeV').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); }); // También el "Ver todo" de Antes Visto
 $('#navMe').addEventListener('click', ()=> openMyModal()); // Mantiene ID navMe, pero el texto dice Mi Cuenta
 
 /* Top search demo */
