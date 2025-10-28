@@ -15,25 +15,21 @@
     --glass: rgba(255,255,255,0.04);
     --radius:14px; --trans:260ms;
     --text:#eaf7ff;
-    --skel-color: rgba(255,255,255,0.05); /* Nuevo color base para skeleton */
+    --skel-color: rgba(255,255,255,0.05);
   }
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
   body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
 
   /* ================= 1. MICROINTERACCIONES RIPPLE (CSS) ================= */
-  /* Aplica un efecto de escala sutil en los botones interactivos */
   .icon-btn, .logo-btn, .card-small, .grid .card, .fab, .bubble, .nav-item { transition: transform var(--trans), opacity var(--trans); position: relative; overflow: hidden; }
   .icon-btn:active, .logo-btn:active, .fab:active, .bubble:active { transform:scale(.92); }
   .nav-item:active { transform: translateY(1px); opacity: 0.9; }
 
-  /* Efecto de Onda/Ripple */
   .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); pointer-events: none; transform: scale(0); animation: rippleEffect .6s linear; opacity: 0; }
   @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
 
-  /* ================= 3. SKELETON SCREEN DINÁMICO (CSS) ================= */
-  /* Estado de carga general para tarjetas */
+  /* ================= 2. SKELETON SCREEN DINÁMICO (CSS) ================= */
   .skel { position: relative; overflow: hidden; background-color: var(--skel-color); }
-  /* Animación de brillo sobre la base del skeleton */
   .skel::after {
     content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
     transform: translateX(-100%);
@@ -78,7 +74,7 @@
   .h-stack{display:flex;flex-direction:column;gap:10px}
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer;will-change: transform} /* Añadido will-change para performance */
+  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer;will-change: transform}
   .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
@@ -87,7 +83,7 @@
 
   /* Grid (vertical infinite) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer;will-change: transform} /* Añadido will-change para performance */
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer;will-change: transform}
   .grid img{width:100%;height:150px;object-fit:cover}
   .grid .body{padding:8px;color:var(--text)}
   .grid .title{font-weight:700}
@@ -108,19 +104,17 @@
   .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* ================= 2. VIEWER CON TRANSICIÓN HERO (CSS) ================= */
+  /* 3. VIEWER CON TRANSICIÓN HERO (CSS) */
   .viewer{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:220;display:none;align-items:center;justify-content:center;padding:10px;transition:background .3s}
   .viewer.show{display:flex}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:transparent;padding:0;box-shadow:none}
   
-  /* El contenedor interior (viewerInner) es el que va a mostrar el contenido final. */
   .viewerInner{position:relative;width:100%;height:100%;}
   .viewerInner img, .viewerInner video{width:100%;height:auto;display:block; max-height: 80vh; transition: transform 0.3s, opacity 0.3s, border-radius 0.3s; }
   
-  /* Estilos para el elemento clonado durante la transición FLIP */
   .hero-clone {
     position: fixed; z-index: 230;
-    transition: transform 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1);
+    transition: transform 300ms cubic-bezier(.4, 0, .2, 1), width 300ms cubic-bezier(.4, 0, .2, 1), height 300ms cubic-bezier(.4, 0, .2, 1), left 300ms cubic-bezier(.4, 0, .2, 1), top 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
     object-fit: cover;
   }
@@ -128,11 +122,10 @@
   .viewer-content-meta {
     margin-top:12px;
     display:flex;gap:8px;justify-content:center;
-    transition: opacity 0.2s 0.3s; /* Aparece después de la transición de imagen */
+    transition: opacity 0.2s 0.3s;
   }
   .viewer.transitioning .viewer-content-meta { opacity: 0; }
   
-  /* Sobreescribir el estilo de la tarjeta dentro del viewer para que no tenga padding inicial */
   .viewer .card {
     padding: 0;
     background: transparent;
@@ -278,16 +271,7 @@
 
 <script>
 /* =========================
-   SinFiltro — mejoras funcionales (mantener diseño)
-   - FAB burbujas funcionales
-   - Buscador con miniaturas + abrir en viewer
-   - Tus videos mini-grid
-   - Fix theme toggle (fluido)
-   - Ensure overlays do not block touch when hidden
-   - Keep existing optimizations (lazy, drag-to-scroll)
-   - [NUEVO 1] Transición Hero (FLIP)
-   - [NUEVO 2] Microinteracciones Ripple
-   - [NUEVO 3] Skeleton Screen Dinámico
+   SinFiltro — Máxima Velocidad & UX
    ========================= */
 
 /* Helpers */
@@ -301,14 +285,12 @@ const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
-const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
+const panel = $('#panel'), overlay = $('#overlay');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), viewerControls = $('#viewerControls');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
-const brandBtn = $('#brandBtn');
-const searchTop = $('#searchTop');
-const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
-const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
+const searchModal = $('#searchModal'), searchMini = $('#searchMini'), closeSearch = $('#closeSearch');
+const myModal = $('#myModal'), closeMy = $('#closeMy');
 
 /* Data pool (demo) */
 let pool = Array.from({length:160}).map((_,i)=>({
@@ -322,8 +304,13 @@ let reco = pool.slice(12,24);
 let recent = pool.slice(24,36);
 let grid = pool.slice(36,72);
 
-/* ---------- Lazy loading images (IntersectionObserver) ---------- */
+/* ---------- OPTIMIZACIÓN 1: Lazy loading images (IntersectionObserver) ---------- */
 let imgObserver = null;
+const observerOptions = {
+    rootMargin: '600px', // Aumentado a 600px para que las imágenes comiencen a cargarse ANTES.
+    threshold: 0.05
+};
+
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
@@ -332,31 +319,38 @@ function lazyObserve(root=document){
         entries.forEach(e=>{
           if(e.isIntersecting){
             const img = e.target;
-            img.src = img.dataset.src;
-            // Quitamos la clase skel solo después de que la imagen cargue
-            img.onload = ()=> img.closest('.skel')?.classList.remove('skel');
-            img.removeAttribute('data-src');
-            obs.unobserve(img);
+            // Usamos rAF para evitar problemas de thrashing de layout
+            requestAnimationFrame(()=>{
+                img.src = img.dataset.src;
+                img.onload = ()=> img.closest('.skel')?.classList.remove('skel');
+                img.removeAttribute('data-src');
+                obs.unobserve(img);
+            });
           }
         });
-      }, {rootMargin:'300px', threshold:0.05});
+      }, observerOptions);
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
+    // Fallback rápido
     imgs.forEach(i=> { i.src = i.dataset.src; i.closest('.skel')?.classList.remove('skel'); i.removeAttribute('data-src'); });
   }
 }
 
-/* ---------- Create card elements (keeps meta layout) ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function makeCardImageHTML(item, lazy=true){
+    const srcAttr = lazy ? `data-src="${item.src}"` : `src="${item.src}"`;
+    const loadingAttr = lazy ? `loading="lazy"` : ``; // Mejora de rendimiento nativa
+    const classAttr = lazy ? `class="skel"` : '';
+    return `<img ${srcAttr} alt="${escapeHtml(item.title)}" ${loadingAttr}>`;
+}
 
-function makeSmallCard(item){
+function makeSmallCard(item, lazy=true){
   const d = document.createElement('div');
-  d.className = 'card-small skel fade-up';
+  d.className = `card-small ${lazy ? 'skel' : ''} fade-up`;
   d.setAttribute('tabindex','0');
-  d.setAttribute('data-id', item.id); /* Añadido ID para FLIP */
+  d.setAttribute('data-id', item.id);
   d.innerHTML = `
-    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    ${makeCardImageHTML(item, lazy)}
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
@@ -371,41 +365,41 @@ function makeSmallCard(item){
   return d;
 }
 
-function makeGridCard(item){
+function makeGridCard(item, lazy=true){
   const a = document.createElement('article');
-  a.className = 'card skel fade-up';
-  a.setAttribute('data-id', item.id); /* Añadido ID para FLIP */
-  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.className = `card ${lazy ? 'skel' : ''} fade-up`;
+  a.setAttribute('data-id', item.id);
+  a.innerHTML = `${makeCardImageHTML(item, lazy)}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', (e)=> openViewerByItem(item, a));
   return a;
 }
 
-/* ---------- Render two rows with drag support ---------- */
-function renderTwoRows(row1,row2,items){
+/* ---------- Render Two Rows - Soporte para Lazy/No-Lazy ---------- */
+function renderTwoRows(row1,row2,items, lazy=true){
   row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{
     const target = (i%2===0)?row1:row2;
-    target.appendChild(makeSmallCard(it));
+    target.appendChild(makeSmallCard(it, lazy));
   });
   // ensure rows have enough children
   [row1,row2].forEach(r=>{
     if(r.children.length < 6){
-      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)], lazy));
     }
-    // attach drag-to-scroll for better horizontal experience on mobile
     enableDragScroll(r);
   });
-  lazyObserve();
+  if(lazy) lazyObserve();
 }
 
 /* ---------- Grid render ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML = '';
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+  // Se aplica lazy load a toda la cuadrícula
+  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it, true))); 
   lazyObserve(gridFeed);
 }
 
-/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
+/* ---------- Drag-to-scroll helper ---------- */
 function enableDragScroll(el){
   if(el.__dragEnabled) return;
   el.__dragEnabled = true;
@@ -424,28 +418,30 @@ function enableDragScroll(el){
   }, {passive:true});
   el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
 
-  // pointer events for desktops/mice
   let isDown=false;
   el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
   el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
-/* ---------- 2. Viewer modal (FLIP Hero Transition) ---------- */
+/* ---------- 4. Viewer modal (FLIP Hero Transition) ---------- */
 let activeList=[], currentIndex=0;
 let lastClickedElement = null;
 
 function openViewerByItem(item, sourceEl = null){
-  // 1. Encuentra lista e índice
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
   if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
   
-  // Guardamos el elemento de origen para la transición
-  lastClickedElement = sourceEl ? sourceEl.querySelector('img') || sourceEl.querySelector('div.mini-thumb img') : null;
+  // OPTIMIZACIÓN: Aseguramos que la imagen a clonar sea la que tiene el source cargado
+  lastClickedElement = sourceEl ? sourceEl.querySelector('img') : null;
+  if(lastClickedElement && lastClickedElement.hasAttribute('data-src')){
+      // Si el lazy load no la cargó a tiempo, mejor no hacer FLIP y abrir normal
+      lastClickedElement = null; 
+  }
   
-  showViewer(true);
+  showViewer(!!lastClickedElement); // Solo transicionamos si hay un elemento válido y cargado
 }
 
 function showViewer(startTransition = false){
@@ -453,7 +449,6 @@ function showViewer(startTransition = false){
   viewerInner.innerHTML = '';
   if(!it) return;
 
-  // Creamos el elemento del Viewer (img o video)
   let contentEl;
   if(it.kind === 'video'){
     contentEl = document.createElement('video');
@@ -468,15 +463,15 @@ function showViewer(startTransition = false){
     contentEl.style.maxHeight = '80vh';
   }
   
-  // Si tenemos un elemento de origen para FLIP
   if(startTransition && lastClickedElement){
     viewer.classList.add('transitioning');
     
-    // 1. FIRST (Posición inicial del elemento original)
+    // 1. FIRST (Posición inicial)
     const originalRect = lastClickedElement.getBoundingClientRect();
-    const originalBorderRadius = getComputedStyle(lastClickedElement.closest('.card, .card-small, .mini-thumb')).borderRadius;
+    const cardEl = lastClickedElement.closest('.card, .card-small, .mini-thumb');
+    const originalBorderRadius = cardEl ? getComputedStyle(cardEl).borderRadius : '12px';
     
-    // Crear el clon para la animación
+    // Crear el clon
     const clone = contentEl.cloneNode(false);
     clone.classList.add('hero-clone');
     clone.style.width = `${originalRect.width}px`;
@@ -486,29 +481,25 @@ function showViewer(startTransition = false){
     clone.style.borderRadius = originalBorderRadius;
     document.body.appendChild(clone);
     
-    // Mostrar el viewer, pero con el contenido final invisible
     viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
     viewerInner.style.opacity = '0';
     viewerControls.style.opacity = '0';
     
-    // Forzar un repaint para asegurar que la posición FIRST ha sido renderizada
+    // 2. LAST / 3. INVERT / 4. PLAY (Usamos rAF para garantizar el orden de pintado)
     requestAnimationFrame(()=>{
-      // 2. LAST (Posición final en el Viewer)
       viewerInner.appendChild(contentEl);
       const finalRect = contentEl.getBoundingClientRect();
       
-      // 3. INVERT (Mover el clon a la posición final y ejecutar la transición)
       requestAnimationFrame(()=>{
-        clone.style.transition = 'transform 300ms cubic-bezier(.4, 0, .2, 1), width 300ms cubic-bezier(.4, 0, .2, 1), height 300ms cubic-bezier(.4, 0, .2, 1), left 300ms cubic-bezier(.4, 0, .2, 1), top 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1)';
+        // 3. INVERT: Transición del clon
         clone.style.transform = `translate3d(${finalRect.left - originalRect.left}px, ${finalRect.top - originalRect.top}px, 0)`;
         clone.style.width = `${finalRect.width}px`;
         clone.style.height = `${finalRect.height}px`;
         clone.style.left = `${originalRect.left}px`;
         clone.style.top = `${originalRect.top}px`;
-        clone.style.borderRadius = '0px'; // Se transforma al radio final
+        clone.style.borderRadius = '0px'; 
         
-        // 4. PLAY (Al terminar la transición del clon, ocultarlo y mostrar el contenido real)
         clone.addEventListener('transitionend', function handler(){
           clone.removeEventListener('transitionend', handler);
           clone.remove();
@@ -520,7 +511,7 @@ function showViewer(startTransition = false){
     });
     
   } else {
-    // Si no hay transición (navegación interna del viewer)
+    // Apertura inmediata si no hay elemento de origen o si no se puede transicionar
     viewerInner.appendChild(contentEl);
     viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
@@ -533,7 +524,6 @@ function closeViewerFunc(){
   viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); 
   viewerInner.innerHTML=''; 
   document.body.style.overflow = ''; 
-  // Aseguramos la limpieza de clones por si acaso
   $$('.hero-clone').forEach(el => el.remove());
 }
 function prevItem(){ lastClickedElement=null; if(currentIndex>0){ currentIndex--; showViewer(); } }
@@ -548,140 +538,16 @@ function nextItem(){
     showViewer(); 
   } 
 }
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-prevBtn.addEventListener('click', prevItem);
-nextBtn.addEventListener('click', nextItem);
+document.getElementById('prevBtn').addEventListener('click', prevItem);
+document.getElementById('nextBtn').addEventListener('click', nextItem);
 
 
-/* ---------- Panel open/close ---------- */
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
-menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
-closePanelBtn.addEventListener('click', closePanel);
-
-// panel actions
-$$('.panel-item').forEach(btn=>{
-  btn.addEventListener('click', (e)=>{
-    const action = btn.dataset.action;
-    closePanel();
-    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
-    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'my'){ openMyModal(); }
-    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
-    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
-  });
-});
-
-/* ---------- FAB radial (bubbles) ---------- */
-fab.addEventListener('click', ()=>{
-  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
-  else {
-    radials.classList.add('show');
-    radials.innerHTML = '';
-    // create bubbles - upload, create post, short
-    const b1 = document.createElement('button'); b1.className='bubble'; b1.innerHTML='📤'; b1.title='Subir'; b1.onclick = ()=> { alert('Demo: Subir archivo (demo)'); radials.classList.remove('show'); };
-    const b2 = document.createElement('button'); b2.className='bubble'; b2.innerHTML='🖼️'; b2.title='Galería'; b2.onclick = ()=> { alert('Demo: Crear publicación (demo)'); radials.classList.remove('show'); };
-    const b3 = document.createElement('button'); b3.className='bubble'; b3.innerHTML='🎬'; b3.title='Short'; b3.onclick = ()=> { alert('Demo: Crear short (demo)'); radials.classList.remove('show'); };
-    radials.appendChild(b1); radials.appendChild(b2); radials.appendChild(b3);
-    // Aplicar ripple a las burbujas
-    [b1, b2, b3].forEach(el => el.addEventListener('click', applyRipple));
-  }
-});
-
-/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
-function applyTheme(t){
-  // Use rAF to avoid sync layout thrashing
-  requestAnimationFrame(()=>{
-    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
-    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
-  });
-}
-applyTheme(theme);
-themeToggle.addEventListener('click', ()=> {
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-});
-
-/* brand click -> home */
-brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navSearch').addEventListener('click', ()=> openSearchModal());
-$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal());
-
-/* Top search demo */
-searchTop.addEventListener('click', ()=> openSearchModal());
-
-/* ---------- Search modal (miniatures) ---------- */
-function openSearchModal(){
-  populateSearchMini();
-  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
-  // lock background scroll lightly
-  document.body.style.overflow = 'hidden';
-}
-function closeSearchModal(){
-  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
-  searchMini.innerHTML = '';
-  document.body.style.overflow = '';
-}
-closeSearch.addEventListener('click', closeSearchModal);
-searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
-
-function populateSearchMini(q){
-  searchMini.innerHTML = '';
-  // generate 12 thumbnails demo
-  for(let i=0;i<12;i++){
-    const item = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
-    d.addEventListener('click', (e)=>{ openViewerByItem(item, d); closeSearchModal(); });
-    searchMini.appendChild(d);
-  }
-}
-
-/* ---------- My videos modal (grid preview) ---------- */
-function openMyModal(){
-  myGrid.innerHTML = '';
-  // demo: fill with 9 random items (mix images & videos)
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
-    d.addEventListener('click', (e)=>{ openViewerByItem(it, d); closeMyModal(); });
-    myGrid.appendChild(d);
-  }
-  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
-closeMy.addEventListener('click', closeMyModal);
-myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
-
-/* ---------- Infinite vertical load (grid) ---------- */
-let loadingGrid=false;
-window.addEventListener('scroll', ()=>{
-  // when approaching bottom, append grid items
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
-      lazyObserve(gridFeed); loadingGrid=false;
-    }, 700);
-  }
-});
-
-/* ---------- 3. Microinteracción Ripple (JS) ---------- */
+/* ---------- 5. Microinteracción Ripple (JS) ---------- */
 function applyRipple(e){
   const el = this;
-  if (el.dataset.rippleEnabled) return; // Evitar doblemente en botones ya configurados
-  
   const ripple = document.createElement('span');
   const size = Math.max(el.clientWidth, el.clientHeight);
   const rect = el.getBoundingClientRect();
@@ -692,46 +558,74 @@ function applyRipple(e){
   
   ripple.classList.add('ripple');
   
-  // Si el elemento es un nav-item o un card-small (sin overflow:hidden), debe tener position:relative
   if(getComputedStyle(el).position === 'static'){
     el.style.position = 'relative';
   }
   
   el.appendChild(ripple);
   
-  // Limpieza
   ripple.addEventListener('animationend', ()=> ripple.remove());
 }
 
-// Aplicar el efecto ripple a todos los botones principales al cargar
+/* ---------- Render inicial y Event Listeners ---------- */
 document.addEventListener('DOMContentLoaded', ()=>{
-  $$('.icon-btn, .logo-btn, .fab, .bubble, .nav-item').forEach(el=>{
-    // Solo aplicamos el listener, el CSS hace el resto (escala y opacity)
-    el.addEventListener('pointerdown', applyRipple);
-    el.dataset.rippleEnabled = 'true';
-  });
+    // Aplicar ripple a todos los botones principales
+    $$('.icon-btn, .logo-btn, .fab, .bubble, .nav-item, .play-ico').forEach(el=>{
+        el.addEventListener('pointerdown', applyRipple);
+    });
+
+    // OPTIMIZACIÓN: Renderizado inicial de Tendencias y Recomendados SIN Lazy Load (cargan inmediatamente)
+    renderTwoRows(trendRow1, trendRow2, trends, false);
+    renderTwoRows(recoRow1, recoRow2, reco, false);
+    
+    // El resto del contenido (Antes Visto, Explorar) usa Lazy Load ajustado
+    renderTwoRows(recentRow1, recentRow2, recent, true);
+    renderGridInitial();
+    
+    // Seed rows para suavidad (con lazy load)
+    $$('.h-row').forEach(r=> {
+      if(r.children.length < 8){
+        for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)], true));
+      }
+    });
 });
 
-/* ---------- Render initial content ---------- */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  // seed rows for smoothness
-  $$('.h-row').forEach(r=> {
-    if(r.children.length < 8){
-      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    }
-  });
-  lazyObserve();
+/* ---------- Infinite vertical load (grid) ---------- */
+let loadingGrid=false;
+window.addEventListener('scroll', ()=>{
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
+    loadingGrid = true;
+    setTimeout(()=> {
+      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)], true)); }
+      lazyObserve(gridFeed); loadingGrid=false;
+    }, 700);
+  }
+});
+
+/* Otros listeners (Panel, Modales, Tema) */
+document.getElementById('menuBtn').addEventListener('click', ()=> { const p = $('#panel'); if(p.classList.contains('open')) p.classList.remove('open'); else p.classList.add('open'); $('#overlay').classList.toggle('show'); });
+document.getElementById('closePanel').addEventListener('click', ()=> { $('#panel').classList.remove('open'); $('#overlay').classList.remove('show'); });
+document.getElementById('themeToggle').addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem('sinfiltro.theme.v3', theme); applyTheme(theme); });
+document.getElementById('fab').addEventListener('click', ()=>{ const r = $('#radials'); if(r.classList.contains('show')){ r.classList.remove('show'); r.innerHTML=''; } else { r.classList.add('show'); r.innerHTML = '<button class="bubble">📤</button><button class="bubble">🖼️</button><button class="bubble">🎬</button>'; $$('#radials .bubble').forEach(b=>b.addEventListener('pointerdown', applyRipple)); }});
+document.getElementById('searchTop').addEventListener('click', ()=> { $('#searchModal').classList.add('show'); document.body.style.overflow = 'hidden'; populateSearchMini(); });
+document.getElementById('closeSearch').addEventListener('click', ()=> { $('#searchModal').classList.remove('show'); document.body.style.overflow = ''; });
+document.getElementById('navMe').addEventListener('click', ()=> { $('#myModal').classList.add('show'); document.body.style.overflow = 'hidden'; populateMyGrid(); });
+document.getElementById('closeMy').addEventListener('click', ()=> { $('#myModal').classList.remove('show'); document.body.style.overflow = ''; });
+
+function populateSearchMini(){
+    searchMini.innerHTML = '';
+    for(let i=0;i<12;i++){ const item = pool[rand(pool.length)]; const d = document.createElement('div'); d.className='mini-thumb'; d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`; d.addEventListener('click', (e)=>{ openViewerByItem(item, d); closeSearchModal(); }); searchMini.appendChild(d); }
 }
-document.addEventListener('DOMContentLoaded', renderAll);
+function populateMyGrid(){
+    myGrid.innerHTML = '';
+    for(let i=0;i<9;i++){ const it = pool[rand(pool.length)]; const d = document.createElement('div'); d.className='mini-thumb'; d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`; d.addEventListener('click', (e)=>{ openViewerByItem(it, d); closeMyModal(); }); myGrid.appendChild(d); }
+}
+function closeSearchModal(){ $('#searchModal').classList.remove('show'); document.body.style.overflow = ''; }
+function closeMyModal(){ $('#myModal').classList.remove('show'); document.body.style.overflow = ''; }
 
-/* ---------- Accessibility & shortcuts ---------- */
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchModal(); closeMyModal(); } });
+function applyTheme(t){ requestAnimationFrame(()=>{ if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; } else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; } }); }
 
-/* End of script */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); $('#panel').classList.remove('open'); $('#overlay').classList.remove('show'); closeSearchModal(); closeMyModal(); } });
 </script>
 </body>
 </html>
