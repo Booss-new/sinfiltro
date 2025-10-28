@@ -15,18 +15,18 @@
     --glass: rgba(255,255,255,0.04);
     --radius:14px; --trans:260ms;
     --text:#eaf7ff;
-    --skel-color: rgba(255,255,255,0.05); /* AGREGADO para simulación de carga */
+    --skel-color: rgba(255,255,255,0.05);
   }
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
   body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
 
-  /* ================= keep UI identical to approved design ================= */
+  /* ================= UI Components ================= */
   .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
     radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
     radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
   @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
 
-  /* Top header */
+  /* Header */
   header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
   .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
   .left-ctrl{display:flex;align-items:center;gap:12px}
@@ -35,22 +35,18 @@
   .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
   .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
 
-  /* Main content uses native body scrolling (fixes mobile touch) */
+  /* Main content & Sections */
   main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
   .container{padding:12px}
-
-  /* Hero */
   .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
   .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
   .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
-
-  /* Section */
   .section{margin-top:16px}
   .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
   .see-all{font-size:13px;color:var(--muted);cursor:pointer}
-
-  /* Horizontal two-row scrollers (kept visuals) */
+  
+  /* Horizontal scrollers (Rows) */
   .h-stack{display:flex;flex-direction:column;gap:10px}
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
@@ -61,7 +57,7 @@
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
   .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
 
-  /* Grid (vertical infinite) */
+  /* Grid (vertical) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
@@ -69,64 +65,55 @@
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
 
-  /* FAB + bottom nav */
+  /* FAB & Bottom Nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  
-  /* MEJORA 1: FAB radial (bubbles) - Diseño mejorado */
-  /* Ajuste de los íconos dentro de las burbujas */
+  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+
+  /* --- INICIO: Ajustes del Menú FAB estilo Miniatura (SOLICITUD) --- */
   .bubble{
-    width:44px; /* Tamaño de los icon-btn */
+    width:44px; 
     height:44px;
-    border-radius:10px; /* Cuadrado redondeado como los icon-btn */
+    border-radius:10px;
     display:flex;align-items:center;justify-content:center;
-    background:var(--card); /* Fondo discreto como otros botones */
+    background:var(--card); 
     color:var(--muted);font-weight:700;cursor:pointer;
     border:1px solid rgba(255,255,255,0.02);
-    box-shadow:none; /* Sin sombra extra aquí, la tendrá el contenedor */
+    box-shadow:none; 
     transition: background var(--trans);
-    font-size: 20px; /* Tamaño del icono */
+    font-size: 20px;
   }
   .bubble:hover { background: rgba(255,255,255,0.06); }
-  
-  /* Contenedor de cada burbuja (icono + texto) */
   .bubble-group { 
     display: flex; flex-direction: row; align-items: center; gap: 10px; 
-    padding: 6px 10px; /* Padding interno */
-    width: calc(100% - 20px); /* Ajustado por el padding de .radials */
-    border-radius: 12px; /* Bordes redondeados como las cards */
-    background: var(--card); /* Fondo como una tarjeta */
+    padding: 6px 10px; 
+    width: 200px; /* Ancho fijo para el menú */
+    border-radius: 12px; 
+    background: var(--card); 
     border: 1px solid rgba(255,255,255,0.02);
-    box-shadow:0 8px 30px rgba(0,0,0,0.3); /* Sombra para resaltar */
+    box-shadow:0 8px 30px rgba(0,0,0,0.3); 
     transition: transform var(--trans), opacity var(--trans);
     cursor: pointer;
   }
   .bubble-group:active { transform: scale(0.98); }
-
   .bubble-text { 
     font-size: 14px; 
     font-weight: 500; 
     color: var(--text); 
-    flex-grow: 1; /* Para que el texto ocupe el espacio restante */
+    flex-grow: 1; 
   }
-
   .radials{
-    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Posición inicial, más cerca del FAB */
-    display:flex;flex-direction:column;gap:8px;align-items:center; /* Centrado */
+    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; 
+    display:flex;flex-direction:column;gap:8px;align-items:center;
     z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
-    /* Los estilos de fondo y blur se moverán al bubble-group o se quitarán si no son necesarios */
-    /* background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px); */
-    padding: 10px 0; /* padding vertical, horizontal se manejará en bubble-group */
-    border-radius: 12px; 
-    /* border: 1px solid rgba(255,255,255,0.03); */
-    width: 200px; /* Ancho fijo para el contenedor de las burbujas */
-    transform: translateX(-50%) translateY(20px); /* Para animación de entrada */
+    padding: 10px 0; 
+    width: auto; /* El ancho lo define bubble-group */
+    transform: translateX(-50%) translateY(20px);
   }
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
+  /* --- FIN: Ajustes del Menú FAB --- */
 
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
-
-  /* Panel & overlay (menu lateral) */
+  /* Panel & overlay */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
   .overlay.show{display:block;pointer-events:auto;opacity:1}
   .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
@@ -137,27 +124,35 @@
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;}
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-width: 100%; max-height: 80vh; object-fit: contain;} /* Ajustado */
-  /* REPOSICIONADO: Controles del Viewer más abajo */
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-width: 100%; max-height: 80vh; object-fit: contain;}
+  
+  /* --- INICIO: Menú del Viewer más abajo (SOLICITUD) --- */
   .viewer-controls-meta { 
     position: absolute; 
     bottom: 20px; /* Más abajo para no estorbar la imagen */
     left: 50%; 
     transform: translateX(-50%); 
-    z-index: 230; /* Asegurarse de que esté por encima de la imagen */
+    z-index: 230; 
     display: flex; 
     gap: 8px; 
     justify-content: center;
-    background: rgba(0,0,0,0.4); /* Fondo más oscuro para mayor contraste */
-    backdrop-filter: blur(8px); /* Blur más fuerte */
+    background: rgba(0,0,0,0.4); 
+    backdrop-filter: blur(8px); 
     padding: 10px 15px; 
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.05); /* Borde sutil */
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5); /* Sombra para darle profundidad */
+    border: 1px solid rgba(255,255,255,0.05); 
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
   }
-  .viewer .controls{display:none;} /* Ocultar el controls original si aún existiera */
-  
-  /* Search modal & MyVideos modal */
+  .viewer-controls-meta .icon-btn, .viewer-controls-meta .play-ico { 
+    width: 48px; /* Ajuste sutil del tamaño de los botones */
+    height: 48px;
+    background: rgba(255,255,255,0.06); 
+    backdrop-filter: blur(4px); 
+    border: 1px solid rgba(255,255,255,0.08); 
+  }
+  /* --- FIN: Menú del Viewer más abajo --- */
+
+  /* Modals */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
   .modal.show{display:block}
   .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -165,21 +160,9 @@
   .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .mini-thumb img{width:100%;height:100%;object-fit:cover}
   .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
-
-  /* Nuevo: Modal de Simulación de Subida (MEJORA 3) */
-  #uploadModal {
-      display:none; text-align: center;
-      padding: 20px; max-width: 300px;
-      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-      background: var(--card); border-radius: 12px; z-index: 250;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-  }
-  .progress-bar {
-      width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px;
-  }
-  .progress-fill {
-      height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear;
-  }
+  #uploadModal { display:none; text-align: center; padding: 20px; max-width: 300px; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); background: var(--card); border-radius: 12px; z-index: 250; box-shadow: 0 10px 40px rgba(0,0,0,0.7); }
+  .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear; }
 
   /* Small screens */
   @media (max-width:420px){
@@ -187,10 +170,10 @@
     .grid img{height:120px}
     .fab{width:64px;height:64px}
     .panel{width:92%;left:4%}
-    .viewer-controls-meta { bottom: 10px; padding: 8px 10px; gap: 6px; } /* Ajuste para pantallas más pequeñas */
+    .viewer-controls-meta { bottom: 10px; padding: 8px 10px; gap: 6px; }
   }
 
-  /* fallback when backdrop-filter not supported */
+  /* fallback */
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .panel, header, .modal, .viewer-controls-meta { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
   }
@@ -288,7 +271,8 @@
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
         <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button> <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button>
+        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
       </div>
     </div>
   </div>
@@ -319,7 +303,7 @@
 
 <script>
 /* =========================
-   SinFiltro — mejoras funcionales (mantener diseño)
+   SinFiltro — JavaScript (funcionalidad demo)
    ========================= */
 
 /* Helpers */
@@ -341,11 +325,11 @@ const brandBtn = $('#brandBtn');
 const searchTop = $('#searchTop');
 const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
 const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
-const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); // AGREGADO
+const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload');
 
 /* Data pool (demo) */
 let pool = Array.from({length:160}).map((_,i)=>({
-  id:'p'+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
+  id:'p'+i, src:mkImg(i), kind:(i%6===0 || i%7===0)?'video':'image',
   title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
   likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
 }));
@@ -476,8 +460,7 @@ function showViewer(){
   viewerInner.innerHTML = '';
   if(!it) return;
 
-  // Actualizar visibilidad del botón de descarga
-  downloadBtn.style.display = 'inline-flex'; // Siempre visible en el viewer
+  downloadBtn.style.display = 'inline-flex';
 
   if(it.kind === 'video'){
     const video = document.createElement('video');
@@ -493,9 +476,7 @@ function showViewer(){
     img.style.maxHeight = '80vh';
     viewerInner.appendChild(img);
   }
-  // show viewer
   viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
-  // ensure background overlay doesn't block scroll in viewer inner
   document.body.style.overflow = 'hidden';
 }
 function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
@@ -505,16 +486,15 @@ vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(
 
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-prevBtn.addEventListener('click', prevItem); // AGREGADO
-nextBtn.addEventListener('click', nextItem); // AGREGADO
-downloadBtn.addEventListener('click', ()=>{ // MEJORA 4: LÓGICA DE DESCARGA
+prevBtn.addEventListener('click', prevItem);
+nextBtn.addEventListener('click', nextItem);
+downloadBtn.addEventListener('click', ()=>{ 
     const item = activeList[currentIndex];
     if(item && item.src){
-        // SIMULACIÓN DE DESCARGA
         const downloadUrl = item.src; 
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.download = `SinFiltro_${item.id}.${item.kind === 'video' ? 'mp4' : 'jpg'}`; // Nombre de archivo dinámico
+        link.download = `SinFiltro_${item.id}.${item.kind === 'video' ? 'mp4' : 'jpg'}`; 
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -530,7 +510,6 @@ function closePanel(){ overlay.classList.remove('show'); panel.classList.remove(
 menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
 closePanelBtn.addEventListener('click', closePanel);
 
-// MEJORA 2: Cierre de Panel al pulsar en overlay
 overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
         if (panel.classList.contains('open')) {
@@ -543,7 +522,7 @@ overlay.addEventListener('click', (e) => {
     }
 });
 
-/* ---------- FAB radial (bubbles) - MEJORADO ---------- */
+/* ---------- FAB radial (bubbles) - MEJORADO con el estilo de tarjeta ---------- */
 fab.addEventListener('click', ()=>{
   if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
   else {
@@ -553,7 +532,6 @@ fab.addEventListener('click', ()=>{
     // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
         const d = document.createElement('button'); d.className='bubble-group';
-        // El icono y el texto dentro de su propio span para styling
         d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
         d.onclick = action;
         return d;
@@ -569,7 +547,7 @@ fab.addEventListener('click', ()=>{
   }
 });
 
-/* ---------- Simulación de Subida (Upload Demo) - AGREGADO ---------- */
+/* ---------- Simulación de Subida (Upload Demo) ---------- */
 let uploadInterval = null;
 function simulateUpload(title){
     uploadModal.style.display = 'block';
@@ -585,4 +563,132 @@ function simulateUpload(title){
             clearInterval(uploadInterval);
             progress = 100;
             uploadTitle.textContent = '¡Subida Completa!';
-            uploadStatus.textContent = '
+            uploadStatus.textContent = '100% - Procesando...';
+            progressFill.style.width = '100%';
+            setTimeout(()=>{ closeUploadModal(); alert('¡Contenido Subido con Éxito!'); }, 1500);
+        } else {
+            progressFill.style.width = `${progress}%`;
+            uploadStatus.textContent = `${progress}%`;
+        }
+    }, 300);
+}
+
+function closeUploadModal(){
+    clearInterval(uploadInterval);
+    uploadModal.style.display = 'none';
+    uploadModal.setAttribute('aria-hidden', 'true');
+    uploadTitle.textContent = 'Subiendo archivo...';
+}
+closeUpload.addEventListener('click', closeUploadModal);
+
+
+/* ---------- Theme toggle ---------- */
+const THEME_KEY = 'sinfiltro.theme.v3';
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+function applyTheme(t){
+  requestAnimationFrame(()=>{
+    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
+    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
+  });
+}
+applyTheme(theme);
+themeToggle.addEventListener('click', ()=> {
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
+
+/* Nav actions */
+brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navSearch').addEventListener('click', ()=> openSearchModal());
+$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#navMe').addEventListener('click', ()=> openMyModal());
+
+/* Search modal */
+searchTop.addEventListener('click', ()=> openSearchModal());
+
+function openSearchModal(){
+  populateSearchMini();
+  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeSearchModal(){
+  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
+  searchMini.innerHTML = '';
+  document.body.style.overflow = '';
+}
+closeSearch.addEventListener('click', closeSearchModal);
+searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
+
+function populateSearchMini(q){
+  searchMini.innerHTML = '';
+  for(let i=0;i<12;i++){
+    const item = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
+    searchMini.appendChild(d);
+  }
+}
+
+/* My videos modal */
+function openMyModal(){
+  myGrid.innerHTML = '';
+  for(let i=0;i<9;i++){
+    const it = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
+    myGrid.appendChild(d);
+  }
+  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
+closeMy.addEventListener('click', closeMyModal);
+myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
+
+/* Infinite vertical load (grid) */
+let loadingGrid=false;
+window.addEventListener('scroll', ()=>{
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
+    loadingGrid = true;
+    setTimeout(()=> {
+      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
+      lazyObserve(gridFeed); loadingGrid=false;
+    }, 700);
+  }
+});
+
+/* ---------- Render initial content ---------- */
+function renderAll(){
+  renderTwoRows(trendRow1, trendRow2, trends);
+  renderTwoRows(recoRow1, recoRow2, reco);
+  renderTwoRows(recentRow1, recentRow2, recent);
+  renderGridInitial();
+  // seed rows for smoothness
+  $$('.h-row').forEach(r=> {
+    if(r.children.length < 8){
+      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+  });
+  lazyObserve();
+}
+document.addEventListener('DOMContentLoaded', renderAll);
+
+/* ---------- Accessibility & shortcuts ---------- */
+document.addEventListener('keydown', e=>{ 
+    if(e.key==='Escape'){ 
+        closeViewerFunc(); 
+        closePanel(); 
+        closeSearchModal(); 
+        closeMyModal(); 
+        closeUploadModal();
+    } 
+});
+
+/* End of script */
+</script>
+</body>
+</html>
