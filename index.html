@@ -15,7 +15,7 @@
     --glass: rgba(255,255,255,0.04);
     --radius:14px; --trans:260ms;
     --text:#eaf7ff;
-    --skel-color: rgba(255,255,255,0.05); /* AGREGADO para simulación de carga */
+    --skel-color: rgba(255,255,255,0.05);
   }
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
   body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
@@ -72,11 +72,11 @@
   /* FAB + bottom nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   
-  /* MEJORA 1: FAB radial (bubbles) - Diseño mejorado */
+  /* FAB radial (bubbles) */
   .bubble{
-    width:52px;height:52px;border-radius:10px; /* Cuadrado redondeado como los panel-item */
+    width:52px;height:52px;border-radius:10px;
     display:flex;align-items:center;justify-content:center;
-    background:var(--card); /* Fondo más discreto */
+    background:var(--card);
     color:var(--text);font-weight:700;cursor:pointer;
     box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
     transition: background var(--trans);
@@ -84,21 +84,22 @@
   .bubble:hover { background: rgba(255,255,255,0.06); }
   .bubble-group { 
     display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
-    padding: 6px 10px; width: 100%; /* Para que ocupe todo el ancho del radials */
+    padding: 6px 10px; width: 100%;
   }
   .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
   .radials{
-    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Más cerca del FAB */
-    display:flex;flex-direction:column;gap:8px;align-items:flex-start; /* Alineación izquierda */
+    position:fixed;left:50%;transform:translateX(-50%);bottom:100px;
+    display:flex;flex-direction:column;gap:8px;align-items:flex-start;
     z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
     padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
-    width: 200px; /* Ancho fijo para las burbujas */
+    width: 200px;
     transform: translateX(-50%) translateY(20px);
   }
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
 
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+  /* CAMBIO: Renombrar nav-me a Mi Cuenta */
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
   /* Panel & overlay (menu lateral) */
@@ -111,22 +112,39 @@
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img,.viewer video{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px} /* ESTE SE MANTIENE PARA NO ROMPER JS */
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;}
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 80vh; object-fit: contain;}
+  
+  /* MEJORA 2: Controles más abajo */
   .viewer-controls-meta { 
-    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10;
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 10;
     display: flex; gap: 8px; justify-content: center;
     background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
   }
   
+  /* NUEVO: Meta-datos en el visor */
+  .viewer-meta {
+      position: absolute; 
+      bottom: 60px; /* Sobre los controles */
+      left: 50%; 
+      transform: translateX(-50%); 
+      z-index: 9;
+      background: rgba(0,0,0,0.3);
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--text);
+      display: flex;
+      gap: 15px;
+  }
+
   /* Search modal & MyVideos modal */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
   .modal.show{display:block}
   .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
   .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .mini-thumb img{width:100%;height:100%;object-fit:cover}
+  .mini-thumb img, .mini-thumb video{width:100%;height:100%;object-fit:cover}
   .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
 
   /* Nuevo: Modal de Simulación/Progreso de Subida (MEJORA 3) */
@@ -205,7 +223,7 @@
       <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
       <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
       <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
-      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mis videos</button>
+      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi cuenta</button>
       <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
       <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
     </nav>
@@ -221,24 +239,24 @@
       <section class="section fade-up" aria-label="tendencias">
         <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
         <div class="h-stack">
-          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
-          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
+          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1" data-type="trends"></div>
+          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2" data-type="trends"></div>
         </div>
       </section>
 
       <section class="section fade-up" aria-label="recomendados">
         <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
         <div class="h-stack">
-          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
-          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
+          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1" data-type="reco"></div>
+          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2" data-type="reco"></div>
         </div>
       </section>
 
       <section class="section fade-up" aria-label="antes visto">
         <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
         <div class="h-stack">
-          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
-          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
+          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1" data-type="recent"></div>
+          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2" data-type="recent"></div>
         </div>
       </section>
 
@@ -270,12 +288,13 @@
     <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
     <div style="width:78px"></div>
     <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
+    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Mi cuenta</div></div>
   </nav>
 
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-    <div class="card" style="position:relative;">
+    <div class="card" style="position:relative; padding: 0;">
       <div id="viewerInner"></div>
+      <div id="viewerMeta" class="viewer-meta"></div> 
       <div id="viewerControls" class="viewer-controls-meta">
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
@@ -293,9 +312,9 @@
     <div id="searchMini" class="grid-mini"></div>
   </div>
 
-  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
+  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Mi cuenta">
     <div class="head" style="justify-content:space-between">
-      <strong>Tus videos (demo)</strong>
+      <strong>Mi cuenta (demo)</strong>
       <button id="closeMy" class="icon-btn">✕</button>
     </div>
     <div id="myGrid" class="grid-mini"></div>
@@ -321,8 +340,7 @@ const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  CAMBIO CLAVE: URL de tu servidor en RENDER (o donde lo hayas desplegado)
-//  IMPORTANTE: DEBES SUSTITUIR ESTA URL POR LA TUYA CUANDO HAGAS EL DEPLOY FINAL.
+//  CAMBIO CLAVE: URL de tu servidor en RENDER 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const SERVER_URL = 'https://sinfiltro.onrender.com'; // URL de Render suministrada por el usuario
 
@@ -333,7 +351,7 @@ const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn'), viewerMeta = $('#viewerMeta');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
@@ -352,11 +370,13 @@ const startUploadBtn = $('#startUploadBtn');
 /* Data pool (demo) */
 let pool = []; // Se llenará con datos reales del servidor + mockups
 let activeList=[], currentIndex=0;
+// NUEVO: Mapas para controlar el scroll infinito lateral
+const rowLoadState = {}; // {trends: {row1: 0, row2: 0}, reco: ...}
+
 
 /* ---------- FETCH CONTENT FROM SERVER (MODIFICADO) ---------- */
 async function fetchContent(type) {
     try {
-        // Usa la URL del servidor
         const response = await fetch(`${SERVER_URL}/api/content/feed/${type}`);
         const data = await response.json();
 
@@ -387,13 +407,18 @@ async function renderAll() {
     // Usar todos los datos como pool principal
     pool = [...trendsData, ...recoData, ...recentData];
 
+    // Inicializar el estado de carga lateral
+    rowLoadState.trends = { row1: 0, row2: 0 };
+    rowLoadState.reco = { row1: 0, row2: 0 };
+    rowLoadState.recent = { row1: 0, row2: 0 };
+    
     // Llenar las filas horizontales con los datos del servidor
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
     renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
     // Llenar el grid con el resto del pool
-    renderGridInitial(pool.slice(24)); // Usar el resto del pool
+    renderGridInitial(pool.slice(24)); 
 
     // seed rows for smoothness (mantenido)
     $$('.h-row').forEach(r=> {
@@ -401,6 +426,7 @@ async function renderAll() {
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
         }
         enableDragScroll(r);
+        r.addEventListener('scroll', handleHorizontalScroll); // NUEVO: Detector de scroll para carga
     });
     lazyObserve();
 }
@@ -512,9 +538,46 @@ function enableDragScroll(el){
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
+// NUEVO: Lógica de carga infinita horizontal
+function handleHorizontalScroll(e) {
+    const row = e.target;
+    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) { // Carga si quedan 100px
+        loadMoreHorizontal(row);
+    }
+}
+
+let horizontalLoading = false;
+async function loadMoreHorizontal(row) {
+    if (horizontalLoading) return;
+    horizontalLoading = true;
+
+    const type = row.dataset.type;
+    const rowId = row.id.endsWith('1') ? 'row1' : 'row2';
+    
+    // Obtener un nuevo set de datos mock (simulando una nueva petición al servidor)
+    // Para no duplicar, simplemente sacamos más contenido aleatorio del pool grande
+    const newItems = Array.from({length: 4}).map(() => pool[rand(pool.length)]);
+
+    if (newItems.length > 0) {
+        // Simular un pequeño retraso de carga
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const fragment = document.createDocumentFragment();
+        newItems.forEach(item => fragment.appendChild(makeSmallCard(item)));
+        row.appendChild(fragment);
+        lazyObserve(row);
+        
+        // Ajustar el scroll para que la posición sea fluida
+        row.scrollLeft += 10;
+    }
+    horizontalLoading = false;
+}
+
+// MODIFICADO: showViewer para incluir meta-datos y nueva posición de controles
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
+  viewerMeta.innerHTML = '';
   if(!it) return;
 
   downloadBtn.style.display = 'inline-flex';
@@ -535,6 +598,13 @@ function showViewer(){
     mediaElement = img;
   }
   viewerInner.appendChild(mediaElement);
+
+  // NUEVO: Mostrar Meta-datos
+  viewerMeta.innerHTML = `
+      <span>👁️ ${it.views || '0K'}</span>
+      <span>❤ ${it.likes || 0}</span>
+      <span>💬 ${it.comments || 0}</span>
+  `;
   
   viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
@@ -547,7 +617,7 @@ function openViewerByItem(item){
   if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
   showViewer();
 }
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; viewerMeta.innerHTML=''; document.body.style.overflow = ''; }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
@@ -750,7 +820,7 @@ brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navSearch').addEventListener('click', ()=> openSearchModal());
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal());
+$('#navMe').addEventListener('click', ()=> openMyModal()); // Mantiene ID navMe, pero el texto dice Mi Cuenta
 
 /* Top search demo */
 searchTop.addEventListener('click', ()=> openSearchModal());
@@ -774,19 +844,32 @@ function populateSearchMini(q){
   for(let i=0;i<12;i++){
     const item = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    let mediaTag;
+    if(item.kind === 'video'){
+        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
+    } else {
+        mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    }
+    d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
     searchMini.appendChild(d);
   }
 }
 
-/* ---------- My videos modal (grid preview) ---------- */
+/* ---------- My videos modal (grid preview) - MEJORADO para usar miniaturas y videos/fotos ---------- */
 function openMyModal(){
   myGrid.innerHTML = '';
+  // Usamos el pool para simular el contenido del usuario
   for(let i=0;i<9;i++){
     const it = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
-    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    let mediaTag;
+    if(it.kind === 'video'){
+        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
+    } else {
+        mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    }
+    d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
     myGrid.appendChild(d);
   }
