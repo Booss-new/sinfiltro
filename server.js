@@ -1,13 +1,16 @@
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const multer = require('multer'); // Importar Multer
-const fs = require('fs'); // Para manejar archivos
+const multer = require('multer'); 
+const fs = require('fs'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- CONFIGURACIÓN DE MULTER Y ALMACENAMIENTO ---
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  IMPORTANTE: EN RENDER, ESTA CARPETA NO ES PERMANENTE.
+//  Los archivos subidos se perderán al reiniciar el servidor.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR);
@@ -26,7 +29,6 @@ const upload = multer({
     storage: storage,
     limits: { fileSize: 50 * 1024 * 1024 } // Límite de 50MB (para videos)
 });
-// ------------------------------------------------
 
 // --- BASE DE DATOS MOCKUP EN MEMORIA ---
 // El SRC de demostración usa Picsum; el KIND es 'video' o 'image'
@@ -44,12 +46,12 @@ const serverDataStore = {
 };
 
 // Middleware:
+// CORS es CRUCIAL para que el frontend de GitHub Pages pueda hablar con el backend de Render
 app.use(cors()); 
 app.use(express.json()); 
-// 💡 Servir los archivos subidos estáticamente: ¡CRUCIAL para ver los videos subidos!
-app.use('/uploads', express.static(UPLOAD_DIR));
+app.use('/uploads', express.static(UPLOAD_DIR)); // Servir archivos subidos
 
-// --- SERVICIO DEL FRONTEND ---
+// --- SERVICIO DEL FRONTEND (Para probar en local o si lo sirves todo desde Express) ---
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html')); 
 });
@@ -57,20 +59,21 @@ app.use(express.static(path.join(__dirname, '')));
 
 // --- ENDPOINT DE OBTENCIÓN DEL FEED ---
 app.get('/api/content/feed/:type', (req, res) => {
+    // Usamos pool de datos grande para las peticiones
     const allContent = [...serverDataStore.content].sort(() => 0.5 - Math.random());
     const type = req.params.type;
     let items;
 
+    // Lógica simple para devolver diferentes secciones (Tendencias, Recomendados, etc.)
     switch(type) {
         case 'trends':
-            items = allContent.slice(0, 12); 
+            items = allContent.slice(0, 20); 
             break;
         case 'reco':
-            items = allContent.slice(12, 24); 
+            items = allContent.slice(20, 40); 
             break;
-        case 'grid':
         case 'recent': 
-            items = allContent;
+            items = allContent; // Pool grande para el grid/reciente
             break;
         default:
             items = [];
@@ -85,11 +88,15 @@ app.post('/api/content/upload', upload.single('file'), (req, res) => {
         return res.status(400).json({ success: false, message: 'No se subió ningún archivo.' });
     }
     
+    // Obtener la URL base del servidor (necesario para Render o cualquier hosting externo)
+    // Esto asegura que la URL sea completa para que el frontend pueda acceder al archivo subido.
+    const baseUrl = req.protocol + '://' + req.get('host');
+
     // Crear el nuevo objeto de contenido
     const newItem = {
         id: Date.now().toString(),
-        // URL accesible desde el navegador para reproducción completa
-        src: `/uploads/${req.file.filename}`, 
+        // SRC: URL COMPLETA para que funcione desde GitHub Pages
+        src: `${baseUrl}/uploads/${req.file.filename}`, 
         kind: req.file.mimetype.startsWith('video/') ? 'video' : 'image',
         title: req.body.title || req.file.originalname,
         likes: 0, comments: 0, views: '0K',
