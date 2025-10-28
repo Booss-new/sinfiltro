@@ -15,30 +15,10 @@
     --glass: rgba(255,255,255,0.04);
     --radius:14px; --trans:260ms;
     --text:#eaf7ff;
-    --skel-color: rgba(255,255,255,0.05);
+    --skel-color: rgba(255,255,255,0.05); /* AGREGADO para simulación de carga */
   }
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
   body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
-
-  /* ================= 1. MICROINTERACCIONES RIPPLE (CSS) ================= */
-  .icon-btn, .logo-btn, .card-small, .grid .card, .fab, .bubble, .nav-item { transition: transform var(--trans), opacity var(--trans); position: relative; overflow: hidden; }
-  .icon-btn:active, .logo-btn:active, .fab:active, .bubble:active { transform:scale(.92); }
-  .nav-item:active { transform: translateY(1px); opacity: 0.9; }
-
-  .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); pointer-events: none; transform: scale(0); animation: rippleEffect .6s linear; opacity: 0; }
-  @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
-
-  /* ================= 2. SKELETON SCREEN DINÁMICO (CSS) ================= */
-  .skel { position: relative; overflow: hidden; background-color: var(--skel-color); }
-  .skel::after {
-    content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    animation: shine 1.5s infinite;
-  }
-  @keyframes shine {
-    to { transform: translateX(100%); }
-  }
 
   /* ================= keep UI identical to approved design ================= */
   .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
@@ -51,7 +31,7 @@
   .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
   .left-ctrl{display:flex;align-items:center;gap:12px}
   .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
-  
+  .icon-btn:active{transform:scale(.96)}
   .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
   .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
 
@@ -74,7 +54,7 @@
   .h-stack{display:flex;flex-direction:column;gap:10px}
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer;will-change: transform}
+  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
   .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
@@ -83,7 +63,7 @@
 
   /* Grid (vertical infinite) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer;will-change: transform}
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
   .grid img{width:100%;height:150px;object-fit:cover}
   .grid .body{padding:8px;color:var(--text)}
   .grid .title{font-weight:700}
@@ -91,11 +71,35 @@
 
   /* FAB + bottom nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  .radials{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity .18s}
-  .radials.show{opacity:1;pointer-events:auto}
-  .bubble{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:none}
+  
+  /* MEJORA 1: FAB radial (bubbles) - Diseño mejorado */
+  .bubble{
+    width:52px;height:52px;border-radius:10px; /* Cuadrado redondeado como los panel-item */
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card); /* Fondo más discreto */
+    color:var(--text);font-weight:700;cursor:pointer;
+    box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
+    transition: background var(--trans);
+  }
+  .bubble:hover { background: rgba(255,255,255,0.06); }
+  .bubble-group { 
+    display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
+    padding: 6px 10px; width: 100%; /* Para que ocupe todo el ancho del radials */
+  }
+  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
+  .radials{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:100px; /* Más cerca del FAB */
+    display:flex;flex-direction:column;gap:8px;align-items:flex-start; /* Alineación izquierda */
+    z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
+    padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
+    width: 200px; /* Ancho fijo para las burbujas */
+    transform: translateX(-50%) translateY(20px);
+  }
+  .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
+
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer; will-change: transform;}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
   /* Panel & overlay (menu lateral) */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
@@ -104,34 +108,18 @@
   .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* 3. VIEWER CON TRANSICIÓN HERO (CSS) */
-  .viewer{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:220;display:none;align-items:center;justify-content:center;padding:10px;transition:background .3s}
+  /* Viewer (immersive) */
+  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:transparent;padding:0;box-shadow:none}
-  
-  .viewerInner{position:relative;width:100%;height:100%;}
-  .viewerInner img, .viewerInner video{width:100%;height:auto;display:block; max-height: 80vh; transition: transform 0.3s, opacity 0.3s, border-radius 0.3s; }
-  
-  .hero-clone {
-    position: fixed; z-index: 230;
-    transition: transform 300ms cubic-bezier(.4, 0, .2, 1), width 300ms cubic-bezier(.4, 0, .2, 1), height 300ms cubic-bezier(.4, 0, .2, 1), left 300ms cubic-bezier(.4, 0, .2, 1), top 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
-    object-fit: cover;
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .viewer img,.viewer video{width:100%;height:auto;display:block}
+  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px} /* ESTE SE MANTIENE PARA NO ROMPER JS */
+  .viewer-controls-meta { 
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10;
+    display: flex; gap: 8px; justify-content: center;
+    background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
   }
   
-  .viewer-content-meta {
-    margin-top:12px;
-    display:flex;gap:8px;justify-content:center;
-    transition: opacity 0.2s 0.3s;
-  }
-  .viewer.transitioning .viewer-content-meta { opacity: 0; }
-  
-  .viewer .card {
-    padding: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
   /* Search modal & MyVideos modal */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
   .modal.show{display:block}
@@ -140,6 +128,21 @@
   .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
   .mini-thumb img{width:100%;height:100%;object-fit:cover}
   .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
+
+  /* Nuevo: Modal de Simulación de Subida (MEJORA 3) */
+  #uploadModal {
+      display:none; text-align: center;
+      padding: 20px; max-width: 300px;
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      background: var(--card); border-radius: 12px; z-index: 250;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  }
+  .progress-bar {
+      width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px;
+  }
+  .progress-fill {
+      height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear;
+  }
 
   /* Small screens */
   @media (max-width:420px){
@@ -179,8 +182,7 @@
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
       <strong>Cuenta</strong>
-      <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
-    </div>
+      <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">✕</button> </div>
     <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
     <nav style="display:flex;flex-direction:column;gap:8px">
       <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
@@ -242,13 +244,13 @@
   </nav>
 
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-    <div class="card">
+    <div class="card" style="position:relative;">
       <div id="viewerInner"></div>
-      <div id="viewerControls" class="viewer-content-meta">
+      <div id="viewerControls" class="viewer-controls-meta">
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
         <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button> <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
       </div>
     </div>
   </div>
@@ -269,9 +271,17 @@
     <div id="myGrid" class="grid-mini"></div>
   </div>
 
+  <div id="uploadModal" aria-hidden="true" role="alertdialog">
+      <h3 id="uploadTitle" style="margin-top:0;font-size:16px;">Subiendo archivo...</h3>
+      <p id="uploadStatus" style="font-size:12px; color:var(--muted)">0%</p>
+      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <button id="closeUpload" class="icon-btn" style="margin-top:15px; background: transparent; border: 1px solid var(--muted)">Cancelar</button>
+  </div>
+
+
 <script>
 /* =========================
-   SinFiltro — Máxima Velocidad & UX
+   SinFiltro — mejoras funcionales (mantener diseño)
    ========================= */
 
 /* Helpers */
@@ -285,12 +295,15 @@ const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
-const panel = $('#panel'), overlay = $('#overlay');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), viewerControls = $('#viewerControls');
+const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
-const searchModal = $('#searchModal'), searchMini = $('#searchMini'), closeSearch = $('#closeSearch');
-const myModal = $('#myModal'), closeMy = $('#closeMy');
+const brandBtn = $('#brandBtn');
+const searchTop = $('#searchTop');
+const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
+const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
+const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); // AGREGADO
 
 /* Data pool (demo) */
 let pool = Array.from({length:160}).map((_,i)=>({
@@ -304,13 +317,8 @@ let reco = pool.slice(12,24);
 let recent = pool.slice(24,36);
 let grid = pool.slice(36,72);
 
-/* ---------- OPTIMIZACIÓN 1: Lazy loading images (IntersectionObserver) ---------- */
+/* ---------- Lazy loading images (IntersectionObserver) ---------- */
 let imgObserver = null;
-const observerOptions = {
-    rootMargin: '600px', // Aumentado a 600px para que las imágenes comiencen a cargarse ANTES.
-    threshold: 0.05
-};
-
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
   if('IntersectionObserver' in window){
@@ -319,38 +327,29 @@ function lazyObserve(root=document){
         entries.forEach(e=>{
           if(e.isIntersecting){
             const img = e.target;
-            // Usamos rAF para evitar problemas de thrashing de layout
-            requestAnimationFrame(()=>{
-                img.src = img.dataset.src;
-                img.onload = ()=> img.closest('.skel')?.classList.remove('skel');
-                img.removeAttribute('data-src');
-                obs.unobserve(img);
-            });
+            img.src = img.dataset.src;
+            img.onload = ()=> img.parentElement.classList.remove('skel');
+            img.removeAttribute('data-src');
+            obs.unobserve(img);
           }
         });
-      }, observerOptions);
+      }, {rootMargin:'300px', threshold:0.05});
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
-    // Fallback rápido
-    imgs.forEach(i=> { i.src = i.dataset.src; i.closest('.skel')?.classList.remove('skel'); i.removeAttribute('data-src'); });
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
   }
 }
 
-function makeCardImageHTML(item, lazy=true){
-    const srcAttr = lazy ? `data-src="${item.src}"` : `src="${item.src}"`;
-    const loadingAttr = lazy ? `loading="lazy"` : ``; // Mejora de rendimiento nativa
-    const classAttr = lazy ? `class="skel"` : '';
-    return `<img ${srcAttr} alt="${escapeHtml(item.title)}" ${loadingAttr}>`;
-}
+/* ---------- Create card elements (keeps meta layout) ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-function makeSmallCard(item, lazy=true){
+function makeSmallCard(item){
   const d = document.createElement('div');
-  d.className = `card-small ${lazy ? 'skel' : ''} fade-up`;
+  d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
-  d.setAttribute('data-id', item.id);
   d.innerHTML = `
-    ${makeCardImageHTML(item, lazy)}
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
@@ -360,46 +359,45 @@ function makeSmallCard(item, lazy=true){
       <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
-  d.addEventListener('click', (e)=> openViewerByItem(item, d));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item, d); });
+  d.addEventListener('click', ()=> openViewerByItem(item));
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
   return d;
 }
 
-function makeGridCard(item, lazy=true){
+function makeGridCard(item){
   const a = document.createElement('article');
-  a.className = `card ${lazy ? 'skel' : ''} fade-up`;
-  a.setAttribute('data-id', item.id);
-  a.innerHTML = `${makeCardImageHTML(item, lazy)}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-  a.addEventListener('click', (e)=> openViewerByItem(item, a));
+  a.className = 'card skel fade-up';
+  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
-/* ---------- Render Two Rows - Soporte para Lazy/No-Lazy ---------- */
-function renderTwoRows(row1,row2,items, lazy=true){
+/* ---------- Render two rows with drag support ---------- */
+function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{
     const target = (i%2===0)?row1:row2;
-    target.appendChild(makeSmallCard(it, lazy));
+    target.appendChild(makeSmallCard(it));
   });
   // ensure rows have enough children
   [row1,row2].forEach(r=>{
     if(r.children.length < 6){
-      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)], lazy));
+      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
     }
+    // attach drag-to-scroll for better horizontal experience on mobile
     enableDragScroll(r);
   });
-  if(lazy) lazyObserve();
+  lazyObserve();
 }
 
 /* ---------- Grid render ---------- */
 function renderGridInitial(){
   gridFeed.innerHTML = '';
-  // Se aplica lazy load a toda la cuadrícula
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it, true))); 
+  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
 
-/* ---------- Drag-to-scroll helper ---------- */
+/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
 function enableDragScroll(el){
   if(el.__dragEnabled) return;
   el.__dragEnabled = true;
@@ -418,214 +416,282 @@ function enableDragScroll(el){
   }, {passive:true});
   el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
 
+  // pointer events for desktops/mice
   let isDown=false;
   el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
   el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
-/* ---------- 4. Viewer modal (FLIP Hero Transition) ---------- */
+/* ---------- Viewer modal (touch outside to close) ---------- */
 let activeList=[], currentIndex=0;
-let lastClickedElement = null;
-
-function openViewerByItem(item, sourceEl = null){
+function openViewerByItem(item){
+  // find list and index
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
   if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
-  
-  // OPTIMIZACIÓN: Aseguramos que la imagen a clonar sea la que tiene el source cargado
-  lastClickedElement = sourceEl ? sourceEl.querySelector('img') : null;
-  if(lastClickedElement && lastClickedElement.hasAttribute('data-src')){
-      // Si el lazy load no la cargó a tiempo, mejor no hacer FLIP y abrir normal
-      lastClickedElement = null; 
-  }
-  
-  showViewer(!!lastClickedElement); // Solo transicionamos si hay un elemento válido y cargado
+  showViewer();
 }
-
-function showViewer(startTransition = false){
+function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
   if(!it) return;
 
-  let contentEl;
-  if(it.kind === 'video'){
-    contentEl = document.createElement('video');
-    contentEl.src = it.src;
-    contentEl.controls = true;
-    contentEl.autoplay = false;
-    contentEl.style.maxHeight = '70vh';
-  } else {
-    contentEl = document.createElement('img');
-    contentEl.src = it.src;
-    contentEl.alt = it.title;
-    contentEl.style.maxHeight = '80vh';
-  }
-  
-  if(startTransition && lastClickedElement){
-    viewer.classList.add('transitioning');
-    
-    // 1. FIRST (Posición inicial)
-    const originalRect = lastClickedElement.getBoundingClientRect();
-    const cardEl = lastClickedElement.closest('.card, .card-small, .mini-thumb');
-    const originalBorderRadius = cardEl ? getComputedStyle(cardEl).borderRadius : '12px';
-    
-    // Crear el clon
-    const clone = contentEl.cloneNode(false);
-    clone.classList.add('hero-clone');
-    clone.style.width = `${originalRect.width}px`;
-    clone.style.height = `${originalRect.height}px`;
-    clone.style.left = `${originalRect.left}px`;
-    clone.style.top = `${originalRect.top}px`;
-    clone.style.borderRadius = originalBorderRadius;
-    document.body.appendChild(clone);
-    
-    viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-    viewerInner.style.opacity = '0';
-    viewerControls.style.opacity = '0';
-    
-    // 2. LAST / 3. INVERT / 4. PLAY (Usamos rAF para garantizar el orden de pintado)
-    requestAnimationFrame(()=>{
-      viewerInner.appendChild(contentEl);
-      const finalRect = contentEl.getBoundingClientRect();
-      
-      requestAnimationFrame(()=>{
-        // 3. INVERT: Transición del clon
-        clone.style.transform = `translate3d(${finalRect.left - originalRect.left}px, ${finalRect.top - originalRect.top}px, 0)`;
-        clone.style.width = `${finalRect.width}px`;
-        clone.style.height = `${finalRect.height}px`;
-        clone.style.left = `${originalRect.left}px`;
-        clone.style.top = `${originalRect.top}px`;
-        clone.style.borderRadius = '0px'; 
-        
-        clone.addEventListener('transitionend', function handler(){
-          clone.removeEventListener('transitionend', handler);
-          clone.remove();
-          viewerInner.style.opacity = '1';
-          viewerControls.style.opacity = '1';
-          viewer.classList.remove('transitioning');
-        });
-      });
-    });
-    
-  } else {
-    // Apertura inmediata si no hay elemento de origen o si no se puede transicionar
-    viewerInner.appendChild(contentEl);
-    viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-    viewerInner.style.opacity = '1';
-    viewerControls.style.opacity = '1';
-  }
-}
+  // Actualizar visibilidad del botón de descarga
+  downloadBtn.style.display = 'inline-flex'; // Siempre visible en el viewer
 
-function closeViewerFunc(){ 
-  viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); 
-  viewerInner.innerHTML=''; 
-  document.body.style.overflow = ''; 
-  $$('.hero-clone').forEach(el => el.remove());
+  if(it.kind === 'video'){
+    const video = document.createElement('video');
+    video.src = it.src;
+    video.controls = true;
+    video.autoplay = false;
+    video.style.maxHeight = '70vh';
+    viewerInner.appendChild(video);
+  } else {
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    viewerInner.appendChild(img);
+  }
+  // show viewer
+  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+  // ensure background overlay doesn't block scroll in viewer inner
+  document.body.style.overflow = 'hidden';
 }
-function prevItem(){ lastClickedElement=null; if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ 
-  lastClickedElement=null;
-  if(currentIndex < activeList.length-1){ 
-    currentIndex++; showViewer(); 
-  } else { 
-    const more = pool[rand(pool.length)]; 
-    activeList.push(more); 
-    currentIndex++; 
-    showViewer(); 
-  } 
-}
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
+function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
+function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-document.getElementById('prevBtn').addEventListener('click', prevItem);
-document.getElementById('nextBtn').addEventListener('click', nextItem);
+prevBtn.addEventListener('click', prevItem); // AGREGADO
+nextBtn.addEventListener('click', nextItem); // AGREGADO
+downloadBtn.addEventListener('click', ()=>{ // MEJORA 4: LÓGICA DE DESCARGA
+    const item = activeList[currentIndex];
+    if(item && item.src){
+        // SIMULACIÓN DE DESCARGA
+        const downloadUrl = item.src; 
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `SinFiltro_${item.id}.${item.kind === 'video' ? 'mp4' : 'jpg'}`; // Nombre de archivo dinámico
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        alert(`Descargando: ${item.title}`);
+    } else {
+        alert('No se pudo encontrar la URL del archivo.');
+    }
+});
 
+/* ---------- Panel open/close ---------- */
+function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); radials.classList.remove('show'); radials.innerHTML=''; }
+function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
+closePanelBtn.addEventListener('click', closePanel);
 
-/* ---------- 5. Microinteracción Ripple (JS) ---------- */
-function applyRipple(e){
-  const el = this;
-  const ripple = document.createElement('span');
-  const size = Math.max(el.clientWidth, el.clientHeight);
-  const rect = el.getBoundingClientRect();
-  
-  ripple.style.width = ripple.style.height = `${size}px`;
-  ripple.style.left = `${e.clientX - rect.left - size/2}px`;
-  ripple.style.top = `${e.clientY - rect.top - size/2}px`;
-  
-  ripple.classList.add('ripple');
-  
-  if(getComputedStyle(el).position === 'static'){
-    el.style.position = 'relative';
+// MEJORA 2: Cierre de Panel al pulsar en overlay
+overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+        if (panel.classList.contains('open')) {
+            closePanel();
+        }
+        if (radials.classList.contains('show')) {
+            radials.classList.remove('show');
+            radials.innerHTML = '';
+        }
+    }
+});
+
+// panel actions
+$$('.panel-item').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    const action = btn.dataset.action;
+    closePanel();
+    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
+    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'my'){ openMyModal(); }
+    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
+    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
+  });
+});
+
+/* ---------- FAB radial (bubbles) - MEJORADO ---------- */
+fab.addEventListener('click', ()=>{
+  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
+  else {
+    radials.classList.add('show');
+    radials.innerHTML = '';
+    
+    // Función para crear la burbuja con el nuevo diseño
+    const mkBubble = (icon, text, action) => {
+        const d = document.createElement('button'); d.className='bubble-group';
+        d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
+        d.onclick = action;
+        return d;
+    }
+
+    const uploadAction = ()=> { radials.classList.remove('show'); simulateUpload('Subiendo Video/Foto...'); };
+    const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
+    const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
+
+    radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
+    radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
+    radials.appendChild(mkBubble('🎬', 'Crear Short', createShortAction));
   }
-  
-  el.appendChild(ripple);
-  
-  ripple.addEventListener('animationend', ()=> ripple.remove());
+});
+
+/* ---------- Simulación de Subida (Upload Demo) - AGREGADO ---------- */
+let uploadInterval = null;
+function simulateUpload(title){
+    uploadModal.style.display = 'block';
+    uploadModal.setAttribute('aria-hidden', 'false');
+    uploadTitle.textContent = title;
+    progressFill.style.width = '0%';
+    uploadStatus.textContent = '0%';
+    let progress = 0;
+
+    uploadInterval = setInterval(()=>{
+        progress += rand(10) + 1;
+        if(progress >= 100){
+            clearInterval(uploadInterval);
+            progress = 100;
+            uploadTitle.textContent = '¡Subida Completa!';
+            uploadStatus.textContent = '100% - Procesando...';
+            progressFill.style.width = '100%';
+            setTimeout(()=>{ closeUploadModal(); alert('¡Contenido Subido con Éxito!'); }, 1500);
+        } else {
+            progressFill.style.width = `${progress}%`;
+            uploadStatus.textContent = `${progress}%`;
+        }
+    }, 300);
 }
 
-/* ---------- Render inicial y Event Listeners ---------- */
-document.addEventListener('DOMContentLoaded', ()=>{
-    // Aplicar ripple a todos los botones principales
-    $$('.icon-btn, .logo-btn, .fab, .bubble, .nav-item, .play-ico').forEach(el=>{
-        el.addEventListener('pointerdown', applyRipple);
-    });
+function closeUploadModal(){
+    clearInterval(uploadInterval);
+    uploadModal.style.display = 'none';
+    uploadModal.setAttribute('aria-hidden', 'true');
+    uploadTitle.textContent = 'Subiendo archivo...';
+}
+closeUpload.addEventListener('click', closeUploadModal);
 
-    // OPTIMIZACIÓN: Renderizado inicial de Tendencias y Recomendados SIN Lazy Load (cargan inmediatamente)
-    renderTwoRows(trendRow1, trendRow2, trends, false);
-    renderTwoRows(recoRow1, recoRow2, reco, false);
-    
-    // El resto del contenido (Antes Visto, Explorar) usa Lazy Load ajustado
-    renderTwoRows(recentRow1, recentRow2, recent, true);
-    renderGridInitial();
-    
-    // Seed rows para suavidad (con lazy load)
-    $$('.h-row').forEach(r=> {
-      if(r.children.length < 8){
-        for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)], true));
-      }
-    });
+
+/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
+const THEME_KEY = 'sinfiltro.theme.v3';
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+function applyTheme(t){
+  // Use rAF to avoid sync layout thrashing
+  requestAnimationFrame(()=>{
+    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
+    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
+  });
+}
+applyTheme(theme);
+themeToggle.addEventListener('click', ()=> {
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
 });
+
+/* brand click -> home */
+brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navSearch').addEventListener('click', ()=> openSearchModal());
+$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#navMe').addEventListener('click', ()=> openMyModal());
+
+/* Top search demo */
+searchTop.addEventListener('click', ()=> openSearchModal());
+
+/* ---------- Search modal (miniatures) ---------- */
+function openSearchModal(){
+  populateSearchMini();
+  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
+  // lock background scroll lightly
+  document.body.style.overflow = 'hidden';
+}
+function closeSearchModal(){
+  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
+  searchMini.innerHTML = '';
+  document.body.style.overflow = '';
+}
+closeSearch.addEventListener('click', closeSearchModal);
+searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
+
+function populateSearchMini(q){
+  searchMini.innerHTML = '';
+  // generate 12 thumbnails demo
+  for(let i=0;i<12;i++){
+    const item = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
+    searchMini.appendChild(d);
+  }
+}
+
+/* ---------- My videos modal (grid preview) ---------- */
+function openMyModal(){
+  myGrid.innerHTML = '';
+  // demo: fill with 9 random items (mix images & videos)
+  for(let i=0;i<9;i++){
+    const it = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
+    myGrid.appendChild(d);
+  }
+  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
+closeMy.addEventListener('click', closeMyModal);
+myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
 
 /* ---------- Infinite vertical load (grid) ---------- */
 let loadingGrid=false;
 window.addEventListener('scroll', ()=>{
+  // when approaching bottom, append grid items
   if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
     loadingGrid = true;
     setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)], true)); }
+      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
       lazyObserve(gridFeed); loadingGrid=false;
     }, 700);
   }
 });
 
-/* Otros listeners (Panel, Modales, Tema) */
-document.getElementById('menuBtn').addEventListener('click', ()=> { const p = $('#panel'); if(p.classList.contains('open')) p.classList.remove('open'); else p.classList.add('open'); $('#overlay').classList.toggle('show'); });
-document.getElementById('closePanel').addEventListener('click', ()=> { $('#panel').classList.remove('open'); $('#overlay').classList.remove('show'); });
-document.getElementById('themeToggle').addEventListener('click', ()=> { theme = (theme==='dark')?'light':'dark'; localStorage.setItem('sinfiltro.theme.v3', theme); applyTheme(theme); });
-document.getElementById('fab').addEventListener('click', ()=>{ const r = $('#radials'); if(r.classList.contains('show')){ r.classList.remove('show'); r.innerHTML=''; } else { r.classList.add('show'); r.innerHTML = '<button class="bubble">📤</button><button class="bubble">🖼️</button><button class="bubble">🎬</button>'; $$('#radials .bubble').forEach(b=>b.addEventListener('pointerdown', applyRipple)); }});
-document.getElementById('searchTop').addEventListener('click', ()=> { $('#searchModal').classList.add('show'); document.body.style.overflow = 'hidden'; populateSearchMini(); });
-document.getElementById('closeSearch').addEventListener('click', ()=> { $('#searchModal').classList.remove('show'); document.body.style.overflow = ''; });
-document.getElementById('navMe').addEventListener('click', ()=> { $('#myModal').classList.add('show'); document.body.style.overflow = 'hidden'; populateMyGrid(); });
-document.getElementById('closeMy').addEventListener('click', ()=> { $('#myModal').classList.remove('show'); document.body.style.overflow = ''; });
-
-function populateSearchMini(){
-    searchMini.innerHTML = '';
-    for(let i=0;i<12;i++){ const item = pool[rand(pool.length)]; const d = document.createElement('div'); d.className='mini-thumb'; d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`; d.addEventListener('click', (e)=>{ openViewerByItem(item, d); closeSearchModal(); }); searchMini.appendChild(d); }
+/* ---------- Render initial content ---------- */
+function renderAll(){
+  renderTwoRows(trendRow1, trendRow2, trends);
+  renderTwoRows(recoRow1, recoRow2, reco);
+  renderTwoRows(recentRow1, recentRow2, recent);
+  renderGridInitial();
+  // seed rows for smoothness
+  $$('.h-row').forEach(r=> {
+    if(r.children.length < 8){
+      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+  });
+  lazyObserve();
 }
-function populateMyGrid(){
-    myGrid.innerHTML = '';
-    for(let i=0;i<9;i++){ const it = pool[rand(pool.length)]; const d = document.createElement('div'); d.className='mini-thumb'; d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`; d.addEventListener('click', (e)=>{ openViewerByItem(it, d); closeMyModal(); }); myGrid.appendChild(d); }
-}
-function closeSearchModal(){ $('#searchModal').classList.remove('show'); document.body.style.overflow = ''; }
-function closeMyModal(){ $('#myModal').classList.remove('show'); document.body.style.overflow = ''; }
+document.addEventListener('DOMContentLoaded', renderAll);
 
-function applyTheme(t){ requestAnimationFrame(()=>{ if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; } else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; } }); }
+/* ---------- Accessibility & shortcuts ---------- */
+document.addEventListener('keydown', e=>{ 
+    if(e.key==='Escape'){ 
+        closeViewerFunc(); 
+        closePanel(); 
+        closeSearchModal(); 
+        closeMyModal(); 
+        closeUploadModal(); // AGREGADO
+    } 
+});
 
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); $('#panel').classList.remove('open'); $('#overlay').classList.remove('show'); closeSearchModal(); closeMyModal(); } });
+/* End of script */
 </script>
 </body>
 </html>
