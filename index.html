@@ -2,1157 +2,804 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SinFiltro - Pro App Móvil</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Media App</title>
     <style>
-        /* ====================================================================
-           ESTILOS CSS: COMPRIMIDOS PARA UN SOLO ARCHIVO
-           ==================================================================== */
         :root {
-            --primary: #FF4500; /* Naranja/Rojo Vivo */
-            --secondary: #00BFFF; /* Azul Claro */
-            --background: #121212;
-            --surface: #1E1E1E;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B0B0B0;
-            --muted: #444444;
-            --shadow: rgba(0, 0, 0, 0.4);
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            margin: 0;
-            padding-bottom: 60px; /* Espacio para el Navbar */
-            overflow-x: hidden;
-            -webkit-user-select: none; /* Deshabilitar selección en iOS */
-            user-select: none; /* Deshabilitar selección general */
-            overscroll-behavior-y: none; /* Evitar el "pull to refresh" */
-        }
-        .container {
-            padding: 0 10px;
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin: 20px 0 10px 0;
-            padding-left: 5px;
-            border-left: 3px solid var(--primary);
+            /* Colores del Diseño Cian/Violeta/Blur (Pro) */
+            --bg-color: #12121e; /* Azul muy oscuro/violeta */
+            --card: #1f1f33; /* Violeta oscuro para tarjetas */
+            --text-color: #ffffff;
+            --secondary-text: #b3b3c8;
+            --accent-cyan: #00e0ff;
+            --accent-magenta: #a000ff;
+            --gradient-nav: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-magenta) 100%);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --border-radius: 12px;
+            --fab-size: 56px;
         }
 
-        /* ------------------ Navbar ------------------ */
-        .navbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background-color: var(--surface);
-            border-top: 1px solid var(--muted);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 1000;
+        /* RESET y BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s;
+            padding-bottom: 70px; /* Espacio para el nav fijo */
         }
-        .nav-item {
-            color: var(--text-secondary);
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 5px 15px;
-            transition: color 0.2s;
-        }
-        .nav-item:hover, .nav-item.active {
-            color: var(--primary);
-        }
-        .nav-item.upload-btn {
-            font-size: 2.5rem;
-            color: var(--text-primary);
-            background-color: var(--primary);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform: translateY(-10px);
-            box-shadow: 0 4px 8px var(--shadow);
-        }
-        .nav-item.upload-btn:active {
-            transform: translateY(-10px) scale(0.95);
-        }
-        /* ------------------ Header ------------------ */
+        main { padding: 16px; max-width: 100%; }
+        a { text-decoration: none; color: var(--text-color); }
+
+        /* HEADERS */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 10px;
-            background-color: var(--surface);
-            box-shadow: 0 2px 4px var(--shadow);
+            padding: 12px 16px;
             position: sticky;
             top: 0;
-            z-index: 500;
+            z-index: 100;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--primary);
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            background: var(--gradient-nav);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
         }
-        .header-icons {
-            display: flex;
-            gap: 15px;
-        }
-        .header-icon {
-            font-size: 1.4rem;
-            color: var(--text-secondary);
+
+        /* BOTONES DE ICONO */
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
             cursor: pointer;
-        }
-        /* ------------------ Feed ------------------ */
-        .feed-section {
-            padding: 10px 0;
-        }
-        .scroll-row {
-            display: flex;
-            overflow-x: scroll;
-            gap: 15px;
-            padding: 10px 10px 10px 10px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            cursor: grab;
-        }
-        .scroll-row::-webkit-scrollbar {
-            display: none;
-        }
-        .scroll-row-wrapper {
-            position: relative;
-        }
-        /* ------------------ Card (Small) ------------------ */
-        .small-card {
-            flex-shrink: 0;
-            width: 180px; /* Ancho fijo para móvil */
-            height: 250px;
-            background-color: var(--surface);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px var(--shadow);
-            position: relative;
-            scroll-snap-align: start;
-        }
-        .small-card img, .small-card video {
-            width: 100%;
-            height: 70%;
-            object-fit: cover;
-            display: block;
-            background-color: var(--muted);
-        }
-        .small-card-info {
             padding: 8px;
-            height: 30%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
-        .small-card-title {
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+        /* BUSCADOR */
+        .search-container {
+            padding: 16px;
+            background-color: var(--bg-color);
+            position: sticky;
+            top: 59px;
+            z-index: 90;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid var(--card);
+            background-color: var(--card);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
             font-size: 1rem;
-            font-weight: 700;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            transition: border-color 0.3s;
         }
-        .small-card-stats {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+        .search-input::placeholder { color: var(--secondary-text); }
+        .search-input:focus { border-color: var(--accent-cyan); outline: none; }
+
+        /* NAVEGACIÓN SECUNDARIA (Tabs) */
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
         }
-        .icon-overlay {
+        .tab-item {
+            padding: 8px 16px;
+            color: var(--secondary-text);
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .tab-item.active {
+            color: var(--text-color);
+        }
+        .tab-item.active::after {
+            content: '';
             position: absolute;
-            top: 10px;
-            right: 10px;
-            color: var(--text-primary);
-            font-size: 1.2rem;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px;
-            border-radius: 5px;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background: var(--gradient-nav);
+            border-radius: 2px;
         }
-        /* ------------------ Grid Feed ------------------ */
-        .grid-feed {
+
+        /* GRID DE CONTENIDO */
+        .content-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 3px;
-            padding: 3px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
-        .grid-card {
-            aspect-ratio: 1 / 1;
+
+        /* TARJETA DE CONTENIDO */
+        .card {
+            background-color: var(--card);
+            border-radius: var(--border-radius);
             overflow: hidden;
+            box-shadow: var(--shadow);
             position: relative;
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            aspect-ratio: 3/4; /* Relación más vertical para móvil */
         }
-        .grid-card img, .grid-card video {
+        .card:active { transform: scale(0.98); box-shadow: none; }
+        
+        .card-media {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: block;
-            transition: transform 0.3s;
-            background-color: var(--muted);
+            filter: brightness(0.7);
         }
-        .grid-card:active img {
-            transform: scale(0.98);
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
         }
-        /* ------------------ Modales ------------------ */
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+        .card-stats {
+            font-size: 0.75rem;
+            color: var(--secondary-text);
+            display: flex;
+            gap: 8px;
+        }
+        .card-stats span {
+            display: flex;
+            align-items: center;
+        }
+
+        /* NAVEGACIÓN INFERIOR (Footer Nav) */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--card);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .nav-item {
+            color: var(--secondary-text);
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        .nav-item i { font-size: 1.4rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--accent-cyan); }
+
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            width: var(--fab-size);
+            height: var(--fab-size);
+            background: var(--gradient-nav);
+            border-radius: 50%;
+            border: none;
+            color: #000;
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow);
+            z-index: 110;
+            cursor: pointer;
+        }
+
+        /* BURBUJAS RADIALES (RADIALS) */
+        .radials {
+            position: fixed;
+            bottom: calc(70px + var(--fab-size) / 2);
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+            z-index: 109;
+            pointer-events: none; /* Inicialmente no interactivo */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .radials.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .bubble-group {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            gap: 8px;
+        }
+        .bubble {
+            width: 40px;
+            height: 40px;
+            background-color: var(--card);
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            transform: scale(0);
+            animation: bounceIn 0.3s forwards;
+            animation-delay: var(--delay, 0s);
+        }
+        .bubble-text {
+            background-color: var(--card);
+            color: var(--text-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateX(10px);
+            animation: fadeInSlide 0.3s forwards;
+            animation-delay: var(--delay, 0s);
+        }
+
+        /* MODAL (VIEWER Y UPLOAD) */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: var(--surface);
-            z-index: 2000;
-            transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-            display: flex;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: none;
             flex-direction: column;
+            padding: 0;
+            transition: opacity 0.3s;
+            opacity: 0;
         }
-        .modal.open {
-            transform: translateY(0);
-        }
-        .modal-header {
+        .modal.show {
             display: flex;
-            justify-content: space-between;
+            opacity: 1;
+        }
+        .modal .head {
+            display: flex;
             align-items: center;
-            padding: 15px 10px;
-            border-bottom: 1px solid var(--muted);
-        }
-        .modal-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-        .close-btn {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            cursor: pointer;
+            padding: 16px;
+            color: var(--text-color);
+            background-color: rgba(31, 31, 51, 0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            position: sticky;
+            top: 0;
+            z-index: 210;
         }
         .modal-content {
             flex-grow: 1;
-            padding: 10px;
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
         }
-        /* -- Subir Archivo Modal -- */
-        #uploadModal .modal-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .drop-area {
-            border: 2px dashed var(--muted);
-            border-radius: 10px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .drop-area.drag-over {
-            background-color: var(--muted);
-        }
-        #fileInput {
-            display: none;
-        }
-        .file-preview {
-            max-width: 100%;
-            max-height: 200px;
-            margin-top: 15px;
-            object-fit: contain;
-            display: none;
-        }
-        input[type="text"] {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            background-color: var(--muted);
-            color: var(--text-primary);
-            font-size: 1rem;
+        .viewer-media-container {
             width: 100%;
-        }
-        .progress-bar-container {
-            height: 10px;
-            background-color: var(--muted);
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 10px;
-            display: none;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: var(--primary);
-            transition: width 0.1s;
-        }
-        .upload-button {
-            padding: 12px;
-            background-color: var(--secondary);
-            color: var(--text-primary);
-            font-size: 1.1rem;
-            font-weight: 700;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .upload-button:disabled {
-            background-color: var(--muted);
-            cursor: not-allowed;
-        }
-        /* -- Search Modal -- */
-        .search-input-container {
-            position: relative;
-            margin-bottom: 15px;
-        }
-        #searchInput {
-            padding-left: 40px;
-        }
-        .search-input-container i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-        }
-        .search-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-        }
-        .search-mini-grid .mini-thumb {
-            aspect-ratio: 1 / 1;
-            overflow: hidden;
-            border-radius: 5px;
-        }
-        .search-mini-grid .mini-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background-color: var(--muted);
-        }
-        /* -- My Modal -- */
-        .my-profile-info {
-            text-align: center;
-            padding: 15px 0 20px 0;
-            border-bottom: 1px solid var(--muted);
-            margin-bottom: 10px;
-        }
-        .my-profile-info i {
-            font-size: 3rem;
-            color: var(--secondary);
-        }
-        .my-profile-info h3 {
-            margin: 5px 0 0 0;
-        }
-        .my-profile-info p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        .my-profile-buttons {
+            aspect-ratio: 16/9; /* Para videos */
             display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-        }
-        .my-profile-buttons button {
-            background: none;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 700;
-        }
-        .my-profile-buttons button.logout {
-            border-color: var(--muted);
-            color: var(--text-secondary);
-        }
-        .my-content-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 3px;
-        }
-        /* -- Viewer Modal -- */
-        #viewerModal {
-            background-color: var(--background);
-            transition: opacity 0.3s ease-out;
-            opacity: 0;
-            pointer-events: none;
             justify-content: center;
             align-items: center;
-        }
-        #viewerModal.open {
-            opacity: 1;
-            pointer-events: all;
-        }
-        .viewer-content {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: relative;
-        }
-        .viewer-card {
-            width: 100%;
-            height: 100%;
-            scroll-snap-align: start;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end; /* Alinear contenido abajo */
-            position: relative;
-        }
-        .viewer-scroll-container {
-            width: 100%;
-            height: 100%;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
+            background-color: #000;
         }
         .viewer-media {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            background-color: var(--muted);
-        }
-        .viewer-overlay {
-            position: relative;
-            z-index: 2;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
-            color: var(--text-primary);
-        }
-        .viewer-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: 10px;
-        }
-        .viewer-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .viewer-user {
-            font-size: 1rem;
-            color: var(--text-secondary);
-        }
-        .viewer-stats {
-            text-align: right;
-        }
-        .viewer-stats div {
-            font-size: 1rem;
-            margin-top: 5px;
-        }
-        .viewer-stats i {
-            margin-right: 5px;
-        }
-        #viewerCloseBtn {
-            position: absolute;
-            top: 40px;
-            left: 15px;
-            font-size: 2rem;
-            color: var(--text-primary);
-            z-index: 5;
-            text-shadow: 0 0 5px var(--shadow);
-            cursor: pointer;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
         
+        .viewer-details {
+            padding: 16px;
+            background-color: var(--bg-color);
+        }
+        .viewer-title { font-size: 1.5rem; margin-bottom: 8px; }
+        .viewer-stats { color: var(--secondary-text); margin-bottom: 16px; font-size: 0.9rem; }
+        
+        /* Modal de subida de archivo */
+        #uploadModal {
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .upload-box {
+            background-color: var(--card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .upload-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient-nav);
+            transition: width 0.3s;
+        }
+        .upload-status {
+            font-size: 0.9rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Modal de Selección de Archivos */
+        #fileSelectModal {
+            justify-content: flex-end;
+            background-color: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #fileSelectModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #fileSelectModal > div:last-child {
+            background-color: var(--bg-color);
+            width: 100%;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            padding: 16px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+        }
+        #fileSelectModal.show > div:last-child {
+            transform: translateY(0);
+        }
+
+        /* ANIMACIONES */
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes fadeInSlide {
+            0% { opacity: 0; transform: translateX(10px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
     <header class="header">
-        <div class="logo">SinFiltro</div>
+        <div class="logo">ProMedia</div>
         <div class="header-icons">
-            <i class="fas fa-bell header-icon"></i>
-            <i class="fas fa-search header-icon" id="openSearchModalBtn"></i>
+            <button id="searchBtn" class="icon-btn" aria-label="Buscar"><i class="fas fa-search"></i></button>
+            <button id="profileBtn" class="icon-btn" aria-label="Perfil"><i class="fas fa-user-circle"></i></button>
         </div>
     </header>
 
-    <main class="container">
+    <main>
+        
+        <nav class="tabs">
+            <div id="tabTrends" class="tab-item active" data-type="trends">Tendencias</div>
+            <div id="tabReco" class="tab-item" data-type="reco">Recomendado</div>
+            <div id="tabRecent" class="tab-item" data-type="recent">Reciente</div>
+        </nav>
 
-        <section class="feed-section">
-            <h2>🔥 Tendencias</h2>
-            <div class="scroll-row-wrapper">
-                <div class="scroll-row" id="trend-row-1"></div>
-            </div>
-            <div class="scroll-row-wrapper">
-                <div class="scroll-row" id="trend-row-2"></div>
-            </div>
-        </section>
-
-        <section class="feed-section">
-            <h2>🌟 Recomendados</h2>
-            <div class="scroll-row-wrapper">
-                <div class="scroll-row" id="reco-row-1"></div>
-            </div>
-            <div class="scroll-row-wrapper">
-                <div class="scroll-row" id="reco-row-2"></div>
-            </div>
-        </section>
-
-        <section class="feed-section">
-            <h2>🌍 Explorar</h2>
-            <div class="grid-feed" id="grid-feed">
-                </div>
-        </section>
+        <section id="contentGrid" class="content-grid">
+            </section>
+        
+        <div id="loader" style="text-align: center; padding: 20px; display: none;">
+            <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--accent-cyan);"></i>
+        </div>
 
     </main>
-
-    <nav class="navbar">
-        <i class="fas fa-home nav-item active"></i>
-        <i class="fas fa-heart nav-item"></i>
-        <div class="nav-item upload-btn" id="openUploadModalBtn"><i class="fas fa-plus"></i></div>
-        <i class="fas fa-comment-dots nav-item"></i>
-        <i class="fas fa-user nav-item" id="openMyModalBtn"></i>
-    </nav>
-
-    <div class="modal" id="uploadModal">
-        <div class="modal-header">
-            <h2 class="modal-title">Subir Contenido</h2>
-            <i class="fas fa-times close-btn" id="closeUploadModalBtn"></i>
+    
+    <div id="fileSelectModal" class="modal" aria-hidden="true" role="dialog" aria-label="Seleccionar Archivo">
+        <div class="head" style="justify-content:space-between">
+            <strong>Subir Archivo</strong>
+            <button id="closeFileSelect" class="icon-btn">✕</button>
         </div>
-        <div class="modal-content">
-            <input type="text" id="uploadTitle" placeholder="Título para tu video o foto (opcional)">
-            
-            <div class="drop-area" id="dropArea">
-                <input type="file" id="fileInput" accept="image/*,video/*">
-                <p>Arrastra y suelta aquí, o haz click para seleccionar un archivo (máx. 10MB)</p>
-                <img id="filePreviewImage" class="file-preview" alt="Vista previa">
-                <video id="filePreviewVideo" class="file-preview" controls muted></video>
-                <p id="fileNameDisplay" style="font-size:0.8rem; color:var(--primary); margin-top:5px;"></p>
-            </div>
-
-            <div class="progress-bar-container" id="progressBarContainer">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-
-            <button class="upload-button" id="uploadButton" disabled>Subir</button>
+        <div style="padding: 10px; display: flex; flex-direction: column; gap: 12px;">
+            <input type="file" id="realFileInput" accept="image/*,video/*" style="padding: 10px; border: 1px solid var(--card); border-radius: 8px;">
+            <input type="text" id="uploadTitleInput" class="search-input" placeholder="Título (opcional)">
+            <button id="startUploadBtn" class="icon-btn" style="width:100%; height:48px; background: var(--accent-cyan); color: #001; font-weight: 700;">Subir Ahora</button>
         </div>
     </div>
+    <button id="fab" class="fab" aria-label="Opciones de publicación">+</button>
+    <div id="radials" class="radials"></div>
 
-    <div class="modal" id="searchModal">
-        <div class="modal-header">
-            <h2 class="modal-title">Buscar</h2>
-            <i class="fas fa-times close-btn" id="closeSearchModalBtn"></i>
+    <footer class="footer-nav">
+        <a href="#" class="nav-item active"><i class="fas fa-home"></i> Inicio</a>
+        <a href="#" class="nav-item"><i class="fas fa-compass"></i> Explorar</a>
+        <a href="#" class="nav-item"><i class="fas fa-box"></i> Colección</a>
+        <a href="#" class="nav-item"><i class="fas fa-bell"></i> Notificaciones</a>
+    </footer>
+    
+    <div id="viewerModal" class="modal" aria-hidden="true" role="dialog" aria-label="Visor de Contenido">
+        <div class="head">
+            <button id="closeViewer" class="icon-btn">✕</button>
+            <span id="viewerUser" style="margin-left: 10px; font-weight: 600;">@usuario</span>
         </div>
         <div class="modal-content">
-            <div class="search-input-container">
-                <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Explorar videos, usuarios, tags...">
+            <div class="viewer-media-container">
+                <img id="viewerImage" class="viewer-media" style="display:none;">
+                <video id="viewerVideo" class="viewer-media" controls style="display:none;"></video>
             </div>
-            
-            <h3>Sugerencias Populares</h3>
-            <div class="search-mini-grid" id="searchMini">
+            <div class="viewer-details">
+                <h2 id="viewerTitle" class="viewer-title">Título del Contenido</h2>
+                <div id="viewerStats" class="viewer-stats"></div>
                 </div>
         </div>
     </div>
 
-    <div class="modal" id="myModal">
-        <div class="modal-header">
-            <h2 class="modal-title">Mi Perfil</h2>
-            <i class="fas fa-times close-btn" id="closeMyModalBtn"></i>
-        </div>
-        <div class="modal-content">
-            <div id="myProfileContent">
-                </div>
-            
-            <div id="myContentSection" style="margin-top:20px;">
-                <h3>Mi Contenido</h3>
-                <div class="my-content-grid" id="myGrid">
-                    </div>
+    <div id="uploadModal" class="modal" aria-hidden="true" role="dialog" aria-label="Progreso de Subida">
+        <div class="upload-box">
+            <div class="head" style="padding: 0; background: none; justify-content: space-between;">
+                <span id="uploadTitle" class="upload-title" style="margin: 0;">Subiendo archivo...</span>
+                <button id="closeUpload" class="icon-btn">✕</button>
             </div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <span id="uploadStatus" class="upload-status">0%</span>
         </div>
     </div>
-
-    <div class="modal" id="viewerModal">
-        <i class="fas fa-times" id="viewerCloseBtn"></i>
-        <div class="viewer-scroll-container">
-            </div>
-    </div>
-
 
     <script>
-    
-    /* ====================================================================
-       FASE 3: OBJETO DE CONEXIÓN AL BACKEND REAL (USA FETCH)
-       ==================================================================== */
+        /* DOM REFERENCES */
+        const $ = s => document.querySelector(s);
+        const $$ = s => document.querySelectorAll(s);
 
-    const BASE_URL = '/api'; // Apunta al servidor Express
-    let userToken = localStorage.getItem('sf.token') || null;
+        const contentGrid = $('#contentGrid');
+        const loader = $('#loader');
+        const tabs = $$('.tab-item');
+        const fab = $('#fab');
+        const radials = $('#radials');
+        const viewerModal = $('#viewerModal');
+        const closeViewer = $('#closeViewer');
+        const viewerImage = $('#viewerImage');
+        const viewerVideo = $('#viewerVideo');
+        const viewerTitle = $('#viewerTitle');
+        const viewerStats = $('#viewerStats');
+        const uploadModal = $('#uploadModal');
+        const uploadTitle = $('#uploadTitle');
+        const progressFill = $('#progressFill');
+        const uploadStatus = $('#uploadStatus');
+        const closeUpload = $('#closeUpload');
 
-    window.API = {
-        // 1. Obtiene datos del feed del Backend (server.js)
-        getFeed: async (type) => {
+        // Estado Global
+        let currentTab = 'trends';
+        let allServerContent = []; // Caché de todo el contenido
+
+        /* ---------- FETCH CONTENT FROM SERVER ---------- */
+        async function fetchContent(type) {
+            loader.style.display = 'block';
+            contentGrid.innerHTML = '';
+            
             try {
-                // Llama al endpoint REAL: /api/content/feed/trends, /api/content/feed/reco, etc.
-                const response = await fetch(`${BASE_URL}/content/feed/${type}`);
-                if (!response.ok) throw new Error(`Error ${response.status} al obtener el feed`);
-                
-                const result = await response.json();
-                return result.data || [];
-                
+                // Usamos la URL base /api/content/feed/:type que definimos en server.js
+                const response = await fetch(`/api/content/feed/${type}`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    return data.data;
+                } else {
+                    console.error("Error al obtener datos:", data);
+                    return [];
+                }
             } catch (error) {
-                console.error(`Error en getFeed (${type}):`, error.message);
+                console.error("Error de red o servidor:", error);
                 return [];
+            } finally {
+                loader.style.display = 'none';
             }
-        },
-        
-        // 2. Simulación de Autenticación (para que el botón Login funcione temporalmente)
-        getCurrentUser: () => {
-            return userToken ? { id: 'u_real', username: 'TestUser' } : null;
-        },
-        
-        login: async (email, password) => { 
-            // Credenciales de prueba temporales: test@sf.com / 1234
-            await new Promise(r => setTimeout(r, 500)); 
-            if (email === 'test@sf.com' && password === '1234') {
-                userToken = 'real_token_123';
-                localStorage.setItem('sf.token', userToken);
-                return { success: true, user: { username: 'TestUser' } };
+        }
+
+        /* ---------- RENDERING LOGIC ---------- */
+        function createCard(item) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.setAttribute('data-id', item.id);
+            card.onclick = () => openViewer(item);
+
+            let mediaHTML;
+            if (item.kind === 'video') {
+                // Usa la etiqueta <video> y la propiedad poster (si existe) para mostrar una miniatura
+                mediaHTML = `<video class="card-media" src="${item.src}" poster="https://picsum.photos/300/400?id=${item.id}" muted preload="metadata"></video>`;
+            } else {
+                mediaHTML = `<img class="card-media" src="${item.src}" alt="${item.title}">`;
             }
-            return { success: false, message: 'Credenciales de prueba inválidas.' };
-        },
-        
-        logout: () => {
-            userToken = null;
-            localStorage.removeItem('sf.token');
-        },
 
-        // 3. Simulación de Subida (hasta conectar S3/Cloudinary)
-        uploadFile: async (file, title) => {
-            await new Promise(r => setTimeout(r, 2000));
-            return { 
-                success: true, 
-                item: { 
-                    id: Date.now(), 
-                    title: title || file.name, 
-                    src: 'https://picsum.photos/640/420?realupload', 
-                    kind: file.type.startsWith('video') ? 'video' : 'image',
-                    likes: 0, comments: 0, views: '0K',
-                    userId: 'u_real'
-                } 
-            };
-        },
-
-        // 4. Implementación temporal para llenar los modales (Mis videos, Buscar)
-        getFallbackContent: async () => {
-            const result = await window.API.getFeed('grid');
-            return result.slice(0, 12); 
-        }
-    };
-
-    const API = window.API; 
-    // Objeto vacío para compatibilidad con las funciones antiguas que lo usaban
-    window.DATA_STORE = { content: [] }; 
-
-    /* ====================================================================
-       FRONTEND: MANEJO DE VISTAS Y DOM
-       ==================================================================== */
-    
-    // Selectores de DOM
-    const trendRow1 = document.getElementById('trend-row-1');
-    const trendRow2 = document.getElementById('trend-row-2');
-    const recoRow1 = document.getElementById('reco-row-1');
-    const recoRow2 = document.getElementById('reco-row-2');
-    const gridFeed = document.getElementById('grid-feed');
-    const uploadModal = document.getElementById('uploadModal');
-    const myModal = document.getElementById('myModal');
-    const viewerModal = document.getElementById('viewerModal');
-    const viewerScrollContainer = viewerModal.querySelector('.viewer-scroll-container');
-    const searchModal = document.getElementById('searchModal');
-    const searchMini = document.getElementById('searchMini');
-    const myGrid = document.getElementById('myGrid');
-    const myProfileContent = document.getElementById('myProfileContent');
-
-    // Estado del Viewer
-    let activeList = [];
-    let currentIndex = 0;
-
-    // Utilidad
-    function escapeHtml(unsafe) {
-        return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-
-    /* ---------- Tarjetas y Elementos del DOM ---------- */
-
-    function makeSmallCard(item) {
-        const card = document.createElement('div');
-        card.className = 'small-card';
-        card.setAttribute('data-id', item.id);
-        
-        let mediaHtml = '';
-        const icon = (item.kind === 'video') ? '<i class="fas fa-video"></i>' : '<i class="fas fa-image"></i>';
-
-        if (item.kind === 'video') {
-            mediaHtml = `<video class="lazy" data-src="${item.src}" muted preload="none"></video>`;
-        } else {
-            mediaHtml = `<img class="lazy" data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
-        }
-
-        card.innerHTML = `
-            ${mediaHtml}
-            <div class="icon-overlay">${icon}</div>
-            <div class="small-card-info">
-                <div class="small-card-title">${escapeHtml(item.title)}</div>
-                <div class="small-card-stats">
-                    <span><i class="fas fa-eye"></i> ${item.views}</span>
-                    <span><i class="fas fa-heart"></i> ${item.likes}</span>
-                </div>
-            </div>
-        `;
-
-        card.addEventListener('click', () => {
-            openViewerByItem(item);
-        });
-
-        return card;
-    }
-
-    function makeGridCard(item) {
-        const card = document.createElement('div');
-        card.className = 'grid-card';
-        card.setAttribute('data-id', item.id);
-        
-        const icon = (item.kind === 'video') ? '<i class="fas fa-video icon-overlay"></i>' : '';
-
-        card.innerHTML = `
-            <img class="lazy" data-src="${item.src}" alt="${escapeHtml(item.title)}">
-            ${icon}
-        `;
-
-        card.addEventListener('click', () => {
-            openViewerByItem(item);
-        });
-
-        return card;
-    }
-    
-    function makeViewerCard(item) {
-        const card = document.createElement('div');
-        card.className = 'viewer-card';
-        card.setAttribute('data-id', item.id);
-        card.setAttribute('data-kind', item.kind);
-        
-        let mediaHtml;
-        if (item.kind === 'video') {
-            mediaHtml = `<video class="viewer-media" src="${item.src}" controls loop></video>`;
-        } else {
-            mediaHtml = `<img class="viewer-media" src="${item.src}" alt="${escapeHtml(item.title)}">`;
-        }
-
-        card.innerHTML = `
-            ${mediaHtml}
-            <div class="viewer-overlay">
-                <div class="viewer-title">${escapeHtml(item.title)}</div>
-                <div class="viewer-user"><i class="fas fa-user-circle"></i> @${item.userId || 'usuario_sf'}</div>
-                <div class="viewer-info">
-                    <div style="font-size:0.9rem; color:var(--text-secondary);">${item.comments} Comentarios</div>
-                    <div class="viewer-stats">
-                        <div><i class="fas fa-eye"></i> ${item.views}</div>
-                        <div><i class="fas fa-heart"></i> ${item.likes}</div>
+            card.innerHTML = `
+                ${mediaHTML}
+                <div class="card-overlay">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-stats">
+                        <span><i class="fas fa-heart"></i> ${item.likes}</span>
+                        <span><i class="fas fa-comment"></i> ${item.comments}</span>
+                        <span><i class="fas fa-eye"></i> ${item.views}</span>
                     </div>
                 </div>
-            </div>
-        `;
-
-        return card;
-    }
-
-
-    /* ---------- Funciones de Lazy Loading ---------- */
-
-    function lazyObserve() {
-        const lazyElements = document.querySelectorAll('.lazy');
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const el = entry.target;
-                    const src = el.getAttribute('data-src');
-                    if (el.tagName === 'IMG') {
-                        el.src = src;
-                    } else if (el.tagName === 'VIDEO') {
-                        el.src = src;
-                        el.load(); // Asegurar que el video se cargue
-                    }
-                    el.classList.remove('lazy');
-                    el.removeAttribute('data-src');
-                    observer.unobserve(el);
-                }
-            });
-        }, {
-            rootMargin: '100px 0px', // Carga antes de entrar a la vista
-            threshold: 0.01
-        });
-
-        lazyElements.forEach(el => observer.observe(el));
-    }
-
-
-    /* ---------- Funciones de Scroll y Drag ---------- */
-
-    function enableDragScroll(element) {
-        let isDown = false;
-        let startX;
-        let scrollLeft;
-
-        element.addEventListener('mousedown', (e) => {
-            isDown = true;
-            element.classList.add('active');
-            startX = e.pageX - element.offsetLeft;
-            scrollLeft = element.scrollLeft;
-        });
-
-        element.addEventListener('mouseleave', () => {
-            isDown = false;
-            element.classList.remove('active');
-        });
-
-        element.addEventListener('mouseup', () => {
-            isDown = false;
-            element.classList.remove('active');
-        });
-
-        element.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
-            e.preventDefault();
-            const x = e.pageX - element.offsetLeft;
-            const walk = (x - startX) * 1.5; // Velocidad de arrastre
-            element.scrollLeft = scrollLeft - walk;
-        });
-        
-        // Manejo táctil para dispositivos móviles
-        element.addEventListener('touchstart', (e) => {
-            isDown = true;
-            startX = e.touches[0].pageX - element.offsetLeft;
-            scrollLeft = element.scrollLeft;
-        });
-
-        element.addEventListener('touchmove', (e) => {
-            if (!isDown) return;
-            const x = e.touches[0].pageX - element.offsetLeft;
-            const walk = (x - startX) * 1.5;
-            element.scrollLeft = scrollLeft - walk;
-        });
-
-        element.addEventListener('touchend', () => {
-            isDown = false;
-        });
-    }
-
-
-    /* ---------- Funciones de Renderizado Principal (Usan API) ---------- */
-
-    async function renderTwoRows(row1, row2, type){
-        row1.innerHTML = ''; row2.innerHTML = '';
-        
-        // Llama a la API real
-        const items = await API.getFeed(type); 
-
-        items.forEach((it, i) => {
-            const target = (i % 2 === 0) ? row1 : row2;
-            target.appendChild(makeSmallCard(it));
-        });
-
-        [row1, row2].forEach(r => {
-            enableDragScroll(r);
-        });
-        lazyObserve();
-    }
-
-    async function renderGridInitial(){
-        gridFeed.innerHTML = '';
-        // Llama a la API real
-        const items = await API.getFeed('grid'); 
-        items.forEach(it => gridFeed.appendChild(makeGridCard(it)));
-        lazyObserve(gridFeed);
-    }
-    
-    function renderAll() {
-        renderTwoRows(trendRow1, trendRow2, 'trends');
-        renderTwoRows(recoRow1, recoRow2, 'reco');
-        renderGridInitial();
-        setupModals();
-        updateMyModalContent();
-    }
-
-
-    /* ---------- Funciones del Visor (Viewer) ---------- */
-
-    function showViewer() {
-        viewerScrollContainer.innerHTML = '';
-        activeList.forEach(item => {
-            viewerScrollContainer.appendChild(makeViewerCard(item));
-        });
-        
-        // Scroll al elemento inicial
-        viewerScrollContainer.scrollTop = currentIndex * viewerScrollContainer.offsetHeight;
-
-        viewerModal.classList.add('open');
-        document.body.style.overflow = 'hidden'; // Bloquea el scroll de fondo
-    }
-
-    function closeViewer() {
-        viewerModal.classList.remove('open');
-        document.body.style.overflow = '';
-        // Pausar cualquier video activo
-        viewerScrollContainer.querySelectorAll('video').forEach(v => v.pause());
-    }
-
-    function openViewerByItem(item){
-        // Usamos el feed 'grid' como la lista activa para el scroll vertical del visor
-        API.getFeed('grid').then(items => {
-            activeList = items; 
-            currentIndex = activeList.findIndex(x => x.id === item.id);
-            showViewer();
-        });
-    }
-
-    /* ---------- Funciones de Modales (Lógica) ---------- */
-
-    // --- Lógica de Modales de Perfil y Login ---
-
-    function renderLoginForm() {
-        return `
-            <div class="my-profile-info">
-                <i class="fas fa-lock"></i>
-                <h3>Inicia Sesión</h3>
-                <p>Accede a tu contenido y funcionalidades pro.</p>
-            </div>
-            <div style="padding: 10px;">
-                <input type="text" id="loginEmail" placeholder="Correo (test@sf.com)">
-                <input type="password" id="loginPassword" placeholder="Contraseña (1234)" style="margin-top:10px;">
-                <p id="loginError" style="color: var(--primary); font-size: 0.9rem; text-align: center; margin-top: 10px; display: none;">Error de credenciales.</p>
-                <button class="upload-button" style="background-color: var(--secondary); margin-top:15px;" id="loginBtn">Entrar</button>
-            </div>
-            <p style="text-align:center; font-size:0.9rem; color:var(--text-secondary);">¿No tienes cuenta? <a href="#" style="color:var(--primary);">Regístrate</a></p>
-        `;
-    }
-
-    function renderProfileInfo(user) {
-        return `
-            <div class="my-profile-info">
-                <i class="fas fa-user-circle"></i>
-                <h3>@${user.username}</h3>
-                <p>Miembro Pro desde hoy</p>
-            </div>
-            <div class="my-profile-buttons">
-                <button>Editar Perfil</button>
-                <button class="logout" id="logoutBtn">Cerrar Sesión</button>
-            </div>
-        `;
-    }
-
-    async function updateMyModalContent() {
-        const user = API.getCurrentUser();
-        if (user) {
-            myProfileContent.innerHTML = renderProfileInfo(user);
-            document.getElementById('logoutBtn').addEventListener('click', async () => {
-                API.logout();
-                updateMyModalContent();
-                await openMyModal(); // Vuelve a renderizar el modal
-            });
-            await openMyModal(true); // Carga la grilla del contenido
-        } else {
-            myProfileContent.innerHTML = renderLoginForm();
-            document.getElementById('loginBtn').addEventListener('click', async (e) => {
-                e.target.disabled = true;
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const errorDisplay = document.getElementById('loginError');
-
-                const result = await API.login(email, password);
-
-                if (result.success) {
-                    errorDisplay.style.display = 'none';
-                    updateMyModalContent();
-                } else {
-                    errorDisplay.style.display = 'block';
-                    e.target.disabled = false;
-                }
-            });
-            await openMyModal(false); // Vacía la grilla del contenido
-        }
-    }
-
-    async function openMyModal(isLoggedIn) {
-        myModal.classList.add('open');
-        
-        // Lógica para cargar el contenido
-        myGrid.innerHTML = '';
-        const userContent = await API.getFallbackContent(); 
-        
-        if (!isLoggedIn) {
-            myGrid.innerHTML = '<p style="text-align:center; color:var(--muted); grid-column: 1 / -1; margin-top: 15px;">Inicia sesión para ver tu contenido.</p>';
-        } else if (userContent.length === 0) {
-            myGrid.innerHTML = '<p style="text-align:center; color:var(--muted); grid-column: 1 / -1; margin-top: 15px;">Aún no has subido contenido. ¡Sube algo!</p>';
+            `;
+            return card;
         }
 
-        for(let i=0;i<Math.min(9, userContent.length);i++){
-            const it = userContent[i];
-            myGrid.appendChild(makeGridCard(it));
+        async function renderGrid(type) {
+            const data = await fetchContent(type);
+            contentGrid.innerHTML = '';
+            
+            // Simulación: agregamos el contenido subido en memoria (si existe) al inicio del array
+            const uploadedContent = allServerContent.filter(item => item.userId === 'u_uploaded');
+            const finalData = [...uploadedContent, ...data.filter(item => item.userId !== 'u_uploaded')];
+
+            finalData.forEach(item => {
+                contentGrid.appendChild(createCard(item));
+            });
+            // Actualizamos la caché global con el contenido cargado del servidor
+            allServerContent = finalData; 
         }
-    }
 
-    // --- Lógica del Modal de Búsqueda ---
-    
-    function closeSearchModal() {
-        searchModal.classList.remove('open');
-    }
+        // Función principal de renderizado
+        function renderAll() {
+            renderGrid(currentTab);
+        }
 
-    async function populateSearchMini(){
-      searchMini.innerHTML = '';
-      // Usamos el fallback para llenar las sugerencias iniciales
-      const content = await API.getFallbackContent();
+        /* ---------- VIEWER MODAL LOGIC ---------- */
+        function openViewer(item) {
+            viewerImage.style.display = 'none';
+            viewerVideo.style.display = 'none';
 
-      for(let i=0;i<Math.min(12, content.length);i++){
-        const item = content[i];
-        const d = document.createElement('div'); d.className='mini-thumb';
-        d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
-        d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
-        searchMini.appendChild(d);
-      }
-    }
+            if (item.kind === 'video') {
+                viewerVideo.src = item.src;
+                viewerVideo.style.display = 'block';
+                // Asegurar que el video se cargue y pueda reproducirse
+                viewerVideo.load();
+            } else {
+                viewerImage.src = item.src;
+                viewerImage.style.display = 'block';
+            }
 
+            viewerTitle.textContent = item.title;
+            viewerStats.innerHTML = `
+                <span>${item.views} vistas</span>
+                <span>${item.likes} Me gusta</span>
+                <span>${item.comments} Comentarios</span>
+            `;
+            $('#viewerUser').textContent = `@${item.userId}`;
 
-    /* ---------- Setup de Eventos de la UI ---------- */
+            viewerModal.classList.add('show');
+            viewerModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
 
-    function setupModals() {
-        // Eventos de botones de apertura
-        document.getElementById('openUploadModalBtn').addEventListener('click', () => uploadModal.classList.add('open'));
-        document.getElementById('openMyModalBtn').addEventListener('click', () => {
-            updateMyModalContent();
-            myModal.classList.add('open');
-        });
-        document.getElementById('openSearchModalBtn').addEventListener('click', () => {
-            populateSearchMini();
-            searchModal.classList.add('open');
-        });
-        
-        // Eventos de cierre
-        document.getElementById('closeUploadModalBtn').addEventListener('click', () => uploadModal.classList.remove('open'));
-        document.getElementById('closeMyModalBtn').addEventListener('click', () => myModal.classList.remove('open'));
-        document.getElementById('closeSearchModalBtn').addEventListener('click', closeSearchModal);
-        document.getElementById('viewerCloseBtn').addEventListener('click', closeViewer);
+        function closeViewerFunc() {
+            viewerModal.classList.remove('show');
+            viewerModal.setAttribute('aria-hidden', 'true');
+            // Pausar el video al cerrar
+            viewerVideo.pause();
+            document.body.style.overflow = '';
+        }
 
+        closeViewer.addEventListener('click', closeViewerFunc);
 
-        // --- Lógica de Subida de Archivos ---
-        const fileInput = document.getElementById('fileInput');
-        const dropArea = document.getElementById('dropArea');
-        const uploadButton = document.getElementById('uploadButton');
-        const uploadTitle = document.getElementById('uploadTitle');
-        const progressBarContainer = document.getElementById('progressBarContainer');
-        const progressBar = document.getElementById('progressBar');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-        const filePreviewImage = document.getElementById('filePreviewImage');
-        const filePreviewVideo = document.getElementById('filePreviewVideo');
-        let selectedFile = null;
-
-        function updatePreview(file) {
-            if (file) {
-                selectedFile = file;
-                const url = URL.createObjectURL(file);
-                fileNameDisplay.textContent = file.name;
-                uploadButton.disabled = false;
+        /* ---------- TABS LOGIC ---------- */
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Desactivar el tab actual
+                $('#tab' + currentTab.charAt(0).toUpperCase() + currentTab.slice(1)).classList.remove('active');
                 
-                // Mostrar preview
-                filePreviewImage.style.display = 'none';
-                filePreviewVideo.style.display = 'none';
-
-                if (file.type.startsWith('image/')) {
-                    filePreviewImage.src = url;
-                    filePreviewImage.style.display = 'block';
-                } else if (file.type.startsWith('video/')) {
-                    filePreviewVideo.src = url;
-                    filePreviewVideo.style.display = 'block';
-                }
-
-            } else {
-                selectedFile = null;
-                uploadButton.disabled = true;
-                fileNameDisplay.textContent = 'Arrastra y suelta aquí, o haz click para seleccionar un archivo (máx. 10MB)';
-                filePreviewImage.style.display = 'none';
-                filePreviewVideo.style.display = 'none';
-            }
-        }
-        
-        dropArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', (e) => updatePreview(e.target.files[0]));
-
-        // Drag and drop events
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false);
+                // Activar el nuevo tab
+                currentTab = tab.getAttribute('data-type');
+                tab.classList.add('active');
+                
+                // Renderizar
+                renderGrid(currentTab);
+            });
         });
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.add('drag-over'), false);
+        /* ---------- INICIALIZACIÓN ---------- */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.remove('drag-over'), false);
-        });
 
-        dropArea.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            updatePreview(file);
-        }, false);
+/* ******************************************************************* */
+/* ---------- CÓDIGO DE SUBIDA REAL (FAB, Modal, y Lógica Fetch) ---------- */
+/* ******************************************************************* */
 
-        uploadButton.addEventListener('click', async () => {
-            if (!selectedFile) return;
-            
-            // Simulación de carga
-            progressBarContainer.style.display = 'block';
-            uploadButton.disabled = true;
-            
-            const title = uploadTitle.value;
-            
-            // Simulación de progreso
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                progressBar.style.width = `${progress}%`;
-                if (progress >= 100) clearInterval(interval);
-            }, 100);
+/* DOM refs Adicionales para Subida Real */
+const fileSelectModal = $('#fileSelectModal');
+const closeFileSelect = $('#closeFileSelect');
+const realFileInput = $('#realFileInput');
+const uploadTitleInput = $('#uploadTitleInput');
+const startUploadBtn = $('#startUploadBtn');
+const BASE_URL = '/api'; // Apunta a tu Express Server
 
-            // Llama a la API (Simulación)
-            const result = await API.uploadFile(selectedFile, title);
-            
-            clearInterval(interval);
-            progressBar.style.width = '100%';
-            progressBarContainer.style.display = 'none';
-            uploadButton.disabled = false;
-            
-            if (result.success) {
-                alert('¡Contenido subido con éxito!');
-                uploadModal.classList.remove('open');
-                updatePreview(null); // Limpia la interfaz
-                uploadTitle.value = '';
-                renderAll(); // Vuelve a cargar el feed para ver el nuevo contenido (simulado)
-            } else {
-                alert('Error al subir contenido.');
-            }
-        });
-
+/* ---------- FAB radial (bubbles) - MEJORADO ---------- */
+fab.addEventListener('click', ()=>{
+  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
+  else {
+    radials.classList.add('show');
+    radials.innerHTML = '';
+    
+    // Función para crear la burbuja con el nuevo diseño
+    const mkBubble = (icon, text, action) => {
+        const d = document.createElement('button'); d.className='bubble-group';
+        d.innerHTML = `<span class="bubble" style="--delay: 0s">${icon}</span><span class="bubble-text" style="--delay: 0s">${text}</span>`;
+        d.onclick = action;
+        return d;
     }
 
+    // MODIFICADO: Abrir el modal de selección de archivos
+    const uploadAction = ()=> { radials.classList.remove('show'); openFileSelectModal(); };
+    const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
+    const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
 
-    /* ---------- Initializers ---------- */
-    document.addEventListener('DOMContentLoaded', ()=> {
-        renderAll();
-    });
+    radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
+    radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
+    radials.appendChild(mkBubble('🎬', 'Crear Short', createShortAction));
+  }
+});
 
+/* ---------- Modal de Selección de Archivo (Lógica) ---------- */
+function openFileSelectModal(){
+    fileSelectModal.classList.add('show');
+    fileSelectModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+function closeFileSelectModal(){
+    fileSelectModal.classList.remove('show');
+    fileSelectModal.setAttribute('aria-hidden', 'true');
+    // Restablecer el input
+    realFileInput.value = '';
+    uploadTitleInput.value = '';
+    document.body.style.overflow = '';
+}
+closeFileSelect.addEventListener('click', closeFileSelectModal);
+
+/* ---------- Lógica de Subida REAL (Usando Fetch y FormData) ---------- */
+async function uploadFileToBackend(file, title){
+    const formData = new FormData();
+    formData.append('file', file); // 'file' debe coincidir con upload.single('file') en server.js
+    formData.append('title', title);
+    
+    // 1. Mostrar modal de progreso
+    closeFileSelectModal();
+    uploadModal.style.display = 'flex'; // Usar flex para centrar
+    uploadModal.setAttribute('aria-hidden', 'false');
+    uploadTitle.textContent = 'Subiendo a servidor...';
+    progressFill.style.width = '0%';
+    uploadStatus.textContent = '0%';
+    let progress = 0;
+    
+    // Simular progreso rápido mientras se espera la respuesta (opcional, mejor con XHR)
+    const progressSim = setInterval(()=>{
+        if(progress < 95) {
+            progress += 5;
+            progressFill.style.width = `${progress}%`;
+            uploadStatus.textContent = `${progress}%`;
+        }
+    }, 200);
+
+    try {
+        const response = await fetch(`${BASE_URL}/content/upload`, {
+            method: 'POST',
+            body: formData,
+            // fetch no necesita headers de Content-Type para FormData
+        });
+
+        clearInterval(progressSim);
+        progressFill.style.width = '100%';
+        uploadStatus.textContent = '100% - Procesando...';
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+
+        if(result.success){
+            uploadTitle.textContent = '¡Subida Completa!';
+            
+            // Agregamos el nuevo item al caché local para que se vea inmediatamente
+            allServerContent.unshift(result.item);
+
+            setTimeout(()=>{ 
+                closeUploadModal(); 
+                alert(`¡Contenido Subido con Éxito! Título: ${result.item.title}`); 
+                // Renderizar de nuevo para incluir el nuevo contenido
+                renderAll(); 
+            }, 1000);
+        } else {
+            throw new Error(result.message || 'Error desconocido al subir.');
+        }
+
+    } catch (error) {
+        clearInterval(progressSim);
+        uploadTitle.textContent = 'Error de Subida';
+        uploadStatus.textContent = error.message;
+        
+        setTimeout(()=> {
+            closeUploadModal();
+            alert(`Error al subir: ${error.message}`);
+        }, 3000);
+    }
+}
+
+// Evento de click en el botón de Subir Ahora
+startUploadBtn.addEventListener('click', () => {
+    const file = realFileInput.files[0];
+    const title = uploadTitleInput.value;
+
+    if (!file) {
+        alert('Por favor, selecciona un archivo.');
+        return;
+    }
+
+    uploadFileToBackend(file, title);
+});
+
+function closeUploadModal(){
+    uploadModal.style.display = 'none';
+    uploadModal.setAttribute('aria-hidden', 'true');
+    uploadTitle.textContent = 'Subiendo archivo...';
+}
+closeUpload.addEventListener('click', closeUploadModal);
+
+
+/* ---------- Accessibility & shortcuts ---------- */
+document.addEventListener('keydown', e=>{ 
+    if(e.key==='Escape'){ 
+        closeViewerFunc(); 
+        // closePanel(); 
+        // closeSearchModal(); 
+        // closeMyModal(); 
+        closeUploadModal(); 
+        closeFileSelectModal(); 
+        radials.classList.remove('show');
+    } 
+});
+
+/* End of script */
     </script>
 </body>
 </html>
