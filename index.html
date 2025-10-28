@@ -70,48 +70,28 @@
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
-  /* --- INICIO: Ajustes del Menú FAB estilo Miniatura (SOLICITUD) --- */
+  /* Ajustes del Menú FAB estilo Miniatura */
   .bubble{
-    width:44px; 
-    height:44px;
-    border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--card); 
-    color:var(--muted);font-weight:700;cursor:pointer;
-    border:1px solid rgba(255,255,255,0.02);
-    box-shadow:none; 
-    transition: background var(--trans);
-    font-size: 20px;
+    width:44px; height:44px; border-radius:10px; display:flex;align-items:center;justify-content:center;
+    background:var(--card); color:var(--muted);font-weight:700;cursor:pointer;
+    border:1px solid rgba(255,255,255,0.02); box-shadow:none; transition: background var(--trans); font-size: 20px;
   }
   .bubble:hover { background: rgba(255,255,255,0.06); }
   .bubble-group { 
-    display: flex; flex-direction: row; align-items: center; gap: 10px; 
-    padding: 6px 10px; 
-    width: 200px; /* Ancho fijo para el menú */
-    border-radius: 12px; 
-    background: var(--card); 
-    border: 1px solid rgba(255,255,255,0.02);
-    box-shadow:0 8px 30px rgba(0,0,0,0.3); 
-    transition: transform var(--trans), opacity var(--trans);
-    cursor: pointer;
+    display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 6px 10px; 
+    width: 200px; border-radius: 12px; background: var(--card); border: 1px solid rgba(255,255,255,0.02);
+    box-shadow:0 8px 30px rgba(0,0,0,0.3); transition: transform var(--trans), opacity var(--trans); cursor: pointer;
   }
   .bubble-group:active { transform: scale(0.98); }
-  .bubble-text { 
-    font-size: 14px; 
-    font-weight: 500; 
-    color: var(--text); 
-    flex-grow: 1; 
-  }
+  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); flex-grow: 1; }
   .radials{
     position:fixed;left:50%;transform:translateX(-50%);bottom:100px; 
     display:flex;flex-direction:column;gap:8px;align-items:center;
     z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
-    padding: 10px 0; 
-    width: auto; /* El ancho lo define bubble-group */
+    padding: 10px 0; width: auto; 
     transform: translateX(-50%) translateY(20px);
   }
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
-  /* --- FIN: Ajustes del Menú FAB --- */
 
   /* Panel & overlay */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
@@ -126,31 +106,16 @@
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;}
   .viewer img,.viewer video{width:100%;height:auto;display:block; max-width: 100%; max-height: 80vh; object-fit: contain;}
   
-  /* --- INICIO: Menú del Viewer más abajo (SOLICITUD) --- */
+  /* Ajuste: Menú del Viewer más abajo */
   .viewer-controls-meta { 
-    position: absolute; 
-    bottom: 20px; /* Más abajo para no estorbar la imagen */
-    left: 50%; 
-    transform: translateX(-50%); 
-    z-index: 230; 
-    display: flex; 
-    gap: 8px; 
-    justify-content: center;
-    background: rgba(0,0,0,0.4); 
-    backdrop-filter: blur(8px); 
-    padding: 10px 15px; 
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.05); 
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 230; display: flex; 
+    gap: 8px; justify-content: center; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); 
+    padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
   }
   .viewer-controls-meta .icon-btn, .viewer-controls-meta .play-ico { 
-    width: 48px; /* Ajuste sutil del tamaño de los botones */
-    height: 48px;
-    background: rgba(255,255,255,0.06); 
-    backdrop-filter: blur(4px); 
+    width: 48px; height: 48px; background: rgba(255,255,255,0.06); backdrop-filter: blur(4px); 
     border: 1px solid rgba(255,255,255,0.08); 
   }
-  /* --- FIN: Menú del Viewer más abajo --- */
 
   /* Modals */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
@@ -163,6 +128,13 @@
   #uploadModal { display:none; text-align: center; padding: 20px; max-width: 300px; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); background: var(--card); border-radius: 12px; z-index: 250; box-shadow: 0 10px 40px rgba(0,0,0,0.7); }
   .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px; }
   .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear; }
+
+  /* Login Modal styles */
+  .form-control { margin-bottom: 12px; }
+  .form-control input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: var(--text); box-sizing: border-box; }
+  .btn-primary { width: 100%; padding: 12px; border-radius: 10px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); color: #000; font-weight: 700; border: none; cursor: pointer; transition: opacity 0.2s; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-link { background: transparent; border: none; color: var(--accent-cyan); cursor: pointer; font-size: 13px; margin-top: 8px; }
 
   /* Small screens */
   @media (max-width:420px){
@@ -202,16 +174,16 @@
   <div id="overlay" class="overlay" aria-hidden="true"></div>
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
-      <strong>Cuenta</strong>
+      <strong id="panelTitle">Cuenta (Demo)</strong>
       <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">✕</button> </div>
-    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
+    <p id="panelSubtitle" style="margin:8px 0 12px 0;color:var(--muted)">Inicia sesión para más funciones.</p>
     <nav style="display:flex;flex-direction:column;gap:8px">
       <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
       <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
       <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
       <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mis videos</button>
       <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+      <button id="loginLogoutBtn" class="icon-btn panel-item" data-action="login" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Iniciar Sesión</button>
     </nav>
   </aside>
 
@@ -300,24 +272,186 @@
       <button id="closeUpload" class="icon-btn" style="margin-top:15px; background: transparent; border: 1px solid var(--muted)">Cancelar</button>
   </div>
 
+  <div id="authModal" class="modal" aria-hidden="true" role="dialog" aria-label="Autenticación">
+    <div class="head" style="justify-content:space-between">
+      <strong id="authTitle">Iniciar Sesión</strong>
+      <button id="closeAuth" class="icon-btn">✕</button>
+    </div>
+    <form id="authForm">
+      <div class="form-control">
+        <input type="email" id="authEmail" placeholder="Email" required>
+      </div>
+      <div class="form-control">
+        <input type="password" id="authPassword" placeholder="Contraseña" required>
+      </div>
+      <p id="authError" style="color:var(--accent-violet); font-size:13px; text-align:center; display:none; margin:10px 0;"></p>
+      <button type="submit" id="authSubmitBtn" class="btn-primary">Entrar</button>
+      <button type="button" id="toggleAuthBtn" class="btn-link">¿No tienes cuenta? Regístrate</button>
+    </form>
+  </div>
 
 <script>
-/* =========================
-   SinFiltro — JavaScript (funcionalidad demo)
-   ========================= */
+/* ====================================================================
+   FASE 1 & 2: MOCKUP DE API Y BASE DE DATOS (FUNCIONALIDAD REAL SIMULADA)
+   ==================================================================== */
+
+window.DATA_STORE = {
+    content: [],
+    users: [],
+};
+
+// Inicializa la Base de Datos Mockup (usa localStorage para persistencia simulada)
+function initializeDataStore() {
+    const storedContent = localStorage.getItem('sf.content');
+    const storedUsers = localStorage.getItem('sf.users');
+    const storedToken = localStorage.getItem('sf.token');
+
+    if (storedUsers) {
+        DATA_STORE.users = JSON.parse(storedUsers);
+    } else {
+        // Crear usuario demo inicial
+        DATA_STORE.users.push({ id: 'u0', email: 'demo@sf.com', password: 'password', username: 'DemoUser' });
+        localStorage.setItem('sf.users', JSON.stringify(DATA_STORE.users));
+    }
+
+    // Cargar contenido inicial de relleno si no hay nada guardado
+    if (storedContent) {
+        DATA_STORE.content = JSON.parse(storedContent);
+    } else {
+        DATA_STORE.content = Array.from({length: 160}).map((_, i) => ({
+            id: 'p' + i,
+            src: `https://picsum.photos/640/420?random=${Math.floor(Math.random() * 100000) + i}`,
+            kind: (i % 6 === 0 || i % 7 === 0) ? 'video' : 'image',
+            title: ['Callejón neon', 'Atardecer', 'Retrato', 'Arte Urbano', 'Nocturna', 'Visual'][i % 6],
+            likes: Math.floor(Math.random() * 9000),
+            comments: Math.floor(Math.random() * 1200),
+            views: (Math.floor(Math.random() * 900) + 100) + 'K',
+            userId: DATA_STORE.users[0].id
+        }));
+        localStorage.setItem('sf.content', JSON.stringify(DATA_STORE.content));
+    }
+
+    if (storedToken) {
+        window.API_MOCKUP.token = storedToken;
+    }
+}
+
+// Función para guardar los datos actualizados
+function saveDataStore() {
+    localStorage.setItem('sf.content', JSON.stringify(DATA_STORE.content));
+    localStorage.setItem('sf.users', JSON.stringify(DATA_STORE.users));
+    localStorage.setItem('sf.token', window.API_MOCKUP.token || '');
+}
+
+// Objeto que simula las llamadas a una API de Backend
+window.API_MOCKUP = {
+    token: null,
+    
+    // Simula REGISTRO de usuario
+    register: async (email, password) => {
+        await new Promise(r => setTimeout(r, 500)); // Simula latencia
+        if (DATA_STORE.users.find(u => u.email === email)) {
+            return { success: false, message: 'Email ya registrado.' };
+        }
+        const newUser = { 
+            id: 'u' + DATA_STORE.users.length, 
+            email, 
+            password, // En una app real, esto estaría cifrado
+            username: email.split('@')[0] 
+        };
+        DATA_STORE.users.push(newUser);
+        saveDataStore();
+        return { success: true, message: 'Registro exitoso.' };
+    },
+
+    // Simula LOGIN de usuario
+    login: async (email, password) => {
+        await new Promise(r => setTimeout(r, 500));
+        const user = DATA_STORE.users.find(u => u.email === email && u.password === password);
+        if (user) {
+            window.API_MOCKUP.token = `mock_token_${user.id}`;
+            saveDataStore();
+            return { success: true, user };
+        }
+        return { success: false, message: 'Credenciales inválidas.' };
+    },
+
+    // Simula LOGOUT
+    logout: () => {
+        window.API_MOCKUP.token = null;
+        saveDataStore();
+    },
+
+    // Simula la obtención del usuario logueado
+    getCurrentUser: () => {
+        if (!window.API_MOCKUP.token) return null;
+        const userId = window.API_MOCKUP.token.split('_')[1];
+        return DATA_STORE.users.find(u => u.id === userId) || null;
+    },
+
+    // Simula la obtención de datos del Feed
+    getFeed: async (type) => {
+        await new Promise(r => setTimeout(r, 300));
+        const items = DATA_STORE.content;
+        switch (type) {
+            case 'trends':
+                return items.slice(0, 12);
+            case 'reco':
+                return items.slice(12, 24);
+            case 'recent':
+                return items.slice(24, 36);
+            case 'grid':
+                // Devuelve los primeros 36 del grid + 10 aleatorios para simular 'más'
+                return items.slice(36, 72).concat(items.slice(Math.random() * 80, Math.random() * 80 + 10));
+            case 'my':
+                const user = window.API_MOCKUP.getCurrentUser();
+                if (!user) return [];
+                return items.filter(i => i.userId === user.id);
+            default:
+                return items;
+        }
+    },
+
+    // Simula la subida de un archivo
+    uploadFile: async (file, title) => {
+        const user = window.API_MOCKUP.getCurrentUser();
+        if (!user) return { success: false, message: 'No autenticado.' };
+        
+        // Simulación de carga y procesamiento
+        await new Promise(r => setTimeout(r, 2000)); 
+        
+        const newItem = {
+            id: 'p' + DATA_STORE.content.length + Date.now(),
+            src: `https://picsum.photos/640/420?random=${Date.now()}`, // Nueva imagen única
+            kind: file.type.startsWith('video') ? 'video' : 'image',
+            title: title || file.name,
+            likes: 0,
+            comments: 0,
+            views: '0K',
+            userId: user.id
+        };
+        
+        DATA_STORE.content.unshift(newItem); // Añadir al inicio para que aparezca primero
+        saveDataStore();
+        return { success: true, item: newItem };
+    }
+};
+
+/* ====================================================================
+   FRONTEND (Mantiene el diseño, usa la API Mockup)
+   ==================================================================== */
 
 /* Helpers */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
-const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
 /* DOM refs */
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
 const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
-const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
+const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel'), loginLogoutBtn = $('#loginLogoutBtn'), panelTitle = $('#panelTitle'), panelSubtitle = $('#panelSubtitle');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
@@ -327,19 +461,12 @@ const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInpu
 const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
 const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload');
 
-/* Data pool (demo) */
-let pool = Array.from({length:160}).map((_,i)=>({
-  id:'p'+i, src:mkImg(i), kind:(i%6===0 || i%7===0)?'video':'image',
-  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
-  likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
-}));
+// Auth Modal Refs
+const authModal = $('#authModal'), closeAuth = $('#closeAuth'), authForm = $('#authForm'), authEmail = $('#authEmail'), authPassword = $('#authPassword'), authSubmitBtn = $('#authSubmitBtn'), authTitle = $('#authTitle'), authError = $('#authError'), toggleAuthBtn = $('#toggleAuthBtn');
+let isRegistering = false;
 
-let trends = pool.slice(0,12);
-let reco = pool.slice(12,24);
-let recent = pool.slice(24,36);
-let grid = pool.slice(36,72);
 
-/* ---------- Lazy loading images (IntersectionObserver) ---------- */
+/* ---------- Lazy loading images ---------- */
 let imgObserver = null;
 function lazyObserve(root=document){
   const imgs = root.querySelectorAll('img[data-src]');
@@ -363,7 +490,7 @@ function lazyObserve(root=document){
   }
 }
 
-/* ---------- Create card elements (keeps meta layout) ---------- */
+/* ---------- Create card elements ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function makeSmallCard(item){
@@ -394,65 +521,41 @@ function makeGridCard(item){
   return a;
 }
 
-/* ---------- Render two rows with drag support ---------- */
-function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=>{
-    const target = (i%2===0)?row1:row2;
-    target.appendChild(makeSmallCard(it));
-  });
-  // ensure rows have enough children
-  [row1,row2].forEach(r=>{
-    if(r.children.length < 6){
-      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    }
-    // attach drag-to-scroll for better horizontal experience on mobile
-    enableDragScroll(r);
-  });
-  lazyObserve();
+/* ---------- Render functions (Updated to use API_MOCKUP) ---------- */
+async function renderTwoRows(row1, row2, type){
+    row1.innerHTML = ''; row2.innerHTML = '';
+    const items = await window.API_MOCKUP.getFeed(type);
+
+    items.forEach((it, i) => {
+        const target = (i % 2 === 0) ? row1 : row2;
+        target.appendChild(makeSmallCard(it));
+    });
+
+    // Añadir más de relleno si es necesario y adjuntar drag-to-scroll
+    [row1, row2].forEach(r => {
+        if (r.children.length < 6) {
+            // Se rellenará con contenido aleatorio de la Base de Datos Mockup
+            const allContent = DATA_STORE.content;
+            for (let i = 0; i < 6; i++) r.appendChild(makeSmallCard(allContent[rand(allContent.length)]));
+        }
+        enableDragScroll(r);
+    });
+    lazyObserve();
 }
 
-/* ---------- Grid render ---------- */
-function renderGridInitial(){
-  gridFeed.innerHTML = '';
-  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
-  lazyObserve(gridFeed);
+async function renderGridInitial(){
+    gridFeed.innerHTML = '';
+    const items = await window.API_MOCKUP.getFeed('grid');
+    items.forEach(it => gridFeed.appendChild(makeGridCard(it)));
+    lazyObserve(gridFeed);
 }
 
-/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
-function enableDragScroll(el){
-  if(el.__dragEnabled) return;
-  el.__dragEnabled = true;
-  let startX = 0, scrollLeft = 0;
-  let isTouch = false;
-  el.addEventListener('touchstart', e=>{
-    isTouch = true;
-    startX = e.touches[0].pageX - el.offsetLeft;
-    scrollLeft = el.scrollLeft;
-  }, {passive:true});
-  el.addEventListener('touchmove', e=>{
-    if(!isTouch) return;
-    const x = e.touches[0].pageX - el.offsetLeft;
-    const walk = (x - startX) * 1;
-    el.scrollLeft = scrollLeft - walk;
-  }, {passive:true});
-  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
-
-  // pointer events for desktops/mice
-  let isDown=false;
-  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
-  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
-}
-
-/* ---------- Viewer modal (touch outside to close) ---------- */
+/* ---------- Viewer modal ---------- */
 let activeList=[], currentIndex=0;
 function openViewerByItem(item){
-  // find list and index
-  const lists = [trends,reco,recent,grid,pool];
-  activeList = [];
-  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
-  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
+  // En una app real, aquí se llamaría a la API para obtener el contenido completo.
+  activeList = DATA_STORE.content; 
+  currentIndex = activeList.findIndex(x => x.id === item.id);
   showViewer();
 }
 function showViewer(){
@@ -481,7 +584,7 @@ function showViewer(){
 }
 function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = DATA_STORE.content[rand(DATA_STORE.content.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 
 closeViewer.addEventListener('click', closeViewerFunc);
@@ -491,6 +594,7 @@ nextBtn.addEventListener('click', nextItem);
 downloadBtn.addEventListener('click', ()=>{ 
     const item = activeList[currentIndex];
     if(item && item.src){
+        // En una app real, esto podría ser un endpoint de la API con el token de seguridad
         const downloadUrl = item.src; 
         const link = document.createElement('a');
         link.href = downloadUrl;
@@ -504,7 +608,33 @@ downloadBtn.addEventListener('click', ()=>{
     }
 });
 
-/* ---------- Panel open/close ---------- */
+/* ---------- Panel & Auth Modal ---------- */
+function updatePanelState() {
+    const user = window.API_MOCKUP.getCurrentUser();
+    if (user) {
+        panelTitle.textContent = user.username;
+        panelSubtitle.textContent = user.email;
+        loginLogoutBtn.textContent = '🚪 Cerrar Sesión';
+        loginLogoutBtn.dataset.action = 'logout';
+    } else {
+        panelTitle.textContent = 'Cuenta (Demo)';
+        panelSubtitle.textContent = 'Inicia sesión para más funciones.';
+        loginLogoutBtn.textContent = '🚪 Iniciar Sesión';
+        loginLogoutBtn.dataset.action = 'login';
+    }
+}
+
+loginLogoutBtn.addEventListener('click', () => {
+    if (loginLogoutBtn.dataset.action === 'logout') {
+        window.API_MOCKUP.logout();
+        updatePanelState();
+        closePanel();
+        alert('Sesión cerrada.');
+    } else {
+        openAuthModal('login');
+    }
+});
+
 function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); radials.classList.remove('show'); radials.innerHTML=''; }
 function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
 menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
@@ -512,24 +642,78 @@ closePanelBtn.addEventListener('click', closePanel);
 
 overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
-        if (panel.classList.contains('open')) {
-            closePanel();
-        }
-        if (radials.classList.contains('show')) {
-            radials.classList.remove('show');
-            radials.innerHTML = '';
-        }
+        closePanel();
+        radials.classList.remove('show'); radials.innerHTML = '';
+        closeAuthModal(); // Cierra el modal de auth si está abierto
     }
 });
 
-/* ---------- FAB radial (bubbles) - MEJORADO con el estilo de tarjeta ---------- */
+function openAuthModal(mode) {
+    closePanel();
+    isRegistering = mode === 'register';
+    authTitle.textContent = isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión';
+    authSubmitBtn.textContent = isRegistering ? 'Registrarse' : 'Entrar';
+    toggleAuthBtn.textContent = isRegistering ? '¿Ya tienes cuenta? Inicia Sesión' : '¿No tienes cuenta? Regístrate';
+    authError.style.display = 'none';
+    authModal.classList.add('show');
+    authModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAuthModal() {
+    authModal.classList.remove('show');
+    authModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+}
+
+closeAuth.addEventListener('click', closeAuthModal);
+
+toggleAuthBtn.addEventListener('click', () => {
+    openAuthModal(isRegistering ? 'login' : 'register');
+});
+
+authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = authEmail.value;
+    const password = authPassword.value;
+    authError.style.display = 'none';
+    authSubmitBtn.disabled = true;
+
+    let result;
+    if (isRegistering) {
+        result = await window.API_MOCKUP.register(email, password);
+    } else {
+        result = await window.API_MOCKUP.login(email, password);
+    }
+
+    authSubmitBtn.disabled = false;
+
+    if (result.success) {
+        closeAuthModal();
+        updatePanelState();
+        alert(isRegistering ? 'Registro exitoso. ¡Inicia sesión!' : `Bienvenido, ${result.user.username}`);
+        if (!isRegistering) renderAll(); // Recargar feeds con contenido del usuario si aplica
+    } else {
+        authError.textContent = result.message;
+        authError.style.display = 'block';
+    }
+});
+
+
+/* ---------- FAB radial (bubbles) - Conecta subida a API Mockup ---------- */
 fab.addEventListener('click', ()=>{
   if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
   else {
+    const user = window.API_MOCKUP.getCurrentUser();
+    if (!user) {
+        alert('Debes iniciar sesión para subir contenido.');
+        openAuthModal('login');
+        return;
+    }
+    
     radials.classList.add('show');
     radials.innerHTML = '';
     
-    // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
         const d = document.createElement('button'); d.className='bubble-group';
         d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
@@ -537,9 +721,22 @@ fab.addEventListener('click', ()=>{
         return d;
     }
 
-    const uploadAction = ()=> { radials.classList.remove('show'); simulateUpload('Subiendo Video/Foto...'); };
-    const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
-    const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
+    const uploadAction = ()=> { 
+        radials.classList.remove('show'); 
+        // Simulación: Abre el diálogo de selección de archivo
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,video/*';
+        fileInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                simulateUpload(file); 
+            }
+        };
+        fileInput.click();
+    };
+    const createPostAction = ()=> { alert('Demo: Publicar Galería'); radials.classList.remove('show'); };
+    const createShortAction = ()=> { alert('Demo: Crear Short'); radials.classList.remove('show'); };
 
     radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
     radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
@@ -547,30 +744,48 @@ fab.addEventListener('click', ()=>{
   }
 });
 
-/* ---------- Simulación de Subida (Upload Demo) ---------- */
+/* ---------- Simulación de Subida (Upload Demo) - Usa API Mockup ---------- */
 let uploadInterval = null;
-function simulateUpload(title){
+async function simulateUpload(file){
     uploadModal.style.display = 'block';
     uploadModal.setAttribute('aria-hidden', 'false');
-    uploadTitle.textContent = title;
+    uploadTitle.textContent = `Subiendo ${file.name}...`;
     progressFill.style.width = '0%';
     uploadStatus.textContent = '0%';
     let progress = 0;
 
     uploadInterval = setInterval(()=>{
         progress += rand(10) + 1;
-        if(progress >= 100){
-            clearInterval(uploadInterval);
-            progress = 100;
-            uploadTitle.textContent = '¡Subida Completa!';
-            uploadStatus.textContent = '100% - Procesando...';
-            progressFill.style.width = '100%';
-            setTimeout(()=>{ closeUploadModal(); alert('¡Contenido Subido con Éxito!'); }, 1500);
-        } else {
-            progressFill.style.width = `${progress}%`;
-            uploadStatus.textContent = `${progress}%`;
+        if(progress >= 95){ 
+             clearInterval(uploadInterval); // Detiene la barra al 95% para simular procesamiento en el servidor
         }
+        progressFill.style.width = `${progress}%`;
+        uploadStatus.textContent = `${Math.min(progress, 95)}%`;
     }, 300);
+
+    // Llamada simulada al backend
+    const result = await window.API_MOCKUP.uploadFile(file);
+
+    // Finalización de la simulación de carga
+    if (result.success) {
+        clearInterval(uploadInterval);
+        progressFill.style.width = '100%';
+        uploadTitle.textContent = '¡Subida Completa!';
+        uploadStatus.textContent = '100% - Procesando OK';
+        
+        // Recargar el feed para mostrar el contenido recién subido
+        renderAll();
+
+        setTimeout(()=>{ 
+            closeUploadModal(); 
+            alert(`Contenido "${result.item.title}" Subido por ${window.API_MOCKUP.getCurrentUser().username}.`); 
+        }, 1500);
+    } else {
+        clearInterval(uploadInterval);
+        uploadTitle.textContent = 'Error de Subida';
+        uploadStatus.textContent = result.message;
+        setTimeout(closeUploadModal, 2500);
+    }
 }
 
 function closeUploadModal(){
@@ -580,6 +795,32 @@ function closeUploadModal(){
     uploadTitle.textContent = 'Subiendo archivo...';
 }
 closeUpload.addEventListener('click', closeUploadModal);
+
+
+/* ---------- Drag-to-scroll helper ---------- */
+function enableDragScroll(el){
+  if(el.__dragEnabled) return;
+  el.__dragEnabled = true;
+  let startX = 0, scrollLeft = 0;
+  let isTouch = false;
+  el.addEventListener('touchstart', e=>{
+    isTouch = true;
+    startX = e.touches[0].pageX - el.offsetLeft;
+    scrollLeft = el.scrollLeft;
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(!isTouch) return;
+    const x = e.touches[0].pageX - el.offsetLeft;
+    const walk = (x - startX) * 1;
+    el.scrollLeft = scrollLeft - walk;
+  }, {passive:true});
+  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
+
+  let isDown=false;
+  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
+  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
+  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
+}
 
 
 /* ---------- Theme toggle ---------- */
@@ -605,11 +846,12 @@ $('#navSearch').addEventListener('click', ()=> openSearchModal());
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
 $('#navMe').addEventListener('click', ()=> openMyModal());
 
+
 /* Search modal */
 searchTop.addEventListener('click', ()=> openSearchModal());
 
 function openSearchModal(){
-  populateSearchMini();
+  populateSearchMini(DATA_STORE.content);
   searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
@@ -621,10 +863,10 @@ function closeSearchModal(){
 closeSearch.addEventListener('click', closeSearchModal);
 searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
 
-function populateSearchMini(q){
+function populateSearchMini(items){
   searchMini.innerHTML = '';
   for(let i=0;i<12;i++){
-    const item = pool[rand(pool.length)];
+    const item = items[rand(items.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
     d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
@@ -632,16 +874,25 @@ function populateSearchMini(q){
   }
 }
 
-/* My videos modal */
-function openMyModal(){
+/* My videos modal (uses API_MOCKUP.getFeed('my')) */
+async function openMyModal(){
+  const userContent = await window.API_MOCKUP.getFeed('my');
   myGrid.innerHTML = '';
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
+  
+  if (userContent.length === 0 && window.API_MOCKUP.getCurrentUser()) {
+     myGrid.innerHTML = '<p style="text-align:center; color:var(--muted); grid-column: 1 / -1; margin-top: 15px;">Aún no has subido contenido. ¡Sube algo!</p>';
+  } else if (!window.API_MOCKUP.getCurrentUser()) {
+     myGrid.innerHTML = '<p style="text-align:center; color:var(--muted); grid-column: 1 / -1; margin-top: 15px;">Debes iniciar sesión para ver tu contenido.</p>';
+  }
+
+  for(let i=0;i<Math.min(9, userContent.length);i++){
+    const it = userContent[i];
     const d = document.createElement('div'); d.className='mini-thumb';
     d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
     d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
     myGrid.appendChild(d);
   }
+
   myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
@@ -654,28 +905,29 @@ let loadingGrid=false;
 window.addEventListener('scroll', ()=>{
   if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
     loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
+    setTimeout(async ()=> {
+      const moreItems = await window.API_MOCKUP.getFeed('grid');
+      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(moreItems[rand(moreItems.length)])); }
       lazyObserve(gridFeed); loadingGrid=false;
     }, 700);
   }
 });
 
-/* ---------- Render initial content ---------- */
-function renderAll(){
-  renderTwoRows(trendRow1, trendRow2, trends);
-  renderTwoRows(recoRow1, recoRow2, reco);
-  renderTwoRows(recentRow1, recentRow2, recent);
-  renderGridInitial();
-  // seed rows for smoothness
-  $$('.h-row').forEach(r=> {
-    if(r.children.length < 8){
-      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-    }
-  });
+/* ---------- Render initial content (Updated to use API_MOCKUP) ---------- */
+async function renderAll(){
+  updatePanelState(); // Actualiza el estado de login en el menú
+  await renderTwoRows(trendRow1, trendRow2, 'trends');
+  await renderTwoRows(recoRow1, recoRow2, 'reco');
+  await renderTwoRows(recentRow1, recentRow2, 'recent');
+  await renderGridInitial();
   lazyObserve();
 }
-document.addEventListener('DOMContentLoaded', renderAll);
+
+/* ---------- Initializers ---------- */
+document.addEventListener('DOMContentLoaded', ()=> {
+    initializeDataStore(); // Carga usuarios y contenido (incluido el demo)
+    renderAll();
+});
 
 /* ---------- Accessibility & shortcuts ---------- */
 document.addEventListener('keydown', e=>{ 
@@ -685,6 +937,7 @@ document.addEventListener('keydown', e=>{
         closeSearchModal(); 
         closeMyModal(); 
         closeUploadModal();
+        closeAuthModal(); // Nuevo
     } 
 });
 
