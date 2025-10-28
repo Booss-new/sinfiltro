@@ -15,9 +15,34 @@
     --glass: rgba(255,255,255,0.04);
     --radius:14px; --trans:260ms;
     --text:#eaf7ff;
+    --skel-color: rgba(255,255,255,0.05); /* Nuevo color base para skeleton */
   }
   html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
-  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
+  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
+
+  /* ================= 1. MICROINTERACCIONES RIPPLE (CSS) ================= */
+  /* Aplica un efecto de escala sutil en los botones interactivos */
+  .icon-btn, .logo-btn, .card-small, .grid .card, .fab, .bubble, .nav-item { transition: transform var(--trans), opacity var(--trans); position: relative; overflow: hidden; }
+  .icon-btn:active, .logo-btn:active, .fab:active, .bubble:active { transform:scale(.92); }
+  .nav-item:active { transform: translateY(1px); opacity: 0.9; }
+
+  /* Efecto de Onda/Ripple */
+  .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); pointer-events: none; transform: scale(0); animation: rippleEffect .6s linear; opacity: 0; }
+  @keyframes rippleEffect { to { transform: scale(4); opacity: 0; } }
+
+  /* ================= 3. SKELETON SCREEN DINÁMICO (CSS) ================= */
+  /* Estado de carga general para tarjetas */
+  .skel { position: relative; overflow: hidden; background-color: var(--skel-color); }
+  /* Animación de brillo sobre la base del skeleton */
+  .skel::after {
+    content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: shine 1.5s infinite;
+  }
+  @keyframes shine {
+    to { transform: translateX(100%); }
+  }
 
   /* ================= keep UI identical to approved design ================= */
   .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
@@ -30,7 +55,7 @@
   .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
   .left-ctrl{display:flex;align-items:center;gap:12px}
   .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
-  .icon-btn:active{transform:scale(.96)}
+  
   .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
   .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
 
@@ -53,7 +78,7 @@
   .h-stack{display:flex;flex-direction:column;gap:10px}
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
+  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer;will-change: transform} /* Añadido will-change para performance */
   .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
@@ -62,7 +87,7 @@
 
   /* Grid (vertical infinite) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer;will-change: transform} /* Añadido will-change para performance */
   .grid img{width:100%;height:150px;object-fit:cover}
   .grid .body{padding:8px;color:var(--text)}
   .grid .title{font-weight:700}
@@ -74,7 +99,7 @@
   .radials.show{opacity:1;pointer-events:auto}
   .bubble{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:none}
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer; will-change: transform;}
 
   /* Panel & overlay (menu lateral) */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
@@ -83,12 +108,36 @@
   .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
 
-  /* Viewer (immersive) */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
+  /* ================= 2. VIEWER CON TRANSICIÓN HERO (CSS) ================= */
+  .viewer{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:220;display:none;align-items:center;justify-content:center;padding:10px;transition:background .3s}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
-  .viewer img,.viewer video{width:100%;height:auto;display:block}
-  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:transparent;padding:0;box-shadow:none}
+  
+  /* El contenedor interior (viewerInner) es el que va a mostrar el contenido final. */
+  .viewerInner{position:relative;width:100%;height:100%;}
+  .viewerInner img, .viewerInner video{width:100%;height:auto;display:block; max-height: 80vh; transition: transform 0.3s, opacity 0.3s, border-radius 0.3s; }
+  
+  /* Estilos para el elemento clonado durante la transición FLIP */
+  .hero-clone {
+    position: fixed; z-index: 230;
+    transition: transform 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    object-fit: cover;
+  }
+  
+  .viewer-content-meta {
+    margin-top:12px;
+    display:flex;gap:8px;justify-content:center;
+    transition: opacity 0.2s 0.3s; /* Aparece después de la transición de imagen */
+  }
+  .viewer.transitioning .viewer-content-meta { opacity: 0; }
+  
+  /* Sobreescribir el estilo de la tarjeta dentro del viewer para que no tenga padding inicial */
+  .viewer .card {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
 
   /* Search modal & MyVideos modal */
   .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
@@ -133,7 +182,6 @@
     </div>
   </header>
 
-  <!-- overlay + panel -->
   <div id="overlay" class="overlay" aria-hidden="true"></div>
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
@@ -151,7 +199,6 @@
     </nav>
   </aside>
 
-  <!-- main content uses body scroll -->
   <main>
     <div class="container">
       <section class="hero fade-up" aria-label="presentación">
@@ -159,7 +206,6 @@
         <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
       </section>
 
-      <!-- Tendencias -->
       <section class="section fade-up" aria-label="tendencias">
         <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
         <div class="h-stack">
@@ -168,7 +214,6 @@
         </div>
       </section>
 
-      <!-- Recomendados -->
       <section class="section fade-up" aria-label="recomendados">
         <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
         <div class="h-stack">
@@ -177,7 +222,6 @@
         </div>
       </section>
 
-      <!-- Antes visto -->
       <section class="section fade-up" aria-label="antes visto">
         <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
         <div class="h-stack">
@@ -186,7 +230,6 @@
         </div>
       </section>
 
-      <!-- Explorar grid -->
       <section class="section fade-up" aria-label="explorar">
         <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
@@ -194,7 +237,6 @@
     </div>
   </main>
 
-  <!-- FAB + radial bubbles -->
   <div id="radials" class="radials" aria-hidden="true"></div>
   <button id="fab" class="fab" aria-label="Crear">＋</button>
 
@@ -206,11 +248,10 @@
     <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
   </nav>
 
-  <!-- viewer modal -->
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-    <div class="card" style="position:relative;">
+    <div class="card">
       <div id="viewerInner"></div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <div id="viewerControls" class="viewer-content-meta">
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
         <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
@@ -219,7 +260,6 @@
     </div>
   </div>
 
-  <!-- Search modal (miniatures) -->
   <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
     <div class="head">
       <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
@@ -228,7 +268,6 @@
     <div id="searchMini" class="grid-mini"></div>
   </div>
 
-  <!-- My videos modal (grid preview) -->
   <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
     <div class="head" style="justify-content:space-between">
       <strong>Tus videos (demo)</strong>
@@ -246,6 +285,9 @@
    - Fix theme toggle (fluido)
    - Ensure overlays do not block touch when hidden
    - Keep existing optimizations (lazy, drag-to-scroll)
+   - [NUEVO 1] Transición Hero (FLIP)
+   - [NUEVO 2] Microinteracciones Ripple
+   - [NUEVO 3] Skeleton Screen Dinámico
    ========================= */
 
 /* Helpers */
@@ -260,7 +302,7 @@ const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
 const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), viewerControls = $('#viewerControls');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
@@ -291,7 +333,8 @@ function lazyObserve(root=document){
           if(e.isIntersecting){
             const img = e.target;
             img.src = img.dataset.src;
-            img.onload = ()=> img.parentElement.classList.remove('skel');
+            // Quitamos la clase skel solo después de que la imagen cargue
+            img.onload = ()=> img.closest('.skel')?.classList.remove('skel');
             img.removeAttribute('data-src');
             obs.unobserve(img);
           }
@@ -300,7 +343,7 @@ function lazyObserve(root=document){
     }
     imgs.forEach(i=> imgObserver.observe(i));
   } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+    imgs.forEach(i=> { i.src = i.dataset.src; i.closest('.skel')?.classList.remove('skel'); i.removeAttribute('data-src'); });
   }
 }
 
@@ -311,6 +354,7 @@ function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
+  d.setAttribute('data-id', item.id); /* Añadido ID para FLIP */
   d.innerHTML = `
     <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
@@ -322,16 +366,17 @@ function makeSmallCard(item){
       <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
-  d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
+  d.addEventListener('click', (e)=> openViewerByItem(item, d));
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item, d); });
   return d;
 }
 
 function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
+  a.setAttribute('data-id', item.id); /* Añadido ID para FLIP */
   a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-  a.addEventListener('click', ()=> openViewerByItem(item));
+  a.addEventListener('click', (e)=> openViewerByItem(item, a));
   return a;
 }
 
@@ -386,46 +431,130 @@ function enableDragScroll(el){
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
-/* ---------- Viewer modal (touch outside to close) ---------- */
+/* ---------- 2. Viewer modal (FLIP Hero Transition) ---------- */
 let activeList=[], currentIndex=0;
-function openViewerByItem(item){
-  // find list and index
+let lastClickedElement = null;
+
+function openViewerByItem(item, sourceEl = null){
+  // 1. Encuentra lista e índice
   const lists = [trends,reco,recent,grid,pool];
   activeList = [];
   for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
   if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
-  showViewer();
+  
+  // Guardamos el elemento de origen para la transición
+  lastClickedElement = sourceEl ? sourceEl.querySelector('img') || sourceEl.querySelector('div.mini-thumb img') : null;
+  
+  showViewer(true);
 }
-function showViewer(){
+
+function showViewer(startTransition = false){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
   if(!it) return;
+
+  // Creamos el elemento del Viewer (img o video)
+  let contentEl;
   if(it.kind === 'video'){
-    const video = document.createElement('video');
-    video.src = it.src;
-    video.controls = true;
-    video.autoplay = false;
-    video.style.maxHeight = '70vh';
-    viewerInner.appendChild(video);
+    contentEl = document.createElement('video');
+    contentEl.src = it.src;
+    contentEl.controls = true;
+    contentEl.autoplay = false;
+    contentEl.style.maxHeight = '70vh';
   } else {
-    const img = document.createElement('img');
-    img.src = it.src;
-    img.alt = it.title;
-    img.style.maxHeight = '80vh';
-    viewerInner.appendChild(img);
+    contentEl = document.createElement('img');
+    contentEl.src = it.src;
+    contentEl.alt = it.title;
+    contentEl.style.maxHeight = '80vh';
   }
-  // show viewer
-  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
-  // ensure background overlay doesn't block scroll in viewer inner
-  document.body.style.overflow = 'hidden';
+  
+  // Si tenemos un elemento de origen para FLIP
+  if(startTransition && lastClickedElement){
+    viewer.classList.add('transitioning');
+    
+    // 1. FIRST (Posición inicial del elemento original)
+    const originalRect = lastClickedElement.getBoundingClientRect();
+    const originalBorderRadius = getComputedStyle(lastClickedElement.closest('.card, .card-small, .mini-thumb')).borderRadius;
+    
+    // Crear el clon para la animación
+    const clone = contentEl.cloneNode(false);
+    clone.classList.add('hero-clone');
+    clone.style.width = `${originalRect.width}px`;
+    clone.style.height = `${originalRect.height}px`;
+    clone.style.left = `${originalRect.left}px`;
+    clone.style.top = `${originalRect.top}px`;
+    clone.style.borderRadius = originalBorderRadius;
+    document.body.appendChild(clone);
+    
+    // Mostrar el viewer, pero con el contenido final invisible
+    viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    viewerInner.style.opacity = '0';
+    viewerControls.style.opacity = '0';
+    
+    // Forzar un repaint para asegurar que la posición FIRST ha sido renderizada
+    requestAnimationFrame(()=>{
+      // 2. LAST (Posición final en el Viewer)
+      viewerInner.appendChild(contentEl);
+      const finalRect = contentEl.getBoundingClientRect();
+      
+      // 3. INVERT (Mover el clon a la posición final y ejecutar la transición)
+      requestAnimationFrame(()=>{
+        clone.style.transition = 'transform 300ms cubic-bezier(.4, 0, .2, 1), width 300ms cubic-bezier(.4, 0, .2, 1), height 300ms cubic-bezier(.4, 0, .2, 1), left 300ms cubic-bezier(.4, 0, .2, 1), top 300ms cubic-bezier(.4, 0, .2, 1), border-radius 300ms cubic-bezier(.4, 0, .2, 1)';
+        clone.style.transform = `translate3d(${finalRect.left - originalRect.left}px, ${finalRect.top - originalRect.top}px, 0)`;
+        clone.style.width = `${finalRect.width}px`;
+        clone.style.height = `${finalRect.height}px`;
+        clone.style.left = `${originalRect.left}px`;
+        clone.style.top = `${originalRect.top}px`;
+        clone.style.borderRadius = '0px'; // Se transforma al radio final
+        
+        // 4. PLAY (Al terminar la transición del clon, ocultarlo y mostrar el contenido real)
+        clone.addEventListener('transitionend', function handler(){
+          clone.removeEventListener('transitionend', handler);
+          clone.remove();
+          viewerInner.style.opacity = '1';
+          viewerControls.style.opacity = '1';
+          viewer.classList.remove('transitioning');
+        });
+      });
+    });
+    
+  } else {
+    // Si no hay transición (navegación interna del viewer)
+    viewerInner.appendChild(contentEl);
+    viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+    document.body.style.overflow = 'hidden';
+    viewerInner.style.opacity = '1';
+    viewerControls.style.opacity = '1';
+  }
 }
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+
+function closeViewerFunc(){ 
+  viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); 
+  viewerInner.innerHTML=''; 
+  document.body.style.overflow = ''; 
+  // Aseguramos la limpieza de clones por si acaso
+  $$('.hero-clone').forEach(el => el.remove());
+}
+function prevItem(){ lastClickedElement=null; if(currentIndex>0){ currentIndex--; showViewer(); } }
+function nextItem(){ 
+  lastClickedElement=null;
+  if(currentIndex < activeList.length-1){ 
+    currentIndex++; showViewer(); 
+  } else { 
+    const more = pool[rand(pool.length)]; 
+    activeList.push(more); 
+    currentIndex++; 
+    showViewer(); 
+  } 
+}
 vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+prevBtn.addEventListener('click', prevItem);
+nextBtn.addEventListener('click', nextItem);
+
 
 /* ---------- Panel open/close ---------- */
 function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
@@ -458,6 +587,8 @@ fab.addEventListener('click', ()=>{
     const b2 = document.createElement('button'); b2.className='bubble'; b2.innerHTML='🖼️'; b2.title='Galería'; b2.onclick = ()=> { alert('Demo: Crear publicación (demo)'); radials.classList.remove('show'); };
     const b3 = document.createElement('button'); b3.className='bubble'; b3.innerHTML='🎬'; b3.title='Short'; b3.onclick = ()=> { alert('Demo: Crear short (demo)'); radials.classList.remove('show'); };
     radials.appendChild(b1); radials.appendChild(b2); radials.appendChild(b3);
+    // Aplicar ripple a las burbujas
+    [b1, b2, b3].forEach(el => el.addEventListener('click', applyRipple));
   }
 });
 
@@ -510,7 +641,7 @@ function populateSearchMini(q){
     const item = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
+    d.addEventListener('click', (e)=>{ openViewerByItem(item, d); closeSearchModal(); });
     searchMini.appendChild(d);
   }
 }
@@ -523,7 +654,7 @@ function openMyModal(){
     const it = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
-    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
+    d.addEventListener('click', (e)=>{ openViewerByItem(it, d); closeMyModal(); });
     myGrid.appendChild(d);
   }
   myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
@@ -546,6 +677,41 @@ window.addEventListener('scroll', ()=>{
   }
 });
 
+/* ---------- 3. Microinteracción Ripple (JS) ---------- */
+function applyRipple(e){
+  const el = this;
+  if (el.dataset.rippleEnabled) return; // Evitar doblemente en botones ya configurados
+  
+  const ripple = document.createElement('span');
+  const size = Math.max(el.clientWidth, el.clientHeight);
+  const rect = el.getBoundingClientRect();
+  
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+  ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+  
+  ripple.classList.add('ripple');
+  
+  // Si el elemento es un nav-item o un card-small (sin overflow:hidden), debe tener position:relative
+  if(getComputedStyle(el).position === 'static'){
+    el.style.position = 'relative';
+  }
+  
+  el.appendChild(ripple);
+  
+  // Limpieza
+  ripple.addEventListener('animationend', ()=> ripple.remove());
+}
+
+// Aplicar el efecto ripple a todos los botones principales al cargar
+document.addEventListener('DOMContentLoaded', ()=>{
+  $$('.icon-btn, .logo-btn, .fab, .bubble, .nav-item').forEach(el=>{
+    // Solo aplicamos el listener, el CSS hace el resto (escala y opacity)
+    el.addEventListener('pointerdown', applyRipple);
+    el.dataset.rippleEnabled = 'true';
+  });
+});
+
 /* ---------- Render initial content ---------- */
 function renderAll(){
   renderTwoRows(trendRow1, trendRow2, trends);
@@ -564,11 +730,6 @@ document.addEventListener('DOMContentLoaded', renderAll);
 
 /* ---------- Accessibility & shortcuts ---------- */
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchModal(); closeMyModal(); } });
-
-/* ---------- Ensure overlay hidden doesn't block touch ----------
-   overlay and panel pointer-events are toggled via classes.
-   Also ensure we don't leave body overflow hidden accidentally.
------------------------------------------------------------------ */
 
 /* End of script */
 </script>
