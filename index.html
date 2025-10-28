@@ -1,1052 +1,576 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Juego de Combate 3D Pro</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
-        #holder { position: absolute; width: 100%; height: 100%; top: 0; left: 0; }
-        #loading {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fff; font-size: 24px; z-index: 10; text-align: center;
-        }
-        #hud, #componentes {
-            position: absolute; bottom: 10px; left: 10px; color: #fff; background: rgba(0, 0, 0, 0.6);
-            padding: 8px 12px; border-radius: 5px; font-size: 16px; line-height: 1.5; z-index: 5;
-            pointer-events: none;
-        }
-        #componentes { left: auto; right: 10px; }
-        #fps { position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(0, 0, 0, 0.6); padding: 5px; border-radius: 3px; z-index: 5; font-size: 14px; }
-        .control-pad {
-            position: absolute; bottom: 20px;
-            width: 150px; height: 150px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3);
-            display: flex; justify-content: center; align-items: center;
-            touch-action: none;
-        }
-        #stick {
-            width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 255, 255, 0.5);
-            transition: transform 0.05s;
-            pointer-events: none;
-        }
-        #left-pad { left: 20px; }
-        #right-buttons { position: absolute; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .action-button {
-            width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 0, 0, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.5); color: white;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 14px; font-weight: bold; user-select: none;
-            transition: opacity 0.3s;
-        }
-        #fire-button { background: rgba(0, 255, 0, 0.6); }
-        #missile-button { background: rgba(0, 0, 255, 0.8); }
-        .reloading {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        .reloading::after {
-            content: attr(data-cooldown);
-            position: absolute;
-            font-size: 10px;
-            bottom: 5px;
-            color: #ccc;
-        }
-    </style>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SinFiltro — Premium (Móvil)</title>
+<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  /* ================= VARS (mantengo paleta aprobada) ================= */
+  :root{
+    --bg-1:#05060a; --bg-2:#071226;
+    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
+    --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.04);
+    --radius:14px; --trans:260ms;
+    --text:#eaf7ff;
+  }
+  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
+  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
+
+  /* ================= keep UI identical to approved design ================= */
+  .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
+    radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
+    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
+  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+
+  /* Top header */
+  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
+  .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
+  .left-ctrl{display:flex;align-items:center;gap:12px}
+  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
+  .icon-btn:active{transform:scale(.96)}
+  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
+  .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
+
+  /* Main content uses native body scrolling (fixes mobile touch) */
+  main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
+  .container{padding:12px}
+
+  /* Hero */
+  .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+  .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
+  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+  /* Section */
+  .section{margin-top:16px}
+  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
+  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+
+  /* Horizontal two-row scrollers (kept visuals) */
+  .h-stack{display:flex;flex-direction:column;gap:10px}
+  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+  .h-row::-webkit-scrollbar{display:none}
+  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
+  .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
+  .card-small .meta{position:relative;z-index:6}
+  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
+  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
+  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+
+  /* Grid (vertical infinite) */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
+  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
+  .grid img{width:100%;height:150px;object-fit:cover}
+  .grid .body{padding:8px;color:var(--text)}
+  .grid .title{font-weight:700}
+  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+
+  /* FAB + bottom nav */
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
+  .radials{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;display:flex;flex-direction:column;gap:12px;align-items:center;z-index:189;pointer-events:none;opacity:0;transition:opacity .18s}
+  .radials.show{opacity:1;pointer-events:auto}
+  .bubble{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(0,0,0,0.5);border:none}
+  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+
+  /* Panel & overlay (menu lateral) */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
+  .overlay.show{display:block;pointer-events:auto;opacity:1}
+  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
+  .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
+  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+
+  /* Viewer (immersive) */
+  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
+  .viewer.show{display:flex}
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,0.8)}
+  .viewer img,.viewer video{width:100%;height:auto;display:block}
+  .viewer .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
+
+  /* Search modal & MyVideos modal */
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
+  .modal.show{display:block}
+  .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
+  .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .mini-thumb img{width:100%;height:100%;object-fit:cover}
+  .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
+
+  /* Small screens */
+  @media (max-width:420px){
+    .card-small{min-width:150px;height:100px}
+    .grid img{height:120px}
+    .fab{width:64px;height:64px}
+    .panel{width:92%;left:4%}
+  }
+
+  /* fallback when backdrop-filter not supported */
+  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
+  }
+
+  /* animation */
+  .fade-up{animation:fadeUp .48s cubic-bezier(.2,.9,.2,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body>
+  <div class="bg-anim" aria-hidden="true"></div>
 
-    <div id="holder">
-        <div id="loading">Cargando experiencia 3D...</div>
+  <header>
+    <div class="header-inner">
+      <div class="left-ctrl">
+        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
+        <button class="logo-btn" id="brandBtn"><span class="logo">SinFiltro</span></button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
+        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
+      </div>
     </div>
-    
-    <div id="hud">
-        SALUD: <span id="health-value">100</span>%<br>
-        VELOCIDAD: <span id="speed-value">0.0</span> km/h<br>
-        MISILES: <span id="missiles-value">3</span>
+  </header>
+
+  <!-- overlay + panel -->
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+  <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
+    <div style="display:flex;align-items:center;gap:8px">
+      <strong>Cuenta</strong>
+      <button id="closePanel" class="panel-close panel-action" style="margin-left:auto">✕</button>
     </div>
-    
-    <div id="componentes">
-        MOTOR: <span id="motor-health">100</span>%<br>
-        CHASIS: <span id="chasis-health">100</span>%
+    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
+    <nav style="display:flex;flex-direction:column;gap:8px">
+      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
+      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
+      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
+      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mis videos</button>
+      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
+      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+    </nav>
+  </aside>
+
+  <!-- main content uses body scroll -->
+  <main>
+    <div class="container">
+      <section class="hero fade-up" aria-label="presentación">
+        <h1>Descubre lo auténtico</h1>
+        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
+      </section>
+
+      <!-- Tendencias -->
+      <section class="section fade-up" aria-label="tendencias">
+        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1"></div>
+          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2"></div>
+        </div>
+      </section>
+
+      <!-- Recomendados -->
+      <section class="section fade-up" aria-label="recomendados">
+        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1"></div>
+          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2"></div>
+        </div>
+      </section>
+
+      <!-- Antes visto -->
+      <section class="section fade-up" aria-label="antes visto">
+        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
+        <div class="h-stack">
+          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1"></div>
+          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2"></div>
+        </div>
+      </section>
+
+      <!-- Explorar grid -->
+      <section class="section fade-up" aria-label="explorar">
+        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
+        <div id="gridFeed" class="grid" aria-live="polite"></div>
+      </section>
     </div>
+  </main>
 
-    <div id="left-pad" class="control-pad">
-        <div id="stick"></div>
+  <!-- FAB + radial bubbles -->
+  <div id="radials" class="radials" aria-hidden="true"></div>
+  <button id="fab" class="fab" aria-label="Crear">＋</button>
+
+  <nav class="bottom-nav" role="navigation" aria-label="navegación">
+    <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
+    <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
+    <div style="width:78px"></div>
+    <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
+    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Tus videos</div></div>
+  </nav>
+
+  <!-- viewer modal -->
+  <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
+    <div class="card" style="position:relative;">
+      <div id="viewerInner"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
+        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
+        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
+        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+      </div>
     </div>
-    <div id="right-buttons">
-        <div id="fire-button" class="action-button">FUEGO</div>
-        <div id="missile-button" class="action-button" data-cooldown="Listo">MISIL</div>
+  </div>
+
+  <!-- Search modal (miniatures) -->
+  <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
+    <div class="head">
+      <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
+      <button id="closeSearch" class="icon-btn">✕</button>
     </div>
-    <div id="fps">FPS: 0</div>
-
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-
-        // =========================================================================
-        // == CONFIGURACIÓN GLOBAL                                                ==
-        // =========================================================================
-
-        const SHADOWS_ENABLED = true;
-        const BLOOM_ENABLED = true; 
-        const MISSILE_COOLDOWN_MS = 5000; // Recarga de 5 segundos
-
-        // =========================================================================
-        // == CLASE CARCONTROLLER (Representa el vehículo)                         ==
-        // =========================================================================
-
-        class CarController extends THREE.Group {
-            constructor(type = 'Porsche-Pro', isAI = false) { // Usamos 'Porsche-Pro' como tipo por defecto
-                super();
-                this.userData = {
-                    health: 100,
-                    maxHealth: 100,
-                    speed: 0.0,
-                    maxSpeed: 0.25,
-                    rotSpeed: 0.05,
-                    isDestroyed: false,
-                    isAI: isAI,
-                    gunOffsets: [new THREE.Vector3(0.5, 0.5, -2.5), new THREE.Vector3(-0.5, 0.5, -2.5)],
-                    missileOffset: new THREE.Vector3(0, 1.1, -2.0), // Posición superior para el misil
-                    missiles: 3,
-                    maxMissiles: 3,
-                    color: isAI ? 0x00ff00 : 0x2A4C8A // Azul oscuro metalizado
-                };
-                
-                this.components = {
-                    motor: 100,
-                    chasis_frontal: 100,
-                    ruedas_traseras: 100
-                };
-
-                // --- Geometría del Porsche Redondeado ---
-                const bodyGeo = new THREE.BoxGeometry(2.0, 1.0, 4.0);
-                const bodyMat = new THREE.MeshStandardMaterial({ 
-                    color: this.userData.color, 
-                    metalness: 0.8, 
-                    roughness: 0.2 
-                });
-                
-                // Simulación de forma redondeada usando un cilindro y una caja
-                const mainBody = new THREE.Mesh(bodyGeo, bodyMat);
-                mainBody.position.y = 0.5;
-                
-                // Cilindro para la forma redondeada del techo (estilo Porsche)
-                const domeGeo = new THREE.CylinderGeometry(1.0, 1.2, 3.0, 12, 1, true);
-                const dome = new THREE.Mesh(domeGeo, bodyMat);
-                dome.position.y = 1.0;
-                dome.rotation.x = Math.PI / 2;
-                dome.scale.z = 0.5; // Comprimir para que parezca un techo redondeado bajo
-                
-                // Usamos un Group para contener la geometría
-                const visualBody = new THREE.Group();
-                visualBody.add(mainBody);
-                visualBody.add(dome);
-                
-                if(SHADOWS_ENABLED) { 
-                    mainBody.castShadow = true; mainBody.receiveShadow = true; 
-                    dome.castShadow = true; dome.receiveShadow = true; 
-                }
-                this.add(visualBody);
-
-
-                const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 12);
-                wheelGeo.rotateX(Math.PI / 2);
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.1, roughness: 0.9 });
-
-                // Ruedas (simples)
-                this.wheels = [];
-                const wheelPositions = [
-                    [1, 0.4, 1.5], [-1, 0.4, 1.5],
-                    [1, 0.4, -1.5], [-1, 0.4, -1.5]
-                ];
-                for(const pos of wheelPositions) {
-                    const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-                    wheel.position.set(pos[0], pos[1], pos[2]);
-                    if(SHADOWS_ENABLED) wheel.castShadow = true;
-                    this.add(wheel);
-                    this.wheels.push(wheel);
-                }
-
-                // Ajustes por tipo de vehículo
-                if (type === 'Porsche-Pro') {
-                    this.userData.maxSpeed = 0.30;
-                    this.userData.rotSpeed = 0.06;
-                    this.userData.color = 0x2A4C8A;
-                    bodyMat.color.setHex(0x2A4C8A);
-                } else if (type === 'Drift-V') {
-                    this.userData.maxSpeed = 0.35;
-                    this.userData.rotSpeed = 0.08;
-                    this.userData.color = 0xAA00AA;
-                    bodyMat.color.setHex(0xAA00AA);
-                } else if (type === 'Traffic') {
-                    this.userData.maxSpeed = 0.20;
-                    this.userData.rotSpeed = 0.04;
-                    this.userData.color = 0xAAAAAA;
-                    bodyMat.color.setHex(0xAAAAAA);
-                }
-            }
-
-            getPhysicsModifier() {
-                // Modificadores basados en el estado de los componentes
-                let maxSpeedMod = this.components.motor / 100;
-                let rotSpeedMod = 1.0;
-                let turnPenalty = 0;
-
-                if (this.components.ruedas_traseras < 50) {
-                    rotSpeedMod *= 0.5; // Gira más lento si las ruedas están dañadas
-                    turnPenalty = 0.02; // Desviación en la dirección
-                }
-                if (this.components.chasis_frontal < 50) {
-                    maxSpeedMod *= 0.8;
-                }
-
-                return { maxSpeedMod, rotSpeedMod, turnPenalty };
-            }
-
-            update(dt) {
-                // Simulación de arrastre simple para vehículos AI/Tráfico
-                this.userData.speed *= 0.98;
-
-                const physics = this.getPhysicsModifier();
-                this.userData.speed = Math.max(-this.userData.maxSpeed * 0.5 * physics.maxSpeedMod, Math.min(this.userData.maxSpeed * physics.maxSpeedMod, this.userData.speed));
-
-                const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(this.quaternion);
-                this.position.add(fwd.multiplyScalar(this.userData.speed * dt * 0.82));
-                
-                // Animación de ruedas (simple)
-                for(const wheel of this.wheels) {
-                    wheel.rotation.z += this.userData.speed * 2 * dt;
-                }
-            }
-            
-            destroy() {
-                this.userData.isDestroyed = true;
-                this.userData.speed = 0;
-                // Cambio visual a destrozado
-                this.children[0].children[0].material.color.setHex(0x333333); // MainBody
-                this.children[0].children[1].material.color.setHex(0x333333); // Dome
-                // Gira el coche y déjalo caer un poco
-                this.rotation.z = Math.PI/10;
-                this.position.y = 0.1;
-            }
-        }
-
-        // =========================================================================
-        // == CLASE MISSILE (Misil con seguimiento simple)                          ==
-        // =========================================================================
-        
-        class Missile extends THREE.Group {
-            constructor() {
-                super();
-                this.userData = {
-                    dir: new THREE.Vector3(),
-                    speed: 1.5,
-                    damage: 50,
-                    owner: null,
-                    targetCar: null,
-                    isFriendly: false,
-                    _spawnTime: 0
-                };
-
-                const bodyGeo = new THREE.CylinderGeometry(0.1, 0.25, 1.5, 8);
-                const bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.1 });
-                this.body = new THREE.Mesh(bodyGeo, bodyMat);
-                this.body.rotation.x = Math.PI / 2; // Orientación
-                this.add(this.body);
-                
-                // Luz de Flama para efecto de rastro (CRÍTICO para el Bloom)
-                this.userData.flameLight = new THREE.PointLight(0xffaa00, 30, 5); // Intensidad alta
-                this.userData.flameLight.position.set(0, 0, 0.75);
-                this.add(this.userData.flameLight);
-                
-                if(SHADOWS_ENABLED) this.body.castShadow = true;
-                
-                this.visible = false;
-            }
-
-            updateGuidance(dt) {
-                if (!this.userData.targetCar || this.userData.targetCar.userData.isDestroyed) {
-                    this.userData.speed *= 0.99; // Si pierde objetivo, pierde velocidad
-                    return;
-                }
-
-                // Lógica simple de seguimiento proporcional (navegación)
-                const targetPos = this.userData.targetCar.position.clone();
-                const currentDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.quaternion).normalize();
-                const toTarget = targetPos.sub(this.position).normalize();
-
-                // Interpola la dirección actual hacia la dirección del objetivo
-                // El '0.05 * dt' controla la velocidad de giro (maniobrabilidad)
-                const newDir = currentDir.lerp(toTarget, 0.05 * dt); 
-                this.userData.dir.copy(newDir);
-                
-                // Alinea el misil a la nueva dirección
-                const targetQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), newDir);
-                this.quaternion.slerp(targetQuaternion, 0.2 * dt);
-                
-                // Acelera ligeramente hasta un máximo
-                this.userData.speed = Math.min(3.5, this.userData.speed + 0.02 * dt);
-            }
-        }
-
-
-        // =========================================================================
-        // == VARIABLES Y FUNCIONES DE GESTIÓN DE POOLS                           ==
-        // =========================================================================
-
-        let renderer = null;
-        let composer = null;
-        let isFiring = false;
-        let fireInterval = null;
-        let OBSTACLES = [];
-
-        let PLAYER_CAR = null;
-        const AI_CARS = [];
-        const TRAFFIC_CARS = [];
-        const BULLET_COOLDOWN_MS = 160;
-        const CITY_SIZE = 400;
-        const halfCity = CITY_SIZE / 2;
-        let missileCooldownTimer = 0;
-        let bulletCooldownTimer = 0;
-
-
-        const bulletPool = [];
-        const activeBullets = [];
-        const maxBullets = 120;
-        
-        const impactPool = [];
-        const activeImpacts = [];
-        const maxImpacts = 50;
-        const IMPACT_DURATION = 200;
-
-        const missilePool = [];
-        const activeMissiles = [];
-        const maxMissiles = 10;
-        const MAX_MISSILES_PLAYER = 3;
-
-        // --- Balas ---
-        function getBullet() {
-            const bullet = bulletPool.find(b => !b.visible);
-            if (bullet) { 
-                bullet.visible = true; 
-                bullet.userData._spawnTime = performance.now(); 
-                activeBullets.push(bullet); 
-            }
-            return bullet;
-        }
-        function releaseBullet(b) {
-            b.visible = false;
-            b.position.set(0, -9999, 0);
-            b.userData.dir.set(0,0,0);
-            const index = activeBullets.indexOf(b);
-            if (index > -1) activeBullets.splice(index, 1);
-        }
-        function spawnBulletsFromCar(targetCar, dir, offsets = null, isFriendly = false){
-            const offs = offsets || (targetCar.userData.gunOffsets || []);
-            for(const off of offs){
-                const b = getBullet();
-                if(!b) break;
-                const origin = targetCar.position.clone().add(off.clone().applyQuaternion(targetCar.quaternion));
-                b.position.copy(origin);
-                b.userData.dir.copy(dir);
-                b.userData.isFriendly = isFriendly;
-                b.userData.owner = targetCar;
-            }
-        }
-        
-        // --- Misiles ---
-        function getMissile() {
-            const missile = missilePool.find(m => !m.visible);
-            if (missile) { 
-                missile.visible = true; 
-                missile.userData._spawnTime = performance.now(); 
-                missile.userData.speed = 1.0;
-                missile.userData.flameLight.visible = true;
-                activeMissiles.push(missile); 
-            }
-            return missile;
-        }
-        function releaseMissile(m) {
-            m.visible = false;
-            m.position.set(0, -9999, 0);
-            m.userData.dir.set(0,0,0);
-            m.userData.targetCar = null;
-            m.userData.flameLight.visible = false;
-            const index = activeMissiles.indexOf(m);
-            if (index > -1) activeMissiles.splice(index, 1);
-        }
-        function spawnMissileFromCar(targetCar, isFriendly = false, target = null) {
-            if(!targetCar.userData.missileOffset) return false;
-
-            const m = getMissile();
-            if(!m) return false;
-
-            const origin = targetCar.position.clone().add(targetCar.userData.missileOffset.clone().applyQuaternion(targetCar.quaternion));
-            const dir = new THREE.Vector3(0,0,-1).applyQuaternion(targetCar.quaternion).normalize();
-
-            m.position.copy(origin);
-            m.userData.dir.copy(dir);
-            m.userData.isFriendly = isFriendly;
-            m.userData.owner = targetCar;
-            m.userData.targetCar = target; // El objetivo puede ser null al inicio
-
-            return true;
-        }
-
-        // --- Impactos ---
-        function getImpact(){
-            const impact = impactPool.find(b => !b.visible);
-            if(impact){ 
-                impact.visible = true; 
-                impact.userData.spawnTime = performance.now();
-                activeImpacts.push(impact); 
-            }
-            return impact;
-        }
-        function releaseImpact(impact) {
-            impact.visible = false;
-            impact.position.set(0, -9999, 0);
-            impact.scale.setScalar(1.0);
-            impact.userData.mat.opacity = 1.0;
-            impact.userData.mat.emissiveIntensity = 10;
-            
-            const index = activeImpacts.indexOf(impact);
-            if (index > -1) activeImpacts.splice(index, 1);
-        }
-        function createImpact(position, scale = 1.0, color = 0xff3333, intensity = 10){
-            const impact = getImpact();
-            if(impact){
-                impact.position.copy(position);
-                impact.userData.spawnTime = performance.now();
-                impact.scale.setScalar(scale);
-                
-                impact.userData.mat.opacity = 1.0;
-                impact.userData.mat.emissiveIntensity = intensity;
-                impact.userData.mat.color.setHex(color);
-                impact.userData.mat.emissive.setHex(color);
-            }
-        }
-        function updateImpacts(now){
-            for(let i = activeImpacts.length - 1; i >= 0; i--){
-                const impact = activeImpacts[i];
-                const age = now - impact.userData.spawnTime;
-                
-                if(age > IMPACT_DURATION){
-                    releaseImpact(impact);
-                } else {
-                    // Desvanecimiento y escala
-                    const alpha = 1.0 - (age / IMPACT_DURATION);
-                    impact.userData.mat.opacity = alpha;
-                    impact.scale.setScalar(1.0 + (1.0 - alpha) * 2.0); // Crece
-                    impact.userData.mat.emissiveIntensity = alpha * 10;
-                }
-            }
-        }
-
-
-        // =========================================================================
-        // == LÓGICA DE IA Y JUEGO                                                ==
-        // =========================================================================
-
-        const TEMP_VECTOR = new THREE.Vector3();
-
-        function updateAICars(dt, target) {
-            for(const aiCar of AI_CARS) {
-                if(aiCar.userData.isDestroyed) continue;
-
-                // Simple persecución
-                const toTarget = target.position.clone().sub(aiCar.position);
-                const distance = toTarget.length();
-                toTarget.normalize();
-
-                const currentFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(aiCar.quaternion).normalize();
-                const angle = currentFwd.angleTo(toTarget);
-
-                // Gira
-                if (angle > 0.1) {
-                    const cross = new THREE.Vector3().crossVectors(currentFwd, toTarget);
-                    aiCar.rotation.y += Math.sign(cross.y) * aiCar.userData.rotSpeed * 0.8 * dt;
-                }
-
-                // Acelera
-                if (distance > 20) {
-                    aiCar.userData.speed += 0.015 * dt;
-                } else if (distance < 10) {
-                    aiCar.userData.speed -= 0.01 * dt; // Reduce velocidad
-                }
-
-                // Disparo (simple)
-                if (distance < 50 && angle < 0.2 && bulletCooldownTimer <= 0) {
-                    spawnBulletsFromCar(aiCar, currentFwd, null, false);
-                    bulletCooldownTimer = BULLET_COOLDOWN_MS;
-                }
-                
-                // Misil (IA lo lanza más rápido y con precisión)
-                if(aiCar.userData.missiles > 0 && distance < 100 && Math.random() < 0.005) {
-                    if(spawnMissileFromCar(aiCar, false, target)) {
-                        aiCar.userData.missiles--;
-                    }
-                }
-
-                aiCar.update(dt);
-            }
-        }
-
-        function updateTrafficCars(dt) {
-            for(const trafficCar of TRAFFIC_CARS) {
-                if(trafficCar.userData.isDestroyed) continue;
-
-                // Lógica de tráfico simple: mover hacia adelante y reorientar en el borde
-                if (trafficCar.position.z < -halfCity || trafficCar.position.z > halfCity || trafficCar.position.x < -halfCity || trafficCar.position.x > halfCity) {
-                    // Si llega al borde, gira 180 grados
-                    trafficCar.rotation.y += Math.PI;
-                    trafficCar.userData.speed = 0.1;
-                } else {
-                    trafficCar.userData.speed = Math.min(trafficCar.userData.maxSpeed, trafficCar.userData.speed + 0.005 * dt);
-                }
-
-                trafficCar.update(dt);
-            }
-        }
-
-        function applyDamage(target, amount, component = 'chasis_frontal'){
-            if(target.userData.isDestroyed) return;
-
-            // Daño al componente
-            if(target.components[component]){
-                target.components[component] -= amount;
-                if(target.components[component] < 0) target.components[component] = 0;
-            }
-
-            // Daño a la salud general
-            target.userData.health -= amount;
-            if(target.userData.health <= 0) {
-                target.userData.health = 0;
-                target.destroy();
-                createImpact(target.position.clone(), 10.0, 0x000000, 0); // Gran impacto visual de destrucción
-            }
-        }
-
-        function checkBulletToObstacleCollisions(position, size, damage = 0, isExplosion = false){
-            for(const obstacle of OBSTACLES){
-                if(
-                    position.x + size.x/2 > obstacle.position.x - obstacle.size.x/2 &&
-                    position.x - size.x/2 < obstacle.position.x + obstacle.size.x/2 &&
-                    position.z + size.z/2 > obstacle.position.z - obstacle.size.z/2 &&
-                    position.z - size.z/2 < obstacle.position.z + obstacle.size.z/2 
-                ){
-                    // Si es una explosión (misil), creamos un impacto grande, simulando que golpeó el edificio/cobertura
-                    if(isExplosion && damage > 0){
-                        createImpact(position.clone(), 3.0, 0xFF7700, 5);
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // =========================================================================
-        // == FUNCIÓN DE INICIALIZACIÓN PRINCIPAL (init)                          ==
-        // =========================================================================
-
-        function init() {
-            (function(){
-                const holder = document.getElementById('holder');
-                const UI_COMP_EL = document.getElementById('componentes');
-                const missileButton = document.getElementById('missile-button');
-                
-                const scene = new THREE.Scene();
-                scene.background = new THREE.Color(0x6e8ca0);
-                scene.fog = null;
-
-                // --- RENDERER ---
-                try {
-                    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                    renderer.shadowMap.enabled = SHADOWS_ENABLED;
-                    if(SHADOWS_ENABLED) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-                    renderer.domElement.style.position = 'absolute';
-                    renderer.domElement.style.top = '0';
-                    renderer.domElement.style.left = '0';
-                    renderer.domElement.style.width = '100%';
-                    renderer.domElement.style.height = '100%';
-                    renderer.domElement.style.zIndex = '0';
-
-                    holder.appendChild(renderer.domElement);
-                    renderer.setClearColor(scene.background);
-
-                    const loadingEl = document.getElementById('loading');
-                    if (loadingEl) loadingEl.style.display = 'none';
-
-                } catch (err) {
-                    console.error('Error FATAL al crear el contexto WebGL:', err);
-                    const loadingEl = document.getElementById('loading');
-                    if (loadingEl) loadingEl.textContent = '¡Error! WebGL no soportado o falló la inicialización.';
-                    return;
-                }
-
-                const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 2000);
-                camera.position.set(0, 12, 24);
-
-                if(BLOOM_ENABLED){
-                    try{
-                        composer = new EffectComposer(renderer);
-                        composer.addPass(new RenderPass(scene, camera));
-                        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.6, 0.85); 
-                        bloomPass.renderToScreen = true;
-                        composer.addPass(bloomPass);
-                    } catch(e){
-                        console.warn("Fallo al inicializar EffectComposer o Bloom. Renderizado simple activo.", e);
-                        composer = null;
-                    }
-                }
-
-                // --- Luces, Entorno y Suelo (Con Más Calles/Cobertura) ---
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-                dirLight.position.set(200, 400, 300);
-                dirLight.castShadow = SHADOWS_ENABLED;
-                if(SHADOWS_ENABLED){ dirLight.shadow.mapSize.width = 1024; dirLight.shadow.mapSize.height = 1024; }
-                dirLight.shadow.camera.left = -CITY_SIZE; dirLight.shadow.camera.right = CITY_SIZE; dirLight.shadow.camera.top = CITY_SIZE; dirLight.shadow.camera.bottom = -CITY_SIZE;
-                dirLight.shadow.bias = -0.0005;
-                scene.add(dirLight);
-                scene.add(new THREE.HemisphereLight(0xffffff, 0x080820, 1.0));
-                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-                const texLoader = new THREE.TextureLoader();
-                const asphaltTex = texLoader.load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
-                asphaltTex.wrapS = asphaltTex.wrapT = THREE.RepeatWrapping; asphaltTex.repeat.set(30, 30);
-                const roadMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.9, metalness: 0.2, map: asphaltTex });
-                const ground = new THREE.Mesh(new THREE.PlaneGeometry(CITY_SIZE, CITY_SIZE, 1, 1), roadMat);
-                ground.rotation.x = -Math.PI/2; ground.position.y = 0;
-                if(SHADOWS_ENABLED) ground.receiveShadow = true;
-                scene.add(ground);
-                const lineMat = new THREE.MeshBasicMaterial({color:0xffff00});
-                const dashedLineGeo = new THREE.PlaneGeometry(0.2, 2);
-                for(let i = -CITY_SIZE/2; i < CITY_SIZE/2; i += 6) {
-                    const line = new THREE.Mesh(dashedLineGeo, lineMat);
-                    line.position.set(0, 0.01, i); line.rotation.x = -Math.PI/2; scene.add(line);
-                }
-                const buildingTex = texLoader.load('https://threejs.org/examples/textures/brick_diffuse.jpg');
-                buildingTex.wrapS = buildingTex.wrapT = THREE.RepeatWrapping; buildingTex.repeat.set(8,2);
-                const WALL_THICKNESS = 10; const WALL_HEIGHT = 180;
-                const arenaMat = new THREE.MeshStandardMaterial({map: buildingTex, roughness: 0.85, metalness: 0.25});
-                function createWall(x, z, sizeX, sizeZ) {
-                    const wall = new THREE.Mesh(new THREE.BoxGeometry(sizeX, WALL_HEIGHT, sizeZ), arenaMat);
-                    wall.position.set(x, WALL_HEIGHT / 2 + 0.5, z);
-                    if(SHADOWS_ENABLED){ wall.castShadow = true; wall.receiveShadow = true; }
-                    scene.add(wall);
-                    OBSTACLES.push({ position: wall.position.clone(), size: new THREE.Vector3(sizeX, WALL_HEIGHT, sizeZ) });
-                }
-                // Muros (límites del mapa)
-                createWall(0, -CITY_SIZE/2 - WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
-                createWall(0, CITY_SIZE/2 + WALL_THICKNESS/2, CITY_SIZE + WALL_THICKNESS * 2, WALL_THICKNESS);
-                createWall(CITY_SIZE/2 + WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
-                createWall(-CITY_SIZE/2 - WALL_THICKNESS/2, 0, WALL_THICKNESS, CITY_SIZE);
-                
-                // Edificios y Cobertura (Más Calles/Obstáculos Tácticos)
-                function createObstacle(x, z, type){
-                    let geo, mat, size;
-                    if(type === 'building'){ 
-                        size = new THREE.Vector3(20, 30, 20); 
-                        geo = new THREE.BoxGeometry(size.x, size.y, size.z); 
-                        mat = new THREE.MeshStandardMaterial({color: 0x444488, metalness: 0.5, roughness: 0.5}); // Edificio oscuro/futurista
-                    } else { 
-                        size = new THREE.Vector3(4, 3, 10); 
-                        geo = new THREE.BoxGeometry(size.x, size.y, size.z); 
-                        mat = new THREE.MeshStandardMaterial({color: 0xcc9900, metalness: 0.2, roughness: 0.7}); 
-                    }
-                    const obstacle = new THREE.Mesh(geo, mat);
-                    obstacle.position.set(x, size.y / 2, z);
-                    if(SHADOWS_ENABLED){ obstacle.castShadow = true; obstacle.receiveShadow = true; }
-                    scene.add(obstacle);
-                    OBSTACLES.push({ position: obstacle.position.clone(), size: size });
-                }
-                createObstacle(50, 0, 'container'); createObstacle(-50, 0, 'container'); 
-                createObstacle(0, 50, 'building'); // Edificio para cobertura
-                createObstacle(0, -50, 'building'); // Edificio para cobertura
-                createObstacle(70, 70, 'building');
-                createObstacle(-70, -70, 'building');
-                createObstacle(40, -40, 'container'); 
-                createObstacle(-40, 40, 'container');
-
-                // ---------- VEHÍCULOS ----------
-                const car = new CarController('Porsche-Pro', false); // Porsche Redondeado para el jugador
-                car.position.set(0, 0, 0);
-                scene.add(car);
-                PLAYER_CAR = car;
-
-                const ai1 = new CarController('Sport', true);
-                ai1.position.set(20, 0, 50); ai1.rotation.y = Math.PI; scene.add(ai1); AI_CARS.push(ai1);
-
-                const ai2 = new CarController('Drift-V', true);
-                ai2.position.set(-20, 0, -50); ai2.rotation.y = 0; scene.add(ai2); AI_CARS.push(ai2);
-
-                for(let i = 0; i < 5; i++){
-                    const traffic = new CarController('Traffic', true);
-                    traffic.position.set((Math.random() < 0.5 ? 1 : -1) * 3, 0, Math.random() * CITY_SIZE*0.8 - CITY_SIZE*0.4);
-                    traffic.rotation.y = Math.random() < 0.5 ? 0 : Math.PI;
-                    traffic.userData.maxSpeed *= (0.8 + Math.random() * 0.4);
-                    TRAFFIC_CARS.push(traffic);
-                    scene.add(traffic);
-                }
-
-                const state = { forward: 0, turn: 0, turbo: false, speed: car.userData.speed, health: car.userData.health, ammo: car.userData.missiles };
-
-                // Setup Pools
-                function setupBulletPool() {
-                    const bulletGeo = new THREE.SphereGeometry(0.18, 8, 8);
-                    const bulletMat = new THREE.MeshBasicMaterial({ color: 0xff4444, emissive: 0xff0000, emissiveIntensity: 6 });
-                    for (let i = 0; i < maxBullets; i++) {
-                        const bullet = new THREE.Mesh(bulletGeo, bulletMat);
-                        bullet.userData.dir = new THREE.Vector3();
-                        bullet.userData.speed = 3.0;
-                        bullet.userData.damage = 15;
-                        bullet.userData.owner = null;
-                        bullet.visible = false;
-                        if(SHADOWS_ENABLED) bullet.castShadow = true;
-                        scene.add(bullet);
-                        bulletPool.push(bullet);
-                    }
-                }
-                function setupMissilePool() {
-                    for (let i = 0; i < maxMissiles; i++) {
-                        const missile = new Missile();
-                        missile.userData.owner = null;
-                        missile.visible = false;
-                        scene.add(missile);
-                        missilePool.push(missile);
-                    }
-                }
-                function setupImpactPool(){
-                    const impactGeo = new THREE.SphereGeometry(0.2, 6, 6);
-                    const impactMat = new THREE.MeshBasicMaterial({color:0xff3333, emissive: 0xff0000, transparent: true, opacity: 1.0, emissiveIntensity: 10});
-                    for(let i=0; i<maxImpacts; i++){
-                        const impact = new THREE.Mesh(impactGeo, impactMat.clone());
-                        impact.userData.mat = impact.material;
-                        impact.userData.spawnTime = 0;
-                        impact.visible = false;
-                        scene.add(impact);
-                        impactPool.push(impact);
-                    }
-                }
-                
-                setupBulletPool();
-                setupMissilePool();
-                setupImpactPool();
-                
-                // ** === CORRECCIÓN CRÍTICA DE FREEZE (Pre-compilación) === **
-                if(renderer){
-                    console.log("Forzando pre-compilación de shaders para evitar el 'freeze' inicial. 🛠️");
-                    const tempBullet = getBullet(); const tempMissile = getMissile(); const tempImpact = getImpact();
-                    if(composer) { composer.render(); } else { renderer.compile(scene, camera); }
-                    if(tempBullet) releaseBullet(tempBullet); if(tempMissile) releaseMissile(tempMissile); if(tempImpact) releaseImpact(tempImpact);
-                    console.log("Pre-compilación completa. El juego está listo para la acción fluida. 🚀");
-                }
-                // ** === FIN DE CORRECCIÓN CRÍTICA DE FREEZE === **
-
-                function checkCollisions(dt){
-                    const targetCars = [...AI_CARS, ...TRAFFIC_CARS];
-
-                    // 1. Colisiones de Balas
-                    for(let i=activeBullets.length-1;i>=0;i--){
-                        const bullet = activeBullets[i];
-                        let hit = false;
-                        
-                        // Si golpea un borde o un obstáculo/edificio (COBERTURA)
-                        if (Math.abs(bullet.position.x) > halfCity || Math.abs(bullet.position.z) > halfCity) { hit = true; }
-                        else if (checkBulletToObstacleCollisions(bullet.position.clone(), new THREE.Vector3(0.2, 0.2, 0.2))) { hit = true; }
-                        
-                        else {
-                            const currentTargets = [...targetCars];
-                            if(!bullet.userData.isFriendly) currentTargets.push(PLAYER_CAR); 
-
-                            for(const target of currentTargets){
-                                if(target.userData.isDestroyed || target === bullet.userData.owner) continue;
-
-                                if(target.position.distanceTo(bullet.position) < 3.0 && target.userData.health > 0){
-                                    const dot = new THREE.Vector3().subVectors(target.position, bullet.position).normalize().dot(new THREE.Vector3(0,0,-1).applyQuaternion(target.quaternion));
-                                    let componentHit = 'chasis_frontal';
-                                    if (target.components.motor && dot < -0.5) { componentHit = 'motor'; }
-                                    else if (target.components.ruedas_traseras && dot > -0.5 && dot < 0.5) { componentHit = 'ruedas_traseras'; }
-
-                                    createImpact(bullet.position.clone());
-                                    applyDamage(target, bullet.userData.damage, componentHit);
-                                    hit = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (hit){ releaseBullet(bullet); }
-                    }
-                    
-                    // 2. Colisiones de Misiles (con Explosión y Detección de Cobertura)
-                    for(let i=activeMissiles.length-1;i>=0;i--){
-                        const missile = activeMissiles[i];
-                        let hit = false;
-                        
-                        // ** CORRECCIÓN: Evitar auto-colisión inmediata (durante los primeros 300ms) **
-                        if((performance.now() - missile.userData._spawnTime) < 300) continue; 
-
-                        // Si golpea un borde o un obstáculo/edificio (COBERTURA)
-                        if (Math.abs(missile.position.x) > halfCity || Math.abs(missile.position.z) > halfCity) { hit = true; }
-                        else if (checkBulletToObstacleCollisions(missile.position.clone(), new THREE.Vector3(0.5, 0.5, 1.0), missile.userData.damage, true)) { hit = true; } // 'true' para explosión
-                        
-                        else {
-                            const currentTargets = [...targetCars];
-                            if(!missile.userData.isFriendly) currentTargets.push(PLAYER_CAR); 
-
-                            for(const target of currentTargets){
-                                if(target.userData.isDestroyed || target === missile.userData.owner) continue;
-
-                                // La distancia de colisión se aumenta para el misil (área de efecto)
-                                if(target.position.distanceTo(missile.position) < 5.0 && target.userData.health > 0){
-                                    applyDamage(target, missile.userData.damage * 0.8, 'chasis_frontal');
-                                    // Simula la explosión al golpear el coche
-                                    createImpact(missile.position.clone(), 5.0, 0xFF7700, 15);
-                                    hit = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (hit){ releaseMissile(missile); }
-                    }
-                    
-                    // Colisiones del Coche del Jugador con el Borde
-                    if(Math.abs(car.position.x) > halfCity){
-                        car.userData.speed *= -0.5;
-                        car.position.x = car.position.x > 0 ? halfCity : -halfCity;
-                        applyDamage(car, 5, 'chasis_frontal');
-                    }
-                    if(Math.abs(car.position.z) > halfCity){
-                        car.userData.speed *= -0.5;
-                        car.position.z = car.position.z > 0 ? halfCity : -halfCity;
-                        applyDamage(car, 5, 'chasis_frontal');
-                    }
-                    state.health = car.userData.health;
-                }
-
-                function updateCamera(){
-                    const desired = car.position.clone().add(new THREE.Vector3(0,4,12).applyQuaternion(car.quaternion));
-                    camera.position.lerp(desired, 0.15);
-                    camera.lookAt(car.position.clone().add(new THREE.Vector3(0,1.2,0)));
-                }
-
-                function updateHUD(now){
-                    document.getElementById('health-value').textContent = Math.max(0, car.userData.health).toFixed(0);
-                    document.getElementById('speed-value').textContent = (car.userData.speed * 100).toFixed(1);
-                    document.getElementById('missiles-value').textContent = car.userData.missiles;
-
-                    document.getElementById('motor-health').textContent = Math.max(0, car.components.motor).toFixed(0);
-                    document.getElementById('chasis-health').textContent = Math.max(0, car.components.chasis_frontal).toFixed(0);
-                    
-                    // Actualización del botón de misil y recarga
-                    if (missileCooldownTimer > 0) {
-                        const remaining = (missileCooldownTimer / 1000).toFixed(1);
-                        missileButton.classList.add('reloading');
-                        missileButton.setAttribute('data-cooldown', remaining + 's');
-                    } else if (car.userData.missiles <= 0) {
-                        missileButton.classList.add('reloading');
-                        missileButton.setAttribute('data-cooldown', 'AGOTADO');
-                    } else {
-                        missileButton.classList.remove('reloading');
-                        missileButton.setAttribute('data-cooldown', 'Listo');
-                    }
-                }
-
-                // --- Input (Joystick y Botones) ---
-                const stick = { x: 0, y: 0 };
-                const pad = document.getElementById('left-pad');
-                const stickEl = document.getElementById('stick');
-                let padRect = pad.getBoundingClientRect();
-                const maxRadius = padRect.width / 2;
-
-                function updateStick(x, y) {
-                    const dx = x - padRect.left - maxRadius;
-                    const dy = y - padRect.top - maxRadius;
-                    const distance = Math.min(maxRadius, Math.sqrt(dx * dx + dy * dy));
-                    const angle = Math.atan2(dy, dx);
-                    
-                    // Normalizar para el estado (de -1 a 1)
-                    stick.x = Math.cos(angle) * (distance / maxRadius); // Gira
-                    stick.y = -Math.sin(angle) * (distance / maxRadius); // Adelante/Atrás
-
-                    // Mover visualmente el stick
-                    stickEl.style.transform = `translate(${stick.x * (maxRadius - 25)}px, ${-stick.y * (maxRadius - 25)}px)`;
-                }
-
-                function resetStick() {
-                    stick.x = 0; stick.y = 0;
-                    stickEl.style.transform = `translate(0px, 0px)`;
-                }
-
-                pad.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if(e.touches.length > 0) updateStick(e.touches[0].clientX, e.touches[0].clientY);
-                }, { passive: false });
-                pad.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    if(e.touches.length > 0) updateStick(e.touches[0].clientX, e.touches[0].clientY);
-                }, { passive: false });
-                pad.addEventListener('touchend', resetStick);
-                
-                window.addEventListener('resize', () => {
-                    padRect = pad.getBoundingClientRect();
-                    camera.aspect = window.innerWidth / window.innerHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(window.innerWidth, window.innerHeight);
-                    if(composer) composer.setSize(window.innerWidth, window.innerHeight);
-                });
-
-                // --- Botones de Acción ---
-                function startFire() {
-                    if (isFiring) return;
-                    isFiring = true;
-                    if(car.userData.isDestroyed) return;
-                    
-                    const fire = () => {
-                        const currentFwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion).normalize();
-                        spawnBulletsFromCar(car, currentFwd, null, true);
-                    };
-                    
-                    // Dispara inmediatamente y luego usa el intervalo
-                    fire(); 
-                    fireInterval = setInterval(fire, BULLET_COOLDOWN_MS);
-                }
-                function stopFire() {
-                    isFiring = false;
-                    clearInterval(fireInterval);
-                    fireInterval = null;
-                }
-
-                document.getElementById('fire-button').addEventListener('touchstart', startFire);
-                document.getElementById('fire-button').addEventListener('touchend', stopFire);
-                
-                document.getElementById('missile-button').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    if(car.userData.isDestroyed || car.userData.missiles <= 0 || missileCooldownTimer > 0) return;
-                    
-                    // Lógica para encontrar el objetivo más cercano (enemigo más cercano)
-                    const target = AI_CARS.find(ai => !ai.userData.isDestroyed && ai.position.distanceTo(car.position) < 150);
-                    
-                    if(spawnMissileFromCar(car, true, target)) {
-                        car.userData.missiles--;
-                        missileCooldownTimer = MISSILE_COOLDOWN_MS;
-                    }
-                });
-
-                // RENDER LOOP
-                let last = performance.now(); 
-                let frames = 0; 
-                let lastFpsTime = performance.now();
-                
-                function animate(){
-                    requestAnimationFrame(animate);
-
-                    const now = performance.now();
-                    const deltaTimeMs = now - last;
-                    const clampedDeltaMs = Math.min(50, deltaTimeMs); 
-                    const dt = clampedDeltaMs / 16.666; // Factor de tiempo (1.0 = 60 FPS)
-
-                    last = now;
-                    
-                    // Cooldowns
-                    if (missileCooldownTimer > 0) missileCooldownTimer -= clampedDeltaMs;
-                    if (bulletCooldownTimer > 0) bulletCooldownTimer -= clampedDeltaMs;
-
-                    // ** 1. Lógica del Jugador **
-                    if(state.health > 0){
-                        // Usar el stick para la entrada
-                        state.forward = Math.max(-1, Math.min(1, stick.y));
-                        state.turn = Math.max(-1, Math.min(1, stick.x));
-
-                        const physicsMod = car.getPhysicsModifier();
-                        let maxSpeed = car.userData.maxSpeed * physicsMod.maxSpeedMod; 
-
-                        // Aceleración/Desaceleración (usando dt)
-                        if(state.forward > 0.05) car.userData.speed += 0.018 * state.forward * dt;
-                        else if(state.forward < -0.05) car.userData.speed -= 0.03 * (-state.forward) * dt;
-                        else car.userData.speed *= 0.96; // Fricción
-
-                        car.userData.speed = Math.max(-maxSpeed * 0.5, Math.min(maxSpeed, car.userData.speed));
-                        state.speed = car.userData.speed;
-
-                        // Rotación (usando dt)
-                        const currentSpeedFactor = Math.abs(car.userData.speed / car.userData.maxSpeed);
-                        let rotationMultiplier = 1;
-                        if(currentSpeedFactor > 0.6 && Math.abs(state.turn) > 0.4) rotationMultiplier = 0.5 + 0.5 * (1 - Math.abs(state.turn));
-
-                        car.rotation.y += -state.turn * car.userData.rotSpeed * physicsMod.rotSpeedMod * (0.9 + currentSpeedFactor) * dt * rotationMultiplier;
-
-                        // Movimiento (usando dt)
-                        const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(car.quaternion);
-                        car.position.add(fwd.multiplyScalar(car.userData.speed * dt * 0.82));
-                        
-                        // Rotación de ruedas
-                        for(const wheel of car.wheels) {
-                            wheel.rotation.z += car.userData.speed * 2 * dt;
-                        }
-                    }
-                    
-                    // ** 2. Lógica de AI y Tráfico **
-                    updateAICars(dt, PLAYER_CAR);
-                    updateTrafficCars(dt);
-                    
-                    // ** 3. Lógica de Balas y Misiles **
-                    for(let i = activeBullets.length - 1; i >= 0; i--){
-                        const bullet = activeBullets[i];
-                        bullet.position.addScaledVector(bullet.userData.dir, bullet.userData.speed * dt);
-                        if(now - bullet.userData._spawnTime > 3000) releaseBullet(bullet);
-                    }
-                    
-                    for(let i = activeMissiles.length - 1; i >= 0; i--){
-                        const missile = activeMissiles[i];
-                        missile.updateGuidance(dt); 
-                        missile.position.addScaledVector(missile.userData.dir, missile.userData.speed * dt);
-                        if(now - missile.userData._spawnTime > 5000) releaseMissile(missile);
-                    }
-                    
-                    checkCollisions(dt); 
-
-                    // ** 4. Actualizaciones de HUD/Cámara/FPS **
-                    updateImpacts(now);
-                    updateCamera();
-                    updateHUD(now);
-
-                    if(composer){
-                        composer.render();
-                    } else {
-                        renderer.render(scene, camera);
-                    }
-
-                    // FPS Counter
-                    frames++;
-                    if(now - (lastFpsTime || now) >= 1000){
-                        lastFpsTime = now;
-                        document.getElementById('fps').textContent = `FPS: ${frames}`;
-                        frames = 0;
-                    }
-                }
-
-                animate();
-                
-            })();
-        }
-
-        window.onload = init;
-    </script>
+    <div id="searchMini" class="grid-mini"></div>
+  </div>
+
+  <!-- My videos modal (grid preview) -->
+  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Tus videos">
+    <div class="head" style="justify-content:space-between">
+      <strong>Tus videos (demo)</strong>
+      <button id="closeMy" class="icon-btn">✕</button>
+    </div>
+    <div id="myGrid" class="grid-mini"></div>
+  </div>
+
+<script>
+/* =========================
+   SinFiltro — mejoras funcionales (mantener diseño)
+   - FAB burbujas funcionales
+   - Buscador con miniaturas + abrir en viewer
+   - Tus videos mini-grid
+   - Fix theme toggle (fluido)
+   - Ensure overlays do not block touch when hidden
+   - Keep existing optimizations (lazy, drag-to-scroll)
+   ========================= */
+
+/* Helpers */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rand = n => Math.floor(Math.random()*n);
+const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+
+/* DOM refs */
+const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
+const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
+const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
+const gridFeed = $('#gridFeed');
+const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
+const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay');
+const fab = $('#fab'), radials = $('#radials');
+const themeToggle = $('#themeToggle');
+const brandBtn = $('#brandBtn');
+const searchTop = $('#searchTop');
+const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
+const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
+
+/* Data pool (demo) */
+let pool = Array.from({length:160}).map((_,i)=>({
+  id:'p'+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
+  title:['Callejón neon','Atardecer','Retrato','Arte Urbano','Nocturna','Visual'][i%6],
+  likes: rand(9000), comments: rand(1200), views: (rand(900)+100)+'K'
+}));
+
+let trends = pool.slice(0,12);
+let reco = pool.slice(12,24);
+let recent = pool.slice(24,36);
+let grid = pool.slice(36,72);
+
+/* ---------- Lazy loading images (IntersectionObserver) ---------- */
+let imgObserver = null;
+function lazyObserve(root=document){
+  const imgs = root.querySelectorAll('img[data-src]');
+  if('IntersectionObserver' in window){
+    if(!imgObserver){
+      imgObserver = new IntersectionObserver((entries, obs)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            const img = e.target;
+            img.src = img.dataset.src;
+            img.onload = ()=> img.parentElement.classList.remove('skel');
+            img.removeAttribute('data-src');
+            obs.unobserve(img);
+          }
+        });
+      }, {rootMargin:'300px', threshold:0.05});
+    }
+    imgs.forEach(i=> imgObserver.observe(i));
+  } else {
+    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+  }
+}
+
+/* ---------- Create card elements (keeps meta layout) ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+function makeSmallCard(item){
+  const d = document.createElement('div');
+  d.className = 'card-small skel fade-up';
+  d.setAttribute('tabindex','0');
+  d.innerHTML = `
+    <img data-src="${item.src}" alt="${escapeHtml(item.title)}">
+    ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
+    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
+      <div class="meta">
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+      </div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+    </div>
+  `;
+  d.addEventListener('click', ()=> openViewerByItem(item));
+  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
+  return d;
+}
+
+function makeGridCard(item){
+  const a = document.createElement('article');
+  a.className = 'card skel fade-up';
+  a.innerHTML = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}"><div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.addEventListener('click', ()=> openViewerByItem(item));
+  return a;
+}
+
+/* ---------- Render two rows with drag support ---------- */
+function renderTwoRows(row1,row2,items){
+  row1.innerHTML=''; row2.innerHTML='';
+  items.forEach((it,i)=>{
+    const target = (i%2===0)?row1:row2;
+    target.appendChild(makeSmallCard(it));
+  });
+  // ensure rows have enough children
+  [row1,row2].forEach(r=>{
+    if(r.children.length < 6){
+      for(let i=0;i<6;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+    // attach drag-to-scroll for better horizontal experience on mobile
+    enableDragScroll(r);
+  });
+  lazyObserve();
+}
+
+/* ---------- Grid render ---------- */
+function renderGridInitial(){
+  gridFeed.innerHTML = '';
+  grid.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
+  lazyObserve(gridFeed);
+}
+
+/* ---------- Drag-to-scroll helper for horizontal rows ---------- */
+function enableDragScroll(el){
+  if(el.__dragEnabled) return;
+  el.__dragEnabled = true;
+  let startX = 0, scrollLeft = 0;
+  let isTouch = false;
+  el.addEventListener('touchstart', e=>{
+    isTouch = true;
+    startX = e.touches[0].pageX - el.offsetLeft;
+    scrollLeft = el.scrollLeft;
+  }, {passive:true});
+  el.addEventListener('touchmove', e=>{
+    if(!isTouch) return;
+    const x = e.touches[0].pageX - el.offsetLeft;
+    const walk = (x - startX) * 1;
+    el.scrollLeft = scrollLeft - walk;
+  }, {passive:true});
+  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
+
+  // pointer events for desktops/mice
+  let isDown=false;
+  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
+  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
+  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
+}
+
+/* ---------- Viewer modal (touch outside to close) ---------- */
+let activeList=[], currentIndex=0;
+function openViewerByItem(item){
+  // find list and index
+  const lists = [trends,reco,recent,grid,pool];
+  activeList = [];
+  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
+  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
+  showViewer();
+}
+function showViewer(){
+  const it = activeList[currentIndex];
+  viewerInner.innerHTML = '';
+  if(!it) return;
+  if(it.kind === 'video'){
+    const video = document.createElement('video');
+    video.src = it.src;
+    video.controls = true;
+    video.autoplay = false;
+    video.style.maxHeight = '70vh';
+    viewerInner.appendChild(video);
+  } else {
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    viewerInner.appendChild(img);
+  }
+  // show viewer
+  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+  // ensure background overlay doesn't block scroll in viewer inner
+  document.body.style.overflow = 'hidden';
+}
+function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; document.body.style.overflow = ''; }
+function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
+function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
+
+closeViewer.addEventListener('click', closeViewerFunc);
+viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
+
+/* ---------- Panel open/close ---------- */
+function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); }
+function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); });
+closePanelBtn.addEventListener('click', closePanel);
+
+// panel actions
+$$('.panel-item').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    const action = btn.dataset.action;
+    closePanel();
+    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
+    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
+    if(action === 'my'){ openMyModal(); }
+    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
+    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
+  });
+});
+
+/* ---------- FAB radial (bubbles) ---------- */
+fab.addEventListener('click', ()=>{
+  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
+  else {
+    radials.classList.add('show');
+    radials.innerHTML = '';
+    // create bubbles - upload, create post, short
+    const b1 = document.createElement('button'); b1.className='bubble'; b1.innerHTML='📤'; b1.title='Subir'; b1.onclick = ()=> { alert('Demo: Subir archivo (demo)'); radials.classList.remove('show'); };
+    const b2 = document.createElement('button'); b2.className='bubble'; b2.innerHTML='🖼️'; b2.title='Galería'; b2.onclick = ()=> { alert('Demo: Crear publicación (demo)'); radials.classList.remove('show'); };
+    const b3 = document.createElement('button'); b3.className='bubble'; b3.innerHTML='🎬'; b3.title='Short'; b3.onclick = ()=> { alert('Demo: Crear short (demo)'); radials.classList.remove('show'); };
+    radials.appendChild(b1); radials.appendChild(b2); radials.appendChild(b3);
+  }
+});
+
+/* ---------- Theme toggle (robust, avoids heavy repaint) ---------- */
+const THEME_KEY = 'sinfiltro.theme.v3';
+let theme = localStorage.getItem(THEME_KEY) || 'dark';
+function applyTheme(t){
+  // Use rAF to avoid sync layout thrashing
+  requestAnimationFrame(()=>{
+    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
+    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
+  });
+}
+applyTheme(theme);
+themeToggle.addEventListener('click', ()=> {
+  theme = (theme==='dark')?'light':'dark';
+  localStorage.setItem(THEME_KEY, theme);
+  applyTheme(theme);
+});
+
+/* brand click -> home */
+brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+$('#navSearch').addEventListener('click', ()=> openSearchModal());
+$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#navMe').addEventListener('click', ()=> openMyModal());
+
+/* Top search demo */
+searchTop.addEventListener('click', ()=> openSearchModal());
+
+/* ---------- Search modal (miniatures) ---------- */
+function openSearchModal(){
+  populateSearchMini();
+  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
+  // lock background scroll lightly
+  document.body.style.overflow = 'hidden';
+}
+function closeSearchModal(){
+  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
+  searchMini.innerHTML = '';
+  document.body.style.overflow = '';
+}
+closeSearch.addEventListener('click', closeSearchModal);
+searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
+
+function populateSearchMini(q){
+  searchMini.innerHTML = '';
+  // generate 12 thumbnails demo
+  for(let i=0;i<12;i++){
+    const item = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
+    searchMini.appendChild(d);
+  }
+}
+
+/* ---------- My videos modal (grid preview) ---------- */
+function openMyModal(){
+  myGrid.innerHTML = '';
+  // demo: fill with 9 random items (mix images & videos)
+  for(let i=0;i<9;i++){
+    const it = pool[rand(pool.length)];
+    const d = document.createElement('div'); d.className='mini-thumb';
+    d.innerHTML = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
+    myGrid.appendChild(d);
+  }
+  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
+closeMy.addEventListener('click', closeMyModal);
+myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
+
+/* ---------- Infinite vertical load (grid) ---------- */
+let loadingGrid=false;
+window.addEventListener('scroll', ()=>{
+  // when approaching bottom, append grid items
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
+    loadingGrid = true;
+    setTimeout(()=> {
+      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
+      lazyObserve(gridFeed); loadingGrid=false;
+    }, 700);
+  }
+});
+
+/* ---------- Render initial content ---------- */
+function renderAll(){
+  renderTwoRows(trendRow1, trendRow2, trends);
+  renderTwoRows(recoRow1, recoRow2, reco);
+  renderTwoRows(recentRow1, recentRow2, recent);
+  renderGridInitial();
+  // seed rows for smoothness
+  $$('.h-row').forEach(r=> {
+    if(r.children.length < 8){
+      for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
+    }
+  });
+  lazyObserve();
+}
+document.addEventListener('DOMContentLoaded', renderAll);
+
+/* ---------- Accessibility & shortcuts ---------- */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeViewerFunc(); closePanel(); closeSearchModal(); closeMyModal(); } });
+
+/* ---------- Ensure overlay hidden doesn't block touch ----------
+   overlay and panel pointer-events are toggled via classes.
+   Also ensure we don't leave body overflow hidden accidentally.
+----------------------------------------------------------------- */
+
+/* End of script */
+</script>
 </body>
 </html>
