@@ -1,87 +1,30 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
+// server.js
 
+// Importar el módulo Express
+const express = require('express');
+
+// Inicializar la aplicación Express
 const app = express();
+
+// Definir el puerto donde escuchará el servidor
+// Usa el puerto que te asigne el entorno (ej. Heroku) o por defecto el 3000
 const PORT = process.env.PORT || 3000;
 
-// Configuración de almacenamiento
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = 'uploads/';
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
-  }
-});
-const upload = multer({ storage });
+// Middleware para servir archivos estáticos
+// Esto hace que todo el contenido de la carpeta 'public' sea accesible
+// directamente desde la raíz del servidor.
+app.use(express.static('public'));
 
-// Servir estáticos
-app.use(express.static(__dirname));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Base de datos en memoria (simulada)
-let contentDB = {
-  trends: [],
-  reco: [],
-  recent: []
-};
-
-// --- API: Obtener feed ---
-app.get('/api/content/feed/:type', (req, res) => {
-  const type = req.params.type;
-  const data = contentDB[type] || [];
-  res.json({ success: true, data });
+// Ruta principal (opcional, ya que express.static ya maneja el index.html)
+// Sirve el archivo index.html si no se encuentra en el middleware anterior
+app.get('/', (req, res) => {
+    // Si estás usando 'express.static', esta línea puede ser redundante,
+    // pero asegura que la página principal se sirva correctamente.
+    res.sendFile(__dirname + '/public/index.html');
 });
 
-// --- API: Subir archivo ---
-app.post('/api/content/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ success: false, message: 'No file uploaded' });
-  }
-
-  const { title = 'Sin título' } = req.body;
-  // 💥 MODIFICACIÓN CLAVE AQUÍ: Usar solo la ruta relativa
-  const fileUrl = `/uploads/${req.file.filename}`;
-  // 💥 (Antes: const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;)
-
-  const isVideo = req.file.mimetype.startsWith('video/');
-
-  const newItem = {
-    id: uuidv4(),
-    src: fileUrl, // Ahora src es /uploads/nombre-de-archivo.ext
-    kind: isVideo ? 'video' : 'image',
-    title: title,
-    likes: 0,
-    comments: 0,
-    views: '0K',
-    uploadedAt: new Date().toISOString()
-  };
-
-  // Añadir a todas las secciones
-  contentDB.trends.unshift(newItem);
-  contentDB.reco.unshift(newItem);
-  contentDB.recent.unshift(newItem);
-
-  // Limitar a 50 por sección
-  Object.keys(contentDB).forEach(key => {
-    if (contentDB[key].length > 50) contentDB[key].pop();
-  });
-
-  res.json({ success: true, item: newItem });
-});
-
-// --- Ruta principal ---
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`SinFiltro corriendo en http://localhost:${PORT}`);
-  console.log(`Deploy en Render: OK`);
+// Iniciar el servidor
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log('¡Listo para servir tu página móvil pro!');
 });
