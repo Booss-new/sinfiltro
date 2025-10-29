@@ -46,12 +46,15 @@ app.post('/api/content/upload', upload.single('file'), (req, res) => {
   }
 
   const { title = 'Sin título' } = req.body;
-  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  // 💥 MODIFICACIÓN CLAVE AQUÍ: Usar solo la ruta relativa
+  const fileUrl = `/uploads/${req.file.filename}`;
+  // 💥 (Antes: const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;)
+
   const isVideo = req.file.mimetype.startsWith('video/');
 
   const newItem = {
     id: uuidv4(),
-    src: fileUrl,
+    src: fileUrl, // Ahora src es /uploads/nombre-de-archivo.ext
     kind: isVideo ? 'video' : 'image',
     title: title,
     likes: 0,
