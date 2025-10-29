@@ -6,6 +6,8 @@
 <title>SinFiltro — Premium (Móvil)</title>
 <meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lite-youtube-embed@0.3.3/lite-yt-embed.css">
+<script src="https://unpkg.com/lite-youtube-embed@0.3.3/lite-yt-embed.js" async></script>
 <style>
   /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
@@ -639,7 +641,7 @@ function showViewer(){
       mediaElement.innerHTML = '<p style="color:white;text-align:center;">Error: ID de YouTube inválido</p>';
     } else {
       mediaElement = document.createElement('iframe');
-      mediaElement.src = `https://www.youtube.com/embed/${videoId}?rel=0&playsinline=1&enablejsapi=1&modestbranding=1`;
+      mediaElement.src = `https://www.youtube.com/embed/${videoId}?rel=0&playsinline=1&enablejsapi=1&modestbranding=1&autoplay=0&mute=1`;
       mediaElement.style.width = '100%';
       mediaElement.style.height = '70vh';
       mediaElement.frameBorder = '0';
