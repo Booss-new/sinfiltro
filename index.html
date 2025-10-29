@@ -473,7 +473,7 @@ async function renderAll() {
 
 
 /* ---------- UTILS (sin cambios relevantes) ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[m])); }
 
 let imgObserver = null;
 function lazyObserve(root=document){
