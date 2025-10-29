@@ -639,12 +639,14 @@ function showViewer(){
       mediaElement.innerHTML = '<p style="color:white;text-align:center;">Error: ID de YouTube inválido</p>';
     } else {
       mediaElement = document.createElement('iframe');
-      mediaElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0`;
+      mediaElement.src = `https://www.youtube.com/embed/${videoId}?rel=0&playsinline=1&enablejsapi=1&modestbranding=1`;
       mediaElement.style.width = '100%';
       mediaElement.style.height = '70vh';
       mediaElement.frameBorder = '0';
       mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
       mediaElement.allowFullscreen = true;
+      mediaElement.webkitAllowFullScreen = true;
+      mediaElement.mozAllowFullScreen = true;
       mediaElement.title = `YouTube: ${it.title}`;
     }
   } else if(it.kind === 'image'){
