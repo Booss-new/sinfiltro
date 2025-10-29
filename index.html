@@ -625,23 +625,41 @@ function showViewer(){
 
   let mediaElement;
   if(it.kind === 'youtube'){
-    mediaElement = document.createElement('iframe');
-    mediaElement.src = `https://www.youtube.com/embed/${it.src.split('v=')[1]}?autoplay=1`;
-    mediaElement.style.width = '100%';
-    mediaElement.style.height = '70vh';
-    mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    mediaElement.allowFullscreen = true;
-  } else if (it.kind === 'image') {
-    mediaElement = document.createElement('img');
-    mediaElement.src = it.src;
-    mediaElement.alt = it.title;
-    mediaElement.style.maxHeight = '80vh';
+    let videoId = it.src;
+    if (it.src.includes('v=')) {
+      videoId = it.src.split('v=')[1]?.split('&')[0] || it.src.split('/')[3];
+    } else if (it.src.includes('youtu.be/')) {
+      videoId = it.src.split('youtu.be/')[1]?.split('?')[0] || it.src.split('/')[3];
+    } else if (it.src.includes('embed/')) {
+      videoId = it.src.split('embed/')[1]?.split('?')[0] || it.src.split('/')[4];
+    }
+
+    if (!videoId) {
+      mediaElement = document.createElement('div');
+      mediaElement.innerHTML = '<p style="color:white;text-align:center;">Error: ID de YouTube inválido</p>';
+    } else {
+      mediaElement = document.createElement('iframe');
+      mediaElement.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&rel=0`;
+      mediaElement.style.width = '100%';
+      mediaElement.style.height = '70vh';
+      mediaElement.frameBorder = '0';
+      mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      mediaElement.allowFullscreen = true;
+      mediaElement.title = `YouTube: ${it.title}`;
+    }
+  } else if(it.kind === 'image'){
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    mediaElement = img;
   } else {
-    mediaElement = document.createElement('video');
-    mediaElement.src = it.src;
-    mediaElement.controls = true;
-    mediaElement.autoplay = false;
-    mediaElement.style.maxHeight = '70vh';
+    const video = document.createElement('video');
+    video.src = it.src;
+    video.controls = true;
+    video.autoplay = false;
+    video.style.maxHeight = '70vh';
+    mediaElement = video;
   }
   viewerInner.appendChild(mediaElement);
 
@@ -695,7 +713,21 @@ function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='youtube'){ const v = viewerInner.querySelector('iframe'); if(v){ v.src += '&autoplay=1'; } } else if(it.kind === 'video'){ const v = viewerInner.querySelector('video'); if(v){ v.play(); } } });
+vvPlay.addEventListener('click', ()=> { 
+  const it = activeList[currentIndex]; 
+  if(it && it.kind==='youtube'){ 
+    const iframe = viewerInner.querySelector('iframe'); 
+    if(iframe){ 
+      // Recarga con autoplay=1 para forzar reproducción
+      iframe.src = iframe.src.replace('&autoplay=1', '') + '&autoplay=1&playsinline=1';
+    } 
+  } else if(it.kind === 'video'){ 
+    const v = viewerInner.querySelector('video'); 
+    if(v){ 
+      v.paused ? v.play() : v.pause(); 
+    } 
+  } 
+});
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 prevBtn.addEventListener('click', prevItem);
