@@ -1,1100 +1,1237 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>SinFiltro — Premium (Móvil)</title>
-<meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<style>
-  /* ================= VARS (mantengo paleta aprobada) ================= */
-  :root{
-    --bg-1:#05060a; --bg-2:#071226;
-    --accent-cyan:#00d1ff; --accent-violet:#8a6eff;
-    --muted:#9fb0bf; --card:rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.04);
-    --radius:14px; --trans:260ms;
-    --text:#eaf7ff;
-    --skel-color: rgba(255,255,255,0.05);
-  }
-  html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--text);-webkit-font-smoothing:antialiased; -webkit-overflow-scrolling:touch;}
-  body.light{ --bg-1:#f5f9ff; --bg-2:#eef6ff; --accent-cyan:#0066cc; --accent-violet:#5e3bff; --muted:#516070; --text:#071226; --skel-color: rgba(0,0,0,0.05); background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text); }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sinflicx - Premium (Móvil)</title>
+    <meta name="description" content="Sinflicx: tu feed personal de videos e imágenes. Explora, sube contenido y conéctate con una comunidad global. Horizontal, drag, views, me gusta, FAB burbujas, buscador con miniaturas.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- VARIABLES --- */
+        :root {
+            --bg-color: rgb(0, 0, 0);
+            --text-color: rgb(255, 255, 255);
+            --accent-color: rgb(0, 150, 255);
+            --soft-accent-color: rgba(0, 150, 255, 0.4);
+            --bg-secondary: rgb(18, 18, 18);
+            --red-color: rgb(255, 0, 50);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --card-shadow: rgba(0, 0, 0, 0.3);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --nav-height: 50px;
+        }
 
-  /* ================= keep UI identical to approved design ================= */
-  .bg-anim{position:fixed;inset:0;z-index:-10;pointer-events:none;background:
-    radial-gradient(600px 320px at 10% 10%, rgba(138,110,255,0.06), transparent 8%),
-    radial-gradient(900px 420px at 90% 80%, rgba(0,209,255,0.04), transparent 10%);filter:blur(28px) saturate(1.05);animation: drift 20s linear infinite}
-  @keyframes drift{0%{transform:translate3d(0,0,0)}50%{transform:translate3d(6%,-4%,0)}100%{transform:translate3d(0,0,0)}}
+        /* Tema Claro */
+        .light-theme {
+            --bg-color: rgb(255, 255, 255);
+            --text-color: rgb(0, 0, 0);
+            --bg-secondary: rgb(240, 240, 240);
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --card-shadow: rgba(0, 0, 0, 0.15);
+            --border-color: rgba(0, 0, 0, 0.1);
+        }
 
-  /* Top header */
-  header{position:fixed;top:0;left:0;right:0;height:66px;display:flex;align-items:center;justify-content:center;padding:10px;z-index:120;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.02)}
-  .header-inner{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;gap:10px}
-  .left-ctrl{display:flex;align-items:center;gap:12px}
-  .icon-btn{width:44px;height:44px;border-radius:10px;background:var(--card);display:inline-flex;align-items:center;justify-content:center;color:var(--muted);border:1px solid rgba(255,255,255,0.02);cursor:pointer;transition:transform var(--trans)}
-  .icon-btn:active{transform:scale(.96)}
-  .logo{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.6px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block}
-  .logo-btn{background:transparent;border:none;cursor:pointer;padding:6px 10px}
+        /* --- Estilos Generales --- */
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: var(--nav-height);
+        }
+        
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        button {
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        /* --- Componente Base (General) --- */
+        .component-base {
+            padding: 10px 12px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        /* --- Encabezado / Barra de Navegación Superior --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            background: var(--bg-color);
+            box-shadow: 0 2px 5px var(--shadow-color);
+            /* Animación para ocultar/mostrar */
+            transition: transform 0.3s ease-in-out;
+        }
 
-  /* Main content uses native body scrolling (fixes mobile touch) */
-  main{padding-top:86px;padding-bottom:120px;max-width:720px;margin:0 auto}
-  .container{padding:12px}
+        .header-hidden {
+            transform: translateY(calc(-1 * var(--nav-height)));
+        }
 
-  /* Hero */
-  .hero{margin-top:4px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));border:1px solid rgba(255,255,255,0.02);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
-  .hero h1{margin:0;font-size:16px;color:var(--accent-violet);font-weight:700}
-  .hero p{margin:6px 0 0;color:var(--muted);font-size:13px}
+        .logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .nav-btn {
+            display: flex;
+            gap: 8px;
+        }
 
-  /* Section */
-  .section{margin-top:16px}
-  .section .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .section .title{font-weight:800;color:var(--accent-cyan);font-size:18px}
-  .see-all{font-size:13px;color:var(--muted);cursor:pointer}
+        .icon-btn {
+            background-color: var(--bg-secondary);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  /* Horizontal two-row scrollers (kept visuals) */
-  .h-stack{display:flex;flex-direction:column;gap:10px}
-  .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-  .h-row::-webkit-scrollbar{display:none}
-  .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
-  .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
-  .card-small .meta{position:relative;z-index:6}
-  .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
-  .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
-  .play-ico{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+        /* --- Barra de Navegación Inferior (Móvil) --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 8px;
+            background: var(--bg-color);
+            box-shadow: 0 -2px 5px var(--shadow-color);
+        }
 
-  /* Grid (vertical infinite) */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-  .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
-  .grid .body{padding:8px;color:var(--text)}
-  .grid .title{font-weight:700}
-  .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+        
+        .nav-item i {
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+        
+        /* --- Main Content Area --- */
+        main {
+            padding-top: var(--nav-height); /* Espacio para el header fijo */
+            padding-bottom: var(--nav-height); /* Espacio para el footer fijo */
+        }
+        
+        /* --- Contenedores de Contenido (Feed) --- */
+        .content-container {
+            display: flex;
+            overflow-x: scroll;
+            scroll-snap-type: x mandatory;
+            padding: 0;
+            height: calc(100vh - var(--nav-height) * 2); /* Ajuste dinámico */
+            -webkit-overflow-scrolling: touch;
+        }
 
-  /* FAB + bottom nav */
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
-  
-  /* FAB radial (burbujas) */
-  .bubble-group { 
-    display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
-    padding: 10px 14px; 
-    width: 100%;
-    background: var(--card);
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-    transition: background var(--trans);
-    cursor: pointer;
-  }
-  .bubble-group:hover { background: rgba(255,255,255,0.06); }
-  .bubble {
-    width: 36px; height: 36px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));
-    color: #000; font-weight: 700; font-size: 18px;
-  }
-  .bubble-text { font-size: 15px; font-weight: 500; color: var(--text); flex-grow: 1; text-align: left; }
+        .content-row {
+            min-width: 100vw;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 10px 12px;
+        }
 
-  .radials{
-    position:fixed;left:50%;transform:translateX(-50%);bottom:100px;
-    display:flex;flex-direction:column;gap:8px;align-items:flex-start;
-    z-index:189;pointer-events:none;opacity:0;transition:opacity .18s, transform .2s;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(8px);
-    padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);
-    width: 200px;
-    transform: translateX(-50%) translateY(20px);
-  }
-  .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
+        /* --- Elementos de Media (Imágenes y Videos) --- */
+        .media-tag {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Contiene la media dentro del viewport */
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px var(--card-shadow);
+        }
+        
+        .video-tag {
+            max-height: 100%; 
+            max-width: 100%; 
+            width: auto;
+            height: auto;
+            margin: auto;
+            border-radius: 8px;
+        }
+        
+        /* --- Viewer (Modal de Contenido Grande) --- */
+        .viewer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .viewer-modal.show {
+            display: flex;
+        }
 
-  .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
+        .viewer-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2010;
+        }
+        
+        /* --- Loading State --- */
+        .loading-skeleton {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(-90deg, #1e1e1e 0%, #3a3a3a 50%, #1e1e1e 100%);
+            background-size: 400% 400%;
+            animation: pulse 1.5s ease-in-out infinite;
+            border-radius: 8px;
+        }
+        
+        @keyframes pulse {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-  /* Panel & overlay (menu lateral) */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
-  .overlay.show{display:block;pointer-events:auto;opacity:1}
-  
-  .panel{
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    height:100%;
-    width:86%;max-width:320px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
-    border-radius:0 12px 12px 0;
-    padding:12px;z-index:180;
-    box-shadow:20px 0 80px rgba(2,10,18,0.6);
-    transform:translateX(-100%);
-    opacity:1;
-    transition:transform var(--trans) ease;
-    pointer-events:none;
-    display: flex; flex-direction: column; 
-    overflow-y: hidden;
-  }
-  .panel.open{
-    transform:translateX(0);
-    pointer-events:auto
-  }
-  .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-  .panel nav { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        /* --- Grid de Miniaturas (My Grid & Search) --- */
+        .grid-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 6px;
+            padding: 12px;
+            overflow-y: scroll;
+            height: calc(100vh - var(--nav-height) * 2); /* Ajuste */
+        }
 
+        .grid-item {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Para un aspecto cuadrado */
+            overflow: hidden;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .grid-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .grid-item i {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            color: white;
+            z-index: 10;
+        }
 
-  /* Viewer (immersive) */
-  .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
-  .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;}
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;}
-  .viewer iframe{width:100%;height:70vh;border:none;}
-  
-  .viewer-controls-meta { 
-    z-index: 10;
-    display: flex; gap: 8px; justify-content: center;
-    background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
-    margin: 12px auto;
-    width: fit-content;
-  }
-  
-  /* Search modal & MyVideos modal */
-  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:92%;max-width:680px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:210;box-shadow:0 30px 80px rgba(2,10,18,0.6);display:none}
-  .modal.show{display:block}
-  .modal .head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .modal .grid-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:60vh;overflow:auto;padding:6px}
-  .mini-thumb{border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.25);height:84px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .mini-thumb img, .mini-thumb video{width:100%;height:100%;object-fit:cover}
-  .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
+        /* --- Search Modal & Upload Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            padding-top: 50px;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .search-input {
+            width: calc(100% - 24px);
+            margin: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+        }
+        
+        /* --- Panel Lateral (Cuenta/Configuración) --- */
+        .side-panel {
+            position: fixed;
+            top: 0;
+            left: -80vw;
+            width: 80vw;
+            height: 100vh;
+            background-color: var(--bg-secondary);
+            z-index: 3000;
+            transition: left 0.3s ease-in-out;
+            box-shadow: 4px 0 10px var(--shadow-color);
+            padding-top: 50px;
+        }
+        
+        .side-panel.open {
+            left: 0;
+        }
+        
+        .panel-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
 
-  /* Modal de Simulación/Progreso de Subida */
-  #uploadModal {
-      display:none; text-align: center;
-      padding: 20px; max-width: 300px;
-      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
-      background: var(--card); border-radius: 12px; z-index: 250;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
-  }
-  .progress-bar {
-      width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 15px;
-  }
-  .progress-fill {
-      height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear;
-  }
+        /* --- FAB (Boton Flotante de Acción) --- */
+        .fab-button {
+            position: fixed;
+            bottom: calc(var(--nav-height) + 20px);
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            box-shadow: 0 4px 10px var(--shadow-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        
+        .fab-button.hidden {
+            transform: scale(0);
+        }
 
-  /* Modal de selección de archivo */
-  #fileSelectModal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); z-index: 240; display: none;
-      align-items: flex-end; justify-content: center; opacity: 0;
-      transition: opacity 0.3s ease-out;
-  }
-  #fileSelectModal.show { opacity: 1; display: flex; }
-  #fileSelectModal > div {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      backdrop-filter: blur(12px); border-radius: 12px 12px 0 0;
-      padding: 20px; width: 100%; max-width: 450px;
-      transform: translateY(100%); transition: transform 0.3s ease-out;
-  }
-  #fileSelectModal.show > div { transform: translateY(0); }
+        /* --- Burbujas de Navegación (FAB expandido) --- */
+        .fab-options {
+            position: fixed;
+            bottom: calc(var(--nav-height) + 20px);
+            right: 20px;
+            z-index: 99;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .fab-options.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .fab-bubble {
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        
+        .fab-bubble i {
+            color: var(--accent-color);
+        }
+        
+        /* Small screens */
+        @media (max-width: 420px) {
+            .card-small img { min-width: 100%; }
+        }
+        
+        /* Blur */
+        .backdrop-filter {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.3); /* Base de fallback */
+        }
 
-  /* Loading skeleton */
-  .skel{background:var(--skel-color);animation:pulse 1.5s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-
-  /* Small screens */
-  @media (max-width:420px){
-    .card-small{min-width:150px;height:100px}
-    .grid img{height:120px}
-    .fab{width:64px;height:64px}
-    .panel{width:92%;left:0; border-radius:0 12px 12px 0; }
-  }
-
-  /* fallback when backdrop-filter not supported */
-  @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .panel, header, .modal { background: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.45)); }
-  }
-
-  /* animation */
-  .fade-up{animation:fadeUp .48s cubic-bezier(.2,.9,.2,1) both}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-</style>
+        /* Animación FadeUp */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        
+        .fade-up.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
+
 <body>
-  <div class="bg-anim" aria-hidden="true"></div>
 
-  <header>
-    <div class="header-inner">
-      <div class="left-ctrl">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
-        <button class="logo-btn" id="brandBtn"><span class="logo">SinFiltro</span></button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
-        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
-      </div>
-    </div>
-  </header>
+    <div id="overlay" class="modal backdrop-filter" onclick="closeAll()"></div>
 
-  <div id="overlay" class="overlay" aria-hidden="true"></div>
-  <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
-    <div style="display:flex;align-items:center;gap:8px">
-      <strong>Cuenta</strong>
-      <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">✕</button> </div>
-    <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
-    <nav style="display:flex;flex-direction:column;gap:8px">
-      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
-      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
-      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
-      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi cuenta</button>
-      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+    <header id="header">
+        <div class="logo">
+            <i class="fa-solid fa-bolt-lightning"></i>
+            <span>Sinflicx</span>
+        </div>
+        <div class="nav-btn">
+            <button id="searchBtn" class="icon-btn" title="Buscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button id="accountBtn" class="icon-btn" title="Mi Cuenta"><i class="fa-solid fa-user"></i></button>
+        </div>
+    </header>
+
+    <main>
+        <div id="homeFeed" class="content-container">
+            </div>
+
+        <section id="recommended" class="fade-up component-base" style="display: none;">
+            <div class="header-section">
+                <h2 class="title">Recomendados</h2>
+                <div class="nav-btn">
+                    <button id="btn-reco-all" class="icon-btn" data-type="reco1" title="Ver todo"><i class="fa-solid fa-list-ul"></i></button>
+                </div>
+            </div>
+            <div id="reco-feed" class="grid-feed">
+                </div>
+        </section>
+
+        <section id="recent" class="fade-up component-base" style="display: none;">
+            <div class="header-section">
+                <h2 class="title">Vistos Recientemente</h2>
+                <div class="nav-btn">
+                    <button id="btn-recent-all" class="icon-btn" data-type="recent" title="Ver todo"><i class="fa-solid fa-list-ul"></i></button>
+                </div>
+            </div>
+            <div id="recent-feed" class="grid-feed">
+                </div>
+        </section>
+        
+        <section id="explore" class="fade-up component-base" style="display: none;">
+            <h2 class="title">Explorar / Trending</h2>
+            <div id="explore-feed" class="grid-feed">
+                </div>
+        </section>
+        
+        <div id="loadingIndicator" style="text-align: center; padding: 20px; display: none;">
+            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+        </div>
+
+    </main>
+    
+    <nav id="navHome" class="bottom-nav">
+        <a href="#homeFeed" class="nav-item active" data-type="feed">
+            <i class="fa-solid fa-house"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#recommended" class="nav-item" data-type="reco">
+            <i class="fa-solid fa-fire"></i>
+            <span>Recomendado</span>
+        </a>
+        <a href="#explore" class="nav-item" data-type="explore">
+            <i class="fa-solid fa-compass"></i>
+            <span>Explorar</span>
+        </a>
+        <a href="#" id="navMyGrid" class="nav-item" data-type="mygrid">
+            <i class="fa-solid fa-grid"></i>
+            <span>Mi Grid</span>
+        </a>
     </nav>
-  </aside>
-
-  <main>
-    <div class="container">
-      <section class="hero fade-up" aria-label="presentación">
-        <h1>Descubre lo auténtico</h1>
-        <p>Fotos y videos creados por la comunidad. Da like, comenta y comparte.</p>
-      </section>
-
-      <section class="section fade-up" aria-label="tendencias">
-        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="trendRow1" class="h-row" aria-label="tendencias fila 1" data-type="trends"></div>
-          <div id="trendRow2" class="h-row" aria-label="tendencias fila 2" data-type="trends"></div>
-        </div>
-      </section>
-
-      <section class="section fade-up" aria-label="recomendados">
-        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="recoRow1" class="h-row" aria-label="recomendados fila 1" data-type="reco"></div>
-          <div id="recoRow2" class="h-row" aria-label="recomendados fila 2" data-type="reco"></div>
-        </div>
-      </section>
-
-      <section class="section fade-up" aria-label="antes visto">
-        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
-        <div class="h-stack">
-          <div id="recentRow1" class="h-row" aria-label="antes visto fila 1" data-type="recent"></div>
-          <div id="recentRow2" class="h-row" aria-label="antes visto fila 2" data-type="recent"></div>
-        </div>
-      </section>
-
-      <section class="section fade-up" aria-label="explorar">
-        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
-        <div id="gridFeed" class="grid" aria-live="polite"></div>
-      </section>
-    </div>
-  </main>
-  
-  <div id="fileSelectModal" role="dialog" aria-hidden="true" aria-modal="true" aria-label="Subir Archivo">
-      <div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-              <strong style="font-size:18px;">Subir a SinFiltro</strong>
-              <button id="closeFileSelect" class="icon-btn">✕</button>
-          </div>
-          <input type="file" id="realFileInput" accept="image/*,video/*" style="width:100%; padding: 10px; border: 1px solid var(--muted); border-radius: 8px; margin-bottom: 10px; background: var(--card); color: var(--text);">
-          <input type="text" id="uploadTitleInput" class="search-input" placeholder="Título (opcional)" style="width:100%; margin-bottom: 15px;">
-          <button id="startUploadBtn" class="icon-btn" style="width:100%; height:50px; background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet)); color: var(--bg-1); font-weight: 700;">
-              Subir Ahora
-          </button>
-      </div>
-  </div>
-  <div id="radials" class="radials" aria-hidden="true"></div>
-  <button id="fab" class="fab" aria-label="Crear">＋</button>
-
-  <nav class="bottom-nav" role="navigation" aria-label="navegación">
-    <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
-    <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
-    <div style="width:78px"></div>
-    <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Mi cuenta</div></div>
-  </nav>
-
-  <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
-    <div class="card" style="position:relative; padding: 0;">
-      <div id="viewerInner" style="padding: 12px 12px 0 12px;"></div> 
-      
-      <div id="viewerBottom" style="
-        padding: 12px;
-        background: rgba(0,0,0,0.5);
-        border-top: 1px solid rgba(255,255,255,0.05);
-        display: flex; flex-direction: column; gap: 8px;
-        position: relative;
-        z-index: 10;
-      ">
-        </div>
-      
-      <div id="viewerControls" class="viewer-controls-meta">
-        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button>
-        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
-    <div class="head">
-      <input id="searchInput" class="search-input" placeholder="Buscar..." />
-      <button id="closeSearch" class="icon-btn">✕</button>
-    </div>
-    <div id="searchMini" class="grid-mini"></div>
-  </div>
-
-  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Mi cuenta">
-    <div class="head" style="justify-content:space-between">
-      <strong>Mi cuenta</strong>
-      <button id="closeMy" class="icon-btn">✕</button>
-    </div>
-    <div id="myGrid" class="grid-mini"></div>
-  </div>
-
-  <div id="uploadModal" aria-hidden="true" role="alertdialog">
-      <h3 id="uploadTitle" style="margin-top:0;font-size:16px;">Subiendo archivo...</h3>
-      <p id="uploadStatus" style="font-size:12px; color:var(--muted)">0%</p>
-      <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
-      <button id="closeUpload" class="icon-btn" style="margin-top:15px; background: transparent; border: 1px solid var(--muted)">Cancelar</button>
-  </div>
-
-
-<script>
-/* =========================
-   SinFiltro — Con APIs reales y correcciones
-   ========================= */
-
-/* Helpers */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const rand = n => Math.floor(Math.random()*n);
-const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-
-// BACKEND URL - Usa el de tu entorno
-const BACKEND_URL = window.location.origin;
-const API_URL = `${BACKEND_URL}/api`;
-
-/* DOM refs */
-const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
-const recoRow1 = $('#recoRow1'), recoRow2 = $('#recoRow2');
-const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
-const gridFeed = $('#gridFeed');
-const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
-const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
-const viewerBottom = $('#viewerBottom');
-const fab = $('#fab'), radials = $('#radials');
-const themeToggle = $('#themeToggle');
-const brandBtn = $('#brandBtn');
-const searchTop = $('#searchTop');
-const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
-const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
-const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); 
-const fileSelectModal = $('#fileSelectModal');
-const closeFileSelect = $('#closeFileSelect');
-const realFileInput = $('#realFileInput');
-const uploadTitleInput = $('#uploadTitleInput');
-const startUploadBtn = $('#startUploadBtn');
-
-
-/* Data pool */
-let pool = [];
-let activeList=[], currentIndex=0;
-
-/* ---------- FETCH CONTENT FROM SERVER ---------- */
-async function fetchContent(type) {
-    try {
-        const response = await fetch(`${API_URL}/content/feed/${type}`);
-        const data = await response.json();
-
-        if (data.success && data.data) {
-            return data.data.map(item => ({
-                ...item,
-                liked: item.liked || false,
-                comments: item.comments || 0,
-                views: item.views || '0K'
-            }));
-        } else {
-            console.error("Error al obtener datos:", data);
-            return [];
-        }
-    } catch (error) {
-        console.error("Error de red o servidor:", error);
-        return [];
-    }
-}
-
-/* ---------- RENDER LOGIC ---------- */
-async function renderAll() {
-    // Obtener datos del servidor
-    const trendsData = await fetchContent('trends');
-    const recoData = await fetchContent('reco');
-    const recentData = await fetchContent('recent');
-
-    // Pool global
-    pool = [...trendsData, ...recoData, ...recentData];
-
-    // Llenar las filas horizontales
-    renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
-    renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
-    renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
-    // Grid con el resto
-    renderGridInitial(pool.slice(0, 20)); 
-
-    // Enable drag scroll
-    $$('.h-row').forEach(r=> {
-        if(r.children.length < 8){
-          for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
-        }
-        enableDragScroll(r);
-        r.addEventListener('scroll', handleHorizontalScroll);
-    });
-    lazyObserve();
-}
-
-/* ---------- LAZY LOADING ---------- */
-let imgObserver = null;
-function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src], video[data-src]');
-  if('IntersectionObserver' in window){
-    if(!imgObserver){
-      imgObserver = new IntersectionObserver((entries, obs)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting){
-            const media = e.target;
-            media.src = media.dataset.src;
-            media.onload = ()=> media.parentElement.classList.remove('skel');
-            media.onerror = ()=> {
-              console.error('Error loading:', media.dataset.src);
-              media.parentElement.classList.remove('skel');
-            };
-            media.removeAttribute('data-src');
-            obs.unobserve(media);
-          }
-        });
-      }, {rootMargin:'300px', threshold:0.05});
-    }
-    imgs.forEach(i=> imgObserver.observe(i));
-  } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
-  }
-}
-
-/* ---------- CARD CREATORS ---------- */
-function extractYouTubeID(url) {
-    if (!url) return null;
-    let videoId = url;
-    if (url.includes('v=')) {
-        videoId = url.split('v=')[1]?.split('&')[0];
-    } else if (url.includes('youtu.be/')) {
-        videoId = url.split('youtu.be/')[1]?.split('?')[0];
-    } else if (url.includes('embed/')) {
-        videoId = url.split('embed/')[1]?.split('?')[0];
-    }
-    return videoId;
-}
-
-function makeSmallCard(item){
-  const d = document.createElement('div');
-  d.className = 'card-small skel fade-up';
-  d.setAttribute('tabindex','0');
-  let mediaTag;
-  
-  if(item.kind === 'youtube'){
-    const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
-    mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
-  } else if (item.kind === 'image') {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
-  } else {
-    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata"></video>`;
-  }
-
-  d.innerHTML = `
-    ${mediaTag}
-    ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
-    <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
-      <div class="meta">
-        <div style="font-weight:700">${item.kind==='youtube'?'YouTube':item.kind==='image'?'Imagen':'Video'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
-      </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+    <div id="myGridModal" class="modal">
+        <h2 style="padding: 12px; margin: 0;">Mi Grid</h2>
+        <div id="myGridFeed" class="grid-feed">
+            </div>
+        <div class="viewer-controls" style="top: 12px; right: 12px;">
+            <button class="icon-btn" title="Cerrar" onclick="closeMyGridModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
     </div>
-  `;
-  d.addEventListener('click', ()=> openViewerByItem(item));
-  d.addEventListener('keypress', e=> { if(e.key==='Enter') openViewerByItem(item); });
-  return d;
-}
 
-function makeGridCard(item){
-  const a = document.createElement('article');
-  a.className = 'card skel fade-up';
-  let mediaTag;
-  
-  if(item.kind === 'youtube'){
-    const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
-    mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
-  } else if (item.kind === 'image') {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
-  } else {
-    mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
-  }
-  
-  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
-  a.addEventListener('click', ()=> openViewerByItem(item));
-  return a;
-}
-
-function renderTwoRows(row1,row2,items){
-  row1.innerHTML=''; row2.innerHTML='';
-  items.forEach((it,i)=>{
-    const target = (i%2===0)?row1:row2;
-    target.appendChild(makeSmallCard(it));
-  });
-}
-
-function renderGridInitial(items){
-  gridFeed.innerHTML = '';
-  items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
-  lazyObserve(gridFeed);
-}
-
-function enableDragScroll(el){ 
-  if(el.__dragEnabled) return;
-  el.__dragEnabled = true;
-  let startX = 0, scrollLeft = 0;
-  let isTouch = false;
-  el.addEventListener('touchstart', e=>{
-    isTouch = true;
-    startX = e.touches[0].pageX - el.offsetLeft;
-    scrollLeft = el.scrollLeft;
-  }, {passive:true});
-  el.addEventListener('touchmove', e=>{
-    if(!isTouch) return;
-    const x = e.touches[0].pageX - el.offsetLeft;
-    const walk = (x - startX) * 1;
-    el.scrollLeft = scrollLeft - walk;
-  }, {passive:true});
-  el.addEventListener('touchend', ()=> { isTouch = false; }, {passive:true});
-
-  let isDown=false;
-  el.addEventListener('pointerdown', (e)=>{ isDown=true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; el.setPointerCapture && el.setPointerCapture(e.pointerId); }, {passive:true});
-  el.addEventListener('pointermove', (e)=>{ if(!isDown) return; const x = e.pageX - el.offsetLeft; const walk = (x - startX); el.scrollLeft = scrollLeft - walk; }, {passive:true});
-  el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
-}
-
-function handleHorizontalScroll(e) {
-    const row = e.target;
-    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) {
-        loadMoreHorizontal(row);
-    }
-}
-
-let horizontalLoading = false;
-async function loadMoreHorizontal(row) {
-    if (horizontalLoading) return;
-    horizontalLoading = true;
-
-    const newItems = Array.from({length: 4}).map(() => pool[rand(pool.length)]);
-
-    if (newItems.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+    <div id="viewerModal" class="viewer-modal">
+        <div id="viewerContent" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+            </div>
         
-        const fragment = document.createDocumentFragment();
-        newItems.forEach(item => fragment.appendChild(makeSmallCard(item)));
-        row.appendChild(fragment);
-        lazyObserve(row);
+        <div class="viewer-controls">
+            <button id="closeViewerBtn" class="icon-btn" title="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
         
-        row.scrollLeft += 10;
-    }
-    horizontalLoading = false;
-}
-
-/* ---------- VIEWER ---------- */
-function showViewer(){
-  const it = activeList[currentIndex];
-  viewerInner.innerHTML = '';
-  viewerBottom.innerHTML = '';
-
-  if(!it) return;
-
-  downloadBtn.style.display = 'inline-flex';
-
-  let mediaElement;
-  if(it.kind === 'youtube'){
-    const videoId = extractYouTubeID(it.src);
-
-    if (!videoId) {
-      mediaElement = document.createElement('div');
-      mediaElement.innerHTML = '<p style="color:white;text-align:center;padding:40px">Error: ID de YouTube inválido</p>';
-    } else {
-      // Usar youtube-nocookie.com para mejor privacidad y menos problemas
-      mediaElement = document.createElement('iframe');
-      mediaElement.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
-      mediaElement.style.width = '100%';
-      mediaElement.style.height = '70vh';
-      mediaElement.frameBorder = '0';
-      mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-      mediaElement.allowFullscreen = true;
-      mediaElement.title = `YouTube: ${it.title}`;
-    }
-  } else if(it.kind === 'image'){
-    const img = document.createElement('img');
-    img.src = it.src;
-    img.alt = it.title;
-    img.style.maxHeight = '80vh';
-    img.onerror = ()=> img.src = 'https://via.placeholder.com/800x600?text=Image+Error';
-    mediaElement = img;
-  } else {
-    const video = document.createElement('video');
-    video.src = it.src;
-    video.controls = true;
-    video.autoplay = false;
-    video.style.maxHeight = '70vh';
-    mediaElement = video;
-  }
-  viewerInner.appendChild(mediaElement);
-
-  // Barra de interacciones
-  viewerBottom.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
-              <span id="likeBtn" style="cursor:pointer; color: ${it.liked ? 'var(--accent-violet)' : 'var(--muted)'};">
-                  ❤ ${it.likes || 0}
-              </span>
-              <span>💬 ${it.comments || 0}</span>
-          </div>
-          <span style="font-size: 12px; color: var(--muted);">
-              👁️ ${it.views || '0K'} Vistas
-          </span>
-      </div>
-
-      <div style="display:flex; gap: 8px; align-items:center;">
-          <input type="text" placeholder="Añade un comentario..." class="search-input" style="flex-grow:1; padding: 10px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.1);">
-          <button class="icon-btn" style="width: 40px; height: 40px; background: var(--accent-violet); color: #000;">➡️</button>
-      </div>
-  `;
-
-  // Lógica de like
-  viewerBottom.querySelector('#likeBtn').addEventListener('click', async (e) => {
-      it.liked = !it.liked;
-      if (it.liked) {
-          it.likes = (it.likes || 0) + 1;
-          e.target.style.color = 'var(--accent-violet)';
-      } else {
-          it.likes = (it.likes || 1) - 1;
-          if (it.likes < 0) it.likes = 0;
-          e.target.style.color = 'var(--muted)';
-      }
-      e.target.innerHTML = `❤ ${it.likes}`;
-
-      // Guardar en backend
-      try {
-          await fetch(`${API_URL}/content/${it.id}/like`, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({ liked: it.liked })
-          });
-      } catch(err) {
-          console.error('Error saving like:', err);
-      }
-  });
-  
-  viewer.classList.add('show'); 
-  viewer.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
-
-function openViewerByItem(item){
-  activeList = pool;
-  currentIndex = pool.findIndex(x => x.id === item.id);
-  if (currentIndex < 0) {
-      activeList = [item];
-      currentIndex = 0;
-  }
-  showViewer();
-}
-
-function closeViewerFunc(){
-  viewer.classList.remove('show'); 
-  viewer.setAttribute('aria-hidden','true'); 
-  viewerInner.innerHTML=''; 
-  viewerBottom.innerHTML=''; 
-  document.body.style.overflow = '';
-}
-
-function prevItem(){ 
-  if(currentIndex>0){ 
-    currentIndex--; 
-    showViewer(); 
-  } 
-}
-
-function nextItem(){ 
-  if(currentIndex < activeList.length-1){ 
-    currentIndex++; 
-    showViewer(); 
-  } else { 
-    const more = pool[rand(pool.length)]; 
-    activeList.push(more); 
-    currentIndex++; 
-    showViewer(); 
-  } 
-}
-
-vvPlay.addEventListener('click', ()=> { 
-  const it = activeList[currentIndex]; 
-  if(it && it.kind==='youtube'){ 
-    const iframe = viewerInner.querySelector('iframe'); 
-    if(iframe){ 
-      // Para reproducir necesitamos usar postMessage API
-      iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    } 
-  } else if(it && it.kind === 'video'){ 
-    const v = viewerInner.querySelector('video'); 
-    if(v){ 
-      v.paused ? v.play() : v.pause(); 
-    } 
-  } 
-});
-
-closeViewer.addEventListener('click', closeViewerFunc);
-viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
-prevBtn.addEventListener('click', prevItem);
-nextBtn.addEventListener('click', nextItem);
-downloadBtn.addEventListener('click', ()=>{ 
-    const item = activeList[currentIndex];
-    if(item && item.src){
-        const link = document.createElement('a');
-        link.href = item.src;
-        link.download = `SinFiltro_${item.id}.${item.kind === 'video' ? 'mp4' : 'jpg'}`; 
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
-        alert('No se pudo descargar el archivo.');
-    }
-});
-
-/* ---------- PANEL ---------- */
-function openPanel(){ 
-  overlay.classList.add('show'); 
-  panel.classList.add('open'); 
-  panel.setAttribute('aria-hidden','false'); 
-  overlay.setAttribute('aria-hidden','false'); 
-  radials.classList.remove('show'); 
-  radials.innerHTML=''; 
-}
-
-function closePanel(){ 
-  overlay.classList.remove('show'); 
-  panel.classList.remove('open'); 
-  panel.setAttribute('aria-hidden','true'); 
-  overlay.setAttribute('aria-hidden','true'); 
-}
-
-closePanelBtn.addEventListener('click', closePanel); 
-menuBtn.addEventListener('click', ()=> { 
-  if(panel.classList.contains('open')) closePanel(); 
-  else openPanel(); 
-}); 
-
-overlay.addEventListener('click', (e) => { 
-    if (e.target === overlay) { 
-        if (panel.classList.contains('open')) { closePanel(); } 
-        if (radials.classList.contains('show')) { radials.classList.remove('show'); radials.innerHTML = ''; } 
-        if (fileSelectModal.classList.contains('show')) { closeFileSelectModal(); }
-    } 
-}); 
-
-$$('.panel-item').forEach(btn=>{
-  btn.addEventListener('click', (e)=>{
-    const action = btn.dataset.action;
-    closePanel();
-    if(action === 'home'){ window.scrollTo({top:0,behavior:'smooth'}); }
-    if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
-    if(action === 'my'){ openMyModal(); }
-    if(action === 'settings'){ alert('Ajustes (próximamente)'); }
-    if(action === 'logout'){ alert('Cerrar sesión (próximamente)'); }
-  });
-});
-
-/* ---------- FAB ---------- */
-fab.addEventListener('click', ()=>{
-  if(radials.classList.contains('show')){ 
-    radials.classList.remove('show'); 
-    radials.innerHTML=''; 
-  } else {
-    radials.classList.add('show');
-    radials.innerHTML = '';
+        <div id="viewerInfo" style="position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0)); padding: 40px 15px 15px;">
+            <h3 id="viewerTitle" style="margin: 0 0 5px; font-size: 1.2rem;"></h3>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span id="viewerViews"><i class="fa-solid fa-eye"></i> 0</span>
+                <span id="viewerLikes"><i class="fa-solid fa-heart"></i> 0</span>
+                <button id="likeBtn" class="icon-btn" title="Me Gusta" style="background-color: var(--soft-accent-color);"><i class="fa-solid fa-heart"></i></button>
+                <button id="downloadBtn" class="icon-btn" title="Descargar"><i class="fa-solid fa-download"></i></button>
+                </div>
+        </div>
+    </div>
     
-    const mkBubble = (icon, text, action) => {
-        const d = document.createElement('button'); 
-        d.className='bubble-group';
-        d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
-        d.onclick = action;
-        return d;
-    }
-
-    const uploadAction = ()=> { 
-      radials.classList.remove('show'); 
-      openFileSelectModal(); 
-    };
-    const createPostAction = ()=> { 
-      alert('Publicar Galería (próximamente)'); 
-      radials.classList.remove('show'); 
-    };
-    const createShortAction = ()=> { 
-      alert('Crear Short (próximamente)'); 
-      radials.classList.remove('show'); 
-    };
-
-    radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
-    radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
-    radials.appendChild(mkBubble('🎬', 'Crear Short', createShortAction));
-  }
-});
-
-/* ---------- UPLOAD ---------- */
-function openFileSelectModal(){
-    fileSelectModal.classList.add('show');
-    fileSelectModal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeFileSelectModal(){
-    fileSelectModal.classList.remove('show');
-    fileSelectModal.setAttribute('aria-hidden', 'true');
-    realFileInput.value = '';
-    uploadTitleInput.value = '';
-    document.body.style.overflow = '';
-}
-
-closeFileSelect.addEventListener('click', closeFileSelectModal);
-
-startUploadBtn.addEventListener('click', () => {
-    const file = realFileInput.files[0];
-    const title = uploadTitleInput.value;
-
-    if (!file) {
-        alert('Por favor, selecciona un archivo.');
-        return;
-    }
-
-    uploadFileToBackend(file, title);
-});
-
-async function uploadFileToBackend(file, title){
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('title', title || file.name);
+    <div id="searchModal" class="modal">
+        <div class="viewer-controls" style="top: 12px; right: 12px;">
+            <button class="icon-btn" title="Cerrar" onclick="closeSearchModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="display: flex; align-items: center; padding: 10px 12px; gap: 10px;">
+            <input type="search" id="searchInput" class="search-input" placeholder="Buscar videos, imágenes, tags..." style="flex-grow: 1; margin: 0;">
+            <button class="icon-btn" title="Buscar"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div id="searchGrid" class="grid-feed" style="height: calc(100% - 70px);">
+            </div>
+    </div>
     
-    closeFileSelectModal();
+    <button id="fabBtn" class="fab-button"><i class="fa-solid fa-plus"></i></button>
     
-    uploadModal.style.display = 'block';
-    uploadModal.setAttribute('aria-hidden', 'false');
-    uploadTitle.textContent = 'Subiendo ' + file.name.substring(0, 20) + '...';
-    progressFill.style.width = '0%';
-    uploadStatus.textContent = '0%';
-    let progress = 0;
+    <div id="fabOptions" class="fab-options">
+        <div id="uploadImageBubble" class="fab-bubble">
+            <i class="fa-solid fa-image"></i> Subir Imagen
+        </div>
+        <div id="uploadVideoBubble" class="fab-bubble">
+            <i class="fa-solid fa-video"></i> Subir Video
+        </div>
+    </div>
     
-    const progressSim = setInterval(()=>{
-        if(progress < 95) {
-            progress += 5;
-            progressFill.style.width = `${progress}%`;
-            uploadStatus.textContent = `${progress}%`;
-        }
-    }, 200);
-
-    try {
-        const response = await fetch(`${API_URL}/content/upload`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        clearInterval(progressSim);
-        progressFill.style.width = '100%';
-        uploadStatus.textContent = '100%';
-
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const result = await response.json();
-
-        if(result.success){
-            uploadTitle.textContent = '¡Subida Completa!';
+    <div id="uploadModal" class="modal">
+        <h2 style="padding: 12px; margin: 0;">Subir Contenido</h2>
+        <div style="padding: 12px; display: flex; flex-direction: column; gap: 15px;">
+            <div id="fileSelectContainer" style="border: 2px dashed var(--accent-color); padding: 20px; text-align: center; border-radius: 8px; cursor: pointer;">
+                <i id="uploadIcon" class="fa-solid fa-cloud-arrow-up fa-3x" style="color: var(--accent-color);"></i>
+                <p id="fileNameDisplay">Selecciona un archivo</p>
+                <input type="file" id="fileSelector" accept="image/*,video/*" hidden>
+            </div>
             
-            // Agregar al pool
-            pool.unshift({
-                ...result.item,
-                liked: false,
-                comments: 0,
-                views: '0K'
-            });
+            <input type="text" id="uploadTitle" class="search-input" placeholder="Título (opcional)" style="margin: 0;">
+            
+            <div id="uploadProgress" style="display: none;">
+                <p>Progreso de subida:</p>
+                <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+            </div>
+            
+            <div id="uploadStatus" style="color: var(--red-color);"></div>
 
-            setTimeout(()=>{ 
-                closeUploadModal(); 
-                alert(`¡Contenido Subido! ${result.item.title}`); 
-                renderAll(); 
-            }, 1000);
-        } else {
-            throw new Error(result.message || 'Error desconocido');
+            <button id="uploadSubmitBtn" style="background-color: var(--accent-color); color: white; padding: 10px; border-radius: 8px; font-weight: 600;">
+                Subir Ahora
+            </button>
+        </div>
+        
+        <div class="viewer-controls" style="top: 12px; right: 12px;">
+            <button class="icon-btn" title="Cerrar" onclick="closeUploadModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <div id="sidePanel" class="side-panel">
+        <div class="panel-item">
+            <i class="fa-solid fa-user-circle"></i> Mi Perfil
+        </div>
+        <div class="panel-item">
+            <i class="fa-solid fa-gear"></i> Configuración
+        </div>
+        <div id="themeToggle" class="panel-item">
+            <i class="fa-solid fa-sun"></i> <span id="themeLabel">Modo Oscuro</span>
+        </div>
+        <div class="panel-item">
+            <i class="fa-solid fa-sign-out-alt"></i> Cerrar Sesión
+        </div>
+        <div class="panel-item" onclick="alert('Compartir app...');">
+            <i class="fa-solid fa-share-alt"></i> Compartir
+        </div>
+    </div>
+
+    <script>
+        // --- JS GLOBALS & SETUP ---
+        const API_BASE_URL = window.location.origin.includes('localhost') ? 'http://localhost:8000/api' : window.location.origin + '/api';
+        const UPLOAD_URL = API_BASE_URL + '/content/upload';
+        const LIKE_URL = API_BASE_URL + '/content/{id}/like';
+        const API_FEED_URL = API_BASE_URL + '/content/feed/{type}';
+        
+        // DOM Elements
+        const header = document.getElementById('header');
+        const homeFeed = document.getElementById('homeFeed');
+        const viewerModal = document.getElementById('viewerModal');
+        const viewerContent = document.getElementById('viewerContent');
+        const viewerTitle = document.getElementById('viewerTitle');
+        const viewerViews = document.getElementById('viewerViews');
+        const viewerLikes = document.getElementById('viewerLikes');
+        const likeBtn = document.getElementById('likeBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const overlay = document.getElementById('overlay');
+        const sidePanel = document.getElementById('sidePanel');
+        const navHome = document.getElementById('navHome');
+        const fabBtn = document.getElementById('fabBtn');
+        const fabOptions = document.getElementById('fabOptions');
+        const uploadModal = document.getElementById('uploadModal');
+        const myGridModal = document.getElementById('myGridModal');
+        const searchModal = document.getElementById('searchModal');
+        const searchInput = document.getElementById('searchInput');
+        const searchGrid = document.getElementById('searchGrid');
+        
+        const myGridFeed = document.getElementById('myGridFeed');
+        const fileSelector = document.getElementById('fileSelector');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const uploadSubmitBtn = document.getElementById('uploadSubmitBtn');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const uploadTitle = document.getElementById('uploadTitle');
+        const fileSelectContainer = document.getElementById('fileSelectContainer');
+        
+        // State
+        let currentViewerItem = null;
+        let activeRowIndex = 0;
+        let scrollY = 0;
+        let lastScrollY = 0;
+        let currentSection = 'feed'; // 'feed', 'reco', 'explore', 'mygrid'
+        let contentCache = {}; // Cache para datos del feed
+        let isFetching = false;
+        let page = 1;
+
+        // --- UTILS / HELPERS ---
+        const API = {
+            async fetchFeed(type, page, limit = 10) {
+                if (contentCache[type] && contentCache[type].length >= limit * page && page > 1) {
+                    return contentCache[type].slice((page - 1) * limit, page * limit);
+                }
+                
+                const url = API_FEED_URL.replace('{type}', type) + `?limit=${limit}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(response.statusText);
+                    const data = await response.json();
+                    
+                    if (data.data) {
+                        contentCache[type] = contentCache[type] ? [...contentCache[type], ...data.data] : data.data;
+                        return data.data;
+                    }
+                    return [];
+                } catch (error) {
+                    console.error('Error fetching feed:', error);
+                    return []; // Retorna vacío si falla
+                }
+            },
+            
+            async updateLike(id, kind) {
+                const url = LIKE_URL.replace('{id}', id);
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({kind: kind})
+                    });
+                    if (!response.ok) throw new Error(response.statusText);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error updating like:', error);
+                    return {success: false, message: 'API error'};
+                }
+            }
+        };
+
+        const THEME_KEY = 'sinfiltro-theme';
+        const themeToggle = document.getElementById('themeToggle');
+        const themeLabel = document.getElementById('themeLabel');
+        
+        function applyTheme(theme) {
+            document.body.className = theme === 'light' ? 'light-theme' : '';
+            themeLabel.textContent = theme === 'light' ? 'Modo Oscuro' : 'Modo Claro';
+            localStorage.setItem(THEME_KEY, theme);
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        }
+        
+        // Inicializar tema
+        const savedTheme = localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        applyTheme(savedTheme);
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // --- Modals & Panels ---
+        function openSidePanel() {
+            sidePanel.classList.add('open');
+            overlay.classList.add('show');
+            document.body.style.overflowY = 'hidden';
         }
 
-    } catch (error) {
-        clearInterval(progressSim);
-        uploadTitle.textContent = 'Error de Subida';
-        uploadStatus.textContent = error.message;
+        function closeSidePanel() {
+            sidePanel.classList.remove('open');
+            overlay.classList.remove('show');
+            document.body.style.overflowY = 'auto';
+        }
         
-        setTimeout(()=> {
+        function openSearchModal() {
+            searchModal.classList.add('show');
+            overlay.classList.add('show');
+            document.body.style.overflowY = 'hidden';
+            searchInput.focus();
+        }
+
+        function closeSearchModal() {
+            searchModal.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.style.overflowY = 'auto';
+        }
+        
+        function openUploadModal(kind = 'image') {
+            fileSelector.accept = kind === 'image' ? 'image/*' : 'video/*';
+            uploadModal.classList.add('show');
+            overlay.classList.add('show');
+            document.body.style.overflowY = 'hidden';
+            resetUploadForm();
+        }
+
+        function closeUploadModal() {
+            uploadModal.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.style.overflowY = 'auto';
+        }
+        
+        function openMyGridModal() {
+            myGridModal.classList.add('show');
+            overlay.classList.add('show');
+            document.body.style.overflowY = 'hidden';
+            // Llenar grid con el contenido
+            renderMyGrid();
+        }
+
+        function closeMyGridModal() {
+            myGridModal.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.style.overflowY = 'auto';
+        }
+
+        function closeAll() {
+            closeSidePanel();
+            closeSearchModal();
             closeUploadModal();
-            alert(`Error: ${error.message}`);
-        }, 3000);
-    }
-}
+            closeMyGridModal();
+        }
+        
+        // Event Listeners para Abrir/Cerrar
+        document.getElementById('accountBtn').addEventListener('click', openSidePanel);
+        document.getElementById('searchBtn').addEventListener('click', openSearchModal);
+        document.getElementById('uploadImageBubble').addEventListener('click', () => { closeFabOptions(); openUploadModal('image'); });
+        document.getElementById('uploadVideoBubble').addEventListener('click', () => { closeFabOptions(); openUploadModal('video'); });
+        document.getElementById('navMyGrid').addEventListener('click', (e) => { e.preventDefault(); openMyGridModal(); });
 
-function closeUploadModal(){
-    uploadModal.style.display = 'none';
-    uploadModal.setAttribute('aria-hidden', 'true');
-}
 
-closeUpload.addEventListener('click', closeUploadModal);
+        // --- Viewer (Modal de Contenido Grande) ---
 
-/* ---------- THEME ---------- */
-const THEME_KEY = 'sinfiltro.theme.v3';
-let theme = localStorage.getItem(THEME_KEY) || 'dark';
+        function openViewer(item) {
+            currentViewerItem = item;
+            viewerContent.innerHTML = ''; // Limpiar
+            let mediaElement;
+            let mediaHtml;
 
-function applyTheme(t){
-  requestAnimationFrame(()=>{
-    if(t==='light'){ 
-      document.body.classList.add('light'); 
-      themeToggle.textContent='☀️'; 
-    } else { 
-      document.body.classList.remove('light'); 
-      themeToggle.textContent='🌗'; 
-    }
-  });
-}
+            if (item.kind === 'image') {
+                mediaHtml = `<img src="${item.url}" class="media-tag" alt="${item.title}">`;
+            } else if (item.kind === 'video') {
+                // Verificar si es YouTube
+                if (item.url.includes('youtube.com')) {
+                    const videoId = extractYouTubeId(item.url);
+                    mediaHtml = `
+                        <div style="width: 100%; max-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                            <iframe id="viewerVideo" width="100%" height="100%" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&showinfo=0&controls=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen class="video-tag"></iframe>
+                        </div>
+                    `;
+                } else {
+                    // Video auto-alojado
+                    mediaHtml = `<video id="viewerVideo" src="${item.url}" class="video-tag" controls autoplay loop muted></video>`;
+                }
+            }
 
-applyTheme(theme);
+            viewerContent.innerHTML = mediaHtml;
+            viewerTitle.textContent = item.title;
+            viewerViews.innerHTML = `<i class="fa-solid fa-eye"></i> ${item.views || 0}`;
+            viewerLikes.innerHTML = `<i class="fa-solid fa-heart"></i> ${item.likes || 0}`;
+            likeBtn.dataset.liked = item.is_liked ? 'true' : 'false';
+            likeBtn.style.color = item.is_liked ? 'var(--red-color)' : 'var(--text-color)';
+            
+            document.body.style.overflowY = 'hidden';
+            viewerModal.classList.add('show');
+            
+            // Si es un video auto-alojado, añadir controles
+            mediaElement = document.getElementById('viewerVideo');
+            if (mediaElement && mediaElement.tagName === 'VIDEO') {
+                mediaElement.load();
+                mediaElement.play().catch(e => console.log('Autoplay failed:', e));
+            }
+        }
+        
+        function closeViewer() {
+            const video = document.getElementById('viewerVideo');
+            if (video && video.tagName === 'VIDEO') {
+                video.pause();
+                video.src = ''; // Detener la carga de video
+            }
+            viewerModal.classList.remove('show');
+            document.body.style.overflowY = 'auto';
+            currentViewerItem = null;
+        }
 
-themeToggle.addEventListener('click', ()=> {
-  theme = (theme==='dark')?'light':'dark';
-  localStorage.setItem(THEME_KEY, theme);
-  applyTheme(theme);
-});
+        document.getElementById('closeViewerBtn').addEventListener('click', closeViewer);
 
-/* ---------- NAVIGATION ---------- */
-brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
-$('#navSearch').addEventListener('click', ()=> openSearchModal());
-$('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#seeV').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal());
-searchTop.addEventListener('click', ()=> openSearchModal());
+        likeBtn.addEventListener('click', async () => {
+            if (!currentViewerItem) return;
+            const isLiked = likeBtn.dataset.liked === 'true';
+            const kind = isLiked ? 'dislike' : 'like';
+            
+            const response = await API.updateLike(currentViewerItem.id, kind);
+            
+            if (response.success) {
+                const newLikedStatus = !isLiked;
+                likeBtn.dataset.liked = newLikedStatus ? 'true' : 'false';
+                likeBtn.style.color = newLikedStatus ? 'var(--red-color)' : 'var(--text-color)';
+                
+                // Actualizar contador visualmente
+                let currentLikes = parseInt(viewerLikes.textContent.split(' ')[1]) || 0;
+                currentLikes = newLikedStatus ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+                viewerLikes.innerHTML = `<i class="fa-solid fa-heart"></i> ${currentLikes}`;
+            } else {
+                alert(`Error al dar ${kind}: ${response.message}`);
+            }
+        });
 
-/* ---------- SEARCH MODAL ---------- */
-function openSearchModal(){
-  populateSearchMini();
-  searchModal.classList.add('show'); 
-  searchModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
+        // Simulación de Descarga
+        downloadBtn.addEventListener('click', () => {
+            if (!currentViewerItem) return;
+            const url = currentViewerItem.url.startsWith('/uploads') ? window.location.origin + currentViewerItem.url : currentViewerItem.url;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentViewerItem.title || 'media_file';
+            a.target = '_blank';
+            a.click();
+            alert(`Descargando ${currentViewerItem.title}...`);
+        });
 
-function closeSearchModal(){
-  searchModal.classList.remove('show'); 
-  searchModal.setAttribute('aria-hidden','true');
-  searchMini.innerHTML = '';
-  document.body.style.overflow = '';
-}
+        // Extraer ID de YouTube de una URL
+        function extractYouTubeId(url) {
+            let id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
+            return id ? id[1] : null;
+        }
+        
+        // --- Renderer ---
 
-closeSearch.addEventListener('click', closeSearchModal);
-searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
+        function createMediaTag(item, isGrid = false) {
+            const isVideo = item.kind === 'video';
+            const src = isVideo && item.thumbnail ? item.thumbnail : item.url;
+            
+            const div = document.createElement('div');
+            div.className = isGrid ? 'grid-item' : 'media-content';
+            div.dataset.id = item.id;
+            
+            let imgTag;
+            if (isGrid && isVideo) {
+                // Para el grid, usamos la miniatura y el ícono
+                imgTag = `<img data-src="${src}" alt="${item.title}" class="lazyload">`;
+                div.innerHTML = imgTag + '<i class="fa-solid fa-video"></i>';
+            } else if (isGrid) {
+                 // Grid: solo imagen
+                imgTag = `<img data-src="${src}" alt="${item.title}" class="lazyload">`;
+                div.innerHTML = imgTag;
+            } else if (!isGrid && isVideo) {
+                // Feed: solo miniatura para el card (se reemplazará al hacer clic)
+                imgTag = `<img src="${src}" alt="${item.title}" class="media-tag">`;
+                div.innerHTML = `
+                    ${imgTag}
+                    <div class="overlay-info">
+                        <i class="fa-solid fa-play"></i>
+                        <span>${item.title}</span>
+                    </div>
+                `;
+            } else {
+                // Feed: imagen
+                imgTag = `<img src="${src}" alt="${item.title}" class="media-tag">`;
+                div.innerHTML = imgTag;
+            }
+            
+            // Añadir info adicional para el feed principal
+            if (!isGrid) {
+                 div.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
+                        <span style="font-size: 0.9em; opacity: 0.7;"><i class="fa-solid fa-eye"></i> ${item.views || 0}</span>
+                        <span style="font-size: 0.9em; opacity: 0.7;"><i class="fa-solid fa-heart"></i> ${item.likes || 0}</span>
+                    </div>
+                 `;
+            }
 
-function populateSearchMini(q){
-  searchMini.innerHTML = '';
-  for(let i=0;i<12;i++){
-    const item = pool[rand(pool.length)];
-    const d = document.createElement('div'); 
-    d.className='mini-thumb';
-    let mediaTag;
-    if(item.kind === 'youtube'){
-        const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
-        mediaTag = `<img src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
-    } else if (item.kind === 'image') {
-        mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
-    } else {
-        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
-    }
-    d.innerHTML = mediaTag;
-    d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
-    searchMini.appendChild(d);
-  }
-}
+            div.addEventListener('click', () => openViewer(item));
+            return div;
+        }
 
-/* ---------- MY ACCOUNT MODAL ---------- */
-function openMyModal(){
-  myGrid.innerHTML = '';
-  for(let i=0;i<9;i++){
-    const it = pool[rand(pool.length)];
-    const d = document.createElement('div'); 
-    d.className='mini-thumb';
-    let mediaTag;
-    if(it.kind === 'youtube'){
-        const thumb = it.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(it.src)}/maxresdefault.jpg`;
-        mediaTag = `<img src="${thumb}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
-    } else if (it.kind === 'image') {
-        mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
-    } else {
-        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
-    }
-    d.innerHTML = mediaTag;
-    d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
-    myGrid.appendChild(d);
-  }
-  myModal.classList.add('show'); 
-  myModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
-}
+        function renderRow(items, index) {
+            const row = document.createElement('div');
+            row.className = 'content-row';
+            row.id = `row-${index}`;
+            
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'content-card';
+                
+                // Asumiendo que cada card ocupa el ancho completo para el scroll horizontal
+                card.style.width = 'calc(100vw - 24px)'; 
+                card.style.height = 'calc(100% - 24px)';
+                
+                card.appendChild(createMediaTag(item));
+                row.appendChild(card);
+            });
+            
+            homeFeed.appendChild(row);
+        }
 
-function closeMyModal(){ 
-  myModal.classList.remove('show'); 
-  myModal.setAttribute('aria-hidden','true'); 
-  myGrid.innerHTML=''; 
-  document.body.style.overflow = ''; 
-}
+        function renderGrid(container, items) {
+            container.innerHTML = '';
+            items.forEach(item => {
+                container.appendChild(createMediaTag(item, true));
+            });
+        }
+        
+        function renderMyGrid() {
+            // Renderiza el contenido que el usuario haya guardado o subido
+            // Por simplicidad, usamos datos de ejemplo aquí
+            const dummyItems = contentCache.feed ? contentCache.feed.slice(0, 15) : [];
+            renderGrid(myGridFeed, dummyItems);
+        }
 
-closeMy.addEventListener('click', closeMyModal);
-myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
+        // --- Core Logic: Fetching, Scrolling & Navigation ---
+        
+        async function fetchAndRenderContent(type = 'feed', containerId = 'homeFeed', isGrid = false, isInitial = false) {
+            if (isFetching && !isInitial) return;
+            isFetching = true;
+            
+            // Mostrar skeleton/loader (simulado)
+            const container = document.getElementById(containerId);
+            if (isInitial || isGrid) {
+                container.innerHTML = '<div class="loading-skeleton"></div><div class="loading-skeleton"></div>';
+            } else {
+                 document.getElementById('loadingIndicator').style.display = 'block';
+            }
+            
+            try {
+                // Si es grid, usar una sola página grande. Si es feed, usar paginación.
+                const items = await API.fetchFeed(type, isGrid ? 1 : page, isGrid ? 30 : 10);
+                
+                if (isGrid) {
+                    renderGrid(container, items);
+                } else if (containerId === 'homeFeed') {
+                    // Feed principal (scroll horizontal, una fila por página)
+                    renderRow(items, page - 1); 
+                    page++;
+                } else {
+                    // Contenido vertical (simplemente append)
+                    items.forEach(item => {
+                        container.appendChild(createMediaTag(item));
+                    });
+                }
+                
+                // Ocultar skeleton/loader
+                if (isInitial || isGrid) {
+                    container.querySelector('.loading-skeleton').remove();
+                    if (container.querySelector('.loading-skeleton')) container.querySelector('.loading-skeleton').remove();
+                } else {
+                    document.getElementById('loadingIndicator').style.display = 'none';
+                }
 
-/* ---------- INFINITE SCROLL ---------- */
-let loadingGrid=false;
-window.addEventListener('scroll', ()=>{
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
-    loadingGrid = true;
-    setTimeout(()=> {
-      for(let i=0;i<6;i++){ 
-        gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); 
-      }
-      lazyObserve(gridFeed); 
-      loadingGrid=false;
-    }, 700);
-  }
-});
+                // Si es el feed principal, activar el observer
+                if (type === 'feed' && homeFeed.lastElementChild) {
+                    observer.observe(homeFeed.lastElementChild);
+                }
 
-/* ---------- INIT ---------- */
-document.addEventListener('DOMContentLoaded', renderAll);
+            } catch (e) {
+                console.error("Fetch and render failed:", e);
+                container.innerHTML = '<div>Error al cargar el contenido.</div>';
+            } finally {
+                isFetching = false;
+            }
+        }
+        
+        // Carga inicial del Feed
+        fetchAndRenderContent('feed', 'homeFeed', false, true);
+        
+        // Intersection Observer para Carga Infinita
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && currentSection === 'feed') {
+                    // Cargar la siguiente página cuando se vea la última fila
+                    observer.unobserve(entry.target);
+                    fetchAndRenderContent('feed', 'homeFeed', false);
+                }
+            });
+        }, { threshold: 0.5 }); // 50% de la fila visible
 
-document.addEventListener('keydown', e=>{ 
-    if(e.key==='Escape'){ 
-        closeViewerFunc(); 
-        closePanel(); 
-        closeSearchModal(); 
-        closeMyModal(); 
-        closeUploadModal();
-        closeFileSelectModal(); 
-    } 
-});
+        // --- Manejo del FAB (Botón Flotante) ---
+        function toggleFabOptions() {
+            fabOptions.classList.toggle('open');
+            fabBtn.querySelector('i').className = fabOptions.classList.contains('open') ? 'fa-solid fa-times' : 'fa-solid fa-plus';
+        }
+        
+        function closeFabOptions() {
+            fabOptions.classList.remove('open');
+            fabBtn.querySelector('i').className = 'fa-solid fa-plus';
+        }
+        
+        fabBtn.addEventListener('click', toggleFabOptions);
 
-</script>
+        // --- Scroll del Feed Principal (Horizontal) ---
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        function handleSwipe() {
+            const diffX = touchendX - touchstartX;
+            const rowCount = homeFeed.children.length;
+
+            if (Math.abs(diffX) < 50) return; // Ignorar swipes pequeños
+            
+            if (diffX > 0) { // Swipe Right (Anterior)
+                activeRowIndex = Math.max(0, activeRowIndex - 1);
+            } else { // Swipe Left (Siguiente)
+                activeRowIndex = Math.min(rowCount - 1, activeRowIndex + 1);
+            }
+
+            homeFeed.scrollTo({
+                left: activeRowIndex * homeFeed.offsetWidth,
+                behavior: 'smooth'
+            });
+            
+            // Si llegamos a la última fila, precargar la siguiente
+            if (activeRowIndex === rowCount - 1 && !isFetching) {
+                fetchAndRenderContent('feed', 'homeFeed', false);
+            }
+        }
+
+        homeFeed.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, false);
+
+        homeFeed.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+        
+        homeFeed.addEventListener('scroll', () => {
+             // Actualizar activeRowIndex en scroll normal (ej: rueda del mouse en desktop)
+             activeRowIndex = Math.round(homeFeed.scrollLeft / homeFeed.offsetWidth);
+        });
+
+        // --- Navegación (Bottom Nav) ---
+
+        navHome.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navHome.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                const targetId = item.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - header.offsetHeight,
+                        behavior: 'smooth'
+                    });
+                }
+                
+                currentSection = item.dataset.type;
+                
+                // Cargar contenido si es necesario
+                if (currentSection === 'reco' || currentSection === 'explore') {
+                    const containerId = currentSection === 'reco' ? 'reco-feed' : 'explore-feed';
+                    const sectionElement = document.getElementById(currentSection);
+                    sectionElement.style.display = 'block'; // Mostrar la sección
+                    if (!contentCache[currentSection]) {
+                        fetchAndRenderContent(currentSection, containerId, true, true);
+                    }
+                } else if (currentSection === 'feed') {
+                    document.getElementById('recommended').style.display = 'none';
+                    document.getElementById('explore').style.display = 'none';
+                }
+            });
+        });
+        
+        // --- Comportamiento del Header (Ocultar al hacer scroll hacia abajo) ---
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+
+            // Ocultar/Mostrar Header
+            if (currentScrollY > lastScrollY && currentScrollY > header.offsetHeight) {
+                // Scrolling Down
+                header.classList.add('header-hidden');
+            } else if (currentScrollY < lastScrollY || currentScrollY <= header.offsetHeight) {
+                // Scrolling Up or Top
+                header.classList.remove('header-hidden');
+            }
+
+            // Ocultar/Mostrar FAB
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                 fabBtn.classList.add('hidden');
+                 closeFabOptions();
+            } else {
+                 fabBtn.classList.remove('hidden');
+            }
+            
+            lastScrollY = currentScrollY;
+
+            // Lazy Load y Fade Up (usando una simulación simple ya que no hay IntersectionObserver aquí)
+            document.querySelectorAll('.fade-up').forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight - 100) {
+                    el.classList.add('in-view');
+                }
+            });
+        });
+
+        // --- Lógica de Subida (Upload) ---
+        
+        function resetUploadForm() {
+            fileSelector.value = '';
+            uploadTitle.value = '';
+            fileNameDisplay.textContent = 'Selecciona un archivo';
+            uploadProgress.style.display = 'none';
+            progressBar.value = 0;
+            uploadStatus.textContent = '';
+            uploadSubmitBtn.disabled = true;
+            fileSelectContainer.style.borderColor = 'var(--accent-color)';
+        }
+
+        fileSelectContainer.addEventListener('click', () => fileSelector.click());
+        
+        fileSelector.addEventListener('change', () => {
+            const file = fileSelector.files[0];
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+                uploadSubmitBtn.disabled = false;
+                // Validación básica de tamaño (ej: 50MB)
+                if (file.size > 50 * 1024 * 1024) { 
+                    uploadStatus.textContent = 'El archivo es demasiado grande (máx 50MB).';
+                    uploadSubmitBtn.disabled = true;
+                } else {
+                    uploadStatus.textContent = '';
+                }
+                fileSelectContainer.style.borderColor = 'var(--accent-color)';
+            } else {
+                resetUploadForm();
+            }
+        });
+
+        uploadSubmitBtn.addEventListener('click', async () => {
+            const file = fileSelector.files[0];
+            if (!file) {
+                uploadStatus.textContent = 'Por favor, selecciona un archivo.';
+                return;
+            }
+            
+            uploadSubmitBtn.disabled = true;
+            uploadStatus.textContent = 'Subiendo...';
+            uploadProgress.style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('title_title', uploadTitle.value || file.name); // Usar 'title_title' como en el backend
+            // formData.append('user_id', 'usuario_ejemplo_123'); // Puedes añadir el ID de usuario si lo tienes
+
+            try {
+                // Simulación de progreso (solo para visualización, el fetch nativo no da progreso)
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    progressBar.value = progress;
+                    if (progress >= 95) clearInterval(interval);
+                }, 100);
+
+                const response = await fetch(UPLOAD_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                clearInterval(interval);
+                progressBar.value = 100;
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    uploadStatus.textContent = '¡Subida exitosa!';
+                    uploadStatus.style.color = 'var(--accent-color)';
+                    setTimeout(closeUploadModal, 3000);
+                    // Opcional: Recargar el feed principal
+                    // fetchAndRenderContent('feed', 'homeFeed', false, true); 
+                } else {
+                    const errorMsg = data.detail || data.message || 'Error desconocido al subir.';
+                    uploadStatus.textContent = `Error: ${errorMsg}`;
+                    uploadStatus.style.color = 'var(--red-color)';
+                }
+            } catch (error) {
+                clearInterval(interval);
+                progressBar.value = 0;
+                uploadStatus.textContent = `Error de red/servidor: ${error.message}`;
+                uploadStatus.style.color = 'var(--red-color)';
+            } finally {
+                uploadSubmitBtn.disabled = false;
+            }
+        });
+        
+        // --- Búsqueda (Search) ---
+        searchInput.addEventListener('input', () => {
+             // Lógica de búsqueda en tiempo real o debounce
+             if (searchInput.value.length > 2) {
+                 // Aquí llamarías a fetchAndRenderContent('search', 'searchGrid', true) con el término de búsqueda
+                 searchGrid.innerHTML = '<div>Buscando... (simulado)</div>'; 
+             } else {
+                 searchGrid.innerHTML = '';
+             }
+        });
+        
+    </script>
 </body>
 </html>
