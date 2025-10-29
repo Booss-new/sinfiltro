@@ -6,6 +6,8 @@
 <title>SinFiltro — Premium (Móvil)</title>
 <meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.css">
+<script type="module" src="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.js"></script>
 <style>
   /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
@@ -626,7 +628,7 @@ function showViewer(){
   let mediaElement;
   if(it.kind === 'youtube'){
     let videoId = it.src;
-    if (it.src.includes('v=')) {
+    if (it.src.includes('v=') ) {
       videoId = it.src.split('v=')[1]?.split('&')[0] || it.src.split('/')[3];
     } else if (it.src.includes('youtu.be/')) {
       videoId = it.src.split('youtu.be/')[1]?.split('?')[0] || it.src.split('/')[3];
