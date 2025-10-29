@@ -6,8 +6,6 @@
 <title>SinFiltro — Premium (Móvil)</title>
 <meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/lite-youtube-embed@0.3.3/lite-yt-embed.css">
-<script src="https://unpkg.com/lite-youtube-embed@0.3.3/lite-yt-embed.js" async></script>
 <style>
   /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
@@ -640,16 +638,13 @@ function showViewer(){
       mediaElement = document.createElement('div');
       mediaElement.innerHTML = '<p style="color:white;text-align:center;">Error: ID de YouTube inválido</p>';
     } else {
-      mediaElement = document.createElement('iframe');
-      mediaElement.src = `https://www.youtube.com/embed/${videoId}?rel=0&playsinline=1&enablejsapi=1&modestbranding=1&autoplay=0&mute=1`;
+      mediaElement = document.createElement('lite-youtube');
+      mediaElement.videoid = videoId;
       mediaElement.style.width = '100%';
       mediaElement.style.height = '70vh';
-      mediaElement.frameBorder = '0';
-      mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-      mediaElement.allowFullscreen = true;
-      mediaElement.webkitAllowFullScreen = true;
-      mediaElement.mozAllowFullScreen = true;
-      mediaElement.title = `YouTube: ${it.title}`;
+      mediaElement.params = 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1';
+      mediaElement.preload = true;
+      mediaElement.posterquality = 'maxresdefault';
     }
   } else if(it.kind === 'image'){
     const img = document.createElement('img');
@@ -720,10 +715,9 @@ function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; sho
 vvPlay.addEventListener('click', ()=> { 
   const it = activeList[currentIndex]; 
   if(it && it.kind==='youtube'){ 
-    const iframe = viewerInner.querySelector('iframe'); 
-    if(iframe){ 
-      // Recarga con autoplay=1 para forzar reproducción
-      iframe.src = iframe.src.replace('&autoplay=1', '') + '&autoplay=1&playsinline=1';
+    const lite = viewerInner.querySelector('lite-youtube'); 
+    if(lite){ 
+      lite.shadowRoot.querySelector('.lty-playbtn').click(); 
     } 
   } else if(it.kind === 'video'){ 
     const v = viewerInner.querySelector('video'); 
