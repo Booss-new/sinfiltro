@@ -6,8 +6,6 @@
 <title>SinFiltro — Premium (Móvil)</title>
 <meta name="description" content="SinFiltro — feed visual premium. Móvil optimizado: scroll global, horizontales drag, viewer, menú lateral, FAB burbujas, buscador con miniaturas." />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.css">
-<script type="module" src="https://cdn.jsdelivr.net/npm/lite-youtube-embed@0.3.3/src/lite-yt-embed.js"></script>
 <style>
   /* ================= VARS (mantengo paleta aprobada) ================= */
   :root{
@@ -58,6 +56,7 @@
   .h-row::-webkit-scrollbar{display:none}
   .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
   .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
+  .card-small video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
   .mini-badge{position:absolute;left:10px;top:10px;padding:6px 8px;border-radius:999px;background:linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));color:#001;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:6}
@@ -66,7 +65,7 @@
   /* Grid (vertical infinite) */
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
   .grid .card{border-radius:12px;overflow:hidden;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);box-shadow:0 12px 40px rgba(2,10,18,0.6);cursor:pointer}
-  .grid img{width:100%;height:150px;object-fit:cover}
+  .grid img, .grid video{width:100%;height:150px;object-fit:cover}
   .grid .body{padding:8px;color:var(--text)}
   .grid .title{font-weight:700}
   .grid .meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;align-items:center}
@@ -74,7 +73,7 @@
   /* FAB + bottom nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   
-  /* FAB radial (burbujas) */
+  /* FAB radial (bubbles) */
   .bubble-group { 
     display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
     padding: 10px 14px; 
@@ -113,45 +112,41 @@
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
   .overlay.show{display:block;pointer-events:auto;opacity:1}
   
-  /* --- CAMBIO SOLICITADO: PANEL LATERAL DE IZQUIERDA A DERECHA (TIPO DRAWER) --- */
+  /* Panel lateral de izquierda a derecha (DRAWER) */
   .panel{
     position:fixed;
-    left:0; /* Fijo a la izquierda */
-    top:0; /* Fijo arriba */
-    bottom:0; /* Fijo abajo (ocupa toda la altura) */
-    height:100%; /* Ocupa toda la altura */
-    width:86%;max-width:320px;
+    left:0; top:0; bottom:0; height:100%; width:86%;max-width:320px;
     background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
-    border-radius:0 12px 12px 0; /* Solo esquinas derechas redondeadas */
+    border-radius:0 12px 12px 0;
     padding:12px;z-index:180;
-    box-shadow:20px 0 80px rgba(2,10,18,0.6); /* Sombra hacia la derecha */
-    transform:translateX(-100%); /* Oculto completamente a la izquierda */
-    opacity:1; /* Mantener opacidad 1 para la transición, solo controlar con transform */
+    box-shadow:20px 0 80px rgba(2,10,18,0.6);
+    transform:translateX(-100%);
+    opacity:1;
     transition:transform var(--trans) ease;
     pointer-events:none;
     display: flex; flex-direction: column; 
-    overflow-y: hidden; /* Evitar scroll del panel por defecto */
+    overflow-y: hidden;
   }
   .panel.open{
-    transform:translateX(0); /* Abierto: se desliza a la posición 0 */
+    transform:translateX(0);
     pointer-events:auto
   }
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-  .panel nav { flex-grow: 1; overflow-y: auto; padding-right: 5px; /* Para scrollbar */ }
+  .panel nav { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
 
 
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;} /* Padding 0 para que la imagen ocupe todo */
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;} /* Max-height ajustado */
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;} 
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;}
   
   /* Controles y meta-datos */
   .viewer-controls-meta { 
     z-index: 10;
     display: flex; gap: 8px; justify-content: center;
     background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
-    margin: 12px auto; /* Centrar y dar espacio */
+    margin: 12px auto;
     width: fit-content;
   }
   
@@ -199,9 +194,9 @@
   /* Small screens */
   @media (max-width:420px){
     .card-small{min-width:150px;height:100px}
-    .grid img{height:120px}
+    .grid img, .grid video{height:120px}
     .fab{width:64px;height:64px}
-    .panel{width:92%;left:0; border-radius:0 12px 12px 0; } /* Ajuste para móviles más pequeños */
+    .panel{width:92%;left:0; border-radius:0 12px 12px 0; }
   }
 
   /* fallback when backdrop-filter not supported */
@@ -314,7 +309,7 @@
       
       <div id="viewerBottom" style="
         padding: 12px;
-        background: rgba(0,0,0,0.5); /* Semi-transparente para separar del fondo */
+        background: rgba(0,0,0,0.5); 
         border-top: 1px solid rgba(255,255,255,0.05);
         display: flex; flex-direction: column; gap: 8px;
         position: relative;
@@ -357,7 +352,7 @@
 
 <script>
 /* =========================
-   SinFiltro — mejoras funcionales (mantener diseño)
+   SinFiltro — Código Frontend Consolidado
    ========================= */
 
 /* Helpers */
@@ -367,9 +362,9 @@ const rand = n => Math.floor(Math.random()*n);
 const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //  CAMBIO CLAVE: URL de tu servidor en RENDER 
+  //  URL de tu servidor en RENDER 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-const SERVER_URL = 'https://sinfiltro.onrender.com'; // URL de Render suministrada por el usuario
+const SERVER_URL = 'https://sinfiltro.onrender.com'; 
 
 
 /* DOM refs */
@@ -379,7 +374,7 @@ const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
-const viewerBottom = $('#viewerBottom'); // NUEVO: Referencia al contenedor de interacciones
+const viewerBottom = $('#viewerBottom'); 
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
@@ -387,7 +382,6 @@ const searchTop = $('#searchTop');
 const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
 const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
 const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); 
-// NUEVOS refs para subida real
 const fileSelectModal = $('#fileSelectModal');
 const closeFileSelect = $('#closeFileSelect');
 const realFileInput = $('#realFileInput');
@@ -396,24 +390,22 @@ const startUploadBtn = $('#startUploadBtn');
 
 
 /* Data pool (demo) */
-let pool = []; // Se llenará con datos reales del servidor + mockups
+let pool = []; 
 let activeList=[], currentIndex=0;
-// NUEVO: Mapas para controlar el scroll infinito lateral
-const rowLoadState = {}; // {trends: {row1: 0, row2: 0}, reco: ...}
+const rowLoadState = {};
 
 
-/* ---------- FETCH CONTENT FROM SERVER (MODIFICADO) ---------- */
+/* ---------- FETCH CONTENT FROM SERVER ---------- */
 async function fetchContent(type) {
     try {
         const response = await fetch(`${SERVER_URL}/api/content/feed/${type}`);
         const data = await response.json();
 
         if (data.success && data.data) {
-            // Asegurarse de que cada item tenga 'liked' y 'comments' para la simulación
             return data.data.map(item => ({
                 ...item,
-                liked: false, // Por defecto, no le ha dado like
-                comments: item.comments || rand(100), // Asegurar que tenga comentarios
+                liked: false, 
+                comments: item.comments || rand(100), 
                 views: item.views || (rand(9)+1)+'K'
             }));
         } else {
@@ -422,69 +414,63 @@ async function fetchContent(type) {
         }
     } catch (error) {
         console.error("Error de red o servidor, usando datos mock:", error);
-        // Fallback a datos mock si el servidor no responde
-        return Array.from({length:16}).map((_,i)=> ({
-            id:'mock'+type+i, 
-            src: i%2 === 0 ? 'https://www.youtube.com/watch?v=Jmp6EZZt26E' : 'https://i.pinimg.com/originals/3a/4d/4e/3a4d4e6b5c6a7d8e9f0a1b2c3d4e5f6g.jpg', 
-            kind: i%2 === 0 ? 'youtube' : 'image', 
-            title: i%2 === 0 ? 'Funny Cat Video' : 'Beautiful Landscape', 
-            likes: rand(500), 
-            comments: rand(100), 
-            views: (rand(9)+1)+'K', 
-            liked: false, 
-            thumbnail: i%2 === 0 ? 'https://img.youtube.com/vi/Jmp6EZZt26E/maxresdefault.jpg' : 'https://i.pinimg.com/originals/3a/4d/4e/3a4d4e6b5c6a7d8e9f0a1b2c3d4e5f6g.jpg'
+        return Array.from({length:16}).map((_,i)=>({
+            id:'mock'+type+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
+            title:['Offline: Callejón neon','Offline: Atardecer','Offline: Retrato','Offline: Arte Urbano'][i%4],
+            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K', liked: false
         }));
     }
 }
 
-/* ---------- RENDER LOGIC (MODIFICADO para usar datos reales) ---------- */
+/* ---------- RENDER LOGIC ---------- */
 async function renderAll() {
-    // 1. Obtener y renderizar tendencias
     const trendsData = await fetchContent('trends');
     const recoData = await fetchContent('reco');
-    const recentData = await fetchContent('recent'); // Usaremos 'recent' para todo el pool
+    const recentData = await fetchContent('recent');
 
-    // Usar todos los datos como pool principal
     pool = [...trendsData, ...recoData, ...recentData];
 
-    // Inicializar el estado de carga lateral
     rowLoadState.trends = { row1: 0, row2: 0 };
     rowLoadState.reco = { row1: 0, row2: 0 };
     rowLoadState.recent = { row1: 0, row2: 0 };
     
-    // Llenar las filas horizontales con los datos del servidor
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
     renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
-    // Llenar el grid con el resto del pool
     renderGridInitial(pool.slice(24)); 
 
-    // seed rows for smoothness (mantenido)
     $$('.h-row').forEach(r=> {
         if(r.children.length < 8){
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
         }
         enableDragScroll(r);
-        r.addEventListener('scroll', handleHorizontalScroll); // NUEVO: Detector de scroll para carga
+        r.addEventListener('scroll', handleHorizontalScroll);
     });
-    lazyObserve();
+    lazyObserve(); // Aplicar el Lazy Observer
 }
 
 
-/* ---------- UTILS (sin cambios relevantes) ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[m])); }
+/* ---------- UTILS ---------- */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 let imgObserver = null;
 function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src], video[data-src]'); // Videos también pueden ser lazy
+  const mediaElements = root.querySelectorAll('[data-src]'); 
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
         entries.forEach(e=>{
           if(e.isIntersecting){
             const media = e.target;
-            media.src = media.dataset.src;
+            // !!! CORRECCIÓN CLAVE: Mover data-src a src o data-src a poster si es video
+            if(media.tagName === 'VIDEO') {
+                media.src = media.dataset.src; 
+                media.load(); // Iniciar la carga del video
+            } else {
+                media.src = media.dataset.src;
+            }
+
             media.onload = ()=> media.parentElement.classList.remove('skel');
             media.removeAttribute('data-src');
             obs.unobserve(media);
@@ -492,9 +478,13 @@ function lazyObserve(root=document){
         });
       }, {rootMargin:'300px', threshold:0.05});
     }
-    imgs.forEach(i=> imgObserver.observe(i));
+    mediaElements.forEach(i=> imgObserver.observe(i));
   } else {
-    imgs.forEach(i=> { i.src = i.dataset.src; i.removeAttribute('data-src'); });
+    mediaElements.forEach(i=> { 
+        if(i.tagName === 'VIDEO') { i.src = i.dataset.src; i.load(); }
+        else { i.src = i.dataset.src; }
+        i.removeAttribute('data-src'); 
+    });
   }
 }
 
@@ -503,12 +493,12 @@ function makeSmallCard(item){
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
   let mediaTag;
-  if(item.kind === 'youtube'){
-    mediaTag = `<img data-src="${item.thumbnail}" alt="${escapeHtml(item.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s">`;
-  } else if (item.kind === 'image') {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+  if(item.kind === 'video'){
+    // USAR data-src en lugar de src
+    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata"></video>`;
   } else {
-    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s"></video>`;
+    // USAR data-src en lugar de src
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
   }
 
   d.innerHTML = `
@@ -516,10 +506,10 @@ function makeSmallCard(item){
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
-        <div style="font-weight:700">${item.kind==='youtube'?'YouTube Video':item.kind==='image'?'Pinterest Image':'Video'}</div>
+        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
         <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
@@ -531,12 +521,12 @@ function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
   let mediaTag;
-  if(item.kind === 'youtube'){
-    mediaTag = `<img data-src="${item.thumbnail}" alt="${escapeHtml(item.title)}" style="width:100%;height:150px;object-fit:cover">`;
-  } else if (item.kind === 'image') {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+  if(item.kind === 'video'){
+    // USAR data-src en lugar de src
+    mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
   } else {
-    mediaTag = `<video data-src="${item.src}" muted preload="metadata" style="width:100%;height:150px;object-fit:cover"></video>`;
+    // USAR data-src en lugar de src
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
   }
   a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
@@ -551,7 +541,7 @@ function renderTwoRows(row1,row2,items){
   });
 }
 
-function renderGridInitial(items=pool){ // Usa 'pool' para tener más variedad
+function renderGridInitial(items=pool){
   gridFeed.innerHTML = '';
   items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
@@ -581,10 +571,9 @@ function enableDragScroll(el){
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
-// NUEVO: Lógica de carga infinita horizontal
 function handleHorizontalScroll(e) {
     const row = e.target;
-    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) { // Carga si quedan 100px
+    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) {
         loadMoreHorizontal(row);
     }
 }
@@ -594,14 +583,9 @@ async function loadMoreHorizontal(row) {
     if (horizontalLoading) return;
     horizontalLoading = true;
 
-    const type = row.dataset.type;
-    
-    // Obtener un nuevo set de datos mock (simulando una nueva petición al servidor)
-    // Para no duplicar, simplemente sacamos más contenido aleatorio del pool grande
     const newItems = Array.from({length: 4}).map(() => pool[rand(pool.length)]);
 
     if (newItems.length > 0) {
-        // Simular un pequeño retraso de carga
         await new Promise(resolve => setTimeout(resolve, 300));
         
         const fragment = document.createDocumentFragment();
@@ -609,62 +593,37 @@ async function loadMoreHorizontal(row) {
         row.appendChild(fragment);
         lazyObserve(row);
         
-        // Ajustar el scroll para que la posición sea fluida
         row.scrollLeft += 10;
     }
     horizontalLoading = false;
 }
 
-// MODIFICADO: showViewer para implementar la nueva barra de interacciones
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
-  viewerBottom.innerHTML = ''; // Limpiamos el contenido anterior
+  viewerBottom.innerHTML = '';
 
   if(!it) return;
 
   downloadBtn.style.display = 'inline-flex';
 
   let mediaElement;
-  if(it.kind === 'youtube'){
-    let videoId = it.src;
-    if (it.src.includes('v=') ) {
-      videoId = it.src.split('v=')[1]?.split('&')[0] || it.src.split('/')[3];
-    } else if (it.src.includes('youtu.be/')) {
-      videoId = it.src.split('youtu.be/')[1]?.split('?')[0] || it.src.split('/')[3];
-    } else if (it.src.includes('embed/')) {
-      videoId = it.src.split('embed/')[1]?.split('?')[0] || it.src.split('/')[4];
-    }
-
-    if (!videoId) {
-      mediaElement = document.createElement('div');
-      mediaElement.innerHTML = '<p style="color:white;text-align:center;">Error: ID de YouTube inválido</p>';
-    } else {
-      mediaElement = document.createElement('lite-youtube');
-      mediaElement.videoid = videoId;
-      mediaElement.style.width = '100%';
-      mediaElement.style.height = '70vh';
-      mediaElement.params = 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1';
-      mediaElement.preload = true;
-      mediaElement.posterquality = 'maxresdefault';
-    }
-  } else if(it.kind === 'image'){
-    const img = document.createElement('img');
-    img.src = it.src;
-    img.alt = it.title;
-    img.style.maxHeight = '80vh';
-    mediaElement = img;
-  } else {
+  if(it.kind === 'video'){
     const video = document.createElement('video');
     video.src = it.src;
     video.controls = true;
     video.autoplay = false;
     video.style.maxHeight = '70vh';
     mediaElement = video;
+  } else {
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    mediaElement = img;
   }
   viewerInner.appendChild(mediaElement);
 
-  // NUEVA ESTRUCTURA: Barra de interacciones tipo red social
   viewerBottom.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
@@ -684,14 +643,13 @@ function showViewer(){
       </div>
   `;
 
-  // Añadir la lógica de simulación de like
   viewerBottom.querySelector('#likeBtn').addEventListener('click', (e) => {
       it.liked = !it.liked;
       if (it.liked) {
           it.likes = (it.likes || 0) + 1;
           e.target.style.color = 'var(--accent-violet)';
       } else {
-          it.likes = (it.likes || 1) - 1; // Asegurarse que no baja de 0
+          it.likes = (it.likes || 1) - 1;
           if (it.likes < 0) it.likes = 0;
           e.target.style.color = 'var(--muted)';
       }
@@ -714,20 +672,7 @@ function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
-vvPlay.addEventListener('click', ()=> { 
-  const it = activeList[currentIndex]; 
-  if(it && it.kind==='youtube'){ 
-    const lite = viewerInner.querySelector('lite-youtube'); 
-    if(lite){ 
-      lite.shadowRoot.querySelector('.lty-playbtn').click(); 
-    } 
-  } else if(it.kind === 'video'){ 
-    const v = viewerInner.querySelector('video'); 
-    if(v){ 
-      v.paused ? v.play() : v.pause(); 
-    } 
-  } 
-});
+vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 prevBtn.addEventListener('click', prevItem);
@@ -773,14 +718,13 @@ $$('.panel-item').forEach(btn=>{
   });
 });
 
-/* ---------- FAB radial (bubbles) - MODIFICADO ---------- */
+/* ---------- FAB radial (bubbles) ---------- */
 fab.addEventListener('click', ()=>{
   if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
   else {
     radials.classList.add('show');
     radials.innerHTML = '';
     
-    // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
         const d = document.createElement('button'); d.className='bubble-group';
         d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
@@ -788,7 +732,6 @@ fab.addEventListener('click', ()=>{
         return d;
     }
 
-    // AHORA LLAMA AL MODAL DE SELECCIÓN DE ARCHIVO
     const uploadAction = ()=> { radials.classList.remove('show'); openFileSelectModal(); };
     const createPostAction = ()=> { alert('Demo: Publicar Galería'); radials.classList.remove('show'); };
     const createShortAction = ()=> { alert('Demo: Crear Short'); radials.classList.remove('show'); };
@@ -800,7 +743,7 @@ fab.addEventListener('click', ()=>{
 });
 
 
-/* ---------- LOGICA DE SUBIDA REAL (Añadida) ---------- */
+/* ---------- LOGICA DE SUBIDA REAL ---------- */
 function openFileSelectModal(){
     fileSelectModal.classList.add('show');
     fileSelectModal.setAttribute('aria-hidden', 'false');
@@ -809,13 +752,12 @@ function openFileSelectModal(){
 function closeFileSelectModal(){
     fileSelectModal.classList.remove('show');
     fileSelectModal.setAttribute('aria-hidden', 'true');
-    realFileInput.value = ''; // Limpiar input de archivo
-    uploadTitleInput.value = ''; // Limpiar input de título
+    realFileInput.value = '';
+    uploadTitleInput.value = '';
     document.body.style.overflow = '';
 }
 closeFileSelect.addEventListener('click', closeFileSelectModal);
 
-// Evento de click en el botón de Subir Ahora (en el modal de selección)
 startUploadBtn.addEventListener('click', () => {
     const file = realFileInput.files[0];
     const title = uploadTitleInput.value;
@@ -834,7 +776,6 @@ async function uploadFileToBackend(file, title){
     formData.append('title', title);
     
     closeFileSelectModal();
-    // 1. Mostrar modal de progreso
     uploadModal.style.display = 'block';
     uploadModal.setAttribute('aria-hidden', 'false');
     uploadTitle.textContent = 'Subiendo ' + file.name.substring(0, 15) + '...';
@@ -842,7 +783,6 @@ async function uploadFileToBackend(file, title){
     uploadStatus.textContent = '0%';
     let progress = 0;
     
-    // Simular progreso rápido mientras se espera la respuesta (necesario con fetch)
     const progressSim = setInterval(()=>{
         if(progress < 95) {
             progress += 5;
@@ -870,8 +810,6 @@ async function uploadFileToBackend(file, title){
         if(result.success){
             uploadTitle.textContent = '¡Subida Completa!';
             
-            // Agregamos el nuevo item al pool local para que se vea inmediatamente
-            // Asegurarse de que el nuevo item tenga las propiedades para el visor
             pool.unshift({
                 ...result.item,
                 liked: false,
@@ -882,7 +820,6 @@ async function uploadFileToBackend(file, title){
             setTimeout(()=>{ 
                 closeUploadModal(); 
                 alert(`¡Contenido Subido con Éxito! Título: ${result.item.title}`); 
-                // Renderizar de nuevo para incluir el nuevo contenido
                 renderAll(); 
             }, 1000);
         } else {
@@ -892,7 +829,7 @@ async function uploadFileToBackend(file, title){
     } catch (error) {
         clearInterval(progressSim);
         uploadTitle.textContent = 'Error de Subida';
-        uploadStatus.textContent = error.message.includes('fetch') ? 'Servidor no disponible (Render caído?)' : error.message;
+        uploadStatus.textContent = error.message.includes('Servidor no disponible') ? 'Servidor no disponible (Render caído?)' : error.message;
         
         setTimeout(()=> {
             closeUploadModal();
@@ -901,7 +838,6 @@ async function uploadFileToBackend(file, title){
     }
 }
 
-// Subida: La función closeUploadModal es la única que queda del código de simulación
 function closeUploadModal(){
     uploadModal.style.display = 'none';
     uploadModal.setAttribute('aria-hidden', 'true');
@@ -910,7 +846,7 @@ function closeUploadModal(){
 closeUpload.addEventListener('click', closeUploadModal);
 
 
-/* ---------- (Resto del JS sin cambios relevantes) ---------- */
+/* ---------- (Resto del JS) ---------- */
 
 const THEME_KEY = 'sinfiltro.theme.v3';
 let theme = localStorage.getItem(THEME_KEY) || 'dark';
@@ -927,16 +863,13 @@ themeToggle.addEventListener('click', ()=> {
   applyTheme(theme);
 });
 
-/* brand click -> home */
 brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navSearch').addEventListener('click', ()=> openSearchModal());
-/* --- CAMBIO: Antes Visto solo hace scroll, no abre pestaña --- */
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#seeV').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); }); // También el "Ver todo" de Antes Visto
-$('#navMe').addEventListener('click', ()=> openMyModal()); // Mantiene ID navMe, pero el texto dice Mi Cuenta
+$('#seeV').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); }); 
+$('#navMe').addEventListener('click', ()=> openMyModal());
 
-/* Top search demo */
 searchTop.addEventListener('click', ()=> openSearchModal());
 
 /* ---------- Search modal (miniatures) ---------- */
@@ -959,37 +892,36 @@ function populateSearchMini(q){
     const item = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     let mediaTag;
-    if(item.kind === 'youtube'){
-        mediaTag = `<img src="${item.thumbnail}" alt="${escapeHtml(item.title)}">`;
-    } else if (item.kind === 'image') {
-        mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    if(item.kind === 'video'){
+        mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
     } else {
-        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
+        mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
     }
     d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
     searchMini.appendChild(d);
+    // Aplicar lazyObserve para las miniaturas del modal de búsqueda
+    lazyObserve(searchMini); 
   }
 }
 
-/* ---------- My videos modal (grid preview) - MEJORADO para usar miniaturas y videos/fotos ---------- */
+/* ---------- My videos modal (grid preview) ---------- */
 function openMyModal(){
   myGrid.innerHTML = '';
-  // Usamos el pool para simular el contenido del usuario
   for(let i=0;i<9;i++){
     const it = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     let mediaTag;
-    if(it.kind === 'youtube'){
-        mediaTag = `<img src="${it.thumbnail}" alt="${escapeHtml(it.title)}">`;
-    } else if (it.kind === 'image') {
-        mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+    if(it.kind === 'video'){
+        mediaTag = `<video data-src="${it.src}" muted preload="metadata"></video>`;
     } else {
-        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
+        mediaTag = `<img data-src="${it.src}" alt="${escapeHtml(it.title)}">`;
     }
     d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
     myGrid.appendChild(d);
+    // Aplicar lazyObserve para las miniaturas del modal Mi Cuenta
+    lazyObserve(myGrid); 
   }
   myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
