@@ -1,30 +1,32 @@
-// server.js
-
-// Importar el módulo Express
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
-// Inicializar la aplicación Express
 const app = express();
+const upload = multer({ dest: 'uploads/' });
 
-// Definir el puerto donde escuchará el servidor
-// Usa el puerto que te asigne el entorno (ej. Heroku) o por defecto el 3000
+app.use(express.static('.'));
+app.use('/uploads', express.static('uploads'));
+
+app.post('/api/content/upload', upload.single('file'), (req, res) => {
+  const { file, body: { title } } = req;
+  const ext = path.extname(file.originalname);
+  const newPath = `uploads/${Date.now()}-${Math.random().toString(36).substr(2, 9)}${ext}`;
+  fs.renameSync(file.path, newPath);
+  res.json({
+    success: true,
+    item: {
+      id: `upload-${Date.now()}`,
+      kind: file.mimetype.startsWith('video') ? 'video' : 'image',
+      src: `/${newPath}`,
+      title: title || file.originalname,
+      likes: 0,
+      comments: 0,
+      views: '0K'
+    }
+  });
+});
+
 const PORT = process.env.PORT || 3000;
-
-// Middleware para servir archivos estáticos
-// Esto hace que todo el contenido de la carpeta 'public' sea accesible
-// directamente desde la raíz del servidor.
-app.use(express.static('public'));
-
-// Ruta principal (opcional, ya que express.static ya maneja el index.html)
-// Sirve el archivo index.html si no se encuentra en el middleware anterior
-app.get('/', (req, res) => {
-    // Si estás usando 'express.static', esta línea puede ser redundante,
-    // pero asegura que la página principal se sirva correctamente.
-    res.sendFile(__dirname + '/public/index.html');
-});
-
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-    console.log('¡Listo para servir tu página móvil pro!');
-});
+app.listen(PORT, () => console.log(`Server en http://localhost:${PORT}`));
