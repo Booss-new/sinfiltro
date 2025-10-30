@@ -21,7 +21,7 @@ async def root():
     with open(filepath, "r", encoding="utf-8") as f:
         return f.read()
 
-# === API: SUBIR ARCHIVO (EXACTO como tu JS espera) ===
+# === API: SUBIR ARCHIVO ===
 @app.post("/api/content/upload")
 async def upload_file(file: UploadFile = File(...), title: str = Form(None)):
     if not file.filename:
@@ -47,10 +47,9 @@ async def upload_file(file: UploadFile = File(...), title: str = Form(None)):
         }
     })
 
-# === API: FEED (EXACTO como tu JS espera) ===
+# === API: FEED (ejemplo) ===
 @app.get("/api/content/feed/{tipo_feed}")
 async def obtener_feed(tipo_feed: str):
-    # Datos de ejemplo (tu JS los usa si no hay DB)
     sample_data = [
         {
             "id": "1",
