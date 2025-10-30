@@ -1,83 +1,84 @@
-from flask import Flask, send_file, request, jsonify, send_from_directory
 import os
-import uuid
+from pathlib import Path
 
-# === CONFIGURACIÓN ===
-app = Flask(__name__)
-CARPETA_SUBIDAS = 'uploads'
-os.makedirs(CARPETA_SUBIDAS, exist_ok=True)
+from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException, responses
+from fastapi.staticfiles import StaticFiles
 
-# === RUTA PRINCIPAL (CON PRUEBA DE SEGURIDAD) ===
-@app.route('/')
-def inicio():
-    # Primero intenta servir el HTML
-    if os.path.exists('sinfiltro.html'):
-        return send_file('sinfiltro.html')
-    else:
-        # Si no existe, muestra mensaje claro
-        return """
-        <h1 style="color:#ff3366; text-align:center; margin-top:100px;">
-            ¡SINFILTRO ESTÁ VIVO!
-        </h1>
-        <p style="text-align:center; color:#ccc;">
-            Pero <code>sinfiltro.html</code> no está en la raíz.<br>
-            Súbelo a la misma carpeta que <code>servidor.py</code>
-        </p>
-        <p style="text-align:center;">
-            <a href="/health" style="color:#00ff00;">Health Check</a>
-        </p>
-        """, 200
+# --- CONFIGURACIÓN DE RUTAS ---
+# Directorio donde se encuentra este script (backend/)
+BASE_DIR = Path(__file__).resolve().parent
 
-# === VER ARCHIVO SUBIDO ===
-@app.route('/uploads/<nombre_archivo>')
-def archivo_subido(nombre_archivo):
-    return send_from_directory(CARPETA_SUBIDAS, nombre_archivo)
+# Directorio Raíz de tu proyecto (un nivel arriba de backend/)
+# Asumimos que el HTML principal está aquí (sinfiltro.html)
+ROOT_DIR = BASE_DIR.parent 
 
-# === SUBIR ARCHIVO ===
-@app.route('/api/content/upload', methods=['POST'])
-def subir_archivo():
-    archivo = request.files.get('file')
-    if not archivo or archivo.filename == '':
-        return jsonify(success=False, message="No hay archivo"), 400
+# Directorio para archivos subidos (ej: /uploads)
+UPLOAD_DIR = ROOT_DIR / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True) 
+
+# --- FASTAPI APP ---
+# Se define sin root_path="/api" para que coincida con la corrección en el HTML.
+APP = FastAPI(title="sinfiltra-api")
+
+# --- SERVIR ARCHIVOS ESTÁTICOS ---
+# Montar el directorio donde está el HTML y otros archivos estáticos (JS, CSS, etc.)
+# Esto sirve archivos como 'sinfiltro.html' si está en la raíz del proyecto.
+# Si tienes otros archivos estáticos fuera de la carpeta 'backend', úsalo.
+APP.mount("/static", StaticFiles(directory=ROOT_DIR), name="static")
+
+# Montar el directorio de subidas
+APP.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
+
+
+# --- ENDPOINT PRINCIPAL (SIRVE EL HTML) ---
+# Este endpoint responde a la URL principal (la raíz)
+@APP.get("/", response_class=responses.HTMLResponse)
+async def serve_frontend():
+    """Sirve el archivo HTML principal (frontend)."""
     
-    titulo = request.form.get('title', archivo.filename)
-    extension = os.path.splitext(archivo.filename)[1]
-    nombre_nuevo = f"{uuid.uuid4().hex}{extension}"
-    ruta_guardar = os.path.join(CARPETA_SUBIDAS, nombre_nuevo)
-    archivo.save(ruta_guardar)
+    # Asume que tu archivo HTML principal se llama 'sinfiltro.html'
+    html_path = ROOT_DIR / "sinfiltro.html" 
     
-    return jsonify({
-        "success": True,
-        "item": {
-            "id": f"upload-{uuid.uuid4().hex}",
-            "kind": "video" if archivo.mimetype.startswith('video') else "image",
-            "url": f"/uploads/{nombre_nuevo}",
-            "title": titulo,
-            "likes": 0,
-            "views": "0K"
-        }
-    })
+    if not html_path.exists():
+        # Si el archivo no existe en la raíz, busca una alternativa (si aplica)
+        raise HTTPException(status_code=404, detail="Error 404: No se encontró el archivo 'sinfiltro.html'.")
+        
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+        
+    return responses.HTMLResponse(content=html_content)
 
-# === OBTENER FEED ===
-@app.route('/api/content/feed/<tipo_feed>')
-def obtener_feed(tipo_feed):
-    return jsonify(data=[
-        {
-            "id": "1",
-            "kind": "video",
-            "url": "https://player.vimeo.com/external/371604939.sd.mp4?s=8c1b8b8a8f8f8f8f8f8f8f8f8f8f8f8f&profile_id=165",
-            "title": "Naturaleza",
-            "likes": 1234,
-            "views": "12K"
-        }
-    ])
 
-# === SALUD ===
-@app.route('/health')
-def salud():
-    return jsonify(status="ok")
+# --- ENDPOINTS DE API ---
+# Nota: Ahora deben ir SIN el prefijo /api, ya que la conexión del HTML fue corregida.
 
-# === INICIAR SERVIDOR ===
-if __name__ == '__main__':
-    puerto = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=puerto)
+@APP.post("/content/upload")
+async def upload_content(file: UploadFile = File(...), title: str = Form(...)):
+    """Maneja la subida de archivos."""
+    
+    # **Tu lógica existente de subida de archivos va aquí**
+    # Ejemplo de guardado:
+    file_location = UPLOAD_DIR / file.filename
+    with open(file_location, "wb") as f:
+        f.write(file.file.read())
+        
+    return {"success": True, "message": "Archivo subido correctamente."}
+
+@APP.get("/content/feed/{type}")
+async def get_feed(type: str, limit: int = 10):
+    """Devuelve el feed de contenido (ej: 'feed', 'reco', 'explore')."""
+    # **Tu lógica para obtener el feed va aquí**
+    
+    # Simulación de respuesta para evitar error 404 al arrancar:
+    return {"data": [
+        {"id": 1, "title": "Video de Prueba", "url": "/uploads/test.mp4", "kind": "video", "views": 100, "likes": 5, "is_liked": False},
+        {"id": 2, "title": "Imagen de Prueba", "url": "/uploads/test.jpg", "kind": "image", "views": 50, "likes": 10, "is_liked": True}
+    ]}
+
+@APP.post("/content/{id}/like")
+async def update_like(id: int, kind: dict):
+    """Actualiza el estado de 'Me Gusta'."""
+    # **Tu lógica de likes va aquí**
+    return {"success": True, "message": f"Like/Dislike actualizado para {id}"}
+
+# **Asegúrate de copiar todos tus otros endpoints de la API aquí, sin el prefijo /api.**
