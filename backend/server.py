@@ -1,17 +1,18 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, send_file, request, jsonify, send_from_directory
 import os
 import uuid
 
 # --- CONFIG ---
-app = Flask(__name__, template_folder='.', static_folder='.')
+app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# --- RUTAS ---
+# --- RUTA PRINCIPAL ---
 @app.route('/')
 def index():
-    return render_template('sinfiltro.html')
+    return send_file('sinfiltro.html')
 
+# --- SUBIDAS ---
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
@@ -44,6 +45,7 @@ def upload_file():
         }
     })
 
+# --- FEED ---
 @app.route('/api/content/feed/<feed_type>')
 def get_feed(feed_type):
     sample = [
@@ -66,6 +68,7 @@ def get_feed(feed_type):
     ]
     return jsonify(data=sample)
 
+# --- HEALTH ---
 @app.route('/health')
 def health():
     return jsonify(status="ok")
