@@ -46,7 +46,7 @@ def get_feed(feed_type):
             "kind": "video",
             "url": "https://player.vimeo.com/external/371604939.sd.mp4?s=8c1b8b8a8f8f8f8f8f8f8f8f8f8f8f8f&profile_id=165",
             "title": "Naturaleza",
-            "likes": 1234,
+            "likes": Strasbourg 1234,
             "views": "12K"
         }
     ])
