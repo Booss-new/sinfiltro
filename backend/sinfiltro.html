@@ -90,7 +90,6 @@
             padding: 0 12px;
             background: var(--bg-color);
             box-shadow: 0 2px 5px var(--shadow-color);
-            /* Animación para ocultar/mostrar */
             transition: transform 0.3s ease-in-out;
         }
 
@@ -158,8 +157,8 @@
         
         /* --- Main Content Area --- */
         main {
-            padding-top: var(--nav-height); /* Espacio para el header fijo */
-            padding-bottom: var(--nav-height); /* Espacio para el footer fijo */
+            padding-top: var(--nav-height);
+            padding-bottom: var(--nav-height);
         }
         
         /* --- Contenedores de Contenido (Feed) --- */
@@ -168,7 +167,7 @@
             overflow-x: scroll;
             scroll-snap-type: x mandatory;
             padding: 0;
-            height: calc(100vh - var(--nav-height) * 2); /* Ajuste dinámico */
+            height: calc(100vh - var(--nav-height) * 2);
             -webkit-overflow-scrolling: touch;
         }
 
@@ -185,7 +184,7 @@
         .media-tag {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Contiene la media dentro del viewport */
+            object-fit: contain;
             display: block;
             border-radius: 8px;
             box-shadow: 0 4px 10px var(--card-shadow);
@@ -250,13 +249,13 @@
             gap: 6px;
             padding: 12px;
             overflow-y: scroll;
-            height: calc(100vh - var(--nav-height) * 2); /* Ajuste */
+            height: calc(100vh - var(--nav-height) * 2);
         }
 
         .grid-item {
             position: relative;
             width: 100%;
-            padding-top: 100%; /* Para un aspecto cuadrado */
+            padding-top: 100%;
             overflow: hidden;
             border-radius: 6px;
             cursor: pointer;
@@ -403,7 +402,7 @@
         .backdrop-filter {
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            background: rgba(0, 0, 0, 0.3); /* Base de fallback */
+            background: rgba(0, 0, 0, 0.3);
         }
 
         /* Animación FadeUp */
@@ -591,7 +590,7 @@
 
     <script>
         // --- JS GLOBALS & SETUP ---
-        const API_BASE_URL = window.location.origin.includes('localhost') ? 'http://localhost:8000/api' : window.location.origin + '/api';
+        const API_BASE_URL = window.location.origin + '/api';  // CORREGIDO
         const UPLOAD_URL = API_BASE_URL + '/content/upload';
         const LIKE_URL = API_BASE_URL + '/content/{id}/like';
         const API_FEED_URL = API_BASE_URL + '/content/feed/{type}';
@@ -632,8 +631,8 @@
         let activeRowIndex = 0;
         let scrollY = 0;
         let lastScrollY = 0;
-        let currentSection = 'feed'; // 'feed', 'reco', 'explore', 'mygrid'
-        let contentCache = {}; // Cache para datos del feed
+        let currentSection = 'feed';
+        let contentCache = {};
         let isFetching = false;
         let page = 1;
 
@@ -657,7 +656,7 @@
                     return [];
                 } catch (error) {
                     console.error('Error fetching feed:', error);
-                    return []; // Retorna vacío si falla
+                    return [];
                 }
             },
             
@@ -694,7 +693,6 @@
             applyTheme(newTheme);
         }
         
-        // Inicializar tema
         const savedTheme = localStorage.getItem(THEME_KEY) || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         applyTheme(savedTheme);
         themeToggle.addEventListener('click', toggleTheme);
@@ -743,7 +741,6 @@
             myGridModal.classList.add('show');
             overlay.classList.add('show');
             document.body.style.overflowY = 'hidden';
-            // Llenar grid con el contenido
             renderMyGrid();
         }
 
@@ -760,26 +757,21 @@
             closeMyGridModal();
         }
         
-        // Event Listeners para Abrir/Cerrar
         document.getElementById('accountBtn').addEventListener('click', openSidePanel);
         document.getElementById('searchBtn').addEventListener('click', openSearchModal);
         document.getElementById('uploadImageBubble').addEventListener('click', () => { closeFabOptions(); openUploadModal('image'); });
         document.getElementById('uploadVideoBubble').addEventListener('click', () => { closeFabOptions(); openUploadModal('video'); });
         document.getElementById('navMyGrid').addEventListener('click', (e) => { e.preventDefault(); openMyGridModal(); });
 
-
-        // --- Viewer (Modal de Contenido Grande) ---
-
+        // --- Viewer ---
         function openViewer(item) {
             currentViewerItem = item;
-            viewerContent.innerHTML = ''; // Limpiar
-            let mediaElement;
+            viewerContent.innerHTML = '';
             let mediaHtml;
 
             if (item.kind === 'image') {
                 mediaHtml = `<img src="${item.url}" class="media-tag" alt="${item.title}">`;
             } else if (item.kind === 'video') {
-                // Verificar si es YouTube
                 if (item.url.includes('youtube.com')) {
                     const videoId = extractYouTubeId(item.url);
                     mediaHtml = `
@@ -788,7 +780,6 @@
                         </div>
                     `;
                 } else {
-                    // Video auto-alojado
                     mediaHtml = `<video id="viewerVideo" src="${item.url}" class="video-tag" controls autoplay loop muted></video>`;
                 }
             }
@@ -803,8 +794,7 @@
             document.body.style.overflowY = 'hidden';
             viewerModal.classList.add('show');
             
-            // Si es un video auto-alojado, añadir controles
-            mediaElement = document.getElementById('viewerVideo');
+            const mediaElement = document.getElementById('viewerVideo');
             if (mediaElement && mediaElement.tagName === 'VIDEO') {
                 mediaElement.load();
                 mediaElement.play().catch(e => console.log('Autoplay failed:', e));
@@ -815,7 +805,7 @@
             const video = document.getElementById('viewerVideo');
             if (video && video.tagName === 'VIDEO') {
                 video.pause();
-                video.src = ''; // Detener la carga de video
+                video.src = '';
             }
             viewerModal.classList.remove('show');
             document.body.style.overflowY = 'auto';
@@ -836,7 +826,6 @@
                 likeBtn.dataset.liked = newLikedStatus ? 'true' : 'false';
                 likeBtn.style.color = newLikedStatus ? 'var(--red-color)' : 'var(--text-color)';
                 
-                // Actualizar contador visualmente
                 let currentLikes = parseInt(viewerLikes.textContent.split(' ')[1]) || 0;
                 currentLikes = newLikedStatus ? currentLikes + 1 : Math.max(0, currentLikes - 1);
                 viewerLikes.innerHTML = `<i class="fa-solid fa-heart"></i> ${currentLikes}`;
@@ -845,7 +834,6 @@
             }
         });
 
-        // Simulación de Descarga
         downloadBtn.addEventListener('click', () => {
             if (!currentViewerItem) return;
             const url = currentViewerItem.url.startsWith('/uploads') ? window.location.origin + currentViewerItem.url : currentViewerItem.url;
@@ -857,14 +845,12 @@
             alert(`Descargando ${currentViewerItem.title}...`);
         });
 
-        // Extraer ID de YouTube de una URL
         function extractYouTubeId(url) {
             let id = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/);
             return id ? id[1] : null;
         }
         
         // --- Renderer ---
-
         function createMediaTag(item, isGrid = false) {
             const isVideo = item.kind === 'video';
             const src = isVideo && item.thumbnail ? item.thumbnail : item.url;
@@ -875,15 +861,12 @@
             
             let imgTag;
             if (isGrid && isVideo) {
-                // Para el grid, usamos la miniatura y el ícono
                 imgTag = `<img data-src="${src}" alt="${item.title}" class="lazyload">`;
                 div.innerHTML = imgTag + '<i class="fa-solid fa-video"></i>';
             } else if (isGrid) {
-                 // Grid: solo imagen
                 imgTag = `<img data-src="${src}" alt="${item.title}" class="lazyload">`;
                 div.innerHTML = imgTag;
             } else if (!isGrid && isVideo) {
-                // Feed: solo miniatura para el card (se reemplazará al hacer clic)
                 imgTag = `<img src="${src}" alt="${item.title}" class="media-tag">`;
                 div.innerHTML = `
                     ${imgTag}
@@ -893,12 +876,10 @@
                     </div>
                 `;
             } else {
-                // Feed: imagen
                 imgTag = `<img src="${src}" alt="${item.title}" class="media-tag">`;
                 div.innerHTML = imgTag;
             }
             
-            // Añadir info adicional para el feed principal
             if (!isGrid) {
                  div.innerHTML += `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0;">
@@ -920,8 +901,6 @@
             items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'content-card';
-                
-                // Asumiendo que cada card ocupa el ancho completo para el scroll horizontal
                 card.style.width = 'calc(100vw - 24px)'; 
                 card.style.height = 'calc(100% - 24px)';
                 
@@ -940,19 +919,15 @@
         }
         
         function renderMyGrid() {
-            // Renderiza el contenido que el usuario haya guardado o subido
-            // Por simplicidad, usamos datos de ejemplo aquí
             const dummyItems = contentCache.feed ? contentCache.feed.slice(0, 15) : [];
             renderGrid(myGridFeed, dummyItems);
         }
 
-        // --- Core Logic: Fetching, Scrolling & Navigation ---
-        
+        // --- Core Logic ---
         async function fetchAndRenderContent(type = 'feed', containerId = 'homeFeed', isGrid = false, isInitial = false) {
             if (isFetching && !isInitial) return;
             isFetching = true;
             
-            // Mostrar skeleton/loader (simulado)
             const container = document.getElementById(containerId);
             if (isInitial || isGrid) {
                 container.innerHTML = '<div class="loading-skeleton"></div><div class="loading-skeleton"></div>';
@@ -961,31 +936,26 @@
             }
             
             try {
-                // Si es grid, usar una sola página grande. Si es feed, usar paginación.
                 const items = await API.fetchFeed(type, isGrid ? 1 : page, isGrid ? 30 : 10);
                 
                 if (isGrid) {
                     renderGrid(container, items);
                 } else if (containerId === 'homeFeed') {
-                    // Feed principal (scroll horizontal, una fila por página)
                     renderRow(items, page - 1); 
                     page++;
                 } else {
-                    // Contenido vertical (simplemente append)
                     items.forEach(item => {
                         container.appendChild(createMediaTag(item));
                     });
                 }
                 
-                // Ocultar skeleton/loader
                 if (isInitial || isGrid) {
-                    container.querySelector('.loading-skeleton').remove();
-                    if (container.querySelector('.loading-skeleton')) container.querySelector('.loading-skeleton').remove();
+                    container.querySelector('.loading-skeleton')?.remove();
+                    container.querySelector('.loading-skeleton')?.remove();
                 } else {
                     document.getElementById('loadingIndicator').style.display = 'none';
                 }
 
-                // Si es el feed principal, activar el observer
                 if (type === 'feed' && homeFeed.lastElementChild) {
                     observer.observe(homeFeed.lastElementChild);
                 }
@@ -998,21 +968,18 @@
             }
         }
         
-        // Carga inicial del Feed
         fetchAndRenderContent('feed', 'homeFeed', false, true);
         
-        // Intersection Observer para Carga Infinita
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting && currentSection === 'feed') {
-                    // Cargar la siguiente página cuando se vea la última fila
                     observer.unobserve(entry.target);
                     fetchAndRenderContent('feed', 'homeFeed', false);
                 }
             });
-        }, { threshold: 0.5 }); // 50% de la fila visible
+        }, { threshold: 0.5 });
 
-        // --- Manejo del FAB (Botón Flotante) ---
+        // --- FAB ---
         function toggleFabOptions() {
             fabOptions.classList.toggle('open');
             fabBtn.querySelector('i').className = fabOptions.classList.contains('open') ? 'fa-solid fa-times' : 'fa-solid fa-plus';
@@ -1025,7 +992,7 @@
         
         fabBtn.addEventListener('click', toggleFabOptions);
 
-        // --- Scroll del Feed Principal (Horizontal) ---
+        // --- Swipe ---
         let touchstartX = 0;
         let touchendX = 0;
         
@@ -1033,11 +1000,11 @@
             const diffX = touchendX - touchstartX;
             const rowCount = homeFeed.children.length;
 
-            if (Math.abs(diffX) < 50) return; // Ignorar swipes pequeños
+            if (Math.abs(diffX) < 50) return;
             
-            if (diffX > 0) { // Swipe Right (Anterior)
+            if (diffX > 0) {
                 activeRowIndex = Math.max(0, activeRowIndex - 1);
-            } else { // Swipe Left (Siguiente)
+            } else {
                 activeRowIndex = Math.min(rowCount - 1, activeRowIndex + 1);
             }
 
@@ -1046,7 +1013,6 @@
                 behavior: 'smooth'
             });
             
-            // Si llegamos a la última fila, precargar la siguiente
             if (activeRowIndex === rowCount - 1 && !isFetching) {
                 fetchAndRenderContent('feed', 'homeFeed', false);
             }
@@ -1062,12 +1028,10 @@
         }, false);
         
         homeFeed.addEventListener('scroll', () => {
-             // Actualizar activeRowIndex en scroll normal (ej: rueda del mouse en desktop)
              activeRowIndex = Math.round(homeFeed.scrollLeft / homeFeed.offsetWidth);
         });
 
-        // --- Navegación (Bottom Nav) ---
-
+        // --- Navegación ---
         navHome.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1086,11 +1050,10 @@
                 
                 currentSection = item.dataset.type;
                 
-                // Cargar contenido si es necesario
                 if (currentSection === 'reco' || currentSection === 'explore') {
                     const containerId = currentSection === 'reco' ? 'reco-feed' : 'explore-feed';
                     const sectionElement = document.getElementById(currentSection);
-                    sectionElement.style.display = 'block'; // Mostrar la sección
+                    sectionElement.style.display = 'block';
                     if (!contentCache[currentSection]) {
                         fetchAndRenderContent(currentSection, containerId, true, true);
                     }
@@ -1101,20 +1064,16 @@
             });
         });
         
-        // --- Comportamiento del Header (Ocultar al hacer scroll hacia abajo) ---
+        // --- Scroll Header/FAB ---
         window.addEventListener('scroll', () => {
             const currentScrollY = window.scrollY;
 
-            // Ocultar/Mostrar Header
             if (currentScrollY > lastScrollY && currentScrollY > header.offsetHeight) {
-                // Scrolling Down
                 header.classList.add('header-hidden');
             } else if (currentScrollY < lastScrollY || currentScrollY <= header.offsetHeight) {
-                // Scrolling Up or Top
                 header.classList.remove('header-hidden');
             }
 
-            // Ocultar/Mostrar FAB
             if (currentScrollY > lastScrollY && currentScrollY > 100) {
                  fabBtn.classList.add('hidden');
                  closeFabOptions();
@@ -1124,7 +1083,6 @@
             
             lastScrollY = currentScrollY;
 
-            // Lazy Load y Fade Up (usando una simulación simple ya que no hay IntersectionObserver aquí)
             document.querySelectorAll('.fade-up').forEach(el => {
                 if (el.getBoundingClientRect().top < window.innerHeight - 100) {
                     el.classList.add('in-view');
@@ -1132,8 +1090,7 @@
             });
         });
 
-        // --- Lógica de Subida (Upload) ---
-        
+        // --- Upload ---
         function resetUploadForm() {
             fileSelector.value = '';
             uploadTitle.value = '';
@@ -1152,7 +1109,6 @@
             if (file) {
                 fileNameDisplay.textContent = file.name;
                 uploadSubmitBtn.disabled = false;
-                // Validación básica de tamaño (ej: 50MB)
                 if (file.size > 50 * 1024 * 1024) { 
                     uploadStatus.textContent = 'El archivo es demasiado grande (máx 50MB).';
                     uploadSubmitBtn.disabled = true;
@@ -1178,11 +1134,9 @@
             
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('title_title', uploadTitle.value || file.name); // Usar 'title_title' como en el backend
-            // formData.append('user_id', 'usuario_ejemplo_123'); // Puedes añadir el ID de usuario si lo tienes
+            formData.append('title', uploadTitle.value || file.name);  // CORREGIDO
 
             try {
-                // Simulación de progreso (solo para visualización, el fetch nativo no da progreso)
                 let progress = 0;
                 const interval = setInterval(() => {
                     progress += 5;
@@ -1204,16 +1158,12 @@
                     uploadStatus.textContent = '¡Subida exitosa!';
                     uploadStatus.style.color = 'var(--accent-color)';
                     setTimeout(closeUploadModal, 3000);
-                    // Opcional: Recargar el feed principal
-                    // fetchAndRenderContent('feed', 'homeFeed', false, true); 
                 } else {
                     const errorMsg = data.detail || data.message || 'Error desconocido al subir.';
                     uploadStatus.textContent = `Error: ${errorMsg}`;
                     uploadStatus.style.color = 'var(--red-color)';
                 }
             } catch (error) {
-                clearInterval(interval);
-                progressBar.value = 0;
                 uploadStatus.textContent = `Error de red/servidor: ${error.message}`;
                 uploadStatus.style.color = 'var(--red-color)';
             } finally {
@@ -1221,11 +1171,9 @@
             }
         });
         
-        // --- Búsqueda (Search) ---
+        // --- Búsqueda ---
         searchInput.addEventListener('input', () => {
-             // Lógica de búsqueda en tiempo real o debounce
              if (searchInput.value.length > 2) {
-                 // Aquí llamarías a fetchAndRenderContent('search', 'searchGrid', true) con el término de búsqueda
                  searchGrid.innerHTML = '<div>Buscando... (simulado)</div>'; 
              } else {
                  searchGrid.innerHTML = '';
