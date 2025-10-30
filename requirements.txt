@@ -2,7 +2,7 @@
 fastapi==0.111.0
 uvicorn==0.30.1
 gunicorn==22.0.0
-pydantic==2.7.4
-python-dotenv==1.0.1
-motor==3.2.0          # Usamos una versión estable
-python-multipart==0.0.9
+pydantic==2.7.4         # Esencial para los modelos ContentItem
+python-dotenv==1.0.1    # Para cargar variables de entorno (aunque Render usa sus propias variables)
+motor==3.2.0            # Esencial para la conexión asíncrona a MongoDB
+python-multipart==0.0.9 # Esencial para la subida de archivos (UploadFile)
