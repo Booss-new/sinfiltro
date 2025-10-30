@@ -6,5 +6,4 @@ pydantic==2.7.4
 python-dotenv==1.0.1    
 motor==3.2.0            
 python-multipart==0.0.9
-# Esta librería es crucial si la compilación de otras (como motor) falla.
 setuptools==69.5.1
