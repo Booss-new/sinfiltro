@@ -1,4 +1,9 @@
-fastapi
-uvicorn
-gunicorn
-python-multipart
+# **Nombre:** requirements.txt
+# Versiones conocidas que funcionan con Render
+fastapi==0.111.0
+uvicorn==0.30.1
+gunicorn==22.0.0
+python-dotenv==1.0.1
+pydantic==2.7.4
+motor==3.3.3
+python-multipart==0.0.9
