@@ -2,44 +2,49 @@ from flask import Flask, send_file, request, jsonify, send_from_directory
 import os
 import uuid
 
+# === CONFIGURACIÓN ===
 app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+CARPETA_SUBIDAS = 'uploads'
+os.makedirs(CARPETA_SUBIDAS, exist_ok=True)
 
+# === RUTA PRINCIPAL ===
 @app.route('/')
-def index():
+def inicio():
     return send_file('sinfiltro.html')
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+# === VER ARCHIVO SUBIDO ===
+@app.route('/uploads/<nombre_archivo>')
+def archivo_subido(nombre_archivo):
+    return send_from_directory(CARPETA_SUBIDAS, nombre_archivo)
 
+# === SUBIR ARCHIVO ===
 @app.route('/api/content/upload', methods=['POST'])
-def upload_file():
-    file = request.files.get('file')
-    if not file or file.filename == '':
-        return jsonify(success=False, message="No file"), 400
+def subir_archivo():
+    archivo = request.files.get('file')
+    if not archivo or archivo.filename == '':
+        return jsonify(success=False, message="No hay archivo"), 400
     
-    title = request.form.get('title', file.filename)
-    ext = os.path.splitext(file.filename)[1]
-    filename = f"{uuid.uuid4().hex}{ext}"
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(filepath)
+    titulo = request.form.get('title', archivo.filename)
+    extension = os.path.splitext(archivo.filename)[1]
+    nombre_nuevo = f"{uuid.uuid4().hex}{extension}"
+    ruta_guardar = os.path.join(CARPETA_SUBIDAS, nombre_nuevo)
+    archivo.save(ruta_guardar)
     
     return jsonify({
         "success": True,
         "item": {
             "id": f"upload-{uuid.uuid4().hex}",
-            "kind": "video" if file.mimetype.startswith('video') else "image",
-            "url": f"/uploads/{filename}",
-            "title": title,
+            "kind": "video" if archivo.mimetype.startswith('video') else "image",
+            "url": f"/uploads/{nombre_nuevo}",
+            "title": titulo,
             "likes": 0,
             "views": "0K"
         }
     })
 
-@app.route('/api/content/feed/<feed_type>')
-def get_feed(feed_type):
+# === OBTENER FEED ===
+@app.route('/api/content/feed/<tipo_feed>')
+def obtener_feed(tipo_feed):
     return jsonify(data=[
         {
             "id": "1",
@@ -51,10 +56,12 @@ def get_feed(feed_type):
         }
     ])
 
+# === SALUD ===
 @app.route('/health')
-def health():
+def salud():
     return jsonify(status="ok")
 
+# === INICIAR SERVIDOR ===
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    puerto = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=puerto)
