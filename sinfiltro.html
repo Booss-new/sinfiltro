@@ -118,7 +118,7 @@
     bottom:0;
     height:100%;
     width:86%;max-width:320px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
+    background:linear-gradient(180deg | rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
     border-radius:0 12px 12px 0;
     padding:12px;z-index:180;
     box-shadow:20px 0 80px rgba(2,10,18,0.6);
@@ -365,9 +365,9 @@
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
-const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[m]));
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-// BACKEND URL - Usa el de tu entorno. Usa window.location.origin, que es la mejor práctica.
+// BACKEND URL - Usa el de tu entorno
 const BACKEND_URL = window.location.origin;
 const API_URL = `${BACKEND_URL}/api`;
 
@@ -498,9 +498,7 @@ function makeSmallCard(item){
   let mediaTag;
   
   if(item.kind === 'youtube'){
-    const videoId = extractYouTubeID(item.src);
-    // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
-    const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+    const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
     mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
   } else if (item.kind === 'image') {
     mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
@@ -530,9 +528,7 @@ function makeGridCard(item){
   let mediaTag;
   
   if(item.kind === 'youtube'){
-    const videoId = extractYouTubeID(item.src);
-    // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
-    const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+    const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
     mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
   } else if (item.kind === 'image') {
     mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
@@ -971,10 +967,10 @@ function applyTheme(t){
   requestAnimationFrame(()=>{
     if(t==='light'){ 
       document.body.classList.add('light'); 
-      themeToggle.textContent='☀️'; 
+      themeToggle.textContent='Sun'; 
     } else { 
       document.body.classList.remove('light'); 
-      themeToggle.textContent='🌗'; 
+      themeToggle.textContent='Moon'; 
     }
   });
 }
@@ -1022,9 +1018,7 @@ function populateSearchMini(q){
     d.className='mini-thumb';
     let mediaTag;
     if(item.kind === 'youtube'){
-        const videoId = extractYouTubeID(item.src);
-        // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
-        const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+        const thumb = item.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(item.src)}/maxresdefault.jpg`;
         mediaTag = `<img src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
     } else if (item.kind === 'image') {
         mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
@@ -1046,11 +1040,9 @@ function openMyModal(){
     d.className='mini-thumb';
     let mediaTag;
     if(it.kind === 'youtube'){
-        const videoId = extractYouTubeID(it.src);
-        // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
-        const thumb = it.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+        const thumb = it.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(it.src)}/maxresdefault.jpg`;
         mediaTag = `<img src="${thumb}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
-    } else if (it.kind === 'image') {
+    } else if (item.kind === 'image') {
         mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
     } else {
         mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
