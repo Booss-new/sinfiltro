@@ -72,21 +72,27 @@
   /* FAB + bottom nav */
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet));display:flex;align-items:center;justify-content:center;color:#001;font-size:30px;z-index:190;box-shadow:0 30px 90px rgba(0,0,0,0.6);border:none}
   
-  /* FAB radial (bubbles) */
-  .bubble{
-    width:52px;height:52px;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--card);
-    color:var(--text);font-weight:700;cursor:pointer;
-    box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.03);
-    transition: background var(--trans);
-  }
-  .bubble:hover { background: rgba(255,255,255,0.06); }
+  /* FAB radial (burbujas) */
   .bubble-group { 
     display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; 
-    padding: 6px 10px; width: 100%;
+    padding: 10px 14px; 
+    width: 100%;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transition: background var(--trans);
+    cursor: pointer;
   }
-  .bubble-text { font-size: 14px; font-weight: 500; color: var(--text); }
+  .bubble-group:hover { background: rgba(255,255,255,0.06); }
+  .bubble {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(90deg,var(--accent-cyan),var(--accent-violet));
+    color: #000; font-weight: 700; font-size: 18px;
+  }
+  .bubble-text { font-size: 15px; font-weight: 500; color: var(--text); flex-grow: 1; text-align: left; }
+
   .radials{
     position:fixed;left:50%;transform:translateX(-50%);bottom:100px;
     display:flex;flex-direction:column;gap:8px;align-items:flex-start;
@@ -99,28 +105,50 @@
   .radials.show{opacity:1;pointer-events:auto; transform: translateX(-50%) translateY(0); }
 
   .bottom-nav{position:fixed;left:10px;right:10px;bottom:10px;height:74px;border-radius:16px;background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.35));display:flex;align-items:center;justify-content:space-around;padding:0 8px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 30px 80px rgba(0,0,0,0.6);z-index:185}
-  /* CAMBIO: Renombrar nav-me a Mi Cuenta */
   .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--muted);font-size:12px;cursor:pointer}
 
   /* Panel & overlay (menu lateral) */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:170;display:none;pointer-events:none;transition:opacity .18s}
   .overlay.show{display:block;pointer-events:auto;opacity:1}
-  .panel{position:fixed;left:8px;top:12px;bottom:12px;width:86%;max-width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);border-radius:12px;padding:12px;z-index:180;box-shadow:0 30px 80px rgba(2,10,18,0.6);transform:translateX(-12px);opacity:0;transition:all var(--trans) ease;pointer-events:none}
-  .panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
+  
+  .panel{
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    height:100%;
+    width:86%;max-width:320px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
+    border-radius:0 12px 12px 0;
+    padding:12px;z-index:180;
+    box-shadow:20px 0 80px rgba(2,10,18,0.6);
+    transform:translateX(-100%);
+    opacity:1;
+    transition:transform var(--trans) ease;
+    pointer-events:none;
+    display: flex; flex-direction: column; 
+    overflow-y: hidden;
+  }
+  .panel.open{
+    transform:translateX(0);
+    pointer-events:auto
+  }
   .panel .close{margin-left:auto;padding:6px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .panel nav { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+
 
   /* Viewer (immersive) */
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
-  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;} /* Padding 0 para que la imagen ocupe todo */
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;} /* Max-height ajustado */
+  .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;}
+  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;}
+  .viewer iframe{width:100%;height:70vh;border:none;}
   
-  /* MEJORA 2: Controles y meta-datos más abajo */
   .viewer-controls-meta { 
     z-index: 10;
     display: flex; gap: 8px; justify-content: center;
     background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); padding: 8px; border-radius: 12px;
-    margin: 12px auto; /* Centrar y dar espacio */
+    margin: 12px auto;
     width: fit-content;
   }
   
@@ -133,7 +161,7 @@
   .mini-thumb img, .mini-thumb video{width:100%;height:100%;object-fit:cover}
   .search-input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text)}
 
-  /* Nuevo: Modal de Simulación/Progreso de Subida (MEJORA 3) */
+  /* Modal de Simulación/Progreso de Subida */
   #uploadModal {
       display:none; text-align: center;
       padding: 20px; max-width: 300px;
@@ -148,7 +176,7 @@
       height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet)); transition: width 0.3s linear;
   }
 
-  /* NUEVO: Modal de selección de archivo */
+  /* Modal de selección de archivo */
   #fileSelectModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.6); z-index: 240; display: none;
@@ -164,13 +192,16 @@
   }
   #fileSelectModal.show > div { transform: translateY(0); }
 
+  /* Loading skeleton */
+  .skel{background:var(--skel-color);animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 
   /* Small screens */
   @media (max-width:420px){
     .card-small{min-width:150px;height:100px}
     .grid img{height:120px}
     .fab{width:64px;height:64px}
-    .panel{width:92%;left:4%}
+    .panel{width:92%;left:0; border-radius:0 12px 12px 0; }
   }
 
   /* fallback when backdrop-filter not supported */
@@ -283,7 +314,7 @@
       
       <div id="viewerBottom" style="
         padding: 12px;
-        background: rgba(0,0,0,0.5); /* Semi-transparente para separar del fondo */
+        background: rgba(0,0,0,0.5);
         border-top: 1px solid rgba(255,255,255,0.05);
         display: flex; flex-direction: column; gap: 8px;
         position: relative;
@@ -295,14 +326,15 @@
         <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
         <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
         <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button> <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button>
+        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
       </div>
     </div>
   </div>
 
   <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
     <div class="head">
-      <input id="searchInput" class="search-input" placeholder="Buscar (demo)..." />
+      <input id="searchInput" class="search-input" placeholder="Buscar..." />
       <button id="closeSearch" class="icon-btn">✕</button>
     </div>
     <div id="searchMini" class="grid-mini"></div>
@@ -310,7 +342,7 @@
 
   <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Mi cuenta">
     <div class="head" style="justify-content:space-between">
-      <strong>Mi cuenta (demo)</strong>
+      <strong>Mi cuenta</strong>
       <button id="closeMy" class="icon-btn">✕</button>
     </div>
     <div id="myGrid" class="grid-mini"></div>
@@ -326,21 +358,18 @@
 
 <script>
 /* =========================
-   SinFiltro — mejoras funcionales (mantener diseño)
+   SinFiltro — Con APIs reales y correcciones
    ========================= */
 
 /* Helpers */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
-const mkImg = i => `https://picsum.photos/640/420?random=${Math.floor(Math.random()*100000)+i}`;
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[m]));
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  CAMBIO CLAVE: URL de tu servidor en RENDER 
-//  CORRECCIÓN INTEGRADA: Apunta a la URL de tu despliegue ('https://sinfiltro-fbb8.onrender.com')
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-const SERVER_URL = 'https://sinfiltro-fbb8.onrender.com'; 
-
+// BACKEND URL - Usa el de tu entorno. Usa window.location.origin, que es la mejor práctica.
+const BACKEND_URL = window.location.origin;
+const API_URL = `${BACKEND_URL}/api`;
 
 /* DOM refs */
 const trendRow1 = $('#trendRow1'), trendRow2 = $('#trendRow2');
@@ -349,7 +378,7 @@ const recentRow1 = $('#recentRow1'), recentRow2 = $('#recentRow2');
 const gridFeed = $('#gridFeed');
 const panel = $('#panel'), overlay = $('#overlay'), menuBtn = $('#menuBtn'), closePanelBtn = $('#closePanel');
 const viewer = $('#viewer'), viewerInner = $('#viewerInner'), closeViewer = $('#closeViewer'), prevBtn = $('#prevBtn'), nextBtn = $('#nextBtn'), vvPlay = $('#vvPlay'), downloadBtn = $('#downloadBtn');
-const viewerBottom = $('#viewerBottom'); // NUEVO: Referencia al contenedor de interacciones
+const viewerBottom = $('#viewerBottom');
 const fab = $('#fab'), radials = $('#radials');
 const themeToggle = $('#themeToggle');
 const brandBtn = $('#brandBtn');
@@ -357,7 +386,6 @@ const searchTop = $('#searchTop');
 const searchModal = $('#searchModal'), searchMini = $('#searchMini'), searchInput = $('#searchInput'), closeSearch = $('#closeSearch');
 const myModal = $('#myModal'), myGrid = $('#myGrid'), closeMy = $('#closeMy');
 const uploadModal = $('#uploadModal'), progressFill = $('#progressFill'), uploadStatus = $('#uploadStatus'), uploadTitle = $('#uploadTitle'), closeUpload = $('#closeUpload'); 
-// NUEVOS refs para subida real
 const fileSelectModal = $('#fileSelectModal');
 const closeFileSelect = $('#closeFileSelect');
 const realFileInput = $('#realFileInput');
@@ -365,83 +393,66 @@ const uploadTitleInput = $('#uploadTitleInput');
 const startUploadBtn = $('#startUploadBtn');
 
 
-/* Data pool (demo) */
-let pool = []; // Se llenará con datos reales del servidor + mockups
+/* Data pool */
+let pool = [];
 let activeList=[], currentIndex=0;
-// NUEVO: Mapas para controlar el scroll infinito lateral
-const rowLoadState = {}; // {trends: {row1: 0, row2: 0}, reco: ...}
 
-
-/* ---------- FETCH CONTENT FROM SERVER (MODIFICADO) ---------- */
+/* ---------- FETCH CONTENT FROM SERVER ---------- */
 async function fetchContent(type) {
     try {
-        const response = await fetch(`${SERVER_URL}/api/content/feed/${type}`);
+        const response = await fetch(`${API_URL}/content/feed/${type}`);
         const data = await response.json();
 
         if (data.success && data.data) {
-            // Asegurarse de que cada item tenga 'liked' y 'comments' para la simulación
             return data.data.map(item => ({
                 ...item,
-                liked: false, // Por defecto, no le ha dado like
-                comments: item.comments || rand(100), // Asegurar que tenga comentarios
-                views: item.views || (rand(9)+1)+'K'
+                liked: item.liked || false,
+                comments: item.comments || 0,
+                views: item.views || '0K'
             }));
         } else {
             console.error("Error al obtener datos:", data);
             return [];
         }
     } catch (error) {
-        console.error("Error de red o servidor, usando datos mock:", error);
-        // Fallback a datos mock si el servidor no responde
-        return Array.from({length:16}).map((_,i)=>({
-            id:'mock'+type+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
-            title:['Offline: Callejón neon','Offline: Atardecer','Offline: Retrato','Offline: Arte Urbano'][i%4],
-            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K', liked: false
-        }));
+        console.error("Error de red o servidor:", error);
+        return [];
     }
 }
 
-/* ---------- RENDER LOGIC (MODIFICADO para usar datos reales) ---------- */
+/* ---------- RENDER LOGIC ---------- */
 async function renderAll() {
-    // 1. Obtener y renderizar tendencias
+    // Obtener datos del servidor
     const trendsData = await fetchContent('trends');
     const recoData = await fetchContent('reco');
-    const recentData = await fetchContent('recent'); // Usaremos 'recent' para todo el pool
+    const recentData = await fetchContent('recent');
 
-    // Usar todos los datos como pool principal
+    // Pool global
     pool = [...trendsData, ...recoData, ...recentData];
 
-    // Inicializar el estado de carga lateral
-    rowLoadState.trends = { row1: 0, row2: 0 };
-    rowLoadState.reco = { row1: 0, row2: 0 };
-    rowLoadState.recent = { row1: 0, row2: 0 };
-    
-    // Llenar las filas horizontales con los datos del servidor
+    // Llenar las filas horizontales
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
     renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
-    // Llenar el grid con el resto del pool
-    renderGridInitial(pool.slice(24)); 
+    // Grid con el resto
+    renderGridInitial(pool.slice(0, 20)); 
 
-    // seed rows for smoothness (mantenido)
+    // Enable drag scroll
     $$('.h-row').forEach(r=> {
         if(r.children.length < 8){
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
         }
         enableDragScroll(r);
-        r.addEventListener('scroll', handleHorizontalScroll); // NUEVO: Detector de scroll para carga
+        r.addEventListener('scroll', handleHorizontalScroll);
     });
     lazyObserve();
 }
 
-
-/* ---------- UTILS (sin cambios relevantes) ---------- */
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
+/* ---------- LAZY LOADING ---------- */
 let imgObserver = null;
 function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src], video[data-src]'); // Videos también pueden ser lazy
+  const imgs = root.querySelectorAll('img[data-src], video[data-src]');
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
@@ -450,6 +461,10 @@ function lazyObserve(root=document){
             const media = e.target;
             media.src = media.dataset.src;
             media.onload = ()=> media.parentElement.classList.remove('skel');
+            media.onerror = ()=> {
+              console.error('Error loading:', media.dataset.src);
+              media.parentElement.classList.remove('skel');
+            };
             media.removeAttribute('data-src');
             obs.unobserve(media);
           }
@@ -462,16 +477,35 @@ function lazyObserve(root=document){
   }
 }
 
+/* ---------- CARD CREATORS ---------- */
+function extractYouTubeID(url) {
+    if (!url) return null;
+    let videoId = url;
+    if (url.includes('v=')) {
+        videoId = url.split('v=')[1]?.split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    } else if (url.includes('embed/')) {
+        videoId = url.split('embed/')[1]?.split('?')[0];
+    }
+    return videoId;
+}
+
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
   let mediaTag;
-  if(item.kind === 'video'){
-    // Usar la etiqueta video en el card small
-    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s"></video>`;
+  
+  if(item.kind === 'youtube'){
+    const videoId = extractYouTubeID(item.src);
+    // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
+    const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+    mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
+  } else if (item.kind === 'image') {
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
   } else {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata"></video>`;
   }
 
   d.innerHTML = `
@@ -479,10 +513,10 @@ function makeSmallCard(item){
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
-        <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
+        <div style="font-weight:700">${item.kind==='youtube'?'YouTube':item.kind==='image'?'Imagen':'Video'}</div>
         <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
@@ -494,11 +528,18 @@ function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
   let mediaTag;
-  if(item.kind === 'video'){
-    mediaTag = `<video data-src="${item.src}" muted preload="metadata" style="width:100%;height:150px;object-fit:cover"></video>`;
+  
+  if(item.kind === 'youtube'){
+    const videoId = extractYouTubeID(item.src);
+    // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
+    const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+    mediaTag = `<img data-src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x360?text=Video'">`;
+  } else if (item.kind === 'image') {
+    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/640x420?text=Image'">`;
   } else {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
   }
+  
   a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
@@ -512,7 +553,7 @@ function renderTwoRows(row1,row2,items){
   });
 }
 
-function renderGridInitial(items=pool){ // Usa 'pool' para tener más variedad
+function renderGridInitial(items){
   gridFeed.innerHTML = '';
   items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
@@ -542,10 +583,9 @@ function enableDragScroll(el){
   el.addEventListener('pointerup', (e)=>{ isDown=false; try{ e.target.releasePointerCapture && e.target.releasePointerCapture(e.pointerId);}catch(e){} }, {passive:true});
 }
 
-// NUEVO: Lógica de carga infinita horizontal
 function handleHorizontalScroll(e) {
     const row = e.target;
-    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) { // Carga si quedan 100px
+    if (row.scrollLeft + row.clientWidth >= row.scrollWidth - 100) {
         loadMoreHorizontal(row);
     }
 }
@@ -555,14 +595,9 @@ async function loadMoreHorizontal(row) {
     if (horizontalLoading) return;
     horizontalLoading = true;
 
-    const type = row.dataset.type;
-    
-    // Obtener un nuevo set de datos mock (simulando una nueva petición al servidor)
-    // Para no duplicar, simplemente sacamos más contenido aleatorio del pool grande
     const newItems = Array.from({length: 4}).map(() => pool[rand(pool.length)]);
 
     if (newItems.length > 0) {
-        // Simular un pequeño retraso de carga
         await new Promise(resolve => setTimeout(resolve, 300));
         
         const fragment = document.createDocumentFragment();
@@ -570,40 +605,57 @@ async function loadMoreHorizontal(row) {
         row.appendChild(fragment);
         lazyObserve(row);
         
-        // Ajustar el scroll para que la posición sea fluida
         row.scrollLeft += 10;
     }
     horizontalLoading = false;
 }
 
-// MODIFICADO: showViewer para implementar la nueva barra de interacciones
+/* ---------- VIEWER ---------- */
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
-  viewerBottom.innerHTML = ''; // Limpiamos el contenido anterior
+  viewerBottom.innerHTML = '';
 
   if(!it) return;
 
   downloadBtn.style.display = 'inline-flex';
 
   let mediaElement;
-  if(it.kind === 'video'){
+  if(it.kind === 'youtube'){
+    const videoId = extractYouTubeID(it.src);
+
+    if (!videoId) {
+      mediaElement = document.createElement('div');
+      mediaElement.innerHTML = '<p style="color:white;text-align:center;padding:40px">Error: ID de YouTube inválido</p>';
+    } else {
+      // Usar youtube-nocookie.com para mejor privacidad y menos problemas
+      mediaElement = document.createElement('iframe');
+      mediaElement.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
+      mediaElement.style.width = '100%';
+      mediaElement.style.height = '70vh';
+      mediaElement.frameBorder = '0';
+      mediaElement.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      mediaElement.allowFullscreen = true;
+      mediaElement.title = `YouTube: ${it.title}`;
+    }
+  } else if(it.kind === 'image'){
+    const img = document.createElement('img');
+    img.src = it.src;
+    img.alt = it.title;
+    img.style.maxHeight = '80vh';
+    img.onerror = ()=> img.src = 'https://via.placeholder.com/800x600?text=Image+Error';
+    mediaElement = img;
+  } else {
     const video = document.createElement('video');
     video.src = it.src;
     video.controls = true;
     video.autoplay = false;
     video.style.maxHeight = '70vh';
     mediaElement = video;
-  } else {
-    const img = document.createElement('img');
-    img.src = it.src;
-    img.alt = it.title;
-    img.style.maxHeight = '80vh';
-    mediaElement = img;
   }
   viewerInner.appendChild(mediaElement);
 
-  // NUEVA ESTRUCTURA: Barra de interacciones tipo red social
+  // Barra de interacciones
   viewerBottom.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
@@ -618,42 +670,94 @@ function showViewer(){
       </div>
 
       <div style="display:flex; gap: 8px; align-items:center;">
-          <input type="text" placeholder="Añade un comentario (demo)..." class="search-input" style="flex-grow:1; padding: 10px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.1);">
+          <input type="text" placeholder="Añade un comentario..." class="search-input" style="flex-grow:1; padding: 10px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.1);">
           <button class="icon-btn" style="width: 40px; height: 40px; background: var(--accent-violet); color: #000;">➡️</button>
       </div>
   `;
 
-  // Añadir la lógica de simulación de like
-  viewerBottom.querySelector('#likeBtn').addEventListener('click', (e) => {
+  // Lógica de like
+  viewerBottom.querySelector('#likeBtn').addEventListener('click', async (e) => {
       it.liked = !it.liked;
       if (it.liked) {
           it.likes = (it.likes || 0) + 1;
           e.target.style.color = 'var(--accent-violet)';
       } else {
-          it.likes = (it.likes || 1) - 1; // Asegurarse que no baja de 0
+          it.likes = (it.likes || 1) - 1;
           if (it.likes < 0) it.likes = 0;
           e.target.style.color = 'var(--muted)';
       }
       e.target.innerHTML = `❤ ${it.likes}`;
+
+      // Guardar en backend
+      try {
+          await fetch(`${API_URL}/content/${it.id}/like`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ liked: it.liked })
+          });
+      } catch(err) {
+          console.error('Error saving like:', err);
+      }
   });
   
-  viewer.classList.add('show'); viewer.setAttribute('aria-hidden','false');
+  viewer.classList.add('show'); 
+  viewer.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
 
-
 function openViewerByItem(item){
-  const lists = [pool]; 
-  activeList = [];
-  for(const L of lists){ const idx = L.findIndex(x=>x.id===item.id); if(idx>=0){ activeList = L; currentIndex = idx; break; } }
-  if(activeList.length===0){ activeList = [item]; currentIndex = 0; }
+  activeList = pool;
+  currentIndex = pool.findIndex(x => x.id === item.id);
+  if (currentIndex < 0) {
+      activeList = [item];
+      currentIndex = 0;
+  }
   showViewer();
 }
-function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute('aria-hidden','true'); viewerInner.innerHTML=''; viewerBottom.innerHTML=''; document.body.style.overflow = ''; }
-function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
-function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
+function closeViewerFunc(){
+  viewer.classList.remove('show'); 
+  viewer.setAttribute('aria-hidden','true'); 
+  viewerInner.innerHTML=''; 
+  viewerBottom.innerHTML=''; 
+  document.body.style.overflow = '';
+}
+
+function prevItem(){ 
+  if(currentIndex>0){ 
+    currentIndex--; 
+    showViewer(); 
+  } 
+}
+
+function nextItem(){ 
+  if(currentIndex < activeList.length-1){ 
+    currentIndex++; 
+    showViewer(); 
+  } else { 
+    const more = pool[rand(pool.length)]; 
+    activeList.push(more); 
+    currentIndex++; 
+    showViewer(); 
+  } 
+}
+
+vvPlay.addEventListener('click', ()=> { 
+  const it = activeList[currentIndex]; 
+  if(it && it.kind==='youtube'){ 
+    const iframe = viewerInner.querySelector('iframe'); 
+    if(iframe){ 
+      // Para reproducir necesitamos usar postMessage API
+      iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    } 
+  } else if(it && it.kind === 'video'){ 
+    const v = viewerInner.querySelector('video'); 
+    if(v){ 
+      v.paused ? v.play() : v.pause(); 
+    } 
+  } 
+});
+
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 prevBtn.addEventListener('click', prevItem);
@@ -661,23 +765,41 @@ nextBtn.addEventListener('click', nextItem);
 downloadBtn.addEventListener('click', ()=>{ 
     const item = activeList[currentIndex];
     if(item && item.src){
-        const downloadUrl = item.src; 
         const link = document.createElement('a');
-        link.href = downloadUrl;
+        link.href = item.src;
         link.download = `SinFiltro_${item.id}.${item.kind === 'video' ? 'mp4' : 'jpg'}`; 
+        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        alert(`Descargando: ${item.title}`);
     } else {
-        alert('No se pudo encontrar la URL del archivo.');
+        alert('No se pudo descargar el archivo.');
     }
 });
 
-function openPanel(){ overlay.classList.add('show'); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false'); radials.classList.remove('show'); radials.innerHTML=''; }
-function closePanel(){ overlay.classList.remove('show'); panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true'); }
+/* ---------- PANEL ---------- */
+function openPanel(){ 
+  overlay.classList.add('show'); 
+  panel.classList.add('open'); 
+  panel.setAttribute('aria-hidden','false'); 
+  overlay.setAttribute('aria-hidden','false'); 
+  radials.classList.remove('show'); 
+  radials.innerHTML=''; 
+}
+
+function closePanel(){ 
+  overlay.classList.remove('show'); 
+  panel.classList.remove('open'); 
+  panel.setAttribute('aria-hidden','true'); 
+  overlay.setAttribute('aria-hidden','true'); 
+}
+
 closePanelBtn.addEventListener('click', closePanel); 
-menuBtn.addEventListener('click', ()=> { if(panel.classList.contains('open')) closePanel(); else openPanel(); }); 
+menuBtn.addEventListener('click', ()=> { 
+  if(panel.classList.contains('open')) closePanel(); 
+  else openPanel(); 
+}); 
+
 overlay.addEventListener('click', (e) => { 
     if (e.target === overlay) { 
         if (panel.classList.contains('open')) { closePanel(); } 
@@ -694,30 +816,40 @@ $$('.panel-item').forEach(btn=>{
     if(action === 'trends'){ document.querySelector('[aria-label="tendencias"]')?.scrollIntoView({behavior:'smooth'}); }
     if(action === 'reco'){ document.querySelector('[aria-label="recomendados"]')?.scrollIntoView({behavior:'smooth'}); }
     if(action === 'my'){ openMyModal(); }
-    if(action === 'settings'){ alert('Demo: Ajustes (demo)'); }
-    if(action === 'logout'){ alert('Demo: Cerrar sesión (demo)'); }
+    if(action === 'settings'){ alert('Ajustes (próximamente)'); }
+    if(action === 'logout'){ alert('Cerrar sesión (próximamente)'); }
   });
 });
 
-/* ---------- FAB radial (bubbles) - MODIFICADO ---------- */
+/* ---------- FAB ---------- */
 fab.addEventListener('click', ()=>{
-  if(radials.classList.contains('show')){ radials.classList.remove('show'); radials.innerHTML=''; }
-  else {
+  if(radials.classList.contains('show')){ 
+    radials.classList.remove('show'); 
+    radials.innerHTML=''; 
+  } else {
     radials.classList.add('show');
     radials.innerHTML = '';
     
-    // Función para crear la burbuja con el nuevo diseño
     const mkBubble = (icon, text, action) => {
-        const d = document.createElement('button'); d.className='bubble-group';
+        const d = document.createElement('button'); 
+        d.className='bubble-group';
         d.innerHTML = `<span class="bubble">${icon}</span><span class="bubble-text">${text}</span>`;
         d.onclick = action;
         return d;
     }
 
-    // AHORA LLAMA AL MODAL DE SELECCIÓN DE ARCHIVO
-    const uploadAction = ()=> { radials.classList.remove('show'); openFileSelectModal(); };
-    const createPostAction = ()=> { alert('Demo: Crear Publicación (Texto/Link)'); radials.classList.remove('show'); };
-    const createShortAction = ()=> { alert('Demo: Crear Short (Demo)'); radials.classList.remove('show'); };
+    const uploadAction = ()=> { 
+      radials.classList.remove('show'); 
+      openFileSelectModal(); 
+    };
+    const createPostAction = ()=> { 
+      alert('Publicar Galería (próximamente)'); 
+      radials.classList.remove('show'); 
+    };
+    const createShortAction = ()=> { 
+      alert('Crear Short (próximamente)'); 
+      radials.classList.remove('show'); 
+    };
 
     radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
     radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
@@ -725,23 +857,23 @@ fab.addEventListener('click', ()=>{
   }
 });
 
-
-/* ---------- LOGICA DE SUBIDA REAL (Añadida) ---------- */
+/* ---------- UPLOAD ---------- */
 function openFileSelectModal(){
     fileSelectModal.classList.add('show');
     fileSelectModal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
 }
+
 function closeFileSelectModal(){
     fileSelectModal.classList.remove('show');
     fileSelectModal.setAttribute('aria-hidden', 'true');
-    realFileInput.value = ''; // Limpiar input de archivo
-    uploadTitleInput.value = ''; // Limpiar input de título
+    realFileInput.value = '';
+    uploadTitleInput.value = '';
     document.body.style.overflow = '';
 }
+
 closeFileSelect.addEventListener('click', closeFileSelectModal);
 
-// Evento de click en el botón de Subir Ahora (en el modal de selección)
 startUploadBtn.addEventListener('click', () => {
     const file = realFileInput.files[0];
     const title = uploadTitleInput.value;
@@ -757,18 +889,17 @@ startUploadBtn.addEventListener('click', () => {
 async function uploadFileToBackend(file, title){
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('title', title);
+    formData.append('title', title || file.name);
     
     closeFileSelectModal();
-    // 1. Mostrar modal de progreso
+    
     uploadModal.style.display = 'block';
     uploadModal.setAttribute('aria-hidden', 'false');
-    uploadTitle.textContent = 'Subiendo ' + file.name.substring(0, 15) + '...';
+    uploadTitle.textContent = 'Subiendo ' + file.name.substring(0, 20) + '...';
     progressFill.style.width = '0%';
     uploadStatus.textContent = '0%';
     let progress = 0;
     
-    // Simular progreso rápido mientras se espera la respuesta (necesario con fetch)
     const progressSim = setInterval(()=>{
         if(progress < 95) {
             progress += 5;
@@ -778,17 +909,17 @@ async function uploadFileToBackend(file, title){
     }, 200);
 
     try {
-        const response = await fetch(`${SERVER_URL}/api/content/upload`, {
+        const response = await fetch(`${API_URL}/content/upload`, {
             method: 'POST',
             body: formData,
         });
 
         clearInterval(progressSim);
         progressFill.style.width = '100%';
-        uploadStatus.textContent = '100% - Procesando en servidor...';
+        uploadStatus.textContent = '100%';
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const result = await response.json();
@@ -796,8 +927,7 @@ async function uploadFileToBackend(file, title){
         if(result.success){
             uploadTitle.textContent = '¡Subida Completa!';
             
-            // Agregamos el nuevo item al pool local para que se vea inmediatamente
-            // Asegurarse de que el nuevo item tenga las propiedades para el visor
+            // Agregar al pool
             pool.unshift({
                 ...result.item,
                 liked: false,
@@ -807,73 +937,80 @@ async function uploadFileToBackend(file, title){
 
             setTimeout(()=>{ 
                 closeUploadModal(); 
-                alert(`¡Contenido Subido con Éxito! Título: ${result.item.title}`); 
-                // Renderizar de nuevo para incluir el nuevo contenido
+                alert(`¡Contenido Subido! ${result.item.title}`); 
                 renderAll(); 
             }, 1000);
         } else {
-            throw new Error(result.message || 'Error desconocido al subir.');
+            throw new Error(result.message || 'Error desconocido');
         }
 
     } catch (error) {
         clearInterval(progressSim);
         uploadTitle.textContent = 'Error de Subida';
-        uploadStatus.textContent = error.message.includes('fetch') ? 'Servidor no disponible (Render caído?)' : error.message;
+        uploadStatus.textContent = error.message;
         
         setTimeout(()=> {
             closeUploadModal();
-            alert(`Error al subir: ${uploadTitle.textContent}`);
-        }, 4000);
+            alert(`Error: ${error.message}`);
+        }, 3000);
     }
 }
 
-// Subida: La función closeUploadModal es la única que queda del código de simulación
 function closeUploadModal(){
     uploadModal.style.display = 'none';
     uploadModal.setAttribute('aria-hidden', 'true');
-    uploadTitle.textContent = 'Subiendo archivo...';
 }
+
 closeUpload.addEventListener('click', closeUploadModal);
 
-
-/* ---------- (Resto del JS sin cambios relevantes) ---------- */
-
+/* ---------- THEME ---------- */
 const THEME_KEY = 'sinfiltro.theme.v3';
 let theme = localStorage.getItem(THEME_KEY) || 'dark';
+
 function applyTheme(t){
   requestAnimationFrame(()=>{
-    if(t==='light'){ document.body.classList.add('light'); themeToggle.textContent='☀️'; }
-    else { document.body.classList.remove('light'); themeToggle.textContent='🌗'; }
+    if(t==='light'){ 
+      document.body.classList.add('light'); 
+      themeToggle.textContent='☀️'; 
+    } else { 
+      document.body.classList.remove('light'); 
+      themeToggle.textContent='🌗'; 
+    }
   });
 }
+
 applyTheme(theme);
+
 themeToggle.addEventListener('click', ()=> {
   theme = (theme==='dark')?'light':'dark';
   localStorage.setItem(THEME_KEY, theme);
   applyTheme(theme);
 });
 
-/* brand click -> home */
+/* ---------- NAVIGATION ---------- */
 brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navSearch').addEventListener('click', ()=> openSearchModal());
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal()); // Mantiene ID navMe, pero el texto dice Mi Cuenta
-
-/* Top search demo */
+$('#seeV').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
+$('#navMe').addEventListener('click', ()=> openMyModal());
 searchTop.addEventListener('click', ()=> openSearchModal());
 
-/* ---------- Search modal (miniatures) ---------- */
+/* ---------- SEARCH MODAL ---------- */
 function openSearchModal(){
   populateSearchMini();
-  searchModal.classList.add('show'); searchModal.setAttribute('aria-hidden','false');
+  searchModal.classList.add('show'); 
+  searchModal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
+
 function closeSearchModal(){
-  searchModal.classList.remove('show'); searchModal.setAttribute('aria-hidden','true');
+  searchModal.classList.remove('show'); 
+  searchModal.setAttribute('aria-hidden','true');
   searchMini.innerHTML = '';
   document.body.style.overflow = '';
 }
+
 closeSearch.addEventListener('click', closeSearchModal);
 searchModal.addEventListener('click', e=> { if(e.target === searchModal) closeSearchModal(); });
 
@@ -881,12 +1018,18 @@ function populateSearchMini(q){
   searchMini.innerHTML = '';
   for(let i=0;i<12;i++){
     const item = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
+    const d = document.createElement('div'); 
+    d.className='mini-thumb';
     let mediaTag;
-    if(item.kind === 'video'){
-        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
+    if(item.kind === 'youtube'){
+        const videoId = extractYouTubeID(item.src);
+        // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
+        const thumb = item.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+        mediaTag = `<img src="${thumb}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
+    } else if (item.kind === 'image') {
+        mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
     } else {
-        mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
+        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
     }
     d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(item); closeSearchModal(); });
@@ -894,42 +1037,59 @@ function populateSearchMini(q){
   }
 }
 
-/* ---------- My videos modal (grid preview) - MEJORADO para usar miniaturas y videos/fotos ---------- */
+/* ---------- MY ACCOUNT MODAL ---------- */
 function openMyModal(){
   myGrid.innerHTML = '';
-  // Usamos el pool para simular el contenido del usuario
   for(let i=0;i<9;i++){
     const it = pool[rand(pool.length)];
-    const d = document.createElement('div'); d.className='mini-thumb';
+    const d = document.createElement('div'); 
+    d.className='mini-thumb';
     let mediaTag;
-    if(it.kind === 'video'){
-        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
+    if(it.kind === 'youtube'){
+        const videoId = extractYouTubeID(it.src);
+        // ⬇️ CORRECCIÓN APLICADA: Usar formato estándar de thumbnail de YouTube
+        const thumb = it.thumbnail || `https://img.youtube.com/vi/$${videoId}/maxresdefault.jpg`;
+        mediaTag = `<img src="${thumb}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
+    } else if (it.kind === 'image') {
+        mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
     } else {
-        mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
+        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
     }
     d.innerHTML = mediaTag;
     d.addEventListener('click', ()=>{ openViewerByItem(it); closeMyModal(); });
     myGrid.appendChild(d);
   }
-  myModal.classList.add('show'); myModal.setAttribute('aria-hidden','false');
+  myModal.classList.add('show'); 
+  myModal.setAttribute('aria-hidden','false');
   document.body.style.overflow = 'hidden';
 }
-function closeMyModal(){ myModal.classList.remove('show'); myModal.setAttribute('aria-hidden','true'); myGrid.innerHTML=''; document.body.style.overflow = ''; }
+
+function closeMyModal(){ 
+  myModal.classList.remove('show'); 
+  myModal.setAttribute('aria-hidden','true'); 
+  myGrid.innerHTML=''; 
+  document.body.style.overflow = ''; 
+}
+
 closeMy.addEventListener('click', closeMyModal);
 myModal.addEventListener('click', e=> { if(e.target === myModal) closeMyModal(); });
 
-/* ---------- Infinite vertical load (grid) ---------- */
+/* ---------- INFINITE SCROLL ---------- */
 let loadingGrid=false;
 window.addEventListener('scroll', ()=>{
   if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 420 && !loadingGrid){
     loadingGrid = true;
     setTimeout(()=> {
-      for(let i=0;i<6;i++){ gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); }
-      lazyObserve(gridFeed); loadingGrid=false;
+      for(let i=0;i<6;i++){ 
+        gridFeed.appendChild(makeGridCard(pool[rand(pool.length)])); 
+      }
+      lazyObserve(gridFeed); 
+      loadingGrid=false;
     }, 700);
   }
 });
 
+/* ---------- INIT ---------- */
 document.addEventListener('DOMContentLoaded', renderAll);
 
 document.addEventListener('keydown', e=>{ 
@@ -943,7 +1103,6 @@ document.addEventListener('keydown', e=>{
     } 
 });
 
-/* End of script */
 </script>
 </body>
 </html>
