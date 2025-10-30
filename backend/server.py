@@ -4,7 +4,7 @@ import uuid
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)  # CORREGIDO: Crea carpeta
 
 @app.route('/')
 def index():
@@ -20,7 +20,7 @@ def upload_file():
         return jsonify(success=False, message="No file"), 400
     
     file = request.files['file']
-    title = request.form.get('title', file.filename)  # CORREGIDO
+    title = request.form.get('title', file.filename)  # CORREGIDO: 'title'
     
     if file.filename == '':
         return jsonify(success=False, message="No file"), 400
@@ -35,14 +35,15 @@ def upload_file():
         "item": {
             "id": f"upload-{uuid.uuid4().hex}",
             "kind": "video" if file.mimetype.startswith('video') else "image",
-            "url": f"/uploads/{filename}",  # CORREGIDO: 'url'
+            "url": f"/uploads/{filename}",
             "title": title,
             "likes": 0,
+            "comments": 0,
             "views": "0K"
         }
     })
 
-# Feed simulado
+# Feed simulado (Pexels o tuyo)
 @app.route('/api/content/feed/<feed_type>')
 def get_feed(feed_type):
     sample = [
