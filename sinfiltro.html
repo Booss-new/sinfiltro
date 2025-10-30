@@ -564,7 +564,9 @@
 
     <script>
         // --- JS GLOBALS & SETUP ---
-        const API_BASE_URL = window.location.origin + '/api';  # CORREGIDO
+        // *** CORRECCIÓN CLAVE: Se elimina '/api' para la conexión en Render ***
+        const API_BASE_URL = window.location.origin;  
+        
         const UPLOAD_URL = API_BASE_URL + '/content/upload';
         const LIKE_URL = API_BASE_URL + '/content/{id}/like';
         const API_FEED_URL = API_BASE_URL + '/content/feed/{type}';
