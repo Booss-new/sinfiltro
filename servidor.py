@@ -22,8 +22,6 @@ APP = FastAPI(title="sinfiltra-api")
 
 # --- SERVIR ARCHIVOS ESTÁTICOS ---
 # Montar el directorio donde está el HTML y otros archivos estáticos (JS, CSS, etc.)
-# Esto sirve archivos como 'sinfiltro.html' si está en la raíz del proyecto.
-# Si tienes otros archivos estáticos fuera de la carpeta 'backend', úsalo.
 APP.mount("/static", StaticFiles(directory=ROOT_DIR), name="static")
 
 # Montar el directorio de subidas
@@ -50,7 +48,7 @@ async def serve_frontend():
 
 
 # --- ENDPOINTS DE API ---
-# Nota: Ahora deben ir SIN el prefijo /api, ya que la conexión del HTML fue corregida.
+# Nota: Ahora deben ir SIN el prefijo /api.
 
 @APP.post("/content/upload")
 async def upload_content(file: UploadFile = File(...), title: str = Form(...)):
