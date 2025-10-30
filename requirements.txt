@@ -1,8 +1,10 @@
-# Nombre: requirements.txt
+# Nombre: requirements.txt (¡Debe estar en la raíz de tu repo!)
 fastapi==0.111.0
 uvicorn==0.30.1
 gunicorn==22.0.0
-pydantic==2.7.4         # Esencial para los modelos de datos
-python-dotenv==1.0.1    # Para variables de entorno
-motor==3.2.0            # Esencial para MongoDB
-python-multipart==0.0.9 # Esencial para la subida de archivos
+pydantic==2.7.4         
+python-dotenv==1.0.1    
+motor==3.2.0            
+python-multipart==0.0.9
+# DEPENDENCIAS EXTRA PARA COMPILACIÓN
+setuptools==69.5.1
