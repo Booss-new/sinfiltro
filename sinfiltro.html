@@ -220,12 +220,12 @@
   <header>
     <div class="header-inner">
       <div class="left-ctrl">
-        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">☰</button>
+        <button id="menuBtn" class="icon-btn" aria-label="abrir menú">Menu</button>
         <button class="logo-btn" id="brandBtn"><span class="logo">SinFiltro</span></button>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
-        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
+        <button id="searchTop" class="icon-btn" title="Buscar">Search</button>
+        <button id="themeToggle" class="icon-btn" title="Modo">Moon</button>
       </div>
     </div>
   </header>
@@ -234,15 +234,15 @@
   <aside id="panel" class="panel" aria-hidden="true" role="dialog" aria-label="Menú lateral">
     <div style="display:flex;align-items:center;gap:8px">
       <strong>Cuenta</strong>
-      <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">✕</button> </div>
+      <button id="closePanel" class="panel-close panel-action icon-btn" style="margin-left:auto" title="Cerrar">Close</button> </div>
     <p style="margin:8px 0 12px 0;color:var(--muted)">Ajustes, demo y tu contenido.</p>
     <nav style="display:flex;flex-direction:column;gap:8px">
-      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🏠 Inicio</button>
-      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🔥 Tendencias</button>
-      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🎯 Recomendados</button>
-      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">👤 Mi cuenta</button>
-      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">⚙️ Ajustes</button>
-      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">🚪 Cerrar sesión</button>
+      <button class="icon-btn panel-item" data-action="home" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Home Inicio</button>
+      <button class="icon-btn panel-item" data-action="trends" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Fire Tendencias</button>
+      <button class="icon-btn panel-item" data-action="reco" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Target Recomendados</button>
+      <button class="icon-btn panel-item" data-action="my" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Person Mi cuenta</button>
+      <button class="icon-btn panel-item" data-action="settings" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Gear Ajustes</button>
+      <button class="icon-btn panel-item" data-action="logout" style="width:100%;padding:10px;border-radius:12px;justify-content:flex-start">Door Cerrar sesión</button>
     </nav>
   </aside>
 
@@ -254,7 +254,7 @@
       </section>
 
       <section class="section fade-up" aria-label="tendencias">
-        <div class="head"><div class="title">🔥 Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
+        <div class="head"><div class="title">Fire Tendencias</div><div class="see-all" id="seeT">Ver todo</div></div>
         <div class="h-stack">
           <div id="trendRow1" class="h-row" aria-label="tendencias fila 1" data-type="trends"></div>
           <div id="trendRow2" class="h-row" aria-label="tendencias fila 2" data-type="trends"></div>
@@ -262,7 +262,7 @@
       </section>
 
       <section class="section fade-up" aria-label="recomendados">
-        <div class="head"><div class="title">🎯 Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
+        <div class="head"><div class="title">Target Recomendados</div><div class="see-all" id="seeR">Ver todo</div></div>
         <div class="h-stack">
           <div id="recoRow1" class="h-row" aria-label="recomendados fila 1" data-type="reco"></div>
           <div id="recoRow2" class="h-row" aria-label="recomendados fila 2" data-type="reco"></div>
@@ -270,7 +270,7 @@
       </section>
 
       <section class="section fade-up" aria-label="antes visto">
-        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
+        <div class="head"><div class="title">Left Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
         <div class="h-stack">
           <div id="recentRow1" class="h-row" aria-label="antes visto fila 1" data-type="recent"></div>
           <div id="recentRow2" class="h-row" aria-label="antes visto fila 2" data-type="recent"></div>
@@ -278,7 +278,7 @@
       </section>
 
       <section class="section fade-up" aria-label="explorar">
-        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
+        <div class="head"><div class="title">Refresh Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
       </section>
     </div>
@@ -288,7 +288,7 @@
       <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
               <strong style="font-size:18px;">Subir a SinFiltro</strong>
-              <button id="closeFileSelect" class="icon-btn">✕</button>
+              <button id="closeFileSelect" class="icon-btn">Close</button>
           </div>
           <input type="file" id="realFileInput" accept="image/*,video/*" style="width:100%; padding: 10px; border: 1px solid var(--muted); border-radius: 8px; margin-bottom: 10px; background: var(--card); color: var(--text);">
           <input type="text" id="uploadTitleInput" class="search-input" placeholder="Título (opcional)" style="width:100%; margin-bottom: 15px;">
@@ -298,14 +298,14 @@
       </div>
   </div>
   <div id="radials" class="radials" aria-hidden="true"></div>
-  <button id="fab" class="fab" aria-label="Crear">＋</button>
+  <button id="fab" class="fab" aria-label="Crear">Plus</button>
 
   <nav class="bottom-nav" role="navigation" aria-label="navegación">
-    <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
-    <div id="navSearch" class="nav-item" data-tab="search">🔍<div style="font-size:11px">Buscar</div></div>
+    <div id="navHome" class="nav-item" data-tab="home">Home<div style="font-size:11px">Inicio</div></div>
+    <div id="navSearch" class="nav-item" data-tab="search">Search<div style="font-size:11px">Buscar</div></div>
     <div style="width:78px"></div>
-    <div id="navRecent" class="nav-item" data-tab="recent">👁️<div style="font-size:11px">Antes visto</div></div>
-    <div id="navMe" class="nav-item" data-tab="me">👤<div style="font-size:11px">Mi cuenta</div></div>
+    <div id="navRecent" class="nav-item" data-tab="recent">Eye<div style="font-size:11px">Antes visto</div></div>
+    <div id="navMe" class="nav-item" data-tab="me">Person<div style="font-size:11px">Mi cuenta</div></div>
   </nav>
 
   <div id="viewer" class="viewer" role="dialog" aria-hidden="true">
@@ -323,11 +323,11 @@
         </div>
       
       <div id="viewerControls" class="viewer-controls-meta">
-        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
-        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
-        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
-        <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button>
-        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
+        <button id="prevBtn" class="icon-btn" title="anterior">Left</button>
+        <button id="vvPlay" class="play-ico" title="reproducir">Play</button>
+        <button id="nextBtn" class="icon-btn" title="siguiente">Right</button>
+        <button id="downloadBtn" class="icon-btn" title="Descargar">Download</button>
+        <button id="closeViewer" class="icon-btn" title="cerrar">Close</button>
       </div>
     </div>
   </div>
@@ -335,7 +335,7 @@
   <div id="searchModal" class="modal" aria-hidden="true" role="dialog" aria-label="Buscar">
     <div class="head">
       <input id="searchInput" class="search-input" placeholder="Buscar..." />
-      <button id="closeSearch" class="icon-btn">✕</button>
+      <button id="closeSearch" class="icon-btn">Close</button>
     </div>
     <div id="searchMini" class="grid-mini"></div>
   </div>
@@ -343,7 +343,7 @@
   <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-label="Mi cuenta">
     <div class="head" style="justify-content:space-between">
       <strong>Mi cuenta</strong>
-      <button id="closeMy" class="icon-btn">✕</button>
+      <button id="closeMy" class="icon-btn">Close</button>
     </div>
     <div id="myGrid" class="grid-mini"></div>
   </div>
@@ -358,7 +358,7 @@
 
 <script>
 /* =========================
-   SinFiltro — Con APIs reales y correcciones
+   SinFiltro — CORREGIDO: API RELATIVA
    ========================= */
 
 /* Helpers */
@@ -367,8 +367,8 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-// BACKEND URL - Usa el de tu entorno
-const BACKEND_URL = window.location.origin;
+// CORREGIDO: API RELATIVA
+const BACKEND_URL = '';  // ← RUTA RELATIVA
 const API_URL = `${BACKEND_URL}/api`;
 
 /* DOM refs */
@@ -403,7 +403,7 @@ async function fetchContent(type) {
         const response = await fetch(`${API_URL}/content/feed/${type}`);
         const data = await response.json();
 
-        if (data.success && data.data) {
+        if (data.data) {
             return data.data.map(item => ({
                 ...item,
                 liked: item.liked || false,
@@ -422,23 +422,18 @@ async function fetchContent(type) {
 
 /* ---------- RENDER LOGIC ---------- */
 async function renderAll() {
-    // Obtener datos del servidor
     const trendsData = await fetchContent('trends');
     const recoData = await fetchContent('reco');
     const recentData = await fetchContent('recent');
 
-    // Pool global
     pool = [...trendsData, ...recoData, ...recentData];
 
-    // Llenar las filas horizontales
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
     renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
-    // Grid con el resto
     renderGridInitial(pool.slice(0, 20)); 
 
-    // Enable drag scroll
     $$('.h-row').forEach(r=> {
         if(r.children.length < 8){
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
@@ -512,9 +507,9 @@ function makeSmallCard(item){
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
         <div style="font-weight:700">${item.kind==='youtube'?'YouTube':item.kind==='image'?'Imagen':'Video'}</div>
-        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
+        <div class="mini-stats"><span>Heart ${item.likes}</span><span>Speech ${item.comments}</span><span>Eye ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">Play</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
@@ -536,7 +531,7 @@ function makeGridCard(item){
     mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
   }
   
-  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>Heart ${item.likes} • Speech ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
@@ -624,7 +619,6 @@ function showViewer(){
       mediaElement = document.createElement('div');
       mediaElement.innerHTML = '<p style="color:white;text-align:center;padding:40px">Error: ID de YouTube inválido</p>';
     } else {
-      // Usar youtube-nocookie.com para mejor privacidad y menos problemas
       mediaElement = document.createElement('iframe');
       mediaElement.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
       mediaElement.style.width = '100%';
@@ -651,27 +645,25 @@ function showViewer(){
   }
   viewerInner.appendChild(mediaElement);
 
-  // Barra de interacciones
   viewerBottom.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
               <span id="likeBtn" style="cursor:pointer; color: ${it.liked ? 'var(--accent-violet)' : 'var(--muted)'};">
-                  ❤ ${it.likes || 0}
+                  Heart ${it.likes || 0}
               </span>
-              <span>💬 ${it.comments || 0}</span>
+              <span>Speech ${it.comments || 0}</span>
           </div>
           <span style="font-size: 12px; color: var(--muted);">
-              👁️ ${it.views || '0K'} Vistas
+              Eye ${it.views || '0K'} Vistas
           </span>
       </div>
 
       <div style="display:flex; gap: 8px; align-items:center;">
           <input type="text" placeholder="Añade un comentario..." class="search-input" style="flex-grow:1; padding: 10px; border-radius: 8px; font-size: 14px; background: rgba(255,255,255,0.1);">
-          <button class="icon-btn" style="width: 40px; height: 40px; background: var(--accent-violet); color: #000;">➡️</button>
+          <button class="icon-btn" style="width: 40px; height: 40px; background: var(--accent-violet); color: #000;">Right</button>
       </div>
   `;
 
-  // Lógica de like
   viewerBottom.querySelector('#likeBtn').addEventListener('click', async (e) => {
       it.liked = !it.liked;
       if (it.liked) {
@@ -682,18 +674,7 @@ function showViewer(){
           if (it.likes < 0) it.likes = 0;
           e.target.style.color = 'var(--muted)';
       }
-      e.target.innerHTML = `❤ ${it.likes}`;
-
-      // Guardar en backend
-      try {
-          await fetch(`${API_URL}/content/${it.id}/like`, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({ liked: it.liked })
-          });
-      } catch(err) {
-          console.error('Error saving like:', err);
-      }
+      e.target.innerHTML = `Heart ${it.likes}`;
   });
   
   viewer.classList.add('show'); 
@@ -743,7 +724,6 @@ vvPlay.addEventListener('click', ()=> {
   if(it && it.kind==='youtube'){ 
     const iframe = viewerInner.querySelector('iframe'); 
     if(iframe){ 
-      // Para reproducir necesitamos usar postMessage API
       iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     } 
   } else if(it && it.kind === 'video'){ 
@@ -847,9 +827,9 @@ fab.addEventListener('click', ()=>{
       radials.classList.remove('show'); 
     };
 
-    radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
-    radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
-    radials.appendChild(mkBubble('🎬', 'Crear Short', createShortAction));
+    radials.appendChild(mkBubble('Upload', 'Subir Archivo', uploadAction));
+    radials.appendChild(mkBubble('Image', 'Publicar Galería', createPostAction));
+    radials.appendChild(mkBubble('Video', 'Crear Short', createShortAction));
   }
 });
 
@@ -923,7 +903,6 @@ async function uploadFileToBackend(file, title){
         if(result.success){
             uploadTitle.textContent = '¡Subida Completa!';
             
-            // Agregar al pool
             pool.unshift({
                 ...result.item,
                 liked: false,
@@ -1042,7 +1021,7 @@ function openMyModal(){
     if(it.kind === 'youtube'){
         const thumb = it.thumbnail || `https://img.youtube.com/vi/${extractYouTubeID(it.src)}/maxresdefault.jpg`;
         mediaTag = `<img src="${thumb}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Video'">`;
-    } else if (item.kind === 'image') {
+    } else if (it.kind === 'image') {
         mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}" onerror="this.src='https://via.placeholder.com/200?text=Image'">`;
     } else {
         mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
