@@ -5,3 +5,4 @@ pymongo
 pydantic
 motor
 python-multipart
+aioshutil
