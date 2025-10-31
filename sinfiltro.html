@@ -118,7 +118,7 @@
     bottom:0;
     height:100%;
     width:86%;max-width:320px;
-    background:linear-gradient(180deg | rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.008));backdrop-filter:blur(12px);
     border-radius:0 12px 12px 0;
     padding:12px;z-index:180;
     box-shadow:20px 0 80px rgba(2,10,18,0.6);
@@ -225,7 +225,7 @@
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <button id="searchTop" class="icon-btn" title="Buscar">🔍</button>
-        <button id="themeToggle" class="icon-btn" title="Modo">🌙</button>
+        <button id="themeToggle" class="icon-btn" title="Modo">🌗</button>
       </div>
     </div>
   </header>
@@ -270,7 +270,7 @@
       </section>
 
       <section class="section fade-up" aria-label="antes visto">
-        <div class="head"><div class="title">⬅️ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
+        <div class="head"><div class="title">⏮ Antes visto</div><div class="see-all" id="seeV">Ver todo</div></div>
         <div class="h-stack">
           <div id="recentRow1" class="h-row" aria-label="antes visto fila 1" data-type="recent"></div>
           <div id="recentRow2" class="h-row" aria-label="antes visto fila 2" data-type="recent"></div>
@@ -278,7 +278,7 @@
       </section>
 
       <section class="section fade-up" aria-label="explorar">
-        <div class="head"><div class="title">🔄 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
+        <div class="head"><div class="title">🔁 Explorar — Aleatorio</div><div class="see-all" id="filterBtn">Filtrar</div></div>
         <div id="gridFeed" class="grid" aria-live="polite"></div>
       </section>
     </div>
@@ -298,7 +298,7 @@
       </div>
   </div>
   <div id="radials" class="radials" aria-hidden="true"></div>
-  <button id="fab" class="fab" aria-label="Crear">➕</button>
+  <button id="fab" class="fab" aria-label="Crear">＋</button>
 
   <nav class="bottom-nav" role="navigation" aria-label="navegación">
     <div id="navHome" class="nav-item" data-tab="home">🏠<div style="font-size:11px">Inicio</div></div>
@@ -323,11 +323,11 @@
         </div>
       
       <div id="viewerControls" class="viewer-controls-meta">
-        <button id="prevBtn" class="icon-btn" title="anterior">⬅️</button>
-        <button id="vvPlay" class="play-ico" title="reproducir">▶️</button>
-        <button id="nextBtn" class="icon-btn" title="siguiente">➡️</button>
+        <button id="prevBtn" class="icon-btn" title="anterior">⟨</button>
+        <button id="vvPlay" class="play-ico" title="reproducir">▶</button>
+        <button id="nextBtn" class="icon-btn" title="siguiente">⟩</button>
         <button id="downloadBtn" class="icon-btn" title="Descargar">⬇️</button>
-        <button id="closeViewer" class="icon-btn" title="cerrar">✖️</button>
+        <button id="closeViewer" class="icon-btn" title="cerrar">✕</button>
       </div>
     </div>
   </div>
@@ -358,17 +358,17 @@
 
 <script>
 /* =========================
-   SinFiltro — CORREGIDO: API RELATIVA
+   SinFiltro — Con APIs reales y correcciones
    ========================= */
 
 /* Helpers */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const rand = n => Math.floor(Math.random()*n);
-const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&','<':'<','>':'>','"':'"',"'":'''}[m]));
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
-// CORREGIDO: API RELATIVA
-const BACKEND_URL = '';  // ← RUTA RELATIVA
+// BACKEND URL - Usa el de tu entorno
+const BACKEND_URL = window.location.origin;
 const API_URL = `${BACKEND_URL}/api`;
 
 /* DOM refs */
@@ -403,7 +403,7 @@ async function fetchContent(type) {
         const response = await fetch(`${API_URL}/content/feed/${type}`);
         const data = await response.json();
 
-        if (data.data) {
+        if (data.success && data.data) {
             return data.data.map(item => ({
                 ...item,
                 liked: item.liked || false,
@@ -422,18 +422,23 @@ async function fetchContent(type) {
 
 /* ---------- RENDER LOGIC ---------- */
 async function renderAll() {
+    // Obtener datos del servidor
     const trendsData = await fetchContent('trends');
     const recoData = await fetchContent('reco');
     const recentData = await fetchContent('recent');
 
+    // Pool global
     pool = [...trendsData, ...recoData, ...recentData];
 
+    // Llenar las filas horizontales
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
     renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
     
+    // Grid con el resto
     renderGridInitial(pool.slice(0, 20)); 
 
+    // Enable drag scroll
     $$('.h-row').forEach(r=> {
         if(r.children.length < 8){
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
@@ -507,9 +512,9 @@ function makeSmallCard(item){
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
         <div style="font-weight:700">${item.kind==='youtube'?'YouTube':item.kind==='image'?'Imagen':'Video'}</div>
-        <div class="mini-stats"><span>❤️ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁️ ${item.views}</span></div>
+        <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶️</div>':'' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='youtube' || item.kind==='video' ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
@@ -531,7 +536,7 @@ function makeGridCard(item){
     mediaTag = `<video data-src="${item.src}" muted preload="metadata"></video>`;
   }
   
-  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤️ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
+  a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
@@ -619,6 +624,7 @@ function showViewer(){
       mediaElement = document.createElement('div');
       mediaElement.innerHTML = '<p style="color:white;text-align:center;padding:40px">Error: ID de YouTube inválido</p>';
     } else {
+      // Usar youtube-nocookie.com para mejor privacidad y menos problemas
       mediaElement = document.createElement('iframe');
       mediaElement.src = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
       mediaElement.style.width = '100%';
@@ -645,11 +651,12 @@ function showViewer(){
   }
   viewerInner.appendChild(mediaElement);
 
+  // Barra de interacciones
   viewerBottom.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; gap: 15px; font-size: 14px; font-weight: 600;">
               <span id="likeBtn" style="cursor:pointer; color: ${it.liked ? 'var(--accent-violet)' : 'var(--muted)'};">
-                  ❤️ ${it.likes || 0}
+                  ❤ ${it.likes || 0}
               </span>
               <span>💬 ${it.comments || 0}</span>
           </div>
@@ -664,6 +671,7 @@ function showViewer(){
       </div>
   `;
 
+  // Lógica de like
   viewerBottom.querySelector('#likeBtn').addEventListener('click', async (e) => {
       it.liked = !it.liked;
       if (it.liked) {
@@ -674,7 +682,18 @@ function showViewer(){
           if (it.likes < 0) it.likes = 0;
           e.target.style.color = 'var(--muted)';
       }
-      e.target.innerHTML = `❤️ ${it.likes}`;
+      e.target.innerHTML = `❤ ${it.likes}`;
+
+      // Guardar en backend
+      try {
+          await fetch(`${API_URL}/content/${it.id}/like`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ liked: it.liked })
+          });
+      } catch(err) {
+          console.error('Error saving like:', err);
+      }
   });
   
   viewer.classList.add('show'); 
@@ -724,6 +743,7 @@ vvPlay.addEventListener('click', ()=> {
   if(it && it.kind==='youtube'){ 
     const iframe = viewerInner.querySelector('iframe'); 
     if(iframe){ 
+      // Para reproducir necesitamos usar postMessage API
       iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     } 
   } else if(it && it.kind === 'video'){ 
@@ -827,9 +847,9 @@ fab.addEventListener('click', ()=>{
       radials.classList.remove('show'); 
     };
 
-    radials.appendChild(mkBubble('⬆️', 'Subir Archivo', uploadAction));
+    radials.appendChild(mkBubble('📤', 'Subir Archivo', uploadAction));
     radials.appendChild(mkBubble('🖼️', 'Publicar Galería', createPostAction));
-    radials.appendChild(mkBubble('📹', 'Crear Short', createShortAction));
+    radials.appendChild(mkBubble('🎬', 'Crear Short', createShortAction));
   }
 });
 
@@ -903,6 +923,7 @@ async function uploadFileToBackend(file, title){
         if(result.success){
             uploadTitle.textContent = '¡Subida Completa!';
             
+            // Agregar al pool
             pool.unshift({
                 ...result.item,
                 liked: false,
@@ -949,7 +970,7 @@ function applyTheme(t){
       themeToggle.textContent='☀️'; 
     } else { 
       document.body.classList.remove('light'); 
-      themeToggle.textContent='🌙'; 
+      themeToggle.textContent='🌗'; 
     }
   });
 }
