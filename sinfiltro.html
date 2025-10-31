@@ -55,6 +55,26 @@
   .h-row{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;touch-action:pan-y}
   .h-row::-webkit-scrollbar{display:none}
   .card-small{min-width:190px;flex:0 0 190px;height:130px;border-radius:12px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 18px 50px rgba(2,10,18,0.6);display:flex;align-items:flex-end;padding:10px;color:#fff;scroll-snap-align:center;cursor:pointer}
+  
+  /* ESTILOS CLAVE: LAZY LOAD Y ASPECT RATIO para SMALL CARD */
+  .youtube-placeholder { 
+      position:absolute; inset:0; width:100%; height:100%; 
+      background-size: cover; background-position: center; 
+      cursor: pointer; z-index: 5; 
+  }
+  .youtube-placeholder::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      /* Ícono de Play (funciona para YouTube y Vídeo Directo) */
+      background: rgba(255,255,255,0.25) url("data:image/svg+xml,%3Csvg viewBox='0 0 68 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M66.52 7.74c-.78-2.93-2.49-5.41-5.64-6.38C56.68.21 34 0 34 0s-22.68.21-26.88 1.36c-3.15.97-4.86 3.45-5.64 6.38C.21 12.67 0 24 0 24s.21 11.33 1.36 16.26c.78 2.93 2.49 5.41 5.64 6.38C11.32 47.79 34 48 34 48s22.68-.21 26.88-1.36c3.15-.97 4.86-3.45 5.64-6.38C67.79 35.33 68 24 68 24s-.21-11.33-1.48-16.26z' fill='%23ff0000'%3E%3C/path%3E%3Cpath d='M45 24l-14-8V32l14-8z' fill='%23fff'%3E%3C/path%3E%3C/svg%3E") no-repeat center center;
+      background-size: 70%;
+      transition: opacity 0.3s;
+      border: 2px solid #fff;
+  }
+  .card-small iframe, .card-small video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index: 5;}
+  
   .card-small img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s}
   .card-small .meta{position:relative;z-index:6}
   .mini-stats{display:flex;gap:8px;align-items:center;font-size:12px;color:rgba(255,255,255,0.95)}
@@ -113,7 +133,7 @@
   .viewer{position:fixed;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.95));z-index:220;display:none;align-items:center;justify-content:center;padding:10px}
   .viewer.show{display:flex}
   .viewer .card{width:100%;max-width:920px;border-radius:12px;overflow:hidden;background:#000;padding:0;box-shadow:0 30px 80px rgba(0,0,0,0.8); position:relative;} /* Padding 0 para que la imagen ocupe todo */
-  .viewer img,.viewer video{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;} /* Max-height ajustado */
+  .viewer img,.viewer video, .viewer iframe{width:100%;height:auto;display:block; max-height: 75vh; object-fit: contain; margin: 0 auto;} /* Max-height ajustado */
   
   /* Controles y meta-datos más abajo */
   .viewer-controls-meta { 
@@ -383,7 +403,10 @@ async function fetchContent(type) {
                 ...item,
                 liked: false, // Por defecto, no le ha dado like
                 comments: item.comments || rand(100), // Asegurar que tenga comentarios
-                views: item.views || (rand(9)+1)+'K'
+                views: item.views || (rand(9)+1)+'K',
+                // CAMBIO CLAVE: Si es video y tiene 'youtubeId', lo marcamos.
+                isYouTube: !!item.youtubeId,
+                youtubeId: item.youtubeId
             }));
         } else {
             console.error("Error al obtener datos:", data);
@@ -395,52 +418,55 @@ async function fetchContent(type) {
         return Array.from({length:16}).map((_,i)=>({
             id:'mock'+type+i, src:mkImg(i), kind:(i%6===0)?'video':'image',
             title:['Offline: Callejón neon','Offline: Atardecer','Offline: Retrato','Offline: Arte Urbano'][i%4],
-            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K', liked: false
+            likes: rand(500), comments: rand(100), views: (rand(9)+1)+'K', liked: false,
+            // 2 videos de cada 16 serán de YouTube para la demo de Lazy Load
+            isYouTube: i % 8 === 0,
+            youtubeId: (i % 8 === 0) ? ['dQw4w9WgXcQ', 'xvFZjo5PgG0'][i/8] : null,
+            // Si es YouTube, la URL debe ser la miniatura por defecto
+            src: (i % 8 === 0) ? `https://i.ytimg.com/vi/${['dQw4w9WgXcQ', 'xvFZjo5PgG0'][i/8]}/hqdefault.jpg` : mkImg(i)
         }));
     }
 }
 
-/* ---------- RENDER LOGIC (MODIFICADO para usar datos reales) ---------- */
+/* ---------- RENDER LOGIC (MODIFICADO para usar Lazy Load) ---------- */
 async function renderAll() {
-    // 1. Obtener y renderizar tendencias
     const trendsData = await fetchContent('trends');
     const recoData = await fetchContent('reco');
-    const recentData = await fetchContent('recent'); // Usaremos 'recent' para todo el pool
+    // Usamos tendencias/recomendados para el pool, ya que son los que tienen IDs de YouTube en el mock.
+    pool = [...trendsData, ...recoData];
 
-    // Usar todos los datos como pool principal
-    pool = [...trendsData, ...recoData, ...recentData];
-
-    // Inicializar el estado de carga lateral
     rowLoadState.trends = { row1: 0, row2: 0 };
     rowLoadState.reco = { row1: 0, row2: 0 };
     rowLoadState.recent = { row1: 0, row2: 0 };
     
-    // Llenar las filas horizontales con los datos del servidor
+    // REEMPLAZADO: Ahora llama a activateMediaPlaceholders
     renderTwoRows(trendRow1, trendRow2, trendsData.slice(0, 12));
     renderTwoRows(recoRow1, recoRow2, recoData.slice(0, 12));
-    renderTwoRows(recentRow1, recentRow2, recentData.slice(0, 12));
+    // Los videos recientes (antes visto) deben ser llenados por la lógica de historial
+    // Por ahora, usamos datos dummy/mock, que luego reemplazaremos con el historial
+    const recentMock = Array.from({length: 6}).map(() => pool[rand(pool.length)]);
+    renderTwoRows(recentRow1, recentRow2, recentMock);
     
-    // Llenar el grid con el resto del pool
     renderGridInitial(pool.slice(24)); 
 
-    // seed rows for smoothness
     $$('.h-row').forEach(r=> {
         if(r.children.length < 8){
           for(let i=0;i<8;i++) r.appendChild(makeSmallCard(pool[rand(pool.length)]));
         }
         enableDragScroll(r);
-        r.addEventListener('scroll', handleHorizontalScroll); // Detector de scroll para carga
+        r.addEventListener('scroll', handleHorizontalScroll);
     });
-    lazyObserve();
+    // NO usamos lazyObserve aquí porque la carga perezosa se maneja en makeSmallCard (videos)
 }
 
 
-/* ---------- UTILS ---------- */
+/* ---------- UTILS (MODIFICADO: makeSmallCard y makeGridCard) ---------- */
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
+// Se mantiene el Lazy Observer solo para las imágenes en el Grid
 let imgObserver = null;
 function lazyObserve(root=document){
-  const imgs = root.querySelectorAll('img[data-src], video[data-src]'); // Videos también pueden ser lazy
+  const imgs = root.querySelectorAll('img[data-src], video[data-src]');
   if('IntersectionObserver' in window){
     if(!imgObserver){
       imgObserver = new IntersectionObserver((entries, obs)=>{
@@ -461,27 +487,43 @@ function lazyObserve(root=document){
   }
 }
 
+// *** FUNCIÓN CLAVE CON LAZY LOAD DE YOUTUBE/MEDIA (SOLUCIONADA PARA VÍDEOS DIRECTOS) ***
 function makeSmallCard(item){
   const d = document.createElement('div');
   d.className = 'card-small skel fade-up';
   d.setAttribute('tabindex','0');
-  let mediaTag;
-  if(item.kind === 'video'){
-    // Usar la etiqueta video en el card small
-    mediaTag = `<video class="card-small-media" data-src="${item.src}" muted preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.56);transition:transform .9s"></video>`;
+  
+  let mediaTagHTML;
+
+  if (item.isYouTube) {
+    // 1. Placeholder para YouTube (Lazy Load)
+    mediaTagHTML = `<div class="youtube-placeholder" 
+                        data-video-id="${item.youtubeId}" 
+                        data-kind="youtube"
+                        style="background-image: url('${item.src}')"
+                        ></div>`;
+  } else if (item.kind === 'video') {
+    // 2. Placeholder para Video Directo (¡NUEVO!)
+    // Usamos el 'src' (que es la miniatura) como fondo/poster y lo cargamos al hacer clic.
+    mediaTagHTML = `<div class="youtube-placeholder" 
+                        data-video-src="${item.src}" 
+                        data-kind="direct-video"
+                        style="background-image: url('${item.src}')"
+                        ></div>`;
   } else {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    // 3. Imagen normal (con Lazy Loading nativo)
+    mediaTagHTML = `<img loading="lazy" data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
   }
 
   d.innerHTML = `
-    ${mediaTag}
+    ${mediaTagHTML}
     ${item.likes>500?'<div class="mini-badge">TOP</div>':''}
     <div style="position:relative;z-index:6;width:100%;display:flex;justify-content:space-between;align-items:flex-end">
       <div class="meta">
         <div style="font-weight:700">${item.kind==='video'?'Video':'Foto'}</div>
         <div class="mini-stats"><span>❤ ${item.likes}</span><span>💬 ${item.comments}</span><span>👁 ${item.views}</span></div>
       </div>
-      <div style="z-index:8;margin-left:8px">${ item.kind==='video'?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
+      <div style="z-index:8;margin-left:8px">${ item.kind==='video' || item.isYouTube ?'<div class="play-ico" aria-hidden="true">▶</div>':'' }</div>
     </div>
   `;
   d.addEventListener('click', ()=> openViewerByItem(item));
@@ -493,29 +535,83 @@ function makeGridCard(item){
   const a = document.createElement('article');
   a.className = 'card skel fade-up';
   let mediaTag;
-  if(item.kind === 'video'){
-    mediaTag = `<video data-src="${item.src}" muted preload="metadata" style="width:100%;height:150px;object-fit:cover"></video>`;
+  if(item.kind === 'video' || item.isYouTube){
+    // Usamos la miniatura de YouTube si existe, si no, la miniatura de video
+    const src = item.isYouTube ? `https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg` : item.src;
+    mediaTag = `<img loading="lazy" data-src="${src}" alt="${escapeHtml(item.title)}">`;
   } else {
-    mediaTag = `<img data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
+    mediaTag = `<img loading="lazy" data-src="${item.src}" alt="${escapeHtml(item.title)}">`;
   }
   a.innerHTML = `${mediaTag}<div class="body"><div class="title">${escapeHtml(item.title)}</div><div class="meta"><div>${item.views}</div><div>❤ ${item.likes} • 💬 ${item.comments}</div></div></div>`;
   a.addEventListener('click', ()=> openViewerByItem(item));
   return a;
 }
 
+// *** FUNCIÓN MODIFICADA: Ahora llama a activateMediaPlaceholders ***
 function renderTwoRows(row1,row2,items){
   row1.innerHTML=''; row2.innerHTML='';
   items.forEach((it,i)=>{
     const target = (i%2===0)?row1:row2;
     target.appendChild(makeSmallCard(it));
   });
+  // Llama a la función que activa los placeholders (¡Nombre actualizado!)
+  activateMediaPlaceholders(row1); 
+  activateMediaPlaceholders(row2);
+  lazyObserve(row1);
+  lazyObserve(row2);
 }
 
-function renderGridInitial(items=pool){ // Usa 'pool' para tener más variedad
+function renderGridInitial(items=pool){ 
   gridFeed.innerHTML = '';
   items.forEach(it=> gridFeed.appendChild(makeGridCard(it)));
   lazyObserve(gridFeed);
 }
+
+// *** NUEVA FUNCIÓN CLAVE: ACTIVA EL LAZY LOAD DE MEDIA (VÍDEO DIRECTO Y YOUTUBE) ***
+function activateMediaPlaceholders(root) {
+    const placeholders = root.querySelectorAll('.youtube-placeholder');
+
+    placeholders.forEach(placeholder => {
+        // Al hacer click, reemplazamos el placeholder por el elemento media real.
+        placeholder.addEventListener('click', function() {
+            const kind = this.dataset.kind;
+            let mediaElement;
+
+            if (kind === 'youtube') {
+                const videoId = this.dataset.videoId;
+                mediaElement = document.createElement('iframe');
+                // URL de embed optimizada (anti-anuncios/modestbranding)
+                const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&modestbranding=1&controls=1&rel=0&showinfo=0`;
+                mediaElement.setAttribute('src', embedUrl);
+                mediaElement.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+                mediaElement.setAttribute('allowfullscreen', '');
+            
+            } else if (kind === 'direct-video') {
+                const videoSrc = this.dataset.videoSrc;
+                mediaElement = document.createElement('video');
+                mediaElement.setAttribute('src', videoSrc);
+                mediaElement.setAttribute('controls', 'true');
+                mediaElement.setAttribute('autoplay', 'true'); // Autoplay solo en el carrusel (se muteará por defecto)
+                mediaElement.setAttribute('muted', 'true'); // Es clave para que se reproduzca en iOS/Chrome móvil
+                mediaElement.setAttribute('playsinline', 'true'); // Clave para iOS
+            }
+            
+            if (mediaElement) {
+                mediaElement.setAttribute('frameborder', '0');
+                // Estilos para que se vea bien en el carrusel
+                mediaElement.style.position = 'absolute';
+                mediaElement.style.inset = '0';
+                mediaElement.style.width = '100%';
+                mediaElement.style.height = '100%';
+                mediaElement.style.objectFit = 'cover';
+                mediaElement.style.zIndex = '5';
+
+                this.parentNode.replaceChild(mediaElement, this);
+            }
+        }, {once: true}); // El evento solo se ejecuta la primera vez.
+    });
+}
+
 
 function enableDragScroll(el){ 
   if(el.__dragEnabled) return;
@@ -554,39 +650,44 @@ async function loadMoreHorizontal(row) {
     if (horizontalLoading) return;
     horizontalLoading = true;
 
-    const type = row.dataset.type;
-    
     // Obtener un nuevo set de datos mock (simulando una nueva petición al servidor)
-    // Para no duplicar, simplemente sacamos más contenido aleatorio del pool grande
     const newItems = Array.from({length: 4}).map(() => pool[rand(pool.length)]);
 
     if (newItems.length > 0) {
-        // Simular un pequeño retraso de carga
         await new Promise(resolve => setTimeout(resolve, 300));
         
         const fragment = document.createDocumentFragment();
         newItems.forEach(item => fragment.appendChild(makeSmallCard(item)));
         row.appendChild(fragment);
+        activateMediaPlaceholders(row); // Activamos los nuevos placeholders (¡Nombre actualizado!)
         lazyObserve(row);
         
-        // Ajustar el scroll para que la posición sea fluida
         row.scrollLeft += 10;
     }
     horizontalLoading = false;
 }
 
-// MODIFICADO: showViewer para implementar la nueva barra de interacciones
+// MODIFICADO: showViewer para soportar IFRAME de YouTube
 function showViewer(){
   const it = activeList[currentIndex];
   viewerInner.innerHTML = '';
-  viewerBottom.innerHTML = ''; // Limpiamos el contenido anterior
+  viewerBottom.innerHTML = ''; 
 
   if(!it) return;
 
   downloadBtn.style.display = 'inline-flex';
 
   let mediaElement;
-  if(it.kind === 'video'){
+  if (it.isYouTube) {
+    // Cargar IFRAME de YouTube
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${it.youtubeId}?autoplay=1&modestbranding=1&controls=1&rel=0&showinfo=0`;
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+    iframe.setAttribute('allowfullscreen', '');
+    mediaElement = iframe;
+    downloadBtn.style.display = 'none'; // No se puede descargar de YouTube
+  } else if(it.kind === 'video'){
     const video = document.createElement('video');
     video.src = it.src;
     video.controls = true;
@@ -629,7 +730,7 @@ function showViewer(){
           it.likes = (it.likes || 0) + 1;
           e.target.style.color = 'var(--accent-violet)';
       } else {
-          it.likes = (it.likes || 1) - 1; // Asegurarse que no baja de 0
+          it.likes = (it.likes || 1) - 1; 
           if (it.likes < 0) it.likes = 0;
           e.target.style.color = 'var(--muted)';
       }
@@ -652,14 +753,26 @@ function closeViewerFunc(){ viewer.classList.remove('show'); viewer.setAttribute
 function prevItem(){ if(currentIndex>0){ currentIndex--; showViewer(); } }
 function nextItem(){ if(currentIndex < activeList.length-1){ currentIndex++; showViewer(); } else { const more = pool[rand(pool.length)]; activeList.push(more); currentIndex++; showViewer(); } }
 
-vvPlay.addEventListener('click', ()=> { const it = activeList[currentIndex]; if(it && it.kind==='video'){ const v = viewerInner.querySelector('video'); if(v){ v.paused ? v.play() : v.pause(); } } });
+vvPlay.addEventListener('click', ()=> { 
+    const it = activeList[currentIndex]; 
+    if(it){ 
+        if(it.kind==='video' && !it.isYouTube){ 
+            const v = viewerInner.querySelector('video'); 
+            if(v){ v.paused ? v.play() : v.pause(); } 
+        } else if (it.isYouTube) {
+            // No podemos controlar la reproducción del IFRAME de YouTube con este método,
+            // pero el botón Play puede servir como indicador visual o para futuros reproductores internos.
+            alert('El video de YouTube inicia la reproducción automáticamente en el visor.');
+        }
+    } 
+});
 closeViewer.addEventListener('click', closeViewerFunc);
 viewer.addEventListener('click', e=> { if(e.target === viewer) closeViewerFunc(); });
 prevBtn.addEventListener('click', prevItem);
 nextBtn.addEventListener('click', nextItem);
 downloadBtn.addEventListener('click', ()=>{ 
     const item = activeList[currentIndex];
-    if(item && item.src){
+    if(item && item.src && !item.isYouTube){
         const downloadUrl = item.src; 
         const link = document.createElement('a');
         link.href = downloadUrl;
@@ -669,7 +782,7 @@ downloadBtn.addEventListener('click', ()=>{
         document.body.removeChild(link);
         alert(`Descargando: ${item.title}`);
     } else {
-        alert('No se pudo encontrar la URL del archivo.');
+        alert('No se pudo descargar (No permitido o es video de YouTube).');
     }
 });
 
@@ -856,8 +969,9 @@ themeToggle.addEventListener('click', ()=> {
 brandBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navHome').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 $('#navSearch').addEventListener('click', ()=> openSearchModal());
+// CORRECCIÓN CLAVE: ANTES VISTO ahora hace scroll interno
 $('#navRecent').addEventListener('click', ()=> { document.querySelector('[aria-label="antes visto"]')?.scrollIntoView({behavior:'smooth'}); });
-$('#navMe').addEventListener('click', ()=> openMyModal()); // Mantiene ID navMe, pero el texto dice Mi Cuenta
+$('#navMe').addEventListener('click', ()=> openMyModal()); 
 
 /* Top search demo */
 searchTop.addEventListener('click', ()=> openSearchModal());
@@ -882,8 +996,10 @@ function populateSearchMini(q){
     const item = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     let mediaTag;
-    if(item.kind === 'video'){
-        mediaTag = `<video src="${item.src}" muted preload="metadata"></video>`;
+    if(item.kind === 'video' || item.isYouTube){
+        // Usamos la miniatura de YouTube si existe, si no, la miniatura de video (que no se cargará)
+        const src = item.isYouTube ? `https://i.ytimg.com/vi/${item.youtubeId}/hqdefault.jpg` : item.src;
+        mediaTag = `<img src="${src}" alt="${escapeHtml(item.title)}">`;
     } else {
         mediaTag = `<img src="${item.src}" alt="${escapeHtml(item.title)}">`;
     }
@@ -901,8 +1017,10 @@ function openMyModal(){
     const it = pool[rand(pool.length)];
     const d = document.createElement('div'); d.className='mini-thumb';
     let mediaTag;
-    if(it.kind === 'video'){
-        mediaTag = `<video src="${it.src}" muted preload="metadata"></video>`;
+    if(it.kind === 'video' || it.isYouTube){
+        // Usamos la miniatura de YouTube si existe, si no, la miniatura de video (que no se cargará)
+        const src = it.isYouTube ? `https://i.ytimg.com/vi/${it.youtubeId}/hqdefault.jpg` : it.src;
+        mediaTag = `<img src="${src}" alt="${escapeHtml(it.title)}">`;
     } else {
         mediaTag = `<img src="${it.src}" alt="${escapeHtml(it.title)}">`;
     }
